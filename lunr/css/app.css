@@ -1,0 +1,14 @@
+div.charBox {
+	margin-left: 15px;
+	float: right;
+}
+
+img.charImage {
+	max-width: 250px;
+	max-height: 250px;
+}
+
+footer {
+	text-align: right;
+	font-style: italic;
+}

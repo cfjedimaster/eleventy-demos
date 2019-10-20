@@ -1,0 +1,100 @@
+<html>
+
+<head>
+<title></title>
+<script src="https://unpkg.com/lunr/lunr.js"></script>
+<link rel="stylesheet" href="/css/app.css" />
+</head>
+
+<body>
+
+
+<h1>Characters</h1>
+
+<ul>
+ 
+  <li><a href="/characters/baroness/">Baroness</a></li>
+ 
+  <li><a href="/characters/cobra_commander/">Cobra Commander</a></li>
+ 
+  <li><a href="/characters/destro/">Destro</a></li>
+ 
+  <li><a href="/characters/hawk/">Hawk</a></li>
+ 
+  <li><a href="/characters/ladyjaye/">Lady Jaye</a></li>
+ 
+  <li><a href="/characters/snakeeyes/">Snake Eyes</a></li>
+
+</ul>
+
+<div id="app">
+	<input type="search" v-model="term"> <button @click="search">Search</button>
+	<div v-if="results">
+		<h3>Search Results</h3>
+		<ul>
+			<li v-for="result in results">
+				<a :href="result.url"> {{ result.title }}</a>
+			</li>
+		</ul>
+		<p v-if="noResults">
+		Sorry, no results were found.
+		</p>
+	</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+const app = new Vue({
+	el:'#app',
+	data:{
+		docs:null,
+		idx:null,
+		term:'',
+		results:null
+	},
+	async created() {
+		let result = await fetch('/index.json');
+		docs = await result.json();
+		// assign an ID so it's easier to look up later, it will be the same as index
+		this.idx = lunr(function () {
+			this.ref('id');
+			this.field('title');
+			this.field('content');
+
+			docs.forEach(function (doc, idx) {
+				doc.id = idx;
+				this.add(doc); 
+			}, this);
+		});
+		this.docs = docs;
+	},
+	computed: {
+		noResults() {
+			return this.results.length === 0;
+		}
+	},
+	methods:{
+		search() {
+			console.log('search', this.term);
+			let results = this.idx.search(this.term);
+
+			// we need to add title, url from ref
+			results.forEach(r => {
+				r.title = this.docs[r.ref].title;
+				r.url = this.docs[r.ref].url;
+			});
+
+			this.results = results;
+		}
+	}
+});
+</script>
+
+
+
+<footer>
+<p>All content sourced from <a href="https://gijoe.fandom.com/wiki/Joepedia_-_The_G.I._Joe_Wiki">Joepedia</a>.</p>
+</footer>
+
+</body>
+</html>

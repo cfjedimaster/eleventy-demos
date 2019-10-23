@@ -1,0 +1,8 @@
+<h1>Cats</h1>
+
+<ul>
+{% for cat in cats.features %}
+<li>{{ cat.properties.name }} is {{ cat.properties.gender }} and is 
+	located at {{ cat.geometry.coordinates[1] }}, {{ cat.geometry.coordinates[0] }}</li>
+{% endfor %}
+</ul>

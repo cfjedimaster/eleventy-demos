@@ -1,0 +1,8 @@
+<h1>Cats</h1>
+
+<ul>
+{% for cat in cats %}
+<li>{{ cat.name }} is {{ cat.gender }} and is 
+	located at {{ cat.location.lat] }}, {{ cat.location.lng }}</li>
+{% endfor %}
+</ul>

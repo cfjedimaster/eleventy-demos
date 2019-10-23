@@ -1,0 +1,38 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [ -90.0715, 29.9510 ]
+      },
+      "properties": {
+        "name": "Fred",
+    		"gender": "Male"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [ -92.7298, 30.7373 ]
+      },
+      "properties": {
+        "name": "Martha",
+    		"gender": "Female"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [ -91.1473, 30.4711 ]
+      },
+      "properties": {
+        "name": "Zelda",
+		    "gender": "Female"
+      }
+    }
+  ]
+}

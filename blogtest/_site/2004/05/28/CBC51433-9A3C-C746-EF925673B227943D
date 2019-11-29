@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>As you know (hopefully!), custom tags in CF can be run in multiple execution modes. Specifically, you can build a custom tag so that you can call it like so:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cf_bold&gt;</FONT><br>
+Foo<br>
+<FONT COLOR=MAROON>&lt;/cf_bold&gt;</FONT></div>
+<p>Your custom tag can check to see which mode it is being called in by using a built-in scope, ThisTag:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfif thisTag.executionMode is <FONT COLOR=BLUE>"start"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=NAVY>&lt;b&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfelse&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=NAVY>&lt;/b&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT></div>
+<p>The executionMode key will be set to start when the tag is run the first time, and end when the tag is closed up with a matching pair. But what if you need to specifically call the tag in it's &quot;end&quot; mode? You can't set the value of thisTag.executionMode directly. However, you could tweak your code slighty like so:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfparam name=<FONT COLOR=BLUE>"attributes.executionMode"</FONT> default=<FONT COLOR=BLUE>"#thisTag.executionMode#"</FONT>&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;cfif attributes.executionMode is <FONT COLOR=BLUE>"start"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=NAVY>&lt;b&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfelse&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=NAVY>&lt;/b&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT></div>
+<p>Now you override the execution mode of your custom tag on a case by base basis:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cf_bold&gt;</FONT><br>
+Foo<br>
+<FONT COLOR=MAROON>&lt;/cf_bold&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;cf_bold executionMode=<FONT COLOR=BLUE>"start"</FONT>&gt;</FONT><br>
+Another Foo<br>
+<FONT COLOR=MAROON>&lt;cf_bold executionMode=<FONT COLOR=BLUE>"end"</FONT>&gt;</FONT></div>}

@@ -1,0 +1,73 @@
+<h1>Post</h1>
+
+<p>Earlier today I <a href="http://www.raymondcamden.com/index.cfm/2008/3/3/Adding-an-ADD-button-for-cfgrid">blogged</a> an example of adding a button to a CFGRID control. A few readers asked I complete the example by hooking up the code to a back end CFC. Here is a simple example of how to do that. First off - be sure to read the <a href="http://www.coldfusionjedi.com/index.cfm/2008/3/3/Adding-an-ADD-button-for-cfgrid">first entry</a> so you understand where these code blocks fit in the total picture.</p>
+<!--more-->
+<p>Let's begin by looking at the function that currently responds to the grid click:</p>
+<code>
+&lt;script&gt;
+function testit(x) { alert(x);}
+&lt;/script&gt;
+</code>
+<p>My first task is to hook this up to the back end. ColdFusion makes this incredibly easy. First I'll add my cfajaxproxy tag:</p>
+<code>
+&lt;cfajaxproxy cfc="test" jsclassname="myproxy"&gt;
+</code>
+<p>Back in my JavaScript, I can now create an instance of my CFC using myproxy as a class name:</p>
+<code>
+myproxy = new myproxy();
+</code>
+<p>Next I want to run a function when my server CFC is done:</p>
+<code>
+myproxy.setCallbackHandler(handleResult);
+</code>
+<p>Now let me actually call the CFC back in my testit function:</p>
+<code>
+function testit(x) { 
+	myproxy.getData(x);
+}
+</code>
+<p>&quot;getData&quot; is the name of a CFC method. Let's look at it now:</p>
+<code>
+&lt;cffunction name="getData" access="remote" returnType="string" output="false"&gt;
+	&lt;cfargument name="data" type="any" required="true"&gt;
+	&lt;cfreturn "Yo, you sent me #arguments.data#"&gt;
+&lt;/cffunction&gt;
+</code>
+<p>Obviously real code would do a bit more. The last bit is the result handler I told my code to use:</p>
+<code>
+function handleResult(r) {
+	alert("Result: "+r);
+}
+</code>
+<p>And that's it. I can't rave enough about cfajaxproxy. Let's look at the complete page (I won't bother posting test.cfc, as all it was was the method above):</p>
+<code>
+&lt;cfajaxproxy cfc="test" jsclassname="myproxy"&gt;
+<p>&lt;cfquery name=&quot;entries&quot; datasource=&quot;cfartgallery&quot; maxrows=&quot;12&quot;&gt;
+select *
+from art
+&lt;/cfquery&gt;</p>
+<p>&lt;cfset queryAddColumn(entries, &quot;add&quot;, arrayNew(1))&gt;</p>
+<p>&lt;cfloop query=&quot;entries&quot;&gt;
+&lt;cfset querySetCell(entries, &quot;add&quot;, &quot;&lt;input value='Add' type='button' onclick='javascript:testit(#artid#)'&gt;&quot;, currentrow)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;script&gt;
+myproxy = new myproxy();
+myproxy.setCallbackHandler(handleResult);</p>
+<p>function testit(x) {
+myproxy.getData(x);
+}</p>
+<p>function handleResult(r) {
+alert(&quot;Result: &quot;+r);
+}
+&lt;/script&gt;</p>
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;entries&quot; format=&quot;html&quot; query=&quot;entries&quot; width=&quot;600&quot;&gt;
+&lt;cfgridcolumn name=&quot;artid&quot; display=&quot;false&quot;&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;artname&quot; header=&quot;Name&quot;&gt;
+&lt;cfgridcolumn name=&quot;price&quot; header=&quot;Price&quot;&gt;
+&lt;cfgridcolumn name=&quot;add&quot; header=&quot;Add&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>Any questions?</p>
+}

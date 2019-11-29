@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>Todd Sharp recently pinged me about an interesting problem. He was working with Images generated in ColdFusion 8 and was trying to use this imaga via the HTML IMG tag, like so:</p>
+<code>
+&lt;img src="foo.cfm"&gt;
+</code>
+<p>The code in foo.cfm generated the graphic and he couldn't quite figure out how to display it. One thing he tried was the WriteToBrowser action:</p>
+<code>
+&lt;cfimage action="writeToBrowser" ...&gt;
+</code>
+<p>This didn't work - and if you view source on a file using this action you will see why. The WriteToBrowser action actually generates HTML that points to a 'magic' URL to serve the image.</p>
+<p>He also tried cfcontent:</p>
+<code>
+&lt;cfimage action="read" source="paris.jpg" name="paris"&gt;
+&lt;cfcontent type="image/jpg" variable="#paris#"&gt;
+</code>
+<p>This also failed as well. Why? The cfcontent tag doesn't like the Image variable. ColdFusion will throw the following error:</p>
+<blockquote>
+coldfusion.image.Image is not a supported variable type. The variable is expected to contain binary data.
+</blockquote>
+<p>If you think about it - this makes sense. Image variables aren't binary data in ColdFusion. While they may <i>store</i> binary data, ColdFusion wraps up the data in a new &quot;Image&quot; variable type. Now personally I think cfcontent should be smart enough to recognize a image variable and deal with it - but what do you in the meantime?</p>
+<p>ColdFusion provides a <a href="http://www.cfquickdocs.com/cf8/?getDoc=ImageGetBlob">ImageGetBlob</a> function. This returns the binary data of the image and can be safely used with cfcontent like so:</p>
+<code>
+&lt;cfimage action="read" source="paris.jpg" name="paris"&gt;
+&lt;cfcontent type="image/jpg" variable="#imageGetBlob(paris)#"&gt;
+</code>
+<p>But wait - there is a catch! This works ok as long as you <i>begin</i> your image with a real image. Notice above I have a image file I'm beginning with. If I use a 100% virtual image then it doesn't work. Consider:</p>
+<code>
+&lt;cfset canvas = imageNew("", 100, 100, "rgb", "white")&gt;
+</code>
+<p>If you run imageGetBlob on this, you get:</p>
+<blockquote>
+The source file should contain an extension,so that ColdFusion can determine the image format.
+</blockquote>
+<p>So I'm not 100% sure - but this is how I read this. I had created an image of a certain type of image type. But there was no <i>file type</i> for the image. Obviously I could write the variable out to a file, but there is no way to go directly from an &quot;pure&quot; Image variable to a blob. I'm going to file an enhancement request to add support for this. In the meantime if you needed to do something like this, I'd recommend creating a &quot;canvas&quot; graphic in your desired format and seed your dynamic image with that.</p>
+<p>Ok - so now for the contest part. I whipped up a quick demo to show the code described above in action. I call it the Paris-Talkometer. Let me show you the code and then I'll link to the application.</p>
+<code>
+&lt;cfparam name="url.caption" default=""&gt;
+<p>&lt;cfajaxproxy bind=&quot;javascript:updImage({caption})&quot;&gt;</p>
+<p>&lt;script&gt;
+function updImage(str) {
+if(str != '') document.getElementById('myimg').src = 'imgs3.cfm?caption='+escape(str);
+}
+&lt;/script&gt;</p>
+<p>&lt;h2&gt;Paris-Talkometer&lt;/h2&gt;</p>
+<p>&lt;cfform name=&quot;form&quot;&gt;
+&lt;cfinput type=&quot;text&quot; name=&quot;caption&quot; value=&quot;#url.caption#&quot; &gt; &lt;cfinput name=&quot;mybutton&quot; type=&quot;button&quot; value=&quot;Update&quot;&gt;&lt;br /&gt;
+&lt;cfinput type=&quot;image&quot; name=&quot;myimage&quot; src=&quot;imgs3.cfm?caption=#url.caption#&quot; id=&quot;myimg&quot;&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>What we have is is a basic form. There is a text box for a caption, and a cfinput image type that points to imgs3.cfm. Notice though that it passes a URL variable. Go back up to the top of the file and see how I use cfajaxproxy to bind to the caption. Whenever the caption changes, I use a bit of JavaScript to the change the SRC of the image. Here is the code behind imgs3.cfm:</p>
+<code>
+&lt;cfparam name="url.caption" default=""&gt;
+<p>&lt;cfimage action=&quot;read&quot; source=&quot;paris.jpg&quot; name=&quot;paris&quot;&gt;</p>
+<p>&lt;cfif len(trim(url.caption))&gt;</p>
+<pre><code>&amp;lt;cfset imageSetDrawingColor(paris, &quot;black&quot;)&amp;gt;
+&amp;lt;cfset imageDrawRect(paris, 1, 1, paris.width, 40, true)&amp;gt;
+
+&amp;lt;cfset imageSetAntialiasing(paris, &quot;on&quot;)&amp;gt;
+&amp;lt;cfset imageSetDrawingColor(paris, &quot;white&quot;)&amp;gt;
+&amp;lt;cfset text = { style='bold', size=12, font='verdana' }&amp;gt;
+&amp;lt;cfset imageDrawText(paris, url.caption, 10, 25, text)&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfcontent type=&quot;image/jpg&quot; variable=&quot;#imageGetBlob(paris)#&quot;&gt;
+</code></p>
+<p>All I'm really doing here is looking for a URL.caption value. If it exists, I draw some text over the picture. The last thing I do is serve up the image using cfcontent and imageGetBlob.</p>
+<p>You can see this in action here: <br />
+<a href="http://www.raymondcamden.com/demos/imagecfcontent/test3.cfm">http://www.coldfusionjedi.com/demos/imagecfcontent/test3.cfm</a></p>
+<p>Now for the contest. If you look at the code for test3.cfm, you will notice that you can seed the caption value via the URL. Here is an <a href="http://www.coldfusionjedi.com/demos/imagecfcontent/test3.cfm?caption=ColdFusion%20Rocks">example</a>.</p>
+<p>Your content is to make Paris intelligent - or at least witty. While this is a somewhat herculean task - I'm sure some of you can do it. Just post your URL as a comment (and of course, you can comment on the main part of this blog post as well). Please keep your captions work safe. Work safe doesn't mean boring - just keep it safe please.</p>
+}

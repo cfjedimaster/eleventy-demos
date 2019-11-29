@@ -1,0 +1,230 @@
+<h1>Post</h1>
+
+<p>After lunch today I decided to embark on a little test. Folks know - or should know - that ColdFusion ships with an incredibly powerful Server Monitor. If you haven't yet played with it, I highly encourage taking a look at Charlie Arehart's <a href="http://www.adobe.com/devnet/coldfusion/articles/monitoring_pt1.html">four part article</a> over on the Adobe Developer connection for a review. One of the features he talks about is the Alerts system. For folks who don't want to spend all day staring at a computer screen (wait, people don't?), then the Alerts feature is a powerful way to have the monitor tell you when something is wrong as opposed to you keeping a constant eye on it. Alerts can do a variety of things, but when the built in functionality doesn't meet your needs, you can also have it run a CFC for you - and that's where this experiment began.</p>
+<!--more-->
+<p>
+<p>I began by creating a simple data services messaging gateway in my ColdFusion Administrator. This is a pretty deep topic (and some of my readers will share that it's not always as easy as I'm going to make out), but for the most part, I simply created the event gateway and I was done with that part. On the Flex side, it's a simple matter of setting up code to connect to that event gateway. So here for example is a one page Flex Mobile app that let's me send a message to the gateway.</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;HomeView&quot; viewActivate=&quot;init(event)&quot; xmlns:mx=&quot;library://ns.adobe.com/flex/mx&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Declarations&amp;gt;
+	&amp;lt;mx:Consumer id=&quot;mainConsumer&quot; destination=&quot;ColdFusionGateway&quot; message=&quot;msgResponder(event)&quot; /&amp;gt;
+	&amp;lt;mx:Producer id=&quot;mainProducer&quot; destination=&quot;ColdFusionGateway&quot; /&amp;gt;
+&amp;lt;/fx:Declarations&amp;gt;
+
+&amp;lt;fx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import mx.messaging.ChannelSet;
+		import mx.messaging.channels.AMFChannel;
+		import mx.messaging.events.MessageEvent;
+		import mx.messaging.messages.AsyncMessage;
+		
+		import spark.events.ViewNavigatorEvent;
+
+		private var pollChannel:AMFChannel = new AMFChannel(&quot;cf-polling-amf&quot;, &quot;http://127.0.0.1/flex2gateway/cfamfpolling&quot;);
+		private var amfChannelSet:ChannelSet = new ChannelSet();
+
+		protected function init(event:ViewNavigatorEvent):void {
+			amfChannelSet.addChannel(pollChannel);
+			
+			mainConsumer.channelSet = amfChannelSet;
+			mainProducer.channelSet = amfChannelSet;
+			mainConsumer.subscribe();
+		}
+
+		
+		protected function msgResponder(event:MessageEvent):void
+		{
+			trace(&quot;got something&quot;);
+			debug.text += event.message.body.MESSAGE + '\n';
+		}
+		
+		protected function btnClick(event:MouseEvent):void
+		{
+			var msgString:String = inputText.text;
+			var msg:AsyncMessage = new AsyncMessage();
+			msg.body.MESSAGE = msgString;
+			msg.headers.gatewayid=&quot;MobileGateway1&quot;;
+			mainProducer.send(msg);
+			trace(&quot;sent &quot;+msgString);
+		}
+		
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+	
+&amp;lt;s:layout&amp;gt;
+	&amp;lt;s:VerticalLayout /&amp;gt;
+&amp;lt;/s:layout&amp;gt;
+
+&amp;lt;s:TextInput id=&quot;inputText&quot; /&amp;gt;
+&amp;lt;s:Button label=&quot;Send&quot; click=&quot;btnClick(event)&quot; /&amp;gt;
+
+&amp;lt;s:Label id=&quot;debug&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>On the ColdFUsion side, my CFC listened for messages and echoed them back:</p>
+<p>
+<code>
+component {
+<pre><code>remote struct function onIncomingMessage(required any event) {
+	writelog(file=&quot;application&quot;, text=&quot;gateway  - #serializejson(event)#&quot;);
+	event.data.body.MESSAGE = &quot;Sent back &quot; &amp; event.data.body.MESSAGE;
+	return event.data;
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Notice I modify the message a bit just so I can see it working right. Here's a screen shot of it working.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip174.png" />
+<p>
+<p>To be clear - that's Flex talking to BlazeDS and ColdFusion on the server. If I had more devices, they all would have gotten the message. So - with me so far? Because here is where things get interesting.</p>
+<p>
+<p>As I mentioned before, the Server Monitor allows you to specify alerts, and allows you to specify CFCs to run. The docs, unfortunately, are completely lacking in useful information here. For example, they don't tell you how to specify the CFC. You can only use a file name (no directory!) and it must live in cfusioninstall\runtime\bin. (Thanks to Charlie's article on that.) And while you are told what methods your CFC must have, they don't tell you what the data looks like when your CFC is run. I ended up using writeDump to a directory just to see this! Here is an example:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip175.png" />
+<p>
+<p>Ok, so given that I've got some basic info there - I wrote my CFCs then to send messages to my event gateway.</p>
+<p>
+<code>
+component {
+<pre><code>remote function onAlertStart(struct alert) {
+	writelog(file=&quot;application&quot;, text=&quot;START - #serializejson(alert)#&quot;);
+	writedump(output=&quot;c:\raytest\#createUUID()#.html&quot;, var=alert, format=&quot;html&quot;, label=&quot;START&quot;);
+	var s = {
+		destination=&quot;ColdFusionGateway&quot;,
+		body={
+			type=alert.alerttype,
+			message=alert.alertmessage,
+			start=true
+		}
+	};
+
+	sendGatewaymessage(&quot;MobileGateway1&quot;, s);
+}
+
+remote function onAlertEnd(struct alert) {
+	writelog(file=&quot;application&quot;, text=&quot;END - #serializejson(alert)#&quot;);
+	writedump(output=&quot;c:\raytest\#createUUID()#.html&quot;, var=alert, format=&quot;html&quot;, label=&quot;END&quot;);
+
+	var s = {
+		destination=&quot;ColdFusionGateway&quot;,
+		body={
+			type=alert.alerttype,
+			message=alert.alertmessage,
+			start=false
+		}
+	};
+
+	sendGatewaymessage(&quot;MobileGateway1&quot;, s);
+	
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>To be clear, the first two lines in both methods was just for testing purposes. You can see though that I take a few values from the alert and send it to the gateway. Now for the front end.</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;Server Monitor&quot; viewActivate=&quot;init(event)&quot; xmlns:mx=&quot;library://ns.adobe.com/flex/mx&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Declarations&amp;gt;
+	&amp;lt;mx:Consumer id=&quot;mainConsumer&quot; destination=&quot;ColdFusionGateway&quot; message=&quot;msgResponder(event)&quot; /&amp;gt;
+	&amp;lt;mx:Producer id=&quot;mainProducer&quot; destination=&quot;ColdFusionGateway&quot; /&amp;gt;
+&amp;lt;/fx:Declarations&amp;gt;
+
+&amp;lt;fx:Style&amp;gt;
+	@namespace s &quot;library://ns.adobe.com/flex/spark&quot;;
+	@namespace mx &quot;library://ns.adobe.com/flex/mx&quot;;
+	
+	.inactiveBtn {
+		backgroundColor:#c0c0c0;
+	}
+	
+	.activeBtn {
+		backgroundColor:red;
+	}
+&amp;lt;/fx:Style&amp;gt;
+&amp;lt;fx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import mx.messaging.ChannelSet;
+		import mx.messaging.channels.AMFChannel;
+		import mx.messaging.events.MessageEvent;
+		import mx.messaging.messages.AsyncMessage;
+		
+		import spark.events.ViewNavigatorEvent;
+		
+		private var pollChannel:AMFChannel = new AMFChannel(&quot;cf-polling-amf&quot;, &quot;http://192.168.1.108/flex2gateway/cfamfpolling&quot;);
+		private var amfChannelSet:ChannelSet = new ChannelSet();
+		
+		protected function init(event:ViewNavigatorEvent):void {
+			amfChannelSet.addChannel(pollChannel);
+			
+			mainConsumer.channelSet = amfChannelSet;
+			mainProducer.channelSet = amfChannelSet;
+			mainConsumer.subscribe();
+		}
+		
+		
+		protected function msgResponder(event:MessageEvent):void
+		{
+			trace(&quot;got something&quot;);
+			switch(event.message.body.TYPE) {
+				
+				case &quot;Timeouts Alert&quot;: { 
+						ssa.styleName = 'inactiveBtn';
+						usa.styleName = 'inactiveBtn';
+						jma.styleName = 'inactiveBtn';
+						if(event.message.body.START == &quot;true&quot;) toa.styleName = 'activeBtn'; 
+						else toa.styleName = 'inactiveBtn';
+						break;
+				}
+				case &quot;Slow Server Alert&quot;: {
+					if(event.message.body.START == &quot;true&quot;) ssa.styleName = 'activeBtn'; 
+					else ssa.styleName = 'inactiveBtn';
+					usa.styleName = 'inactiveBtn';
+					jma.styleName = 'inactiveBtn';
+					toa.styleName = 'inactiveBtn'; 
+				}
+			}
+			//only log if starting
+			if(event.message.body.START == &quot;true&quot;) messageArea.text = event.message.body.MESSAGE + '\n' + messageArea.text;
+		}
+		
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:layout&amp;gt;
+	&amp;lt;s:VerticalLayout paddingTop=&quot;10&quot; paddingLeft=&quot;10&quot; paddingRight=&quot;10&quot; paddingBottom=&quot;10&quot; verticalAlign=&quot;middle&quot; horizontalAlign=&quot;center&quot;  /&amp;gt;
+&amp;lt;/s:layout&amp;gt;
+
+&amp;lt;s:Label id=&quot;ssa&quot; width=&quot;100%&quot; height=&quot;60&quot; styleName=&quot;inactiveBtn&quot; text=&quot;Slow Server Alert&quot;
+		 textAlign=&quot;center&quot; verticalAlign=&quot;middle&quot;/&amp;gt;
+
+&amp;lt;s:Label id=&quot;toa&quot; width=&quot;100%&quot; height=&quot;60&quot; styleName=&quot;inactiveBtn&quot; text=&quot;Timeout Alert&quot;
+		 textAlign=&quot;center&quot; verticalAlign=&quot;middle&quot;/&amp;gt;
+
+&amp;lt;s:Label id=&quot;usa&quot; width=&quot;100%&quot; height=&quot;60&quot; styleName=&quot;inactiveBtn&quot; text=&quot;Unresponsive Server&quot;
+		 textAlign=&quot;center&quot; verticalAlign=&quot;middle&quot;/&amp;gt;
+
+&amp;lt;s:Label id=&quot;jma&quot; width=&quot;100%&quot; height=&quot;60&quot; styleName=&quot;inactiveBtn&quot; text=&quot;JVM Memory&quot;
+		 textAlign=&quot;center&quot; verticalAlign=&quot;middle&quot;/&amp;gt;
+
+&amp;lt;s:Label id=&quot;messageArea&quot; width=&quot;100%&quot; height=&quot;100%&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>Yeah - a bit more code there. It may help if I run it so you can see it first:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip176.png" />
+<p>
+<p>Basically - my application has 4 labels. When a message is received (notice this version never actually sends anything - I can get rid of the Producer) - I highlight various fields based on what the alert type was. I only wrote code for two of the types, but you can imagine what support for the other two would do. And what happens? Check out this horrible, shaky, YouTube video. I apologize in advance. Oh, and it's boring too. You will have to wait a bit to see the results. That isn't Flex or BlazeBS being slow, it's me trying to force a slow server alert on my box by reloading a very large Model-Glue site in 5-6 tabs at once.</p>
+<p>
+<iframe width="560" height="345" src="http://www.youtube.com/embed/WRAWxqex6OE" frameborder="0" allowfullscreen></iframe>}

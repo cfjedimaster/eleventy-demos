@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Today I released version 1.6.1 of <a href="http://ray.camdenfamily.com/projects/galleon">Galleon Forums</a>. The changes are:</p>
+<ul>
+<li>In the past, subscription emails simply told users that a thread they have subscribed to has been updated. Now you have the option to send the actual message along as well. This is better for users. However - if you primary motivation is to drive traffic to the site, you want to keep this option turned off. 
+<li>I had restricted names of conferences, forums, threads, and messages to a small number. Some were 50, some 100. Now they are all 255 long. I wouldn't recommend creating a conference name that long, but if you want to, you can.
+</ul>
+<p>Enjoy.</p>
+}

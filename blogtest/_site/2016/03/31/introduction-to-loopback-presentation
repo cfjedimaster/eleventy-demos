@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>Earlier today I gave a presentation on LoopBack and <a href="https://strongloop.com">StrongLoop</a>. I've embedded the recording below:</p>
+<!--more-->
+<iframe width="640" height="360" src="https://www.youtube.com/embed/3YxZbSPIUAo" frameborder="0" allowfullscreen></iframe>
+<p>I'm not including a link to the slides/demos because they were extremely simple, and you can see the slides in the presentation itself, but obviously if you <em>want</em> it, just ask.  During the presentation, there were a few questions that came up that I wanted to address in the blog post.</p>
+<ul>
+<li>What are the minimum requirements to install LoopBack/StrongLoop?</li>
+</ul>
+<p>I'd check the <a href="https://docs.strongloop.com/display/SL/Installing+StrongLoop">Installing StrongLoop</a> documentation for that. Also the specific doc for <a href="https://docs.strongloop.com/display/SL/Installing+on+Windows">Windows</a> and <a href="https://docs.strongloop.com/display/SL/Installing+on+MacOS">OSX</a>.</p>
+<p>In terms of the supported version of Node, both docs say this: &quot;For best results, use the latest LTS (long-term support) release of Node.js.&quot;</p>
+<ul>
+<li>How do you upgrade from earlier versions of LoopBack?</li>
+</ul>
+<p>Check the docs: <a href="https://docs.strongloop.com/display/SL/Updating+to+the+latest+version">Updating to the latest version</a></p>
+<ul>
+<li>Debugging - basically - how?</li>
+</ul>
+<p>See my blog entry here: <a href="http://www.raymondcamden.com/2015/10/28/a-quick-look-at-debugging-node-js-with-strongloop-and-visual-studio-code/">A quick look at debugging Node.js with StrongLoop and Visual Studio Code</a></p>
+<ul>
+<li>Relationships - basically - how?</li>
+</ul>
+<p>Start with the docs here: <a href="https://docs.strongloop.com/display/LB/Creating+model+relations">Creating model relations</a>. As I mentioned in the presentation, I'm working on a blog post about the topic, but you can find some sample code for it here: <a href="https://github.com/cfjedimaster/StrongLoopDemos/tree/master/ormdemo">https://github.com/cfjedimaster/StrongLoopDemos/tree/master/ormdemo</a></p>
+<ul>
+<li>Updates for Angular 2</li>
+</ul>
+<p>I was asked if the <a href="https://docs.strongloop.com/display/LB/AngularJS+JavaScript+SDK">AngularJS SDK</a> would be updated for Angular 2. Right now - there are no official plans for an update. As I said multiple times in the presentation, you can absolutely use Angular 2, Ionic, jQuery Mobile, Vanilla JS, etc, with LoopBack with no problem at all. This SDK is just an <em>optional</em> utility for working with LoopBack and Angular.</p>
+<p>That's it - I hope you enjoy the presentation and let me know what you think in the comments below.</p>
+}

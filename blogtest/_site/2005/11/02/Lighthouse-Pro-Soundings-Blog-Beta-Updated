@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Lots of updates - so here are the details:</p>
+<p><b>Lighthouse Pro</b><br>
+Just changed the case of one SQL statement. Download from the <a href="http://ray.camdenfamily.com/projects/lhp">project page</a>.</p>
+<p><b>Soundings</b><br>
+Fixed a bug in matrix display. Download from the <a href="http://ray.camdenfamily.com/projects/soundings">project page</a>.</p>
+<p><b>Blog Beta</b><br>
+Fixed a bug with editing. Fixed mysql install script. Other misc small stuff here and there. (Thanks to Oguz and others for finding bugs.) Download <a href="http://ray.camdenfamily.com/downloads/blogbeta.zip">here</a>.</p>
+<p>Just an FYI, Rob Brooks-Bilson had a few good ideas so there will be one (maybe two) new features in the next update. So blame him for delaying &quot;official&quot; 4.0 launch. ;)</p>
+}

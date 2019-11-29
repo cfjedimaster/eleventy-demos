@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>I see a few common question asked about my <a href="http://ray.camdenfamily.com/projects/projects.cfm">applications</a> almost every week, so I thought I'd write a quick post to answer them.</p>
+<ol>
+<li>The SES URLs aren't working:<br>
+Nine times out of ten this can be answered at this URL:</li>
+</ol>
+<p><a href="http://www.macromedia.com/cfusion/knowledgebase/index.cfm?id=2addd247">http://www.macromedia.com/cfusion/knowledgebase/index.cfm?id=2addd247</a></p>
+<p>Although earlier this week the issue came about because a user had used an incorrect setting for &quot;blogURL&quot; in BlogCFC. The docs say (although probably not clearly enough) that the URL <i>must</i> include &quot;index.cfm&quot;. If you forget this, it will cause problems.</p>
+<ol start="2">
+<li>MySQL isn't working right:<br>
+Nine times out of ten this is due to using ColdFusion's built-in driver for MySQL instead of the custom one. Steve Erat has an excellent article on how to set this up <a href="http://www.talkingtree.com/blog/index.cfm?mode=entry&entry=25AA9A56-45A6-2844-7A60CF5B3666D010">here</a>. My docs almost never mention that - sorry. I added it to the <a href="http://ray.camdenfamily.com/projects/soundings">Soundings</a> docs in the release last night.</li>
+</ol>
+<p>In case you are wondering - I am not yet testing on MySQL 5, but hope to be soon.</p>
+<p>By the way - I'm not complaining - keep the questions coming - but I thought this might help.</p>
+}

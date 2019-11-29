@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>I found an interesting security bug today in some code at a client's site. (And unlike some other security holes, this was is real.) The problem was that the logon system was letting people in if they had an invalid logon. Users were correctly blocked at first, but as soon as they had an invalid logon, and then reloaded, they were let in. Why? Consider this code and make a guess before I show the answer:</p>
+<!--more-->
+<code>
+&lt;CFIF NOT ISDefined("Session.ProLoginOK")&gt;
+	&lt;CFLOCATION URL="login/login.cfm" ADDTOKEN="No"&gt;
+&lt;CFELSEIF Session.ProLoginOK IS ""&gt;
+	&lt;CFLOCATION URL="login/login.cfm" ADDTOKEN="No"&gt;
+&lt;/CFIF&gt;
+</code>
+<p>Figured it out? On an invalid login, the code set session.prologinok to &quot;No&quot;. Since &quot;No&quot; defined the variable, and wasn't &quot;&quot;, there was no forced logon template run.</p>
+<p>Something to watch out for in your own code!</p>
+}

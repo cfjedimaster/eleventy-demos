@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>
+Wow, not a good morning for one of my favorite new features of ColdFusion 11. This morning I <a href="http://www.raymondcamden.com/2014/10/9/Bug-with-queryExecute--use-with-caution">reported</a> on a bug found with queryExecute by a user on StackOverflow. I did some more digging and found that if you use queryExecute inside a thread, it returns an undefined value. Here is a simple test case:
+</p>
+<!--more-->
+<pre><code class="language-markup">&lt;cfscript&gt;
+<pre><code>data = querynew(&amp;quot;id&amp;quot;, &amp;quot;varchar&amp;quot;, [{id:&amp;quot;a&amp;quot;}, {id:&amp;quot;b&amp;quot;}]);
+
+cfthread(name=&amp;quot;d1&amp;quot;) {
+	thread.result = queryExecute(&amp;quot;select * from data&amp;quot;, {}, {dbtype:&amp;quot;query&amp;quot;});
+}
+cfthread(name=&amp;quot;d2&amp;quot;) {
+	var result = queryExecute(&amp;quot;select sleep(2), title from tblblogentries limit 0,1&amp;quot;, {}, {datasource:&amp;quot;myblog&amp;quot;});
+	thread.foo = 1;
+	thread.result = result;
+}
+cfthread(action=&amp;quot;join&amp;quot;,name=&amp;quot;d1,d2&amp;quot;);
+writedump(cfthread);
+</code></pre>
+<p>&lt;/cfscript&gt;</p>
+<p>&lt;cfdump var=&quot;#variables#&quot; showudfs=&quot;false&quot; &gt;
+</code></pre></p>
+<p>
+In the code above I'm running two threads that use queryExecute. In the first thread the value of result is undefined. In the second thread it throws an error because result is not defined.
+</p>
+<p>
+So, you can't use queryExecute inside a thread call. I've reported this here: <a href="https://bugbase.adobe.com/index.cfm?event=bug&id=3836820">https://bugbase.adobe.com/index.cfm?event=bug&id=3836820</a>.
+</p>}

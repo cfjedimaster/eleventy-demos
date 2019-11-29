@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Terry Ryan just announced a few tidbits for the upcoming ColdFusion 9.0.1. Don't ask me for details, I'm just sharing the news:</p>
+<ul>
+<li>ORM support for multiple datasources.
+<li>for(x in arr) support - i.e., the ability to do for/in with arrays.
+<li>dbinfo() supported in cfscript, along with "others" not yet announced.
+<li>And obviously - lots of bug fixes.
+</ul>
+<p>Looks pretty good!</p>
+}

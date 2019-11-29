@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>A user just wrote in asking how to handle working with JSON in a pre-ColdFusion 8 server. What I recommend is the code I use for <a href="http://lighthousepro.riaforge.org">LighthousePro</a> - <a href="http://www.epiphantastic.com/cfjson/">CFJSON</a>. This will work in any MX and higher server. There are other options out there I'm sure, but I've been pretty happy with this CFC.</p>
+}

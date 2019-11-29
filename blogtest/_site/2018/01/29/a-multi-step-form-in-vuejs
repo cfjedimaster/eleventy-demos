@@ -1,0 +1,185 @@
+<h1>Post</h1>
+
+<p>Last week I wrote up a demo explaining how to <a href="https://www.raymondcamden.com/2018/01/22/building-a-quiz-with-vuejs/">build a simple quiz</a> using Vue.js. As part of that process, I demonstrated how to render one question of the quiz at a time and navigate through the set of questions. It occurred to me that it may make sense to also demonstrate how to build a simple &quot;multi-step&quot; form in Vue.js as well. Let's begin with a simple example. I'll show the HTML first.</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot;&gt;
+  &lt;form&gt;
+  &lt;div v-if=&quot;step === 1&quot;&gt;
+
+    &lt;h1&gt;Step One&lt;/h1&gt;
+    &lt;p&gt;
+    &lt;legend for=&quot;name&quot;&gt;Your Name:&lt;/legend&gt;
+    &lt;input id=&quot;name&quot; name=&quot;name&quot; v-model=&quot;registration.name&quot;&gt;
+    &lt;/p&gt;
+
+    &lt;p&gt;
+    &lt;legend for=&quot;email&quot;&gt;Your Email:&lt;/legend&gt;
+    &lt;input id=&quot;email&quot; name=&quot;email&quot; type=&quot;email&quot; v-model=&quot;registration.email&quot;&gt;
+    &lt;/p&gt;
+
+    &lt;button @click.prevent=&quot;next()&quot;&gt;Next&lt;/button&gt;
+    
+  &lt;/div&gt;
+
+  &lt;div v-if=&quot;step === 2&quot;&gt;
+    &lt;h1&gt;Step Two&lt;/h1&gt;
+    &lt;p&gt;
+    &lt;legend for=&quot;street&quot;&gt;Your Street:&lt;/legend&gt;
+    &lt;input id=&quot;street&quot; name=&quot;street&quot; v-model=&quot;registration.street&quot;&gt;
+    &lt;/p&gt;
+
+    &lt;p&gt;
+    &lt;legend for=&quot;city&quot;&gt;Your City:&lt;/legend&gt;
+    &lt;input id=&quot;city&quot; name=&quot;city&quot; v-model=&quot;registration.city&quot;&gt;
+    &lt;/p&gt;
+
+    &lt;p&gt;
+    &lt;legend for=&quot;state&quot;&gt;Your State:&lt;/legend&gt;
+    &lt;input id=&quot;state&quot; name=&quot;state&quot; v-model=&quot;registration.state&quot;&gt;
+    &lt;/p&gt;
+
+    &lt;button @click.prevent=&quot;prev()&quot;&gt;Previous&lt;/button&gt;
+    &lt;button @click.prevent=&quot;next()&quot;&gt;Next&lt;/button&gt;
+
+  &lt;/div&gt;
+
+  &lt;div v-if=&quot;step === 3&quot;&gt;
+    &lt;h1&gt;Step Three&lt;/h1&gt;
+    
+    &lt;p&gt;
+    &lt;legend for=&quot;numtickets&quot;&gt;Number of Tickets:&lt;/legend&gt;
+    &lt;input id=&quot;numtickets&quot; name=&quot;numtickets&quot; type=&quot;number&quot; v-model=&quot;registration.numtickets&quot;&gt;
+    &lt;/p&gt;
+
+    &lt;p&gt;
+    &lt;legend for=&quot;shirtsize&quot;&gt;Shirt Size:&lt;/legend&gt;
+    &lt;select id=&quot;shirtsize&quot; name=&quot;shirtsize&quot; v-model=&quot;registration.shirtsize&quot;&gt;
+      &lt;option value=&quot;S&quot;&gt;Small&lt;/option&gt;
+      &lt;option value=&quot;M&quot;&gt;Medium&lt;/option&gt;
+      &lt;option value=&quot;L&quot;&gt;Large&lt;/option&gt;
+      &lt;option value=&quot;XL&quot;&gt;X-Large&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;/p&gt;
+
+    &lt;button @click.prevent=&quot;prev()&quot;&gt;Previous&lt;/button&gt;
+    &lt;button @click.prevent=&quot;submit()&quot;&gt;Save&lt;/button&gt;
+    
+  &lt;/div&gt;
+  &lt;/form&gt;
+
+  &lt;br/&gt;&lt;br/&gt;Debug: {{registration}}
+&lt;/div&gt;
+</code></pre>
+<p>This is a three step form that kind of mimics a typical conference registration. I've got three steps each set up in a div using <code>v-if</code> to control if the particular step is rendered. Note the buttons in each step. I call either <code>next</code>, <code>prev</code>, or <code>submit</code> based on what part of the process I'm in. The last part (where it says Debug) was simply a little, well, &quot;debugger&quot; so I could see data being entered as the process was completed.</p>
+<p>Now let's look at the code.</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data() {
+    return {
+      step:1,
+      registration:{
+        name:null,
+        email:null,
+        street:null,
+        city:null,
+        state:null,
+        numtickets:0,
+        shirtsize:'XL'
+      }
+    }
+  },
+  methods:{
+    prev() {
+      this.step--;
+    },
+    next() {
+      this.step++;
+    },
+    submit() {
+      alert('Submit to blah and show blah and etc.');      
+    }
+  }
+});
+</code></pre>
+<p>I've got two interesting things going on here. First, I decided to put all the form data in a key called <code>registration</code>. This gave me a nice separation between the &quot;UI stuff&quot; and the actual form data. The <code>prev</code> and <code>next</code> methods simply change the <code>step</code> value. In theory I could add additional logic here to ensure I don't go to an invalid step, but as I'm writing the HTML myself I trusted myself to not screw that up. Finally, the <code>submit</code> action would do a simple AJAX post and then either redirect to a thank you page or show a server-side error. (I assumed folks were here for the multi-step form and not the AJAX, but if you want to see that, just ask!) Here is a complete embed of this demo:</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="bLGqqG" data-default-tab="html,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Multi-step Vue form" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/bLGqqG/">Multi-step Vue form</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>You may be curious - what if you didn't want to use AJAX for the form submission. I mean, there's a real form there, right? Well don't forget that <code>v-if</code> actually takes things in and out of the DOM. If you tried to submit this version, only the form fields from the last visible step would be posted. Here's a modified version that uses <code>v-show</code> instead:</p>
+<pre><code class="language-markup">
+&lt;div id=&quot;app&quot;&gt;
+	&lt;form action=&quot;https:&#x2F;&#x2F;postman-echo.com&#x2F;post&quot; method=&quot;post&quot;&gt;
+	
+	&lt;div v-show=&quot;step === 1&quot;&gt;
+
+		&lt;h1&gt;Step One&lt;&#x2F;h1&gt;
+		&lt;p&gt;
+		&lt;legend for=&quot;name&quot;&gt;Your Name:&lt;&#x2F;legend&gt;
+		&lt;input id=&quot;name&quot; name=&quot;name&quot; v-model=&quot;registration.name&quot;&gt;
+		&lt;&#x2F;p&gt;
+
+		&lt;p&gt;
+		&lt;legend for=&quot;email&quot;&gt;Your Email:&lt;&#x2F;legend&gt;
+		&lt;input id=&quot;email&quot; name=&quot;email&quot; type=&quot;email&quot; v-model=&quot;registration.email&quot;&gt;
+		&lt;&#x2F;p&gt;
+
+		&lt;button @click.prevent=&quot;next()&quot;&gt;Next&lt;&#x2F;button&gt;
+
+	&lt;&#x2F;div&gt;
+
+	&lt;div v-show=&quot;step === 2&quot;&gt;
+		&lt;h1&gt;Step Two&lt;&#x2F;h1&gt;
+		&lt;p&gt;
+		&lt;legend for=&quot;street&quot;&gt;Your Street:&lt;&#x2F;legend&gt;
+		&lt;input id=&quot;street&quot; name=&quot;street&quot; v-model=&quot;registration.street&quot;&gt;
+		&lt;&#x2F;p&gt;
+
+		&lt;p&gt;
+		&lt;legend for=&quot;city&quot;&gt;Your City:&lt;&#x2F;legend&gt;
+		&lt;input id=&quot;city&quot; name=&quot;city&quot; v-model=&quot;registration.city&quot;&gt;
+		&lt;&#x2F;p&gt;
+
+		&lt;p&gt;
+		&lt;legend for=&quot;state&quot;&gt;Your State:&lt;&#x2F;legend&gt;
+		&lt;input id=&quot;state&quot; name=&quot;state&quot; v-model=&quot;registration.state&quot;&gt;
+		&lt;&#x2F;p&gt;
+
+		&lt;button @click.prevent=&quot;prev()&quot;&gt;Previous&lt;&#x2F;button&gt;
+		&lt;button @click.prevent=&quot;next()&quot;&gt;Next&lt;&#x2F;button&gt;
+
+	&lt;&#x2F;div&gt;
+
+	&lt;div v-show=&quot;step === 3&quot;&gt;
+	&lt;h1&gt;Step Three&lt;&#x2F;h1&gt;
+
+	&lt;p&gt;
+	&lt;legend for=&quot;numtickets&quot;&gt;Number of Tickets:&lt;&#x2F;legend&gt;
+	&lt;input id=&quot;numtickets&quot; name=&quot;numtickets&quot; type=&quot;number&quot; v-model=&quot;registration.numtickets&quot;&gt;
+	&lt;&#x2F;p&gt;
+
+	&lt;p&gt;
+	&lt;legend for=&quot;shirtsize&quot;&gt;Shirt Size:&lt;&#x2F;legend&gt;
+	&lt;select id=&quot;shirtsize&quot; name=&quot;shirtsize&quot; v-model=&quot;registration.shirtsize&quot;&gt;
+		&lt;option value=&quot;S&quot;&gt;Small&lt;&#x2F;option&gt;
+		&lt;option value=&quot;M&quot;&gt;Medium&lt;&#x2F;option&gt;
+		&lt;option value=&quot;L&quot;&gt;Large&lt;&#x2F;option&gt;
+		&lt;option value=&quot;XL&quot;&gt;X-Large&lt;&#x2F;option&gt;
+	&lt;&#x2F;select&gt;
+	&lt;&#x2F;p&gt;
+
+	&lt;button @click.prevent=&quot;prev()&quot;&gt;Previous&lt;&#x2F;button&gt;
+	&lt;input type=&quot;submit&quot; value=&quot;Save&quot;&gt;
+
+	&lt;&#x2F;div&gt;
+	&lt;&#x2F;form&gt;
+
+	&lt;br&#x2F;&gt;&lt;br&#x2F;&gt;Debug: {{registration}}
+&lt;&#x2F;div&gt;
+</code></pre>
+<p>Note I also added an action and method to the form tag. In this case I'm using the Postman echo service so the result won't be terribly pretty, but you will see all the fields posted. Here's this version:</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="BYaWJa" data-default-tab="html,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Multi-step Vue form (2)" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/BYaWJa/">Multi-step Vue form (2)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>Woot. Ok, so for a final version, I thought I'd try a quick <a href="https://next.vuetifyjs.com/en/">Veutify</a> version. Veutify is a material design UI skin for Vue and it's pretty bad ass. I want to be clear that I whipped this up pretty quickly so it is probably <em>not</em> the most ideal version, but it looks pretty cool.</p>
+<p data-height="500" data-theme-id="dark" data-slug-hash="aqbJga" data-default-tab="result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Multi-step form, Vuetify" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/aqbJga/">Multi-step form, Vuetify</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>In case you're curious, that control is called the <a href="https://next.vuetifyjs.com/en/components/steppers">stepper</a> and has quite a few options for how to configure it. The default is a horizontal step process, but I noticed the labels in the header went away when the width was constrained. This version seemed to work better in the space I have here.</p>
+<p>Anyway - I hope this helps, and as always, remember there's going to be many different ways of doing what I demonstrated here. If you've been working with Vue and have some examples of this, please share below!</p>
+}

@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>I've updated BlogCFC with a few minor fixes. I didn't update the version number because, well, I forgot, and to be honest, it's a real minor update, but important for BlueDragon users. Anyway, here we go:</p>
+<ul>
+<li>The error template wasn't working for BlueDragon. BD doesn't support the "rootcause" key in the error structure. They have noted this as a bug and it's already recorded. 
+<li>BlueDragon was a bit tighter in the use of cfqueryparam under Access. This isn't a bug I believe - just something I think CFMX was loser on. Either way - it works in both now. :)
+<li>layout.cfm has a cfproc directive now.
+<li>mysql.sql specifies utf8 now instead of latin1
+</ul>
+<p>Enjoy.</p>
+}

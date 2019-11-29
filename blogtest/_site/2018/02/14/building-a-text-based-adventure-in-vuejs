@@ -1,0 +1,198 @@
+<h1>Post</h1>
+
+<p><strong>Note - I found a bug with the room description that was fixed in a later build. Sorry about that!</strong> Happy Valentines Day! Today I'm showing my love for Vue.js by building something totally impractical and fun - a text-based adventure in Vue.js. As a child of 80s, I grew up playing text-based games from Infocom. In fact, to this day I still say that some of the most interesting games ever created were done by Infocom. My favorite? &quot;A Mind Forever Voyaging&quot;</p>
+<p><img src="https://static.raymondcamden.com/images/2018/2/mindv.jpg" alt="Cover art"></p>
+<p>Heck, the first time I added RAM to a machine was just to support playing &quot;Wishbringer&quot;, another Infocom classic. I graduated from these games into MUDs while at college and had fun not only playing them but coding them as well. (See this nearly <a href="https://www.raymondcamden.com/2012/09/06/SOT-Review-of-my-Everdark-Quest/">five year old post</a> about the code I'm most proud of.) I thought it might be fun to take a stab at building a simple text-based game in Vue.</p>
+<p>Now - to be clear, a text parser is not a simple task. Infocom games were notorious for their complex parsers and their ability to take input and map it to a proper action in the game. I'm not going to pretend to have the coding chops to do that. I did think it would be interesting to try a few basic commands, like movement, and then see if I could build up from there. With that in mind, I'm happy to share my initial version.</p>
+<p>Before I get into the code, note that you can find the complete code base here: https://github.com/cfjedimaster/webdemos/tree/master/vuetextbasedgame.</p>
+<p>Alright, so what did I build? For my initial version, I decided that I would only support basic navigation among a dataset of rooms. So given that a room has exits to the west and east, I'd support the user typing commands to move in those directions. If you moved to the west, I'd let the user know about the new room and then they would be able to move in whatever directions that particular room supported. I began by designing my game data. Right now this is a JSON file, but in the next version, I'm going to support the abilty to use individual files for rooms and use a Node script to handle converting that data into JSON. That will let me write more freely and not worry about escaping crap that JSON complains about. Anyway, here is the current version:</p>
+<pre><code class="language-js">{
+	&quot;initial&quot;:{
+		&quot;description&quot;:&quot;This is a rather boring room, but despite that, you feel the pull of a new adventure!&quot;,
+		&quot;exits&quot;:[
+			{
+				&quot;dir&quot;:&quot;w&quot;,
+				&quot;room&quot;:&quot;westroom&quot;
+			},
+			{
+				&quot;dir&quot;:&quot;e&quot;,
+				&quot;room&quot;:&quot;eastroom&quot;
+			}
+		]
+	},
+	&quot;westroom&quot;:{
+		&quot;description&quot;:&quot;This is a rather dramatic room, almost presidential you would say.&quot;,
+		&quot;exits&quot;:[
+			{
+				&quot;dir&quot;:&quot;e&quot;,
+				&quot;room&quot;:&quot;initial&quot;
+			}
+		]
+	},
+	&quot;eastroom&quot;:{
+		&quot;description&quot;:&quot;You've entered Ray's office. You are surrounded by a mess of Star Wars toys and other distractions. No wonder Ray never seems to get anything done.&quot;,
+		&quot;exits&quot;:[
+			{
+				&quot;dir&quot;:&quot;w&quot;,
+				&quot;room&quot;:&quot;initial&quot;
+			}
+		]
+	}
+}
+</code></pre>
+<p>Each room has a unique ID. This is used to allow one room to 'target' another for movement. And in theory, you could imagine items (magic potions?) that transport a user. Each room currently has 2 properties - a simple description and an array of exits. Now let's take a look at the front end.</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;meta charset=&quot;utf-8&quot;&gt;
+		&lt;title&gt;&lt;/title&gt;
+		&lt;meta name=&quot;description&quot; content=&quot;&quot;&gt;
+		&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+		&lt;link rel=&quot;stylesheet&quot; href=&quot;app.css&quot;&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+
+		&lt;div id=&quot;app&quot; v-cloak&gt;
+			&lt;h1&gt;Game&lt;/h1&gt;
+			&lt;div v-if=&quot;loading&quot;&gt;
+				Please stand by - loading your adventure...
+			&lt;/div&gt;&lt;div v-else&gt;
+				&lt;div id=&quot;roomDesc&quot; v-if=&quot;room&quot;&gt;
+					&lt;p&gt;
+					{{roomDesc}}
+					&lt;/p&gt;
+
+					&lt;p v-if=&quot;room.exits.length &gt; 1&quot;&gt;
+						You see exits to the {{ room.exits | exitDesc}}.
+					&lt;/p&gt;&lt;p v-else&gt;
+						You see an exit to the {{ room.exits | exitDesc }}.
+					&lt;/p&gt;
+				&lt;/div&gt;
+				&lt;div id=&quot;cli&quot;&gt;
+					&lt;input v-model=&quot;input&quot; @keydown.enter=&quot;cli&quot; ref=&quot;input&quot;&gt;
+				&lt;/div&gt;
+			&lt;/div&gt;
+
+		&lt;/div&gt;
+
+		&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+		&lt;script src=&quot;app.js&quot;&gt;&lt;/script&gt;
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>The game's view layer is split into two states - one to use while stuff is loading (you could imagine the room data becoming quite large) and one to display the main &quot;game&quot; UI. Right now that supports two elements - a room description with exit data dynamically generated and then a &quot;CLI&quot; that's really just an input field. I applied all my CSS powers to generate this:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/2/game1.jpg" alt="Game UI"></p>
+<p>Alright, now let's tackle the code. First, here is a filter I wrote to handle displaying exits. It simply handles converting &quot;x,y&quot; to &quot;X and Y&quot;, or &quot;x,y,z&quot; to &quot;X, Y, and Z&quot;. I could have done that in the view layer, but I also needed to support converting &quot;n&quot; to &quot;North.&quot;</p>
+<pre><code class="language-js">// mapping of short dir to long
+const dirMapping = {
+	'w':'West',
+	'e':'East',
+	'n':'North',
+	's':'South'
+};
+
+
+Vue.filter('exitDesc', function (exits) {
+	let result = '';
+
+	if(exits.length &gt; 1) {
+		for(let i=0;i&lt;exits.length;i++) {
+			result += dirMapping[exits[i].dir];
+			if(i &lt; exits.length-2) result += ', ';
+			if(i == exits.length-2) result += ' and ';
+		}
+	} else {
+		result = dirMapping[exits[0].dir];
+	}
+	return result;
+});
+</code></pre>
+<p>By the way, <code>dirMapping</code> is external to the filter as it is used someplace else as well. Ok, now for the core logic.</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data() {
+		return {
+			loading:true,
+			room:null,
+			roomDesc:'',
+			input:'',
+			rooms:null,
+			initialRoom:'initial'
+		}
+	},
+	mounted() {
+		console.log('Loading room data...');
+		fetch('rooms.json')
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			console.log('Loaded.');
+			this.rooms = res;
+			this.room = this.rooms[this.initialRoom];
+			this.roomDesc = this.room.description;
+			this.loading = false;
+			//nextTick required because line above changes the DOM
+			this.$nextTick(() =&gt; {
+				this.$refs.input.focus();
+			});
+		});
+	},
+	methods: {
+		cli() {
+			console.log('Running cli on '+this.input);
+
+			// first see if valid input, for now, it must be a dir
+			if(!this.validInput(this.input)) {
+				alert('Sorry, but I don\'t recognize: '+this.input);
+				this.input = '';
+				return;
+			}
+			// Ok, currently this is just handles moving, nothng else
+			// so this is where I'd add a parser, imagine it is there
+			// and after running, it determines our action is &quot;movement&quot;
+			let action = 'movement';
+			// arg would be the argument for the action, so like &quot;go west&quot;, arg=west. 
+			// for now, it's just the cli
+			let arg = this.input;
+
+			switch(action) {
+				case 'movement':{
+					this.doMovement(arg);
+				}
+			}
+
+			this.input = '';
+		},
+		doMovement(d) {
+			console.log('Move '+d);
+			// first, change North to n
+			let mappedDir = '';
+			for(let dir in dirMapping) {
+				if(dir === d.toLowerCase()) mappedDir = d;
+				if(dirMapping[dir].toLowerCase() === d.toLowerCase()) mappedDir = dir;
+			}
+			// see if valid direction
+			for(let i=0;i&lt;this.room.exits.length;i++) {
+				if(this.room.exits[i].dir === mappedDir) {
+					this.room = this.rooms[this.room.exits[i].room];
+					return;
+				}
+			}		
+			// if we get here, boo
+			alert(dirMapping[d] + ' is not a valid direction!');
+		},
+		validInput(i) {
+			// v1 is stupid dumb
+			let valid = ['w','e','s','n','west','east','south','north'];
+			return valid.includes(i.toLowerCase());
+		}
+	}
+});
+</code></pre>
+<p>Alright, so that's a bit of code there, let me break it down bit by bit. The <code>data</code> block handles storing things like my current position and other flags.</p>
+<p>Next I use <code>mounted</code> to load the initial data. I previously had <code>created</code> but ran into an issue when I was trying to automatically focus the input field. First - refs can't be used in <code>created</code>, the DOM isn't rendered yet, and secondly, I had to use <code>$nextTick()</code> because <code>this.loading = false;</code> changes the DOM and actually makes that input visible. This one little part took me maybe twenty minutes, but I'm really glad I ran into it as I learned something new.</p>
+<p>The <code>cli</code> method handles input and as the comments say, it is pretty simplistic at the moment. Right now it has no parser and just assumes everything is a movement. <code>validInput</code> is the beginning of the abstraction to handle verifying input, but obviously later I'll need some code to handle taking in input and mapping it to a proper action. As I said, this is just a beginning.</p>
+<p>The only supported action now is movement, and you can see that in play in <code>doMovement</code>. First this converts your input to a shorthand value (ie, &quot;north&quot; to &quot;n&quot;), then verifies that it is valid for the room. If it is, I simply move you.</p>
+<p>For errors I'm using alerts, but I really want to do something different. Like maybe have a div that is an active response to your input. It could handle both showing errors as well as responding to good commands (&quot;You move west.&quot;), but I wasn't sure how to handle that visually. Anyone have an idea?</p>
+<p>So that's it. I've got some <a href="https://github.com/cfjedimaster/webdemos/blob/master/vuetextbasedgame/notes.txt">notes</a> about what I want to do next. If you want to &quot;play&quot;, visit the demo here:  https://cfjedimaster.github.io/webdemos/vuetextbasedgame/</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/4PwRZXbXKxY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Jeremy Bishop</a> on Unsplash</i></p>
+}

@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>This is something I had heard before, but didn't really think about it until a reader I was helping ran into it. It involves Safari on iOS (and I believe just iOS 5 and higher). If you have a web page using timed JavaScript (for example, a setInterval), and switch to another tab (or another app), then the operating system will pause the JavaScript environment. Here is an incredibly simple way to see this in action.</p>
+<!--more-->
+<script src="https://gist.github.com/4582241.js"></script>
+<p>The code simply updates a div with a timestamp and an incrementing value. If you open this in your web browser on an iDevice, note the current value, and switch over to another tab, you'll see when you come back that the page had been paused in the background.</p>
+<p>I tried to get around this by adding a focus/blur event handler to my code...</p>
+<script src="https://gist.github.com/4582269.js"></script>
+<p>Which didn't work either since, hello, you can't run a JavaScript event handler when all of JavaScript is paused! So much for me being clever.</p>
+<img src="https://static.raymondcamden.com/images/CleverGirl_Fullpic_1.gif" />
+<p>Anyway, there is a much simpler way around this. Check out this solution from StackOverflow: <a href="http://stackoverflow.com/questions/4940657/handling-standby-on-ipad-using-javascript">Handling standby on iPad using Javascript</a></p>
+}

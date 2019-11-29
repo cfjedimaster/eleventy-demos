@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>Over the past few days I've exchanged emails with David. He had a simple jQuery-based application and he ran into some issues with it. His problems were, I thought, fairly common and I thought it might make sense for me to share what he did and what I suggested. We went through a couple of iterations of this so you can see how the project evolved over time. One thing I want to point out. David writes his code differently than I do (as I expect everyone does!). When he asked for help, I tried to make my help/suggestions as minimally invasive as possible. I was tempted to just delete all his code and do it &quot;my way&quot;, but I thought working within his 'style' would be less jarring. Ok, with that out of the way, let's look at his code.</p>
+<!--more-->
+<p>David wanted a form that - when changed - would automatically sum up the values. He included a mix of form fields for testing purposes and wanted to sum those fields with a class name of foo. Here is what he started with.</p>
+<script src="https://gist.github.com/4661708.js"></script>
+<p>Right away I saw that his initial selector, #addhours, didn't actually match anything. Notice his form was actually identified as my-form. He made the same mistake with another selector as well. Don't forget that you can use Google Chrome Dev Tools to look into your DOM and ensure you're looking for the right IDs. If your DOM is big and messy (like my beard), you can also hop into the console and try selecting what your code is. In the screen shot below, look at the difference between a bad and good match.</p>
+<img src="https://static.raymondcamden.com/images/screenshot60.png" />
+<p>Continuing on - I then pointed out that his code wasn't within the $(document).ready block. Most people who write jQuery tend to <i>always</i> include this by reflex, but if you don't, you can run into problems with your selectors. His code was trying to find DOM items before the DOM was actually done loading. You can mentally translate the $(document).ready block as &quot;I'm ready to get down to business.&quot; In most cases, you almost always want to have your code in there. (Not always of course!)</p>
+<p>I modified his code a bit and returned this to him.</p>
+<script src="https://gist.github.com/4615163.js"></script>
+<p>You can see the $(document).ready block as well as the corrected selectors. David then came back to me with this:</p>
+<blockquote>
+I was able to use your example and it works great.  But how can the jquery be modified so that it runs on page load.  It works fine on the change event for the field with class "foo".  I also wanted it to fire once the page is loaded so that any fields on screen go ahead and get counted. 
+</blockquote>
+<p>As he noted, the code handled <i>changes</i> just fine. But if the form loaded with some initial values (he was using ColdFusion to generate the HTML dynamically) then the 'total' field wasn't updated until he changed a value.</p>
+<p>To handle this, I simply broke out the event handler doing the math and added a call to it in the $(document).ready block. In the code sample below, notice too I modified one of the form fields to have an initial value.</p>
+<script src="https://gist.github.com/4631529.js"></script>
+<p>Once again, he was good to go. Until today. He modified his code a bit so that users could dynamically add form fields to the page. He wanted his 'sum' logic to apply to these new fields as well. Here is what he had:</p>
+<script src="https://gist.github.com/4661751.js"></script>
+<p>For this, the issue came down to this original code...</p>
+<p>$summands.on('change', doAdds);</p>
+<p>This says: &quot;At the time of running, attach a change event handler to $summands.&quot; If you remember, summands was run like so,   $summands = $form.find('.foo'), in document.ready. It was run <b>immediately and one time</b>. So it found stuff once, and then was done. It didn't know the user had (possibly) added more stuff.</p>
+<p>So first I changed the code to this:</p>
+<p>$(&quot;#addhours&quot;).on(&quot;change&quot;, &quot;.foo&quot;, doAdds);</p>
+<p>This says: On any change event inside the addhours form, if it (the thing throwing the event) <b><i>also</i></b> has a foo class, run doAdds. This is a &quot;live&quot; event (in fact, the API used to be called live) and will find new stuff.</p>
+<p>The next fix was to remove the code that created summands on startup. You will see it inside of doAdds now. You can't make it once and cache it since it can change. Here is the version I sent back to him.</p>
+<script src="https://gist.github.com/4660804.js"></script>
+<p>A little messy - but again - I was trying to work within his original code.</p>
+<p>Anyway, I hope this post-mortem is useful to others.</p>
+}

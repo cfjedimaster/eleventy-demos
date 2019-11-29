@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Rob Brooks-Bilson helped me find a bug with my RSS field. Interesting one at that. I was using xmlFormat on my description field, and THEN calling left on it. This meant that I sometimes ended up with html entities being cut off, for example, I'd have &amp;lt instead of &lt;. I've corrected the issue and updated the <a href="http://www.camdenfamily.com/morpheus/blog/blog.zip">zip file</a>.</p>
+}

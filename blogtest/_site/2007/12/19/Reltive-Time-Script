@@ -1,0 +1,30 @@
+<h1>Post</h1>
+
+<p>A few minutes ago a user in the ColdFusion IRC channel asked about an ActionScript relative time script. What is a relative time script? It translates something like &quot;December 10&quot; to &quot;8 days ago&quot;. Turns out Google found a bunch of examples <a href="http://twitter.pbwiki.com/RelativeTimeScripts">here</a>. I took the first example, a JavaScript one, and rewrote it. This version is ColdFusion 8 only since it uses &lt;, but you could change that in about 2 nanoseconds for a cf7 and earlier version. I'll add this up to CFLib a bit later probably.</p>
+<code>
+&lt;cfscript&gt;
+function relativeTime(pastdate) {
+	var delta = dateDiff("s", pastDate, now());
+<pre><code>if(delta &amp;lt; 60) {
+    return &quot;less than a minute ago&quot;;
+} else if(delta &amp;lt; 120) {
+    return &quot;about a minute ago&quot;;
+} else if(delta &amp;lt; (45*60)) {
+    return round(delta/60) &amp; &quot; minutes ago&quot;;
+} else if(delta &amp;lt; (90*60)) {
+    return &quot;about an hour ago&quot;;
+} else if(delta &amp;lt; (24*60*60)) {
+	return round(delta/3600) &amp; &quot; hours ago&quot;;
+} else if(delta &amp;lt; (48*60*60)) {
+    return &quot;1 day ago&quot;;
+} else {
+	return round(delta/86400) &amp; &quot; days ago&quot;;
+}
+</code></pre>
+<p>}
+&lt;/cfscript&gt;</p>
+<p>&lt;cfset pastdate = dateAdd(&quot;n&quot;, -9400, now())&gt;
+&lt;cfoutput&gt;Paris had dignity #relativeTime(pastdate)#&lt;/cfoutput&gt;
+</code></p>
+<p>I'll update the wiki too (got to represent the ColdFusion!)</p>
+}

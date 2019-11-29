@@ -1,0 +1,65 @@
+<h1>Post</h1>
+
+<p>Ok, this is something I've done a thousand times before, but last night when I tried to get it working, it took me a few hours to get it right. I'm sure the first comment on this entry will be a comment showing how much of a bonehead I was, but darnit, I <b>had</b> to get this working or give up programming forever. So what's the problem? Given a set of records, I want to number them from 1 to 5 so that after 5 I go back to 1 again. Or, given 12 records, I want to see: 1,2,3,4,5,1,2,3,4,5,1,2. Simple, right?</p>
+<!--more-->
+<p>
+<p>So, I began with a simple script that I could use for testing:</p>
+<p>
+<code>
+&lt;cfset records = 12&gt;
+&lt;cfset toCount = 5&gt;
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#records#&quot;&gt;</p>
+<pre><code>&amp;lt;cfoutput&amp;gt;
+Record: #x#&amp;lt;br/&amp;gt;	
+&amp;lt;br/&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>Records simply represent how many iterations I'll be simulating and &quot;toCount&quot; represents the number I'll be counting &quot;up&quot; to and repeating. I then thought about the problem and came up with a formula I wrote out like this:</p>
+<p>
+<blockquote>
+Take your current number, and subtract from that the whole number of sets (sets being what you are counting up). 
+</blockquote>
+<p>
+<p>So given 12, for example, I have 2 whole sets of 5, for a value of 10. 12-10 is 2. So here is my first take at this:</p>
+<p>
+<code>
+&lt;cfset records = 12&gt;
+&lt;cfset toCount = 5&gt;
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#records#&quot;&gt;</p>
+<pre><code>&amp;lt;cfset answer = x - (toCount * (x \ toCount))&amp;gt;
+&amp;lt;cfoutput&amp;gt;
+Record: #x#&amp;lt;br/&amp;gt;	
+Answer: &amp;lt;b&amp;gt;#answer#&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;br/&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>And the result:<br/>
+<img src="https://static.raymondcamden.com/images/ScreenClip28.png" /></p>
+<p>
+<p>What the hey? Every time I hit a multiple of 5 I end up with 0. Ok, that makes sense I guess. So what can I do? Just reduce my current row by one. Yeah, that's it:</p>
+<p>
+<code>
+&lt;cfset records = 12&gt;
+&lt;cfset toCount = 5&gt;
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#records#&quot;&gt;</p>
+<pre><code>&amp;lt;cfset answer = x - (toCount * ((x-1) \ toCount))&amp;gt;
+&amp;lt;cfoutput&amp;gt;
+Record: #x#&amp;lt;br/&amp;gt;	
+Answer: &amp;lt;b&amp;gt;#answer#&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;br/&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>And the result...<br/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip29.png" /></p>
+<p>
+<p>So - please - someone tell me there is a much simpler way of doing this?</p>
+}

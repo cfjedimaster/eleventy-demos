@@ -1,0 +1,169 @@
+<h1>Post</h1>
+
+<p>I wrote a few sample applications for my <a href="http://www.raymondcamden.com/index.cfm/2009/4/7/jQuery-101-Presentation">jQuery presentation</a> yesterday that I wanted to explore a bit deeper in a blog post. I think search is a great place for Ajax to help out. How can we build a search interface using jQuery and ColdFusion? Let's start with a simple example.</p>
+<!--more-->
+<p>First I'll create a simple form with just a tiny bit of jQuery:</p>
+<code>
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt;
+&lt;title&gt;Untitled Document&lt;/title&gt;
+&lt;script src="../jquery.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+<p>$(document).ready(function() {
+$(&quot;#searchForm&quot;).submit(function() {
+//get the value
+var search = $(&quot;#searchText&quot;).val()
+if($.trim(search) == '') return false
+$.get('search.cfm',{search:search},
+function(data,status) {
+$(&quot;#results&quot;).html(data)
+})
+return false
+})
+});</p>
+<p>&lt;/script&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form id=&quot;searchForm&quot;&gt;&lt;input type=&quot;text&quot; id=&quot;searchText&quot; /&gt;&lt;input type=&quot;submit&quot; value=&quot;Search&quot; /&gt;&lt;/form&gt;</p>
+<p>&lt;div id=&quot;results&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>Reading from the bottom up, you can see a simple form with one text field. The jQuery code handles taking over the submit action for the form. I first grab the value of the form field and then do a trim() on it. (Trim is something ColdFusion developers are used to and exists as a utility method in jQuery.)</p>
+<p>The actual Ajax portion is done with the get call. The first argument is the code I'm going to hit: search.cfm. The second argument is a structure of name/value pairs. In this case I'm passing an argument named search and using the value from the form. The last argument to the get function is my call back, or, 'what to do when done'. In this case, I'm simply taking the results and stuffing it into the DIV with the ID of &quot;results&quot;.</p>
+<p>So to translate all of this into English: Get the form field. Pass it to search.cfm. Paste the result onto the page.</p>
+<p>The ColdFusion code is trivial:</p>
+<code>
+&lt;cfparam name="url.search" default=""&gt;
+<p>&lt;cfif len(trim(url.search))&gt;
+&lt;cfset url.search = trim(htmlEditFormat(lcase(url.search)))&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;getArt&quot; datasource=&quot;cfartgallery&quot;&amp;gt;
+select	artname, description, price
+from	art
+where	lower(artname) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#url.search#%&quot;&amp;gt;
+or		description like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_lomgvarchar&quot; value=&quot;%#url.search#%&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;p&amp;gt;
+Your search for #url.search# returned #getArt.recordCount# result(s).
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfoutput query=&quot;getArt&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;#artname#&amp;lt;/b&amp;gt; #dollarFormat(price)#&amp;lt;br/&amp;gt;
+#description#
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>I don't have much much going on here. I do some simple validation to ensure a search term was passed. If so, I do the query and just output the results. The CFM handles both the search and display of results.</p>
+<p>Let's kick it up a notch. What if we wanted a more advanced search page? Here is a new version of the search page:</p>
+<code>
+&lt;cfquery name="mediatypes" datasource="cfartgallery"&gt;
+select	mediaid, mediatype
+from	media
+&lt;/cfquery&gt;
+<p>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+&lt;title&gt;Untitled Document&lt;/title&gt;
+&lt;script src=&quot;../jquery.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>$(document).ready(function() {
+$(&quot;#searchForm&quot;).submit(function() {
+//get the value
+var search = $(&quot;#searchText&quot;).val()
+if($.trim(search) == '') return false
+var type = $(&quot;#mediatype option:selected&quot;).val()
+$.post('search2.cfm',{search:search,mediatype:type},
+function(data,status) {
+$(&quot;#results&quot;).html(data)
+})
+return false
+})
+});</p>
+<p>&lt;/script&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form id=&quot;searchForm&quot;&gt;
+&lt;input type=&quot;text&quot; id=&quot;searchText&quot; /&gt;
+&lt;select name=&quot;mediatype&quot; id=&quot;mediatype&quot;&gt;
+&lt;option value=&quot;&quot;&gt;Any Media Type&lt;/option&gt;
+&lt;cfoutput query=&quot;mediatypes&quot;&gt;
+&lt;option value=&quot;#mediaid#&quot;&gt;#mediatype#&lt;/option&gt;
+&lt;/cfoutput&gt;
+&lt;/select&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Search&quot; /&gt;&lt;/form&gt;</p>
+<p>&lt;div id=&quot;results&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>What's different here? On top I did a quick query to get all the media types from the cfartgallery datasource. Once I have this data, I can use it in a select tag within the form (at the bottom of the code listing above). Now users can search both for a keyword and a keyword and a type of media.</p>
+<p>The jQuery code changed a bit as well. Now I also get the selected value from the drop down and pass it in the Ajax call. Notice I switched to post as well. No real reason. In general I almost always prefer Post calls. I'm not going to post the code for search2.cfm as the only change was to look for and notice the mediatype value. (I'm including all of this in a zip attached to the blog entry though.)</p>
+<p>Ok, one more example. In the previous two listings, ColdFusion handled running the search query as well as displaying the results. How about making this simpler? I'll just show the jQuery code for my third example since that's the only thing I'm going to change:</p>
+<code>
+$(document).ready(function() {
+	$("#searchForm").submit(function() {
+		//get the value
+		var search = $("#searchText").val()
+		if($.trim(search) == '') return false
+		var type = $("#mediatype option:selected").val()
+		$.getJSON('art.cfc?method=search&returnFormat=json&queryformat=column',{term:search,mediatype:type},
+			function(result,status) {
+				//console.dir(result)
+<pre><code>			var str = ''
+			for(var i=0; i &amp;lt; result.ROWCOUNT; i++) {
+				str+= '&amp;lt;p&amp;gt;&amp;lt;b&amp;gt;'+result.DATA.ARTNAME[i]+'&amp;lt;/b&amp;gt; $'+result.DATA.PRICE[i]+'&amp;lt;br /&amp;gt;'
+				str+= result.DATA.DESCRIPTION[i]+'&amp;lt;/p&amp;gt;'
+			}
+
+			$(&quot;#results&quot;).html(str)
+
+		})
+	return false
+})
+</code></pre>
+<p>});
+</code></p>
+<p>So the first few lines are the same - notice the form submission, get the values, etc. Note that I've switched my Ajax call to getJSON. This let's jQuery know that I'll be calling something that returns JSON data. jQuery will handle converting the JSON for me into real JavaScript data.</p>
+<p>Notice the URL I'm posting too:</p>
+<p>art.cfc?method=search&amp;returnFormat=json&amp;queryformat=column</p>
+<p>This is a CFC I've built to handle the search logic for me. I've passed returnFormat to tell ColdFusion to automatically convert the result into JSON.</p>
+<p>A quick side note: I have both search parameters (term and mediatype) and url parameters (method, returnFormat, queryFormat). Could I mix them up differently? Yes. I could have used no URL parameters at all and put them all with the {}s in the second argument. I could have used an empty {} and put everything in the URL (with proper escaping of course). In my opinion, the form I used makes the most sense. I've kept the 'meta' stuff (how the request works) in the URL, separate from business logic params used in the second parameter.</p>
+<p>Because I'm getting JSON back, I have to handle formatting the result myself. I worked with the result data to create a string and then simply set it to the results div using the html() function. How did I know how to work with the JSON data? Trust me, I had no idea. See this line?</p>
+<code>
+//console.dir(result)
+</code>
+<p>I removed the comments before the line and Firebug gave me a nice display of the data. This let me see how things were setup and let me write the rest of the code. Once again, <b>install Firebug!</b></p>
+<p>The CFC isn't too special. Here is the method I used:</p>
+<code>
+&lt;cfcomponent&gt;
+<p>&lt;cffunction name=&quot;search&quot; access=&quot;remote&quot; returntype=&quot;query&quot;&gt;
+&lt;cfargument name=&quot;term&quot; type=&quot;string&quot; required=&quot;yes&quot;&gt;
+&lt;cfargument name=&quot;mediatype&quot; type=&quot;any&quot; required=&quot;yes&quot;&gt;</p>
+<pre><code>&amp;lt;cfset var getArt = &quot;&quot;&amp;gt;
+
+&amp;lt;cfquery name=&quot;getArt&quot; datasource=&quot;cfartgallery&quot;&amp;gt;
+select	artname, description, price
+from	art
+where	(lower(artname) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#arguments.term#%&quot;&amp;gt;
+or		description like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_lomgvarchar&quot; value=&quot;%#arguments.term#%&quot;&amp;gt;)
+&amp;lt;cfif len(arguments.mediatype) and isNumeric(arguments.mediatype) and arguments.mediatype gte 1&amp;gt;
+and		mediaid = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.mediatype#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn getArt&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>What I love about this is that my CFC has nothing in it related to jQuery, Ajax, JavaScript, JSON, etc. The only clue that there is any Ajax stuff going on is the access=&quot;remote&quot; argument. Because the JSON stuff is built into ColdFusion 8, I can write my business logic and use it either in my 'old school' Web 1.0 application or my fancy, multi-billion dollar Web 2.0 site.</p>
+<p>That's it. Any questions?<p><a href='enclosures/E%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fdemo%2Ezip'>Download attached file.</a></p></p>
+}

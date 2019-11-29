@@ -1,0 +1,38 @@
+<h1>Post</h1>
+
+<p>Now a days it seems like every one talks about CFCs, or UDFs, and almost no one talks about custom tags. While they are a bit slower than CFCs or UDFs, custom tags are still pretty darn handy. Here are a few tips for people writing custom tags.</p>
+<ol>
+<li>Watch your whitespace.</li>
+</ol>
+<p>This is more a general ColdFusion tip, but since custom tags tend to be used inside other documents (otherwise they wouldn't be custom tags), you tend to notice their white space even more, especially if the tag is used inside a loop. I recommend just using cfsetting on top and at the bottom of your file, although be sure to also use cfsetting if you leave your custom tag early.</p>
+<ol start="2">
+<li>If your custom tag is not meant to be used in &quot;wrapped&quot; mode, then always include this line as your last line of code:</li>
+</ol>
+<code>
+&lt;cfexit method="exitTag"&gt;
+</code>
+<p>If you don't, and someone calls your tag like so, &lt;cf_foo/&gt;, then your tag will execute twice.</p>
+<ol start="3">
+<li>
+<p>While I may use &quot;cf_&quot; format in my examples, I almost never use cf_ when invoking a custom tag. I use cfmodule. This tends to be a bit more wordy, but it means i don't have to worry about &quot;name&quot; confusion. This is where ColdFusion has to look for your custom tag, and could potentially find the wrong one. Not only that, ColdFusion caches the location of the tag, so if you move it, you need to restart ColdFusion. All of this goes away if you use cfmodule.</p>
+</li>
+<li>
+<p>If you return a value, do not hard code it like so:</p>
+</li>
+</ol>
+<code>
+&lt;cfset caller.foo = 1&gt;
+</code>
+<p>Rather, make it an attribute so the caller can specify what result to return. For example:</p>
+<code>
+&lt;cfparam name="attributes.result" default="result" type="variableName"&gt;
+<p>&lt;cfset caller[attributes.result] = now()&gt;
+</code></p>
+<p>This lets me call the tag like so:</p>
+<code>
+&lt;cf_foo&gt;
+&lt;cf_foo result="result2"&gt;
+&lt;cf_foo result="result3"&gt;
+</code>
+<p>At the end of those lines, I'd have 3 variables created: result, result2, and result3.</p>
+}

@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Can't get Flash Forms to work? Don't forget you need to have a /CFIDE virtual mapping. I had forgot to set one up for the virtual host I was working on.</p>
+}

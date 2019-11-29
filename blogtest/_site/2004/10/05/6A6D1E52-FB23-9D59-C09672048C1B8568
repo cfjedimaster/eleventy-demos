@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>As you know, CFINVOKE allows you to call a method on a CFC, or a CFC instance, or against a web service. However, I was looking at some code today from fellow developer Michael Hodgdon, and notice the following code. (Well, this isn't the code he used, but demonstrates the point of this entry.)</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cffunction name=<FONT COLOR=BLUE>"foo"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfreturn now()&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cffunction&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;cfinvoke method=<FONT COLOR=BLUE>"foo"</FONT> returnVariable=<FONT COLOR=BLUE>"time"</FONT>&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfoutput&gt;</FONT>#time#<FONT COLOR=MAROON>&lt;/cfoutput&gt;</FONT></div>
+<p>Michael used CFINVOKE to call a UDF defined in the current page. I wasn't aware that CFINVOKE could do that. Now, you may be thinking, &quot;So what!&quot;, but there is a use for this. CF allows you to dynamically pass arguments to UDFs and CFCs by using the argumentCollection attribute. (You can do the same with custom tags using attributeCollection.) This is handy feature. However, it doesn't make for easy to read code. When you use CFINVOKE, however, you can have a cleaner call. Here is a pseudo-code example:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfinvoke component=<FONT COLOR=BLUE>"#c#"</FONT> method=<FONT COLOR=BLUE>"foo"</FONT>&gt;</FONT><br>
+   <FONT COLOR=MAROON>&lt;cfinvokeargument name=<FONT COLOR=BLUE>"name"</FONT> value=<FONT COLOR=BLUE>"Jacob"</FONT>&gt;</FONT><br>
+   <FONT COLOR=MAROON>&lt;cfif tillTuesday&gt;</FONT><br>
+     <FONT COLOR=MAROON>&lt;cfinvokeargument name=<FONT COLOR=BLUE>"vegimite"</FONT> value=<FONT COLOR=BLUE>"sandwhich"</FONT>&gt;</FONT><br>
+   <FONT COLOR=MAROON>&lt;/cfif&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfinvoke&gt;</FONT></div>
+<p>For complex UDFs (or CFC methods), this syntax may be a bit easier to read.</p>
+}

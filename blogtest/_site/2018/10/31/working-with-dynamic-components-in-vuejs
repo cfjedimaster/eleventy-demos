@@ -1,0 +1,111 @@
+<h1>Post</h1>
+
+<p>I'm currently deep into a project using <a href="https://nativescript-vue.org/">NativeScript Vue</a> and ran into an interesting problem that - thankfully - had an incredibly simple solution in Vue. While I certainly do not believe Vue is perfect, but the deeper I go the more I appreciate how powerful it is. The problem I ran into dealt with dynamic forms.</p>
+<p>The application loads a set of data that represents an array of fields. Each field has a particular type, possible options, possible defaults and more. I knew I could build Vue components to represent these fields, but what I wasn't sure about was how to actually use them in my layout. Turns out there is a perfectly simple way to do this - <a href="https://vuejs.org/v2/guide/components.html#Dynamic-Components">Dymamic Components</a>.</p>
+<p>Basically, instead of adding <code>&lt;my-component&gt;</code> to a layout, you would add <code>&lt;component :is=&quot;my-component&quot;&gt;</code>. And yeah, that's pretty much it. There's one important aspect though. Now that you know how to create a dynamic component, how would you also dynamically pass data to it?</p>
+<p>Turns out, the <a href="https://vuejs.org/v2/api/#v-bind">bind</a> feature supports passing an object and expanding the key/value pairs out as attributes and values. It's as simple as: <code>v-bind=&quot;object&quot;</code>.</p>
+<p>So this may make more sense with an example. Let's start off with a Vue application that has some hard coded data representing field data.</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data() {
+    return {
+      fields:[
+        {
+          'id':1,
+          'label':'Name',
+          'type':'textField'
+        },
+        {
+          'id':2,
+          'label':'Email',
+          'type':'textField'
+        },
+        {
+          'id':3,
+          'label':'Movies',
+          'type':'selectField',
+          'answers':[
+            { value:1,label:&quot;Aa&quot; },
+            { value:2,label:&quot;Bb&quot; },
+            { value:3,label:&quot;Cc&quot; }
+          ]
+        },
+        {
+          'id':4,
+          'label':'Food',
+          'type':'radioField',
+          'answers':[
+            { value:1,label:&quot;Aa&quot; },
+            { value:2,label:&quot;Bb&quot; },
+            { value:3,label:&quot;Cc&quot; }
+          ]
+        },
+      ]
+    }
+  }
+})
+</code></pre>
+<p>In the <code>data</code> block, I've got 4 fields defined. Each has a label, a type, and some have answers representing options. To keep things simple I kept out things like defaults. In the real app, I'll not only have defaults, but concepts like, &quot;default to the current time.&quot; Now let's look at the layout.</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot; v-cloak&gt;
+  &lt;component 
+             v-for=&quot;field in fields&quot; 
+             :key=&quot;field.id&quot;
+             :is=&quot;field.type&quot;
+             v-bind=&quot;field&quot;&gt;
+  &lt;/component&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Nice and simple. I'm looping over each field, defining it's component based on the <code>field.type</code> value. I then pass in all the data of the field using the <code>v-bind</code> trick described above. As for how I implemented the components, I just did some basic HTML. Here are all three:</p>
+<pre><code class="language-js">Vue.component('textField', {
+  template:'&lt;div&gt;&lt;input type=&quot;text&quot; :id=&quot;id&quot;&gt;&lt;/div&gt;',
+  data() {
+    return {
+    }
+  },
+  computed:{
+  },
+  props:[&quot;label&quot;,&quot;id&quot;]
+});
+
+Vue.component('selectField', {
+  template:
+`&lt;div&gt;
+
+&lt;select :id=&quot;id&quot;&gt;
+  &lt;option v-for=&quot;answer in answers&quot; :key=&quot;answer.value&quot; :value=&quot;answer.value&quot;&gt;
+    
+  &lt;/option&gt;
+&lt;/select&gt;
+&lt;/div&gt;`,
+  data() {
+    return {
+    }
+  },
+  computed:{
+  },
+  props:[&quot;label&quot;,&quot;id&quot;,&quot;answers&quot;]
+});
+
+Vue.component('radioField', {
+  template:
+`&lt;div&gt;
+  &lt;br/&gt;
+  &lt;div v-for=&quot;answer in answers&quot; :key=&quot;answer.value&quot;&gt;
+   &lt;input type=&quot;radio&quot; :name=&quot;id&quot; :value=&quot;answer.value&quot; /&gt;
+  &lt;/div&gt;
+&lt;/div&gt;`,
+  data() {
+    return {
+    }
+  },
+  computed:{
+  },
+  props:[&quot;label&quot;,&quot;id&quot;,&quot;answers&quot;]
+});
+</code></pre>
+<p>This is a pretty ugly implementation of the fields but it gets the job done. And of course in my 'real' app I'll be using both Single File Components and NativeScript components, but you get the idea.</p>
+<p>If you want to see a live example of this, check out the CodePen below. Remember this is a super basic implementation for me to test the idea out, nothing more.</p>
+<p data-height="400" data-theme-id="0" data-slug-hash="pxXowY" data-default-tab="js,result" data-user="cfjedimaster" data-pen-title="pxXowY" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/pxXowY/">pxXowY</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p><i>Header photo by <a href="https://unsplash.com/photos/VQtBAHVRgvc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Mark Duffel</a> on Unsplash</i></p>
+}

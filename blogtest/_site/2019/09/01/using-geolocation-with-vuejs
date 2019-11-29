@@ -1,0 +1,211 @@
+<h1>Post</h1>
+
+<p>I decided to spend my lazy Sunday morning working on a quick Vue.js post. <a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API">Geolocation</a> is one of the older and simpler APIs you can use with your web browser so this article won't necessarily be that exciting, but I thought a quick demo of the API with Vue, and a few variations, could be useful to folks. As a reminder, web pages that use Geolocation <strong>must</strong> be run on either localhost or an https server. This is a security precaution and... let's be honest - there is <strong>zero</strong> reason to be using a non-secure server in 2019.</p>
+<h2>Example One</h2>
+<p>For the first example, let's build a simple Vue application that will:</p>
+<ul>
+<li>Automatically try to get your location</li>
+<li>Display a &quot;loading&quot; type message while this is happening</li>
+<li>And properly support error conditions.</li>
+</ul>
+<p>First we'll build the front end:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  &lt;div v-if=&quot;errorStr&quot;&gt;
+    Sorry, but the following error
+    occurred: {{errorStr}}
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;gettingLocation&quot;&gt;
+    &lt;i&gt;Getting your location...&lt;/i&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;location&quot;&gt;
+    Your location data is {{ location.coords.latitude }}, {{ location.coords.longitude}}
+  &lt;/div&gt;
+  
+&lt;/div&gt;
+</code></pre>
+<p>I've got three divs here. The first handles displaying an error. The second is the loading message. And the final div displays our location. Now let's look at the code.</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data:{
+    location:null,
+    gettingLocation: false,
+    errorStr:null
+  },
+  created() {
+    //do we support geolocation
+    if(!(&quot;geolocation&quot; in navigator)) {
+      this.errorStr = 'Geolocation is not available.';
+      return;
+    }
+
+    this.gettingLocation = true;
+    // get position
+    navigator.geolocation.getCurrentPosition(pos =&gt; {
+      this.gettingLocation = false;
+      this.location = pos;
+    }, err =&gt; {
+      this.gettingLocation = false;
+      this.errorStr = err.message;
+    })
+  }
+})
+</code></pre>
+<p>I'm using the <code>created</code> method to start requesting location as soon as the application is ready. I do a quick check to see if the API is supported. After that, I simply use the API. It's all rather simple, but even this code could be improved. You'll notice that my front end is addressing the result as <code>location.coords.latitude</code>. If I know for a fact that I only need latitude and longitude, I could copy those values out. My front end code could then look something like this:</p>
+<pre><code class="language-html">Your location data is {{ latitude }}, {{ longitude}}
+</code></pre>
+<p>That's a bit better in my opinion as the layout code is simpler and not directly tied to knowing that the Geolocation API was used. You can play with this example here:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="ZEzJwZN" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Geolocation 1">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/ZEzJwZN/">
+  Geolocation 1</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<h2>Example Two</h2>
+<p>In my next example, I'm going to switch the code so that it doesn't request your location until the user actually needs it. In this case I'm going to use a simple button to kick off that process. Here's the HTML:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+
+  &lt;p&gt;
+    Let us locate you for better results...
+    &lt;button @click=&quot;locateMe&quot;&gt;Get location&lt;/button&gt;
+  &lt;/p&gt;
+  
+  &lt;div v-if=&quot;errorStr&quot;&gt;
+    Sorry, but the following error
+    occurred: {{errorStr}}
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;gettingLocation&quot;&gt;
+    &lt;i&gt;Getting your location...&lt;/i&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;location&quot;&gt;
+    Your location data is {{ location.coords.latitude }}, {{ location.coords.longitude}}
+  &lt;/div&gt;
+  
+&lt;/div&gt;
+</code></pre>
+<p>Most of the layout above is the same with the exception of the paragraph and button on top. For the code, I decided to abstract things a bit. The <code>locateMe</code> method referenced by the button will be simpler as I've migrated out the Geolocation stuff. Let's take a look.</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data:{
+    location:null,
+    gettingLocation: false,
+    errorStr:null
+  },
+  methods: {
+    async getLocation() {
+      
+      return new Promise((resolve, reject) =&gt; {
+
+        if(!(&quot;geolocation&quot; in navigator)) {
+          reject(new Error('Geolocation is not available.'));
+        }
+
+        navigator.geolocation.getCurrentPosition(pos =&gt; {
+          resolve(pos);
+        }, err =&gt; {
+          reject(err);
+        });
+
+      });
+    },
+    async locateMe() {
+
+      this.gettingLocation = true;
+      try {
+        this.gettingLocation = false;
+        this.location = await this.getLocation();
+      } catch(e) {
+        this.gettingLocation = false;
+        this.errorStr = e.message;
+      }
+      
+    }
+  }
+})
+</code></pre>
+<p>If you focus on <code>locateMe</code>, you can see it is much simpler. I use <code>async</code> and <code>await</code> to call <code>getLocation</code>. My method handles things like the loading screen and errors, and the result, but the actual mechanism of the location request is now abstracted away. <code>getLocation</code> makes use of a Promise to properly work with <code>async</code> and <code>await</code>, but outside of that it's mostly the same as before.</p>
+<p>You can test this version here:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="jONLdgQ" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Geolocation 2">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/jONLdgQ/">
+  Geolocation 2</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<h2>Option Three</h2>
+<p>For one last example, let's do something fun with the location. Most people can't translate a longitude and latitude into something useful. It would be cooler if we could use reverse geocoding (which is the process of attempting to map a latitude/longitude to a place with a name) to display the user's location in a friendlier name. For this example I'm going to be making use of the <a href="https://developer.here.com/signup/geocoding">Geocoding API</a> by HERE. Disclaimer - I started working for HERE last week so I'm talking about my employers products. This API (and many more) have a free tier so you can play with them all you want!</p>
+<p>The API is rather extensive (you can see the docs <a href="https://developer.here.com/documentation/maps/topics/geocoding.html">here</a>) but I'll focus on the simplest example. To begin, I created a new JavaScript project in my HERE account. This gave me an API key I could then use in my code. I added two HERE JavaScript libraries and then this bit of initialization code:</p>
+<pre><code class="language-js">const platform = new H.service.Platform({
+  'apikey': 'iEnZe8bO68AnNVZEdPpq7hl9UFqiPxTSPjQkLfR3Qcg'
+});
+const geocoder = platform.getGeocodingService();
+</code></pre>
+<p>Note that you can specify a domain whitelist for your API keys which will make the code above perfectly safe for your public web pages. Once you've configured your geocoder, to do a reverse geocode you can simply do this (pseudo-code):</p>
+<pre><code class="language-js">let reverseGeocodingParameters = {
+    prox: 'Latiude,Longitude', // not literaly that, but the real values
+    mode: 'retrieveAddresses',
+    maxresults: 1
+};
+
+geocoder.reverseGeocode(
+    reverseGeocodingParameters,
+    res =&gt; {
+        // work with results
+    },
+    e =&gt; reject(e) 
+);
+</code></pre>
+<p>Here's the updated JavaScript for <code>getLocation</code>:</p>
+<pre><code class="language-js">async getLocation() {
+    
+    return new Promise((resolve, reject) =&gt; {
+
+    if(!(&quot;geolocation&quot; in navigator)) {
+        reject(new Error('Geolocation is not available.'));
+    }
+
+    navigator.geolocation.getCurrentPosition(pos =&gt; {
+        let reverseGeocodingParameters = {
+            prox: `${pos.coords.latitude},${pos.coords.longitude}`,
+            mode: 'retrieveAddresses',
+            maxresults: 1
+        };
+
+        geocoder.reverseGeocode(
+        reverseGeocodingParameters,
+        res =&gt; {
+            let results = res.Response.View;
+            if(results.length === 0) {
+                resolve('No match.')
+            } else {
+                resolve(results[0].Result[0].Location);
+            }
+        },
+        e =&gt; reject(e) 
+        );
+    }, err =&gt; {
+        reject(err);
+    });
+
+    });
+},
+</code></pre>
+<p>For the most part this is just a simple update to the previous example, but do note that when I leave the function, I &quot;dig down&quot; into the Geocoder result to simplify things a bit: <code>resolve(results[0].Result[0].Location);</code></p>
+<p>The HTML now uses this:</p>
+<pre><code class="language-html">&lt;div v-if=&quot;location&quot;&gt;
+    Your location data is {{ location.Address.Label }}
+&lt;/div&gt;
+</code></pre>
+<p>If you remember what I said about Option One, I kind of don't like my HTML having too much knowledge about the data so a nicer solution would probably just store <code>Address.Label</code> to <code>location</code>. You can run this here:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="wvwqOMx" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Geolocation 3">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/wvwqOMx/">
+  Geolocation 3</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>As always, let me know what you think and ask any questions in the comments below. There's also multiple options for Vue components to simply Geolocation for you. One is <a href="https://www.npmjs.com/package/vue-browser-geolocation">vue-browser-geolocation</a>.</p>
+<p><i>Header photo by <a href="https://unsplash.com/@paulamayphotography?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Paula May</a> on Unsplash</i></p>
+}

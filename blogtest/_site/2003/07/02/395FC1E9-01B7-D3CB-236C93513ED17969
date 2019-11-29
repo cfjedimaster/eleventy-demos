@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>William N. Steiner contacted me with an issue he was having with my blog. Basically, he noticed that on every hit, the constructor code was being rerun. This didn't make sense because we were using a simple cfparam to define the blog cfc:</p>
+<p>&lt;cfparam name=&quot;application.blog&quot; default=&quot;#createObject(&quot;component&quot;,&quot;blog&quot;)#&quot;&gt;</p>
+<p>However, I was able to confirm that on every hit, the constructor was being run. What I didn't realize though, was that it wasn't that application.blog was being recreated each hit, the CF compiler was simply executing the createObject before running the logic of cfpram. I suppose this makes sense. In a way, if you use any function in the default portion of your cfparam, you are probably wasting a small amount of processing.</p>
+<p>The blog application.cfm file has been updated and the zip has the latest. Enjoy.</p>
+}

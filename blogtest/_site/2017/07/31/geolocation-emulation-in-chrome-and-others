@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>This isn't necessarily new, but as I ran into it recently I thought I'd share as it was pretty cool. Last week I blogged about a demo I had built (<a href="https://www.raymondcamden.com/2017/07/27/serverless-for-vampires/">&quot;Serverless for Vampires&quot;</a>, you read it, right?) and as part of that demo I had some simple front-end code making use of the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation">Geolocation API</a>. It's a simple enough API, but I specifically needed to test with a few different locations.</p>
+<p>I knew that Chrome supported emulating a location, but I was pleasantly surprised to see some nice updates to the tooling. First off, how do you actually find the feature?</p>
+<p>If you open up Dev Tools, you probably won't see it:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/geo1.jpg" alt="Where is it???"></p>
+<p>Click the three dots in the upper right hand corner to open the menu, then &quot;More tools&quot;, and then &quot;Sensors&quot;:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/geo2.jpg" alt="Oh look, there it is..."></p>
+<p>This will pop up a... I don't know... &quot;sub panel&quot; of the main dev tools where you can find emulation tools for geolocation, orientation, and touch.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/geo3.jpg" alt="Woot to the woot"></p>
+<p>Ok, so far so good. But what surprised me is what I saw in the dropdown:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/geo4.jpg" alt="Sweet"></p>
+<p>While I'm not sure why they don't have the sprawling metropolis of Lafayette, LA, this is a dang handy little feature and incredibly useful. So plus one for Chrome. How about the others?</p>
+<ul>
+<li>Microsoft Edge has emulation for a particular device, UA strings and browser profiles, orientation, resolution, and geolocation. No handy &quot;city dropdown&quot; but you can emulate at least.</li>
+<li>Firefox has nothing like this... outside of orientation support when in responsive mode. Oh - and touch emulation too.</li>
+<li>Safari has nothing. Ok, just joking, let me go to my Mac and check.... ok as far as I can see - no support. I also checked the Technology Preview version.</li>
+</ul>
+<p>Anyway - I try to check my devtools for new stuff every now and then, and Chrome is actually being a lot more proactive about sharing new updates. You may not know this, but also under the &quot;three dots&quot;/&quot;More tools&quot; menu is a &quot;What's New&quot; screen. It seems kinda odd to put it under More Tools, but I'm just happy they added it. (I've long had a beef with how Chrome documents their updates, and while this isn't as good as what Firefox does, it is a move in the right direction.)</p>
+}

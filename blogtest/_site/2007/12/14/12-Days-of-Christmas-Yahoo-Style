@@ -1,0 +1,204 @@
+<h1>Post</h1>
+
+<p>Earlier today I <a href="http://www.raymondcamden.com/index.cfm/2007/12/14/Friday-Challenge--Christmas-Style">blogged</a> a Friday Challenge that involved taking the 12 Days of Christmas as a query and generating the song. After I posted this, I had an odd thought - why not see what the Internet (in this case, Yahoo), would do with the gifts.</p>
+<!--more-->
+<p>I used my <a href="http://cfyahoo.riaforge.org">CFYahoo</a> package to create a connection to their image service:</p>
+<code>
+&lt;cfset imageAPI = createObject("component", "org.camden.yahoo.image")&gt;
+</code>
+<p>Next I created my array and started to loop:</p>
+<code>
+&lt;cfset gifts = ["A partridge in a pear tree","Two turtle doves","Three French hens","Four calling birds","Five golden rings","Six geese a-laying",
+		"Seven swans a-swimming","Eight maids a-milking","Nine ladies dancing","Ten lords a-leaping","Eleven pipers piping","Twelve drummers drumming"]&gt;
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(gifts)#&quot;&gt;
+</code></p>
+<p>Then for each item I performed a search. Yahoo filters adult images by default so I didn't have to worry about that:</p>
+<code>
+&lt;cfinvoke component="#imageAPI#" method="search" returnVariable="result"&gt;
+	&lt;cfinvokeargument name="query" value="#gifts[x]#"&gt;
+	&lt;cfinvokeargument name="results" value="1"&gt;
+&lt;/cfinvoke&gt;
+</code>
+<p>Lastly I displayed the result from each search. I did a quick view source/ctrl+a/ctrl+v and below is the results.</p>
+<p>Yes, this is a complete and utter waste of time. Enjoy.</p>
+<p><b>Edited:</b> I added my CFM as a zip to this page. I also changed the code to show 3, as it gets interesting with multiple results. For this to work you will need my CFYahoo package and an API key.</p>
+<pre><code>&lt;h2&gt;Image search for A partridge in a pear tree&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a5.yimg.com/image/3164158378&quot; width=&quot;134&quot; height=&quot;145&quot; alt=&quot;0001_137_Partridge_In_A_Pear_Tree.gif&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;0001_137_Partridge_In_A_Pear_Tree.gif&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.bisgrove.com/0001_137_Partridge_In_A_Pear_Tree.gif&quot;&gt;http://www.bisgrove.com/0001_137_Partridge_In_A_Pear_Tree.gif&lt;/a&gt;&lt;br /&gt;	
+Summary: Links: | Site Index |
+&lt;br clear=&quot;left&quot;&gt;
+
+&lt;p&gt;
+
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Two turtle doves&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a4.yimg.com/image/2933550061&quot; width=&quot;145&quot; height=&quot;145&quot; alt=&quot;444966.jpg&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;444966.jpg&lt;/h3&gt;
+URL: &lt;a href=&quot;http://images.dpchallenge.com/images_challenge/608/444966.jpg&quot;&gt;http://images.dpchallenge.com/images_challenge/608/444966.jpg&lt;/a&gt;&lt;br /&gt;	
+Summary: Two Turtle Doves
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Three French hens&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a1.yimg.com/image/1977057164&quot; width=&quot;101&quot; height=&quot;130&quot; alt=&quot;Three French Hens.jpg&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;Three French Hens.jpg&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.dcist.com/attachments/dcist_melissa/Three%20French%20Hens.jpg&quot;&gt;http://www.dcist.com/attachments/dcist_melissa/Three%20French%20Hens.jpg&lt;/a&gt;&lt;br /&gt;	
+Summary: Washington Wish List: Holiday Hankerings of D.C. Foodies Whether it's Corduroy's scallops with mushroom and potato puree, 2 Amys' cod fritters, or Restaurant Eve's mojitos, DCist indulges in good food and drink about town over the holiday season
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Four calling birds&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a6.yimg.com/image/3550721265&quot; width=&quot;109&quot; height=&quot;140&quot; alt=&quot;20-fourcallingbirds72.jpg&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;20-fourcallingbirds72.jpg&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.porterfieldsfineart.com/JohnnyKarwan/images/20-fourcallingbirds72.jpg&quot;&gt;http://www.porterfieldsfineart.com/JohnnyKarwan/images/20-fourcallingbirds72.jpg&lt;/a&gt;&lt;br /&gt;	
+Summary: On the fourth day of Christmas my true love gave to me Four calling birds Three french hens
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Five golden rings&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a3.yimg.com/image/2595993267&quot; width=&quot;125&quot; height=&quot;117&quot; alt=&quot;Goldrings.jpg&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;Goldrings.jpg&lt;/h3&gt;
+URL: &lt;a href=&quot;http://my.homewithgod.com/sweatbj/Graphics/Christmas/Goldrings.jpg&quot;&gt;http://my.homewithgod.com/sweatbj/Graphics/Christmas/Goldrings.jpg&lt;/a&gt;&lt;br /&gt;	
+Summary: Five Golden Rings - First five books of the Old Testament. The greatest books to the Jews, worth more than gold.
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Six geese a-laying&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a1.yimg.com/image/2003788603&quot; width=&quot;140&quot; height=&quot;83&quot; alt=&quot;VIThe12DaysOfDickensVillageSixGeeseALaying.jpg&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;VIThe12DaysOfDickensVillageSixGeeseALaying.jpg&lt;/h3&gt;
+URL: &lt;a href=&quot;http://web.ivenue.com/cobblestonesgiftsclctbls/images/VIThe12DaysOfDickensVillageSixGeeseALaying.jpg&quot;&gt;http://web.ivenue.com/cobblestonesgiftsclctbls/images/VIThe12DaysOfDickensVillageSixGeeseALaying.jpg&lt;/a&gt;&lt;br /&gt;	
+Summary: VI, The 12 Days Of Dickens'  Six Geese A-Laying Set Of 2 - Introduced in 1995 - Retired in 1999 - 2.5, 1.25'' tall.Retail Price: $29.95
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Seven swans a-swimming&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a6.yimg.com/image/3608975258&quot; width=&quot;145&quot; height=&quot;138&quot; alt=&quot;seven-swans-a-swimming.jpg&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;seven-swans-a-swimming.jpg&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.artshole.co.uk/arts/artists/anna%20charity/seven-swans-a-swimming.jpg&quot;&gt;http://www.artshole.co.uk/arts/artists/anna%20charity/seven-swans-a-swimming.jpg&lt;/a&gt;&lt;br /&gt;	
+Summary: seven-swans-a-swimming
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Eight maids a-milking&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a4.yimg.com/image/2921795315&quot; width=&quot;135&quot; height=&quot;89&quot; alt=&quot;Eight_Maids_a_Milking.jpg&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;Eight_Maids_a_Milking.jpg&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.sheridangardens.com/ChristopherRadko/Eight_Maids_a_Milking.jpg&quot;&gt;http://www.sheridangardens.com/ChristopherRadko/Eight_Maids_a_Milking.jpg&lt;/a&gt;&lt;br /&gt;	
+Summary: Eight Maids a Milking
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Nine ladies dancing&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a6.yimg.com/image/3403419954&quot; width=&quot;140&quot; height=&quot;71&quot; alt=&quot;nine_ladies_dancing.gif&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;nine_ladies_dancing.gif&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.101funpages.com/html/imgs/page_imgs/images/nine_ladies_dancing.gif&quot;&gt;http://www.101funpages.com/html/imgs/page_imgs/images/nine_ladies_dancing.gif&lt;/a&gt;&lt;br /&gt;	
+Summary: Two Turtle Doves And a Partridge in a Pear Tree. On the ninth day of Christmas, My true love gave to me,
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Ten lords a-leaping&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a4.yimg.com/image/2866720044&quot; width=&quot;128&quot; height=&quot;130&quot; alt=&quot;1993 Ten Lords A-Leaping.JPG&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;1993 Ten Lords A-Leaping.JPG&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.thepartyshop.com/Commerce/images/1993%20Ten%20Lords%20A-Leaping.JPG&quot;&gt;http://www.thepartyshop.com/Commerce/images/1993%20Ten%20Lords%20A-Leaping.JPG&lt;/a&gt;&lt;br /&gt;	
+Summary: 1993 Springtime Bonn..  27-Apr-2005 21:40 57K 1993 TURTLE.jpg 14-Jul-2005 08:37 33K 1993 Ten Lords A-Lea..  26-May-2005 14:53 28K 1993 Time for Easter..  27-Apr-2005 21:54 100K
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Eleven pipers piping&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a8.yimg.com/image/4246688926&quot; width=&quot;145&quot; height=&quot;93&quot; alt=&quot;11pipers.gif&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;11pipers.gif&lt;/h3&gt;
+URL: &lt;a href=&quot;http://www.12days.com/graphics/12daysbook/11pipers.gif&quot;&gt;http://www.12days.com/graphics/12daysbook/11pipers.gif&lt;/a&gt;&lt;br /&gt;	
+Summary: Eleven Pipers Piping ~ C o l l e c t o r s E d i t i o n ~
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Image search for Twelve drummers drumming&lt;/h2&gt;
+
+
+&lt;img src=&quot;http://re3.mm-a8.yimg.com/image/4184741830&quot; width=&quot;125&quot; height=&quot;90&quot; alt=&quot;12drummersdrumming.gif&quot; align=&quot;left&quot;&gt;
+
+&lt;h3&gt;12drummersdrumming.gif&lt;/h3&gt;
+URL: &lt;a href=&quot;http://home.netvigator.com/~dianayu/images/12drummersdrumming.gif&quot;&gt;http://home.netvigator.com/~dianayu/images/12drummersdrumming.gif&lt;/a&gt;&lt;br /&gt;	
+Summary: On the twelfth day of Christmas My true love gave to me Twelve drummers drumming Eleven pipers piping,
+&lt;br clear=&quot;left&quot;&gt;
+
+
+&lt;p&gt;
+&lt;hr&gt;
+&lt;/p&gt;&lt;p&gt;&lt;a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fraytest%2Ecfm%2Ezip'&gt;Download attached file.&lt;/a&gt;&lt;/p&gt;</code></pre>
+}

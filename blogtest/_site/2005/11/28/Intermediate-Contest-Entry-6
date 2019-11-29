@@ -1,0 +1,40 @@
+<h1>Post</h1>
+
+<p>Welcome to the sixth entry in the <a href="http://ray.camdenfamily.com/index.cfm/2005/10/30/Intermediate-ColdFusion-Contest">Intermediate ColdFusion Contest</a>. The earlier entries may be found at the end of this post. Today's entry is from Daniel Ness. Before reading on, please check his application <a href="http://ray.camdenfamily.com/demos/contest2/blackjack_dness">here</a>. You can download his code from the download link at the bottom. Please respect the copyright of the creator.</p>
+<!--more-->
+<p>So - I like the background. Not important - but I thought it was cool. I'm not sure why, but this Blackjack game seemed to beat the pants off of me. I'd say the dealer won three out of four hands. I also have to admit to not getting what &quot;Ante&quot; met at first. As I said though, I'm not much of a card player.</p>
+<p>Let's now dig into the code a bit. I noticed a few problems right off the bat with his Application.cfc file. It is a bit short so I'll paste it all here:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+	&lt;!--- New application object, with timeout and sessions ---&gt;
+	&lt;cfset this.name="blackjack_dness"&gt;
+	&lt;cfset application.highscore=1000&gt;
+	&lt;cfset this.applicationTimeout=createTimeSpan(0,12,0,0)&gt;
+	&lt;cfset this.sessionManagement=true&gt;
+<pre><code>&amp;lt;cffunction name=&quot;onRequestStart&quot; returntype=&quot;void&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;!--- If we need a new session, or they want to restart the session, go here ---&amp;gt;
+	&amp;lt;cfif not isDefined(&quot;application.highscore&quot;) or isDefined(&quot;url.AppRestart&quot;)&amp;gt;
+		&amp;lt;cfset application.highscore=1000&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfif not isDefined(&quot;session.blackjack&quot;) or isDefined(&quot;url.restart&quot;)&amp;gt;
+		&amp;lt;!--- We store all the information in the session struct. ---&amp;gt;
+		&amp;lt;cfset session.blackjack = createObject(&quot;component&quot;,&quot;cfc.blackjack&quot;).init()&amp;gt;
+		&amp;lt;cfset session.dealer    = createObject(&quot;component&quot;,&quot;cfc.blackjackplayer&quot;).init()&amp;gt;
+		&amp;lt;cfset session.player    = createObject(&quot;component&quot;,&quot;cfc.blackjackplayer&quot;).init()&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>The main problem I have is that he is using the Application.cfc file - but not really using the <i>power</i> of it. Notice how he defines variables in both the Application and Session scope - but he does so in the onRequestStart method. These values should be set in the onApplicationStart and onSessionStart method instead. I mean - sure - they do work here - but why bother using the Application.cfc framework if you don't leverage the power of those methods?</p>
+<p>Once again we have a validation problem. He uses JavaScript to validate that your best is not less than zero and not higher than your bank - but he doesn't validate for numbers. This is certainly possible in JavaScript - just takes a bit more work than it would in ColdFusion. Another validation problem - after a hand ends, you can get the dealer to keep sending you cards by just going to (install url)/index.cfm?hitme=now. In this case, there is nothing wrong with the URL variable per se - but the game isn't checking the state before handing out a new card.</p>
+<p>Some nit picking from his blackjack.cfc: For the methods that don't return anything, like newHand, he should add a returnType=&quot;void&quot;. You don't <i>need</i> it, but it makes the code easier to read. In the same method (and in others), he does not use &quot;arguments.&quot; before his argument variables. Again - not necessary - but does make the code easier to read. I recommended in an earlier post that all variables should either be Variable scoped (for global CFC variables), Argument scoped, or with no scope to indicated a local variable. Another minor nit - he created a method to return the game's status, but didn't actually use it. Instead, he normally directly accessed the variable. I'd also say he should have added a corresponding set method if he was going to use the get method. All of the above are minor things and I'm sure some folks would disagree, so take the advice with a grain of salt.</p>
+<p>Oh - and he didn't var scope. I bet you thought I'd miss that, eh? -grin-</p>
+<p>Earlier Entries:</p>
+<ul>
+<li><a href="http://ray.camdenfamily.com/index.cfm/2005/11/23/Intermediate-Contest-Entry-4">Entry 5</a>
+<li><a href="http://ray.camdenfamily.com/index.cfm/2005/11/21/Intermediate-Contest-Entry-4">Entry 4</a>
+<li><a href="http://ray.camdenfamily.com/index.cfm/2005/11/18/Intermedia-Contest-Entry-3">Entry 3</a>
+<li><a href="http://ray.camdenfamily.com/index.cfm/2005/11/17/Intermediate-Contest-Entry-2">Entry 2</a>
+<li><a href="http://ray.camdenfamily.com/index.cfm/2005/11/16/Intermediate-Contest-Entry-1">Entry 1</a>
+</ul><p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fblackjack%5Fdness%2Ezip'>Download attached file.</a></p>}

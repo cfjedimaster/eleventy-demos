@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I don't normally post blog entries about new tech notes on Macromedia.com, but I am going to start doing so to help spread the word - at least for CF related items.</p>
+<p>There is a new technote located here:</p>
+<p><a href="http://www.macromedia.com/support/coldfusion/ts/documents/dynamic_dsn_cfmx.htm">http://www.macromedia.com/support/coldfusion/ts/documents/dynamic_dsn_cfmx.htm</a></p>
+<p>That details how to set up dynamic datasources. However, it only works for MS Access and MS Excel type datasources.</p>
+}

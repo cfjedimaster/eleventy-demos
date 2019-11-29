@@ -1,0 +1,91 @@
+<h1>Post</h1>
+
+<p>For a while now I've been a huge fan of <a href="https://www.getpostman.com/">Postman</a>. If you've never heard of it, it's an incredibly powerful tool for working with APIs. I know a lot of folks like to use Curl at the command line for doing HTTP calls, but I much prefer a visual tool instead. Plus, Postman makes it much easier to save and organize API tests for use later. It's free, supported everywhere, and I strongly recommend it. I've been using Postman lately with <a href="http://openwhisk.apache.org/">OpenWhisk</a> and I thought it would be useful to share a basic explanation on how you could use them together. <strong>To be clear, there is nothing &quot;special&quot; about OpenWhisk and it's APIs.</strong> If you already know Postman well, then you don't have to do anything special to use it, but for folks who may be new to Postman, I thought a quick overview would be useful. Alright, ready? Let's go!</p>
+<p>First and foremost, you want to begin by installing the Postman client.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman1.jpg" alt="Postman"></p>
+<p>Grab the bits for your operating system, install, run, and you'll be ready to go. Remember that this is an actual application. I'm on Windows but always grab the Linux bits for command line stuff since I'm using WSL (Windows Subsystem for Linux). In this case, though, I'd want the Windows client.</p>
+<p>My focus on this post will be related around using Postman for OpenWhisk, so if you want to learn <em>everything</em> about the tool, you should check out the <a href="https://www.getpostman.com/docs/">docs</a>. The first thing I'd suggest though is creating a &quot;Collection&quot; for your tests. A collection is like a folder, and generally you should use one per project, or set of tests. For this blog entry I made a new one, &quot;OpenWhisk+Postman&quot;.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman2.jpg" alt="Another screen shot"></p>
+<p>Alright - so let's build a quick a OpenWhisk action. This one is trivially simple, but it serves our purposes for testing.</p>
+<pre><code class="language-javascript">function main(args) {
+
+	if(!args.name) args.name = 'Nameless';
+	let result = `Hello, ${args.name}`;
+
+	return {
+		result:result
+	}
+
+}
+</code></pre>
+<p>As you can see, this will simply echo back &quot;Hello, X&quot; where X is a name. By default it will be &quot;Nameless&quot;, but you can pass a parameter called <code>name</code> to change this. I stored this on OpenWhisk as the action name, <code>postmantest</code>.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman3.jpg" alt="Creating and testing the action"></p>
+<p>Remember that there are three main ways of calling your OpenWhisk actions via HTTP:</p>
+<ul>
+<li>Via the authenticated REST API - this is what the CLI uses.</li>
+<li>Via a Web Action</li>
+<li>Via a Managed API</li>
+</ul>
+<p>Let's cover these one by one.</p>
+<h2>Authenticated REST API</h2>
+<p>Using the <a href="https://console.bluemix.net/docs/openwhisk/openwhisk_rest_api.html">REST API</a> does not require any special modifications to your actions. In order to call the API via Postman, we'll need two things - the URL (of course) and the authorization information. Luckily this is pretty easy to figure out. The URL to invoke your action will - generally - look like so:</p>
+<pre><code>https://openwhisk.ng.bluemix.net/api/v1/namespaces/_/actions/postmantest
+</code></pre>
+<p>The underscore there represents the &quot;default&quot; package. If I had put my action in the &quot;foo&quot; package, you would see <code>foo/actions</code> instead. But if you forget this URL 'pattern', there is a quick way to find it. When using the CLI to work with OpenWhisk, you can always add the <code>-v</code> flag to enable verbose mode. This will share a <em>lot</em> of additional information, including the URL and authorization headers passed. Here's an example:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman4.jpg" alt="URL and Auth Info"></p>
+<p>There's a few things to notice here. First off, notice that the URL has two additional arguments, <code>blocking=true</code> and <code>result=true</code>. These are critical to ensure you actually get a result from the call and not just an activation ID. The <code>result</code> one though you may want to edit, especially if you want to keep see the metadata of your call (for example, how long it took to run).</p>
+<p>The next thing to note is the authorization header. The authenticated REST API is - well - authenticated. That should be obvious. You can handle that authentication in one of two ways via Postman. You can either set a header called Authorization and pass the string exactly as you see in the command line output. Or you can tell Postman to use Basic authentication and supply the username and password. <strong>This is not the username and password for Bluemix.</strong> Rather, this is information that the OpenWhisk system sets up for you automatically and that you setup with the CLI. This is how the CLI is able to use your credentials to work on your actions. In theory you could use either with Postman, but it &quot;feels&quot; more proper to use the username and password values instead. So how do you get them? Just run <code>wsk property get</code>:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman5.jpg" alt="Auth info"></p>
+<p>In the screen shot above, you can see where the information is displayed. The username is the ugly set of random digits <strong>before</strong> the colon and the password is everything after it. Now we have the bits be we need to add this to Postman.</p>
+<p>You should have an empty tab available where you can add in the information required to call the API. First, copy the URL and change the method from <code>GET</code> to <code>POST</code>. Then in the &quot;Authorization&quot; tab, change the type to <code>Basic Auth</code>. Copy and paste the values from the CLI call above for your username and password.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman6.jpg" alt="New API"></p>
+<p>Finally, click &quot;Save&quot;. To be clear, you do not have to save Postman items. Postman will remember them even if you close the app, but if you plan on using the API again, it makes sense to do so. You can also give it a nice name.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman7.jpg" alt="Saving the API"></p>
+<p>Finally, use the bright blue &quot;Send&quot; button to run your test.</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman8.png" class="imgborder" title="Test run">
+<p>Note that Postman does a great job rendering the results along with returning all the additional headers in the result too. Notice too that the JSON was pretty printed and you have the option of switching to the raw view if you want. Finally, you can also easily save the result too.</p>
+<p>To test passing a parameter, click on the test name in the left hand menu and use &quot;Duplicate&quot; to create a copy. Notice that &quot;Authorization&quot; is set to none, but if you switch it to &quot;Basic Auth&quot;, it will have the values you used before. I then ran this test in the CLI:</p>
+<p><code>wsk action invoke postmantest -b -r --param name Rey -v</code></p>
+<p>Notice how the call is made this time:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman9.jpg" alt="With params"></p>
+<p>As you can see, the param value was passed in the request body. Also, a content-type header was added. Let's see how to do that in Postman.</p>
+<p>First, I selected the &quot;Headers&quot; tab and entered a new key of &quot;Content-Type&quot; with a value of &quot;application/json&quot;. You'll notice that in both cases, Postman has autocomplete for these values, saving you some time.</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman10.jpg" class="imgborder" title="Setting content-type">
+<p>Next select the Body tab, then the &quot;raw&quot; option, and enter your JSON packet:</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman11.jpg" class="imgborder" title="Body value">
+<p>Note that Postman will give you feedback if your JSON is malformed, which is pretty darn cool. Remember to save the API and then run it, and you should see the proper response:</p>
+<pre><code class="language-javascript">{
+    "result": "Hello, Rey"
+}
+</code></pre>
+<p>Ok, onward and upward!</p>
+<h2>Web Actions</h2>
+<p>To use a <a href="https://console.bluemix.net/docs/openwhisk/openwhisk_webactions.html#openwhisk_webactions">web action</a>, first you have to enable it via an annotation:</p>
+<p><code>wsk action update postmantest --web true</code></p>
+<p>At this point, your action is now enabled for anonymous access. The URLs for web actions follow a standard format that involves your username and space and all that, however another way to get is to simply log on to the Bluemix OpenWhisk Mangement UI, find your action, and go into &quot;Additional Details&quot;:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/7/postman12.jpg" alt="Getting the URL"></p>
+<p>You can simply copy that URL into a new Postman action. You'll want to use GET however. Here's the new Postman API with the web action URL:</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman13.jpg" class="imgborder" title="Web Action">
+<p>Passing parameters can be done via URL or Form parameters. Both are pretty easy in Postman, but let's consider a URL example. Duplicate the API test you just made and use the &quot;Params&quot; button next to the URL. You can then add the parameter, &quot;name&quot;, with a value to test.</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman14.jpg" class="imgborder" title="Web Action (2)">
+<p>Now let's level up!</p>
+<h2>API Management</h2>
+<p>API management and the <a href="https://console.bluemix.net/docs/openwhisk/openwhisk_apigateway.html#openwhisk_apigateway">API gateway</a> is a pretty big topic. Covering it completely is out of the scope of this post. You can expose your action as a managed API either via the CLI or the UI. The CLI will nicely print out the URL, so let's do that:</p>
+<p><code>wsk api create /postmanapi /test GET postmantest</code></p>
+<p>The output will give you the URL needed to run the API (spaces added to help it wrap):</p>
+<p><code><span>https</span>://service.us.apiconnect.ibmcloud.com/gws/apigateway/ api/37871051d18d0b2115da90f292458913e22e5d182c8a965fadcfbf6b5fcc96c6 /postmanapi/test</code></p>
+<p>Much like web actions, you can then simply use this URL to get the &quot;Nameless&quot; response, or add a query parameter (again, spaces added for wrapping):</p>
+<p><code><span>https</span>://service.us.apiconnect.ibmcloud.com/gws/apigateway/ api/37871051d18d0b2115da90f292458913e22e5d182c8a965fadcfbf6b5fcc96c6 /postmanapi/test?name=tron</code></p>
+<p>So in theory, you could duplicate your previous Postman actions with this new URL. But let's assume you want to test an <strong>authenticated</strong> managed API. In the UI, you can use the API tool to require authentication:</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman15.jpg" class="imgborder" title="APIM">
+<p>Don't forget to click &quot;Save&quot;, then go into &quot;Sharing&quot; and click &quot;Create API Key&quot;:</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman17.jpg" class="imgborder" title="Key">
+<p>Note that you get both a key and a secret. You can select wether or not to require just the key or the key and secret. For now, I used just the key. Now let's test. We should set up 2 tests. One to call the URL without the key to confirm it is required, and one to confirm it works when passing the key. (And obviously we could test parameters as well, but I think we're safe to assume that works.)</p>
+<p>First, I made a new API test in Postman with the URL and no authentication information:</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman18.jpg" class="imgborder" title="No API for you!">
+<p>Perfect. Now we can duplicate this API and then add the proper header. The console tells us to use the header &quot;X-IBM-Client-ID&quot;. I simply add that to the headers value and pass in the key:</p>
+<img src="https://static.raymondcamden.com/images/2017/7/postman19.jpg" class="imgborder" title="Working API">
+<p>And there ya go!</p>
+<h2>Wrap Up</h2>
+<p>So I hope this was helpful, definitely leave me a comment below if it was, or if you have any other suggestions. While I barely touched on the greatness that is Postman, I want to point out one feature in particular that may be useful. <a href="https://www.getpostman.com/docs/postman/environments_and_globals/variables">Environments</a> allow for the creation of variables that can be shared across a collection. When I duplicated my earlier tests, I didn't need to copy the username and password. But if they were to change, I'd have to change them in every instance. Environments let you specify these types of values and then use them in your API calls via simple tokens. It's incredibly useful for storing things like API keys.</p>
+}

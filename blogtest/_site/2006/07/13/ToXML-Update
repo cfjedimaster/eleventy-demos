@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>I'm currently working on the 5.1 version of <a href="http://www.blogcfc.com">BlogCFC</a>. As part of my set of updates, I'm changing the entry editor to use Spry to handle selecting related entries. This worked fine, but I noticed that the speed improvement wasn't what I thought it would be.</p>
+<!--more-->
+<p>I did some testing with one of the most useful tags out there, <a href="http://www.techfeed.net/cfQuickDocs/?cftimer">cftimer</a>, and discovered that the major slowdown in the process was my toXML code.</p>
+<p>I had forgotten that string manipulation can be a bit slow in ColdFusion. Since I was converting about 800 rows of data to XML, the slowdown wasn't surprising. I changed the code to use Java's StringBuffer class. This is much more efficient when doing a large number of string changes.</p>
+<p>How did it work? I was seeing execution times of 1000 ms to create my XML packet. When I switched to using StringBuffer, the time went to under 100 ms. To me, that's a good improvement.</p>
+<p>I've attached the zip to this entry. For those who don't remember, the purpose of this CFC is to let you convert various ColdFusion datatypes to XML packets. Yes you can do this with <a href="http://www.techfeed.net/cfQuickDocs/?cfwddx">cfwddx</a>, I wanted something that gave me more control over the XML so that I could use it with Spry. Enjoy.<p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2FArchive2%2Ezip'>Download attached file.</a></p></p>
+}

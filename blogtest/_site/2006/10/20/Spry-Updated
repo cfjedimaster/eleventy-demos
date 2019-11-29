@@ -1,0 +1,35 @@
+<h1>Post</h1>
+
+<p>While the official 1.4 release is still not ready yet, the folks over on the Spry team have released a new update today. You can read more about this at <a href="http://www.adobe.com/cfusion/webforums/forum/messageview.cfm?forumid=72&catid=602&threadid=1206959&enterthread=y">this forum</a> post. This release focuses mostly on widgets and form validation - two areas that Spry doesn't have a lot of tools in - so I'm very happy to see this update.</p>
+<p>Check out the <a href="http://labs.adobe.com/technologies/spry/samples/preview.html">examples</a> first, then check out the new cool <a href="http://labs.adobe.com/technologies/spry/demos/formsvalidation/">demo</a>.</p>
+<p>This is definitely a prerelease - so use with caution, but it does look pretty darn cool. Consider the tab menus. Here is a simple example:</p>
+<code>
+&lt;script language="JavaScript" type="text/javascript" src="../../widgets/tabbedpanels/SpryTabbedPanels.js"&gt;&lt;/script&gt;
+<p>&lt;div class=&quot;TabbedPanels&quot; id=&quot;tp1&quot;&gt;
+&lt;ul class=&quot;TabbedPanelsTabGroup&quot;&gt;</p>
+<pre><code>&amp;lt;li class=&quot;TabbedPanelTab&quot; tabindex=&quot;0&quot;&amp;gt;Tab 1&amp;lt;/li&amp;gt;
+&amp;lt;li class=&quot;TabbedPanelTab&quot; tabindex=&quot;0&quot;&amp;gt;Tab 2&amp;lt;/li&amp;gt;
+&amp;lt;li class=&quot;TabbedPanelTab&quot; tabindex=&quot;0&quot;&amp;gt;Tab 3&amp;lt;/li&amp;gt;
+&amp;lt;li class=&quot;TabbedPanelTab&quot; tabindex=&quot;0&quot;&amp;gt;Tab 4&amp;lt;/li&amp;gt;
+</code></pre>
+<p>&lt;/ul&gt;
+&lt;div class=&quot;TabbedPanelsContentGroup&quot;&gt;
+&lt;div class=&quot;TabbedPanelContent&quot;&gt;</p>
+<pre><code>  &amp;lt;p&amp;gt;By default, the Tabbed Panel CSS does not define a height or width to the widget.&amp;lt;/p&amp;gt;
+  &amp;lt;p&amp;gt;The height of the widget will change depending on the size of the content of the current open panel.&amp;lt;/p&amp;gt;
+  &amp;lt;p&amp;gt;To set a fixed size for the widget, set the 'height' of the class .TabbedPanelContent to whatever value you need. Overflow should be set to handle content longer than the set height. &amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+&amp;lt;div class=&quot;TabbedPanelContent&quot;&amp;gt; Tab 2 Content &amp;lt;/div&amp;gt;
+&amp;lt;div class=&quot;TabbedPanelContent&quot;&amp;gt;
+
+  &amp;lt;p&amp;gt;Default Panel set to open the 3rd panel onLoad. Spry has a 0 based counting system, so the constructor option {defaultTab: 2} will open the 3rd panel. &amp;lt;/p&amp;gt;
+  &amp;lt;p&amp;gt;.TabbedPanels class has been set to a width of 500 pixels, so all widgets that use that class on this page will be that width. &amp;lt;/p&amp;gt;
+  &amp;lt;p&amp;gt;Also, tabindex=&amp;quot;0&amp;quot; has to be set on every tab element for keyboard navigation to work correctly. &amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+&amp;lt;div class=&quot;TabbedPanelContent&quot;&amp;gt;Tab 4 Content&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+&lt;/div&gt;
+</code></p>
+<p>Pretty simple, eh?</p>
+}

@@ -1,0 +1,203 @@
+<h1>Post</h1>
+
+<p><strong>(Before I begin, a quick note. The iTunes API will <i>randomly</i> throw CORS issues, most likely due to a misconfigured server in their network. To use this in production I'd add a serverless proxy. You may, or may not, run into this while testing.)</strong> When I present on Vue.js, one of the demos I show makes use of the <a href="https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/">iTunes Search API</a>. It isn't necessarily that exciting of a demo, and I don't use iTunes very often, but the fact that it has interesting data and does <em>not</em> require a key of any sort makes it a good candidate for simple demos. I thought I'd quickly demonstrate this with Vue.js in the simplest form possible, and then work through some updates to improve the application.</p>
+<h3>Version One</h3>
+<p>In the first version, I'm just going to do a search against the API and render the results in the simplest way possible. I will provide some feedback when the search begins so the user knows what's going on, but that's pretty much. Let's start with the HTML:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;meta charset=&quot;utf-8&quot;&gt;
+		&lt;title&gt;&lt;/title&gt;
+		&lt;meta name=&quot;description&quot; content=&quot;&quot;&gt;
+		&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+		&lt;style&gt;
+		[v-cloak] {display: none}
+		&lt;/style&gt;
+		&lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+
+		&lt;div id=&quot;app&quot; v-cloak&gt;
+			&lt;input v-model=&quot;term&quot; type=&quot;search&quot;&gt;
+			&lt;button @click=&quot;search&quot;&gt;Search&lt;/button&gt;
+			&lt;p/&gt;
+
+			&lt;div v-for=&quot;result in results&quot; class=&quot;result&quot;&gt;
+				&lt;img :src=&quot;result.artworkUrl100&quot;&gt;
+				&lt;b&gt;Artist:&lt;/b&gt; {{result.artistName}}&lt;br/&gt;
+				&lt;b&gt;Track:&lt;/b&gt; {{result.trackName}}&lt;br/&gt;
+				&lt;b&gt;Released:&lt;/b&gt; {{result.releaseDate | formatDate}}
+				&lt;br clear=&quot;left&quot;&gt;
+			&lt;/div&gt;
+
+			&lt;div v-if=&quot;noResults&quot;&gt;
+				Sorry, but no results were found. I blame Apple.
+			&lt;/div&gt;
+
+			&lt;div v-if=&quot;searching&quot;&gt;
+				&lt;i&gt;Searching...&lt;/i&gt;
+			&lt;/div&gt;
+
+		&lt;/div&gt;
+
+		&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+		&lt;script src=&quot;app.js&quot;&gt;&lt;/script&gt;
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>We've got a simple form on top where you enter your terms with a button that will kick off the search. Beneath that are three divs. The first renders the results. I chose to show the artwork, artist, track, and release date. The API returns more information but I figured that was enough. The second div is only shown when no results are returned. The final div is used to indicate that the search is in progress. Now let's look at the JavaScript.</p>
+<pre><code class="language-js">Vue.filter('formatDate', function(d) {
+	if(!window.Intl) return d;
+	return new Intl.DateTimeFormat('en-US').format(new Date(d));
+}); 
+
+const app = new Vue({
+	el:'#app',
+	data:{
+		term:'',
+		results:[],
+		noResults:false,
+		searching:false
+	},
+	methods:{
+		search:function() {
+			this.results = [];
+			this.searching = true;
+			fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&amp;limit=10&amp;media=music`)
+			.then(res =&gt; res.json())
+			.then(res =&gt; {
+				this.searching = false;
+				this.results = res.results;
+				this.noResults = this.results.length === 0;
+			});
+		}
+	}
+});
+</code></pre>
+<p>My code begins by defining a filter <code>formatDate</code> that makes use of the Intl spec. (If this sounds interesting, read the <a href="https://vuejsdevelopers.com/2018/03/12/vue-js-filters-internationalization/">article</a> I wrote on the topic.) The application itself is fairly simple. I've got one method that fires off the request to the API. Note that I'm limiting both the total number of results and the media type to music. When done, I set the results, set the flag for no results, and that's it.</p>
+<p>You can demo this version here: <a href="https://cfjedimaster.github.io/vue-demos/itunes-search/ajax-search/">https://cfjedimaster.github.io/vue-demos/itunes-search/ajax-search/</a>. Try searching for &quot;duran duran&quot; because I said so. ;)</p>
+<img src="https://static.raymondcamden.com/images/2019/09/vue1.png" alt="Results of searching for Duran Duran" class="imgborder imgcenter">
+<h3>Version Two</h3>
+<p>The second version is virtually the same, except for the addition of the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Audio API</a> to play the samples returned by the API. The only thing changed in the HTML is the result view so I'll just share that part:</p>
+<pre><code class="language-html">&lt;div v-for=&quot;result in results&quot; class=&quot;result&quot;&gt;
+	&lt;img :src=&quot;result.artworkUrl100&quot;&gt;
+	&lt;b&gt;Artist:&lt;/b&gt; {{result.artistName}}&lt;br/&gt;
+	&lt;b&gt;Track:&lt;/b&gt; {{result.trackName}}&lt;br/&gt;
+	&lt;b&gt;Released:&lt;/b&gt; {{result.releaseDate | formatDate}}&lt;br/&gt;
+	&lt;button @click=&quot;play(result.previewUrl)&quot;&gt;&amp;#9658; Play Sample&lt;/button&gt;
+	&lt;br clear=&quot;left&quot;&gt;
+&lt;/div&gt;
+</code></pre>
+<p>In the JavaScript, I've added support for the <code>play</code> method. Here's the code:</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data:{
+		term:'',
+		results:[],
+		noResults:false,
+		searching:false,
+		audio:null
+	},
+	methods:{
+		search:function() {
+			if(this.audio) {
+				this.audio.pause();
+				this.audio.currentTime = 0;
+			}
+			this.results = [];
+			this.searching = true;
+			fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&amp;limit=10&amp;media=music`)
+			.then(res =&gt; res.json())
+			.then(res =&gt; {
+				this.searching = false;
+				this.results = res.results;
+				this.noResults = this.results.length === 0;
+			});
+		},
+		play:function(s) {
+			if(this.audio) {
+				this.audio.pause();
+				this.audio.currentTime = 0;
+			}
+			this.audio = new Audio(s);
+			this.audio.play();
+		}
+	}
+});
+</code></pre>
+<p>Note I have an <code>audio</code> object defined in my data. I need a &quot;global&quot; audio object so I can cancel a previous preview if you start a new one. (For fun, disable that logic and then play a bunch of previews at once.) And that's literally it. For this demo you should search for &quot;hatchie&quot;, one of my favorite new bands.</p>
+<img src="https://static.raymondcamden.com/images/2019/09/vue2.png" alt="Demonstrates adding play support to search results" class="imgborder imgcenter">
+<p>You can demo this here: <a href="https://cfjedimaster.github.io/vue-demos/itunes-search/ajax-search-2/">https://cfjedimaster.github.io/vue-demos/itunes-search/ajax-search-2/</a></p>
+<h3>Version the Third</h3>
+<p>For the third and final version I put some lipstick on the pig and added <a href="https://bootstrap-vue.js.org/">BootstrapVue</a>. As you can guess, this is a Vue component library that wraps the Bootstrap UI project. I didn't do a lot to it, but you can see the result here:</p>
+<img src="https://static.raymondcamden.com/images/2019/09/vue3.png" alt="Nicely styled results" class="imgborder imgcenter">
+<p>This is my first time using BootstrapVue (well, first time in quite some time), and in general it went ok. I don't like how you have to hunt sometimes to find random properties, for example it took me a while to figure out how to do spacing. (And to be fair, &quot;a while&quot; was maybe two minutes or so.) Since the JavaScript didn't change at all, I'll just show the HTML update.</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;meta charset=&quot;utf-8&quot;&gt;
+		&lt;title&gt;&lt;/title&gt;
+		&lt;meta name=&quot;description&quot; content=&quot;&quot;&gt;
+		&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+		&lt;style&gt;
+		[v-cloak] {display: none}
+		#app {
+			padding-top: 50px;
+		}
+		&lt;/style&gt;
+		&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;//unpkg.com/bootstrap/dist/css/bootstrap.min.css&quot; /&gt;
+		&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css&quot; /&gt;
+		&lt;script src=&quot;//unpkg.com/vue@latest/dist/vue.min.js&quot;&gt;&lt;/script&gt;
+		&lt;script src=&quot;//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js&quot;&gt;&lt;/script&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+
+		&lt;div id=&quot;app&quot; v-cloak&gt;
+			&lt;b-container &gt;
+				
+				&lt;b-row&gt;
+					&lt;b-col sm=&quot;9&quot;&gt;
+						&lt;b-form-input v-model=&quot;term&quot; type=&quot;search&quot;&gt;&lt;/b-form-input&gt;
+					&lt;/b-col&gt;
+					&lt;b-col sm=&quot;3&quot;&gt;
+						&lt;b-button @click=&quot;search&quot; block variant=&quot;dark&quot;&gt;Search&lt;/b-button&gt;
+					&lt;/b-col&gt;
+				&lt;/b-row&gt;
+
+				&lt;b-row v-if=&quot;searching&quot;&gt;
+					&lt;b-col sm=&quot;12&quot;&gt;
+						&lt;i&gt;Searching...&lt;/i&gt;
+					&lt;/b-col&gt;
+				&lt;/b-row&gt;
+
+				&lt;b-row&gt;
+					&lt;b-col sm=&quot;3&quot; class=&quot;my-3&quot; v-for=&quot;result in results&quot; class=&quot;result&quot;&gt;
+						&lt;b-card :title=&quot;result.trackName&quot;
+						class=&quot;h-100&quot;
+						img-top
+						:img-src=&quot;result.artworkUrl100&quot;&gt;
+							&lt;b-card-text&gt;
+							From {{ result.artistName }}, released on {{result.releaseDate | formatDate}}.
+							&lt;/b-card-text&gt;
+							&lt;b-button @click=&quot;play(result.previewUrl)&quot; variant=&quot;dark&quot;&gt;&amp;#9658; Play Sample&lt;/b-button&gt;
+						&lt;/b-card&gt;
+					&lt;/b-col&gt;
+				&lt;/b-row&gt;
+
+				&lt;b-row v-if=&quot;noResults&quot;&gt;
+					&lt;b-col sm=&quot;12&quot;&gt;
+						Sorry, but no results were found. I blame Apple.
+					&lt;/b-col&gt;
+				&lt;/b-row&gt;
+
+			&lt;/b-container&gt;
+		&lt;/div&gt;
+
+		&lt;script src=&quot;app.js&quot;&gt;&lt;/script&gt;
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>You can see I'm loading in various Bootstrap libraries (both JS and CSS) in my head. I've pretty much changed all of my HTML tags into Vue components. I assume most make sense as is, but obviously you can check the <a href="https://bootstrap-vue.js.org/docs/">BootstrapVue docs</a> for more information. (You can ask me too of course!) All in all it was a mostly painless process, but I wish they had more of a dark theme. (They may, but I couldn't find it outside of dark UI elements.)</p>
+<p>You can test this version here: <a href="https://cfjedimaster.github.io/vue-demos/itunes-search/ajax-search-3/">https://cfjedimaster.github.io/vue-demos/itunes-search/ajax-search-3/</a></p>
+<p>Finally, all of the code may be found here: <a href="https://github.com/cfjedimaster/vue-demos/tree/master/itunes-search">https://github.com/cfjedimaster/vue-demos/tree/master/itunes-search</a></p>
+}

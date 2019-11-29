@@ -1,0 +1,235 @@
+<h1>Post</h1>
+
+<p>Nearly two years ago I first wrote about the Cordova Browser platform (<a href="http://www.raymondcamden.com/2014/09/24/browser-as-a-platform-for-your-phonegapcordova-apps/">Browser as a platform for your PhoneGap/Cordova apps</a>). After seeing an update on the Apache Cordova blog (<a href="http://cordova.apache.org/announcements/2016/03/04/cordova-browser-4.1.0.html">Cordova Browser 4.1.0</a>), I thought it might be nice to take another look at it and see how far along it has come.</p>
+<!--more-->
+<p>First and foremost, what is the point of the browser platform? Speaking for myself, and I'll clarify what that means in a second, I think the browser platform is a way to test your Cordova applications in the browser. You have other ways of doing this. For example, <code>cordova serve</code> and <code>ionic serve</code>. However, the &quot;Browser platform&quot; acts a bit differently. It attempts to actually make your application work on the browser. What do I mean by that? If you simply serve up your www assets, then you won't have a deviceready event (technically, Ionic will fire one for you) and you won't have support for things like the camera or other &quot;device only&quot; features.</p>
+<p>On the flip side, the Browser platform actually <em>supports</em> the Camera. I'll be demonstrating how it does so a bit later, but you can use the same APIs you use on your device within the browser and actually get things done.</p>
+<p>Now - here is where my opinion and those of the Cordova group (which technically I'm part of too ;) differ a bit. I think the <em>intention</em> of the browser platform is to actually support going to production with your app. To me, that just seems a bit too much. The camera <em>does</em> work, but it is more of a workaround then what I think a typical end user may expect in a production app. Again, this is just my opinion, but to me, the Browser platform is great for testing, but not necessarily something I'd go live with.</p>
+<h2>Working with the Browser Platform</h2>
+<p>Before you begin working with the Browser platform, there are a few things you should know. First, you have to actually add the platform. That means running <code>cordova platform add browser</code>. And if you want the latest, then you need to specify <code>cordova platform add browser@4.1.0</code>. Soon that version will be the default, and if you're reading this in the future you should probably just take the default, it could 6.0.0 by now.</p>
+<p>And obviously, if you are only using the Browser platform to test and you find it isn't working out for you, then be sure to go ahead and remove it: <code>cordova platform rm browser</code>.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/03/browser1.png" alt="Browser platform"></p>
+<p>To start testing the platform, simply <code>cordova run browser</code>, or <code>cordova run</code> if you only have one platform. When you do, a new instance of Chrome will pop up. I use Chrome as my default browser, but a new instance was launched as opposed to a new tab opening in my current browser. That's good imo but just keep that in mind. You'll also get a running log of requests in Terminal. What you see will be based on what plugins and other assets you use. Here is an example:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/03/browser2.png" alt="Browser logs"></p>
+<p>This is a live listing and will update as your app requests new resources. Can you configure how the browser is loaded? Yes. If you look in <code>platforms/browser/cordova/</code>, you'll see a <code>run</code> file whichi is used by the Cordova CLI. It's also a quick way to see the help. The <code>run</code> script supports two arguments: <code>browser</code> and <code>port</code>. <code>browser</code> defaults to Chrome. <code>port</code> defaults to 8000. Here is how I'd switch the port and browser:</p>
+<p><code>cordova run browser -- --port=8001 --target=Firefox</code></p>
+<p>As you edit files in <code>www</code>, remember that Cordova runs your code out of the <code>platforms</code> folder. For my testing, I opened a new tab and ran <code>cordova prepare browser</code> whenever I edited. That got old pretty quickly. I knew I could set upa Grunt task to automate that, but it seemed over the top. Then I found a cool utility called <a href="https://github.com/thomasfl/filewatcher">filewatcher</a>. This is a command line tool that lets you watch files and run an arbitrary command when something changes. This is what I used:</p>
+<p><code>filewatcher &quot;www/**/*.*&quot; &quot;cordova prepare browser&quot;</code></p>
+<h2>Working with Plugins</h2>
+<p>Ok, so how do you use plugins? Exactly the same way you do for any other platform. Find the plugin you want, install it, and then follow their API. At the <a href="http://cordova.apache.org/plugins/">Plugin Repository</a> you'll notice a button to filter by browser support:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser3.png" class="imgborder">
+<p>Notice that there is a bug with the registry in that you don't get a pretty little icon indicating that the Browser platform is supported. This is a known bug. (As in a known bug as of a few hours ago.)</p>
+<p>Of course, the devil is in the details. For each supported plugin, you need to carefully read to see exactly <em>how</em> the platform will be supported. The <a href="https://www.npmjs.com/package/phonegap-plugin-barcodescanner">barcode plugin</a>, for example, doesn't actually let you scan a barcode. Instead, it simply prompts you to manually type in a value for the 'scanned' barcode. I used this recently in a production app though and it was great... for testing.</p>
+<p>I decided to take a quick &quot;tour&quot; through the official plugins for Cordova and see which supported the Browser platform and how well they did. Below you'll see a report detailing what I found. All of the code used in this test is up on my GitHub repo here: <a href="https://github.com/cfjedimaster/Cordova-Examples/tree/master/browser1">https://github.com/cfjedimaster/Cordova-Examples/tree/master/browser1</a></p>
+<h2>Battery</h2>
+<p>The first plugin I tested was the Battery plugin. First off, this plugin does <em>not</em> follow the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API">Battery API</a>. If you've used that before, just keep it in mind. I did two tests:</p>
+<pre><code class="language-javascript">
+window.addEventListener("batterystatus", function(info) {
+	console.log("[batterystatus event] Level: " + info.level + " isPlugged: " + info.isPlugged);
+}, false);
+
+window.addEventListener("batterylow", function(info) {
+	console.log("[batterylow event] Level: " + info.level);
+}, false);
+</code></pre>
+<p>I never got around to seeing if <code>batterylow</code> fired, but my <code>batterystatus</code> handler did correctly report my battery level and plugin status:</p>
+<p><code>[batterystatus event] Level: 100 isPlugged: true</code></p>
+<h2>Camera</h2>
+<p>First off, be sure to note that the 'Quirks' information for the Camera plugin clearly points out that only Base64 image URIs are returned by the plugin. Normally Cordova devs recommend against that, but if you want to test on the Browser platform you'll need to use it.</p>
+<p>What's cool - is that you have support for both new images and existing images. How does it work? I added two buttons, one for each use case, and then used the following code.</p>
+<pre><code class="language-javascript">
+var renderPic = function(data) {
+	var image = document.getElementById('myImage');
+	image.src = "data:image/jpeg;base64," + data;		
+};
+
+var cameraError = function(err) {
+	console.log('[camera error]',err);	
+};
+
+document.querySelector('#testCameraExisting').addEventListener('click', function() {
+	
+	navigator.camera.getPicture(renderPic, cameraError, {
+		sourceType:Camera.PictureSourceType.PHOTOLIBRARY,
+		destinationType:Camera.DestinationType.DATA_URL
+	});
+	
+});
+
+document.querySelector('#testCameraNew').addEventListener('click', function() {
+	
+	navigator.camera.getPicture(renderPic, cameraError, {
+		sourceType:Camera.PictureSourceType.CAMERA,
+		destinationType:Camera.DestinationType.DATA_URL
+	});
+	
+});
+</code></pre>
+<p>In general, this is completely vanilla Camera code. So what does it do? For the source type of CAMERA, it actually fires up your webcam using getUserMedia.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser4.png" class="imgborder">
+<p>The live video is added to the bottom of the DOM along with a capture button. When you click it, then your success handler will fire. Here is the result rendered in the DOM as my code specified.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser5.png" class="imgborder">
+<p><strong>Very Important Warning!!</strong> The live video stream also broadcasts your audio. That means if you're rocking out to some music, you'll get some really gross feedback. Be sure you mute beforehand.</p>
+<p><strong>Another Important Warning!!</strong> If you get this error:</p>
+<pre><code class="language-markup">
+Refused to load media from 'blob:http%3A//localhost%3A8000/d62e77b1-8354-4f25-abd2-f0634de5a4f5' because it violates the following Content Security Policy directive: "media-src *".
+</code></pre>
+<p>You will need to edit the CSP definition in index.html to specifically allow for blob URLs under <code>media-src</code>. Here is mine:</p>
+<pre><code class="language-javascript">
+&lt;meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 
+https://ssl.gstatic.com http://www.raymondcamden.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; 
+media-src * blob:"&gt;
+</code></pre>
+<p>If you select PHOTOLIBRARY as your source, then you get a simple file chooser. As before, it gets dropped at the end of the DOM. (I won't add a screenshot of that since we all know what an HTML file chooser looks like.) You select your file then it is used as the result.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser6.png" class="imgborder">
+<h2>Device</h2>
+<p>So yeah, device just works. I added a button to my demo to dump out the <code>device</code> object. Here is what it shows:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser7.png" class="imgborder">
+<h2>Device Motion</h2>
+<p>According to the docs, you can test the device motion plugin in the Browser platform and will fire off random values. In my experience, things were a bit flakey. First, here is the code I used. I had one button to get the <em>current</em> motion of the device, and then two more to set up a watch and clear it.</p>
+<pre><code class="language-javascript">
+var watchId;
+
+var renderAcc = function(data) {
+	console.log('[acceleration]' + JSON.stringify(data));
+};
+
+var accError = function(err) {
+	console.log('[acceleration error]',err);	
+};
+
+document.querySelector('#testAcc').addEventListener('click', function() {
+	
+	navigator.accelerometer.getCurrentAcceleration(renderAcc,accError);
+	
+});
+
+document.querySelector('#testAccWatch').addEventListener('click', function() {
+	console.log('[acceleration] begin watch');
+	watchId = navigator.accelerometer.watchAcceleration(renderAcc,accError,
+	{frequency:1000});
+	
+});
+
+document.querySelector('#testAccStop').addEventListener('click', function() {
+	console.log('[acceleration] clear watch');		
+	navigator.accelerometer.clearWatch(watchId);
+	
+});
+	
+</code></pre>
+<p>When I tested the code to get the current motion, the error handler was thrown first and then the success handler:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser8.png" class="imgborder">
+<p>I filed a <a href="https://issues.apache.org/jira/browse/CB-7629">bug report</a> for that.</p>
+<p>Next - when I did a watch test, the value was random, but only once. I got the same result over every iteration of watch success handler. I filed a <a href="https://issues.apache.org/jira/browse/CB-10938">bug report</a> for that as well.</p>
+<p>Finally, the clear command also threw the error handler, but did properly stop the plugin from reporting values.</p>
+<h2>Device Orientation</h2>
+<p>Unlike device motion, device orientation worked perfectly. It is random as well, and if you do a watch, you get random values for every request.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser9.png" class="imgborder">
+<h2>File and FileTransfer</h2>
+<p>Yeah, no, I'm not touching these. For Firefox and IE, the Browser platform will use IndexedDB for File support, which is kinda cool I guess. Chrome has a file system feature that is deprecated but still works. For FileTransfer, it just uses XHR and FormData. If you aren't aware, a few years ago support was added for Ajax based file uploads. All modern browsers should support this well now.</p>
+<h2>Globalization</h2>
+<p>For the most part, this plugin kinda halfway-works on the Browser platform. It uses the excellent Moment.js for most of it's work, but coverage is spotty. So for example, you can't do currency formatting. I noticed this odd line in the quirks:</p>
+<p>&quot;The array of months contains 12 elements.&quot;</p>
+<p>Which seemed an odd quirk, but then I saw this under Windows Phone 8:</p>
+<p>&quot;The array of months contains 13 elements.&quot;</p>
+<p>Um.... ok. I whipped up a simple example where I can get locale information and do a simple percentage format. Here is the code.</p>
+<pre><code class="language-javascript">
+var globError = function(err) {
+	console.log('[globalization error]',err);	
+};
+
+document.querySelector('#testGlob').addEventListener('click', function() {
+	
+	navigator.globalization.getPreferredLanguage(function(lang) {
+		console.log('[globalization] preferredLanguage: '+JSON.stringify(lang));
+	});
+
+	navigator.globalization.getLocaleName(function(locale) {
+		console.log('[globalization] localeName: '+JSON.stringify(locale));
+	});
+
+	navigator.globalization.getDateNames(function(names) {
+		console.log('[globalization] getDateNames:months: '+JSON.stringify(names));
+	},globError, {type:'wide', item:'months'});
+
+	navigator.globalization.getDateNames(function(names) {
+		console.log('[globalization] getDateNames:days: '+JSON.stringify(names));
+	},globError, {type:'wide', item:'days'});
+	
+});
+
+document.querySelector('#testGlobInput').addEventListener('click', function() {
+	var input = document.querySelector('#numberGlob').value;
+	console.log('[globalization] initial input to format: '+input);
+	navigator.globalization.numberToString(
+		Number(input),
+		function (number) {
+			console.log('[globalization] formatted number: '+number.value);
+		},
+		globError,
+		{type:'percent'}
+	);
+});	
+</code></pre>
+<p>And here is a sample in the browser.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser10.png" class="imgborder">
+<h2>InAppBrowser</h2>
+<p>I had assumed this would just do a window.open, but surprisingly, it actually uses an iframe. Here is the code I used to test:</p>
+<pre><code class="language-javascript">
+document.querySelector('#testIAB').addEventListener('click', function() {
+	iabRef = cordova.InAppBrowser.open('http://www.raymondcamden.com','_blank','location=yes');
+});
+</code></pre>
+<p>And here is how it rendered:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser11.png" class="imgborder">
+<p>As with the camera plugin, it is rendered at the bottom of the dom. Note the gray border and basic controls.</p>
+<h2>Media</h2>
+<p>For media, you can only do audio playback, not recordings. It works pretty much as expected:</p>
+<pre><code class="language-javascript">
+/*
+mp3 source: 
+http://www.gutenberg.org/ebooks/10246
+Sensation Jazz: One-Step by All-Star Trio
+*/
+var mp3 = './10246-m-001.mp3';
+var media;
+
+document.querySelector('#testMedia').addEventListener('click', function() {
+	media = new Media(mp3, function() {
+		console.log('[media] Success');
+	}, function(err) {
+		console.log('[media error]', err);	
+	}, function(s) {
+		/*
+		Media.MEDIA_NONE = 0;
+		Media.MEDIA_STARTING = 1;
+		Media.MEDIA_RUNNING = 2;
+		Media.MEDIA_PAUSED = 3;
+		Media.MEDIA_STOPPED = 4;
+		*/
+		console.log('[media status]', s);		
+	});
+	
+	setTimeout(function() {
+		console.log('[media] Duration is '+media.getDuration());
+	},100);
+
+	media.play();
+
+});
+
+document.querySelector('#testMediaStop').addEventListener('click', function() {
+	media.stop();
+});
+	
+</code></pre>
+<p>Note the setTimeout for duration. I noticed it took a little bit before you could get an accurate reading of the duration.</p>
+<h2>Network</h2>
+<p>Unfortunately, this is pretty poor. From the quirks: &quot;Browser can't detect the type of network connection. navigator.connection.type is always set to Connection.UNKNOWN when online.&quot; My tests verified that.</p>
+<h2>SplashScreen</h2>
+<p>Yes! This works in the Browser platform. As crazy as it sounds, you can actually fire up a splash screen in front of your main application. You want to copy the code from the &quot;Browser Quirks&quot; section of the docs and then setup your image. Once you do, it should just work, although I noticed <code>SplashScreenWidth</code> and <code>SplashScreenHeight</code> did not seem to do anything. Here is an example:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/browser12.png" class="imgborder">
+<h2>Wrap Up</h2>
+<p>So yeah, over all, I think things are pretty solid, especially if you approach this as a way of testing. As a plugin developer, you can easily create a mock interface for your particular feature to allow you to use the browser and more rapidly develop your code. A colleague of mine, Nic Raboy, wrote an interesting article a few weeks back about the pitfalls of this type of development: <a href="https://www.thepolyglotdeveloper.com/2016/02/why-you-should-not-use-ionic-serve-for-hybrid-apps/">Why You Should Not Use Ionic Serve For Hybrid Apps</a>. As I said in the comments there, I do not agree. I believe as long as you have a solid understanding of what your limitations are, testing your mobile apps in the browser (or I should say, developing, not 'final testing') is both useful and practical. I hope this look at the Browser platform was helpful, and let me know if you have any questions by posting a comment below.</p>
+}

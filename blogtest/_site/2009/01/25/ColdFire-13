@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Just a quick note - Nathan has released <a href="http://coldfire.riaforge.org/blog/index.cfm/2009/1/25/ColdFire-13172172">ColdFire 1.3</a>. There are some interesting updates in it, especially for folks using ColdFusion 8 builtin Ajax code. Also, ColdFire now supports reporting exceptions.</p>
+}

@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>The title pretty much says it all. If you attended my session at devObjective today, I've attached the
+slides and demos for my talk on JavaScript templating below:</p>
+<!--more-->
+<p>https://static.raymondcamden.com/enclosures/devobjstemplating.zip</p>
+<p>As a reminder, if you want to learn more about this topic, you can pick up my O'Reilly video
+series on the topic here: <a href="http://shop.oreilly.com/product/0636920034971.do">JavaScript Templating</a>. I cover four different products in depth as well as ES6 Template Strings. The video runs for a bit over 2 hours and all source code is included.</p>
+}

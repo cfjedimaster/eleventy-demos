@@ -1,0 +1,48 @@
+<h1>Post</h1>
+
+<p>I shared a few emails with a reader last week that concerned an interesting issue with ColdFusion POSTs (form submissions) to PHP code. I thought I'd share what we found and see if anyone else has seen this behavior as well. PHP developers are welcome to post their comments as well, although I know it's hard times for them with their language dieing and all that. Anyhoo....</p>
+<p>The reader, Anthony, created a simple ColdFusion page to perform a POST and return the result:</p>
+<!--more-->
+<code>
+&lt;cfhttp method="POST" url="http://test.local/test.php"&gt;
+&lt;cfhttpparam
+type="formField" name="msg" value="I \ am"&gt;
+&lt;/cfhttp&gt;
+&lt;cfoutput&gt;#cfhttp.filecontent#&lt;/cfoutput&gt;
+</code>
+<p>Note the \ in the string passed to the msg form field.</p>
+<p>His PHP page did:</p>
+<code>
+&lt;?php
+echo $_POST['msg'];
+?&gt;
+</code>
+<p>I modified his ColdFusion code to also perform the same POST to a ColdFusion page. That page did:</p>
+<code>
+&lt;cfoutput&gt;#form.msg#&lt;/cfoutput&gt;
+&lt;cfdump var="#getHTTPRequestData()#"&gt;</code>
+<p>It isn't exactly the same as the PHP code. I output the form variable as well as the HTTP request structure.</p>
+<p>So what happens? PHP outputs:</p>
+<blockquote><p>
+I \\ am
+</p></blockquote>
+<p>ColdFusion outputs:</p>
+<blockquote><p>
+I \ am
+</p></blockquote>
+<p>So, err, what the heck? According to the docs, all values sent in the POST are URLEncoded. I know that ColdFusion automatically decodes URL parameters, so I assume its doing it for Form vars as well which would explain why it had no problem displaying form.msg, but PHP showed it escaped.</p>
+<p>I tried setting encoding=false on the cfhttpparam tag but it didn't help any in PHP. I then looked up &quot;URLDecode&quot; in PHP. I wasn't too optimistic about this as: I \ am didn't look like a normal URL encode. PHP does in fact have such a function, but it didn't help.</p>
+<p>Finally I tried one more thing. I URLEncoded the value myself:</p>
+<code>
+&lt;cfhttpparam type="formField" name="msg" value="#urlEncodedFormat('I
+\ am')#" encoded="true" &gt;
+</code>
+<p>and decoded it in PHP:</p>
+<code>
+&lt;?php
+echo urldecode($_POST['msg']);
+?&gt;
+</code>
+<p>And that worked. But then Anthony came back to me with the real answer. Apparently PHP has a feature called Magic Quotes. It automatically escapes this stuff because it assumes you are sending it to a database. ColdFusion will also auto escape strings, but it's smart enough to only do it when actually inserting into a database. Apparently this is something being removed from PHP, and Anthony wrote up on a note on this at his site: <a href="http://imified.tenderapp.com/faqs/building-imified-bots/backslashses-are-inserted-before-certain-characters-when-my-bot-replies">Knowledge Base: Backslashses are inserted before certain characters when my bot replies</a></p>
+<p>So as I said earlier - what the heck?!?! I don't do much work with PHP, and when I have, it wasn't integrated with ColdFusion, but I assume this is expected behavior? Anyone else run into this?</p>
+}

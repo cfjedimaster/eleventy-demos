@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>Before I begin, I want to point out that I encountered this issue both in the &quot;regular&quot; Android simulator (which I don't recommend) and in <a href="https://www.genymotion.com/">Genymotion</a> (which I <em>strongly</em> recommend). The fix came courtesy of <a href="https://twitter.com/JulienBolard">Julien Bolard</a>, an employee of Genymotion. I'm just blogging it to help spread the word in case others run into the issue as well.</p>
+<p>So - have you ever tried saving an image from the browser in Genymotion or the Android simulator? First you find your picture:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/09/geny1.png" alt="The perfect picture"></p>
+<p>Then you long tap to bring up the context menu:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/09/geny2.png" alt="Save the kitty!"></p>
+<p>You select the save option, and then boom!</p>
+<p><img src="https://static.raymondcamden.com/images/2016/09/geny3.png" alt="This is fine"></p>
+<p>Oops. So what's the issue? The browser simply doesn't have permission to use your (simulated) device storage and instead of simply prompting you for permission, it craps the bed.</p>
+<p>So - go into settings, apps, select Browser, and then permissions. Then simply enable &quot;Storage&quot; and you should be good to go.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/09/geny4a.png" alt="This is better"></p>
+}

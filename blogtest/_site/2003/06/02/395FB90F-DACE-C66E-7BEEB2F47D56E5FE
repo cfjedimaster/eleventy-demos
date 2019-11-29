@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Today must be &quot;Entry&quot; day for me - this is what - my fifth post today? Anyway, I added a new feature to the CFC. addComments() now supports an optional argument, notifyThread. If true, when you post, anyone else who had commented will get a notification of your comment.</p>
+}

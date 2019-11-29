@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>I uploaded this to RIAForge this weekend, but for folks who are not yet on the pre-release, I thought I'd share a few screens from my CFLib Bolt Extension. I've given it the cool name of: CFLibExtension. Yes, my imagination was at an all time low. You can download the bits from the <a href="http://cflibextension.riaforge.org/">RIAForge project</a>, and if you <i>did</i> have Bolt installed, here is how it would work.</p>
+<p>First, right click on a file, and click into the CFLib menu:</p>
+<!--more-->
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 164.png">
+<p>This brings up a list of categories. This list is cached to help improve performance.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 240.png">
+<p>Now you can browse UDFs in the category, in pages of 10 UDFs each. This is also cached. The first hit will be a bit slow, but after that it will scream.</p>
+<p>I should point out - the design here is pure HTML, and was written very quickly. The ugliness is all Ray, not Bolt.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 329.png">
+<p>After you select the UDF, you can either copy the code from the textarea, or click Download.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 413.png">
+<p>If you choose to download, it will automatically be placed within the file you right clicked on.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 56.png">
+<p>Seem cool?</p>
+}

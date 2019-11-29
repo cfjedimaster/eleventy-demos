@@ -1,0 +1,155 @@
+<h1>Post</h1>
+
+<p>I've been thinking lately about how to add authentication to a jQuery Mobile site. I whipped up a quick example that works, but I'm definitely open to suggestions on how this could be done better. My intent with calling this entry the &quot;first round&quot; is to make it clear that there are other ways of doing this and probably <i>better</i> ways of doing it. Hopefully this example will help others and - admittedly - flesh out some improvements from my readers.</p>
+<!--more-->
+<p>
+<p>I began by creating a very simple page with two links. In my application login is not required for everything, but only for one link.</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt; 
+&lt;html&gt; 
+	&lt;head&gt; 
+	&lt;title&gt;Page Title&lt;/title&gt; 
+	&lt;link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a4/jquery.mobile-1.0a4.min.css" /&gt;
+	&lt;script src="http://code.jquery.com/jquery-1.5.2.min.js"&gt;&lt;/script&gt;
+	&lt;script src="http://code.jquery.com/mobile/1.0a4/jquery.mobile-1.0a4.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt; 
+&lt;body&gt; 
+<p>&lt;div data-role=&quot;page&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Secure Site Test&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;ul data-role=&quot;listview&quot; data-inset=&quot;true&quot;&amp;gt;
+		&amp;lt;li data-role=&quot;list-divider&quot;&amp;gt;Options&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;page1.cfm&quot;&amp;gt;Non-Secure page&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;page2.cfm&quot;&amp;gt;Secure page&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+	&amp;lt;/ul&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>So I won't go over the basics - I've blogged about jQuery Mobile quite a bit already - but you can see I've created a basic list page with two links. One to an open page and one to a secure page. I then created page1.cfm:</p>
+<p>
+<code>
+&lt;div data-role="page"&gt;
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Non-Secure page&amp;lt;/h1&amp;gt;
+	&amp;lt;a href=&quot;index.cfm&quot; data-icon=&quot;home&quot; class=&quot;ui-btn-right&quot;&amp;gt;Home&amp;lt;/a&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;p&amp;gt;This page is not secure.&amp;lt;/p&amp;gt;		
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>And then page2.cfm - note this page assumes that session.username exists.</p>
+<p>
+<code>
+&lt;div data-role="page"&gt;
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Secure page&amp;lt;/h1&amp;gt;
+	&amp;lt;a href=&quot;index.cfm&quot; data-icon=&quot;home&quot; class=&quot;ui-btn-right&quot;&amp;gt;Home&amp;lt;/a&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;p&amp;gt;This page is secure. You should only see it if you are logged in: #session.username#&amp;lt;/p&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>So - how to handle the security? I decided to add a simple Application.cfc page. This will run with every request and I could use it to lock down requests for page2.cfm. Remember that jQuery Mobile will load page2.cfm via an Ajax call, but it's still just a request to ColdFusion.</p>
+<p>
+<code>
+component {
+	this.name="jqmwithlogin_rev1";
+	this.sessionManagement="true";
+<pre><code>public boolean function onApplicationStart() {
+	return true;
+}
+
+public boolean function onRequestStart(string req) {
+	//logic to determine if a page is secured should probably be elsewhere...
+	if(listLast(arguments.req, &quot;/&quot;) == &quot;page2.cfm&quot; &amp;&amp; !structKeyExists(session, &quot;username&quot;)) {
+		location(url=&quot;login.cfm&quot;,addToken=false);	
+	}
+	return true;
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>You can see where I do my security check. I wouldn't normally write the code so statically, but for a simple example it works ok. My app only has one secure page so the logic isn't too complex. Anything more than one though would require a bit more thought here. So if the request is for my secured page and I am not logged in, I use a location call to push the user to the login page. Let's look at that.</p>
+<p>
+<code>
+&lt;cfif structKeyExists(form, "login")&gt;
+	&lt;cfif form.username is "admin" and form.password is "admin"&gt;
+		&lt;cfset session.username = "admin"&gt;
+		&lt;cflocation url="page2.cfm" addToken="false"&gt;
+	&lt;cfelse&gt;
+		&lt;cfset badFlag = true&gt;
+	&lt;/cfif&gt;
+&lt;/cfif&gt;
+<p>&lt;div data-role=&quot;page&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Login&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;
+	&amp;lt;cfif not structKeyExists(variables, &quot;badFlag&quot;)&amp;gt;
+		&amp;lt;p&amp;gt;Please login...&amp;lt;/p&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;p&amp;gt;Your login was incorrect - try again - try harder...&amp;lt;/p&amp;gt;
+	&amp;lt;/cfif&amp;gt;	
+	&amp;lt;p&amp;gt;
+	&amp;lt;form action=&quot;login.cfm&quot; method=&quot;post&quot;&amp;gt;
+
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;
+		    &amp;lt;label for=&quot;username&quot;&amp;gt;Username:&amp;lt;/label&amp;gt;
+		    &amp;lt;input type=&quot;text&quot; name=&quot;username&quot; id=&quot;username&quot;  /&amp;gt;
+		&amp;lt;/div&amp;gt;	
+
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;
+		    &amp;lt;label for=&quot;password&quot;&amp;gt;Password:&amp;lt;/label&amp;gt;
+		    &amp;lt;input type=&quot;password&quot; name=&quot;password&quot; id=&quot;password&quot; /&amp;gt;
+		&amp;lt;/div&amp;gt;	
+
+		&amp;lt;input type=&quot;submit&quot; name=&quot;login&quot; value=&quot;Login&quot; /&amp;gt;
+	&amp;lt;/form&amp;gt;
+		
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>So - this page is a bit bigger, but not really that complex. The form makes use of a divs with the role fieldcontain. This is standard jqm form rendering style. My form posts to itself and you can see logic on top of the file to handle that. Note the use of a static username and password. Again - this isn't something you would do normally. If the login is ok, once again a location is called to send you to the secure page.</p>
+<p>
+<p>So - how horrible is this? It seems to work ok.  You can try this yourself by running the demo below.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/april32011/rev1/"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

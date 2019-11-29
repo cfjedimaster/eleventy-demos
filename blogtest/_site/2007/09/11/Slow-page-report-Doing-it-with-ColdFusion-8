@@ -1,0 +1,113 @@
+<h1>Post</h1>
+
+<p>Many moons ago, I <a href="http://www.raymondcamden.com/index.cfm?mode=entry&entry=E1C4D4BE-AF44-3997-E6F1C507CE21DF5B">reported</a> on how you could write a template to parse your server.log file for slow page reports. In case you didn't know - the ColdFusion Administrator lets you log files that take too long to process. This setting is found in the Logging Settings page as seen in the following screen shot:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/slowstuffsucks.png">
+<p>Once enabled, ColdFusion will log any page that takes longer than the specified time. Note that it won't abort the process, it will just log it. If you want to abort a process, you need to use the Timeout Requests setting in the main settings page.</p>
+<p>So if you read the <a href="http://www.coldfusionjedi.com/index.cfm?mode=entry&entry=E1C4D4BE-AF44-3997-E6F1C507CE21DF5B">old blog entry</a>, you will note that I hard coded the file name, hard coded the timeout value, and used a loop over a hard coded end of line delimiter. This all becomes quite a bit easier in ColdFusion 8. (But to be fair, some of what I've changed could have been done in CF7 as well.)</p>
+<p>First off - there are two ways you can find your server.log file. The best way, if you know your CF Admin password, is via the CF Admin API:</p>
+<code>
+&lt;cfinvoke component="cfide.adminapi.administrator" method="login" 
+		adminPassword="admin" adminUserId="admin"&gt;
+<p>&lt;cfinvoke component=&quot;cfide.adminapi.debugging&quot; method=&quot;getLogProperty&quot; propertyName=&quot;logdirectory&quot; returnvariable=&quot;logdir&quot;&gt;
+</code></p>
+<p>If you don't have access to the CF Admin, you can still make a very good guess. The ColdFusion Server variable, rootdir, points to where CF was installed, but note that it is possible to change where CF stores it's log files. Here is the alternate version:</p>
+<code>
+&lt;cfset logdir = server.coldfusion.rootdir & "/logs/"&gt;
+</code>
+<p>Now lets complete the filename and ensure it even exists:</p>
+<code>
+&lt;cfset filename = logdir & "/server.log"&gt;
+<p>&lt;cfif not fileExists(filename)&gt;
+&lt;cfoutput&gt;
+Can't find #filename#
+&lt;/cfoutput&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>So far so good. Now we need to read in the file and begin storing our data for the report.</p>
+<code>
+&lt;cfset fileData = structNew()&gt;
+&lt;cfloop file="#filename#" index="line"&gt;
+   &lt;cfif findNoCase("second warning limit", line)&gt;
+      &lt;cfset template   = rereplace(line, ".*?processing template: (.*?), completed.*", "\1")&gt;
+      &lt;cfset time = rereplace(line, ".*?completed in ([0-9,]*?) seconds,.*", "\1")&gt;
+      &lt;cfset time = replace(time, ",", "", "all")&gt;
+      &lt;cfif not structKeyExists(fileData, template)&gt;
+         &lt;cfset fileData[template] = structNew()&gt;
+         &lt;cfset fileData[template].hitCount = 0&gt;
+         &lt;cfset fileData[template].total = 0&gt;
+         &lt;cfset fileData[template].max = 0&gt;
+      &lt;/cfif&gt;
+      &lt;cfset fileData[template].hitCount = fileData[template].hitCount + 1&gt;
+      &lt;cfset fileData[template].total = fileData[template].total + time&gt;
+      &lt;cfif time gt fileData[template].max&gt;
+         &lt;cfset fileData[template].max = time&gt;
+      &lt;/cfif&gt;
+   &lt;/cfif&gt;
+&lt;/cfloop&gt;
+</code>
+<p>A lot of the code above is the same as the previous version, but do note the new cfloop:</p>
+<code>
+&lt;cfloop file="#filename#" index="line"&gt;
+</code>
+<p>That's it! The complete code listing is below. I removed the cfdocument tags so I could see the result in HTML. I'd show you a sample output, but unfortunately my pages run so fast that they complete in negative time. (Ahem.)</p>
+<code>
+&lt;cfinvoke component="cfide.adminapi.administrator" method="login" 
+		adminPassword="admin" adminUserId="admin"&gt;
+<p>&lt;cfinvoke component=&quot;cfide.adminapi.debugging&quot; method=&quot;getLogProperty&quot; propertyName=&quot;logdirectory&quot; returnvariable=&quot;logdir&quot;&gt;</p>
+<p>&lt;!---
+&lt;cfset logdir = server.coldfusion.rootdir &amp; &quot;/logs/&quot;&gt;
+---&gt;</p>
+<p>&lt;cfset filename = logdir &amp; &quot;/server.log&quot;&gt;</p>
+<p>&lt;cfif not fileExists(filename)&gt;
+&lt;cfoutput&gt;
+Can't find #filename#
+&lt;/cfoutput&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfset fileData = structNew()&gt;
+&lt;cfloop file=&quot;#filename#&quot; index=&quot;line&quot;&gt;
+&lt;cfif findNoCase(&quot;second warning limit&quot;, line)&gt;
+&lt;cfset template   = rereplace(line, &quot;.<em>?processing template: (.</em>?), completed.<em>&quot;, &quot;\1&quot;)&gt;
+&lt;cfset time = rereplace(line, &quot;.</em>?completed in ([0-9,]<em>?) seconds,.</em>&quot;, &quot;\1&quot;)&gt;
+&lt;cfset time = replace(time, &quot;,&quot;, &quot;&quot;, &quot;all&quot;)&gt;
+&lt;cfif not structKeyExists(fileData, template)&gt;
+&lt;cfset fileData[template] = structNew()&gt;
+&lt;cfset fileData[template].hitCount = 0&gt;
+&lt;cfset fileData[template].total = 0&gt;
+&lt;cfset fileData[template].max = 0&gt;
+&lt;/cfif&gt;
+&lt;cfset fileData[template].hitCount = fileData[template].hitCount + 1&gt;
+&lt;cfset fileData[template].total = fileData[template].total + time&gt;
+&lt;cfif time gt fileData[template].max&gt;
+&lt;cfset fileData[template].max = time&gt;
+&lt;/cfif&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfoutput&gt;&lt;h2&gt;#structCount(fileData)# Total File&lt;/h2&gt;&lt;/cfoutput&gt;</p>
+<p>&lt;table width=&quot;100%&quot; cellpadding=&quot;10&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Template&lt;/th&gt;
+&lt;th&gt;Times in Log&lt;/th&gt;
+&lt;th&gt;Avg Execution Time&lt;/th&gt;
+&lt;th&gt;Max Execution Time&lt;/th&gt;
+&lt;/tr&gt;
+&lt;cfloop item=&quot;temp&quot; collection=&quot;#fileData#&quot;&gt;
+&lt;cfset average = fileData[temp].total / fileData[temp].hitcount&gt;
+&lt;cfif average gt 200&gt;
+&lt;cfset style = &quot;color: red&quot;&gt;
+&lt;cfelse&gt;
+&lt;cfset style = &quot;&quot;&gt;
+&lt;/cfif&gt;
+&lt;cfoutput&gt;
+&lt;tr style=&quot;#style#&quot;&gt;
+&lt;td&gt;&lt;b&gt;#temp#&lt;/b&gt;&lt;/td&gt;
+&lt;td&gt;#fileData[temp].hitCount#&lt;/td&gt;
+&lt;td&gt;#numberFormat(average,&quot;9.99&quot;)#&lt;/td&gt;
+&lt;td&gt;#fileData[temp].max#&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+&lt;/table&gt;
+</code><p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Ffindslow%2Ecfm%2Ezip'>Download attached file.</a></p></p>
+}

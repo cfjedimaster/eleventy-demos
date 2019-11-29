@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Tonight I released a major new update to <a href="http://www.riaforge.org">RIAForge</a>. The change allows project owners to specify other RIAForge users as admins. Right now these admins can't do much. They can only edit project details (the text attributes). But the idea was for me to add the basic low level support, have folks give it a try, and then I'll gradually extend other capabilities to these admins as well. So for example, you can have someone help with managing project issues.</p>
+<p>Oh, and speaking of project issues - I applied Spry's Paged Data Set to the page. So now projects with a long list of issues will be a bit easier to browse.</p>
+}

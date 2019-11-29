@@ -1,0 +1,108 @@
+<h1>Post</h1>
+
+<p>Earlier this week a reader came to me with an interesting question. They were using Solr and ColdFusion 9 and had a collection of products they wanted searched. That part wasn't difficult. But here comes the interesting part. His products were split between male and female products (imagine clothing) as well as unisex items. A search for male products should return both male and unisex items while a search for female products would return female and unisex. This ended up being pretty easy to do and I thought I'd share the example code I wrote.</p>
+<!--more-->
+<p>
+<p>I'll begin by sharing the test script I wrote to setup the collection and index. This handles the initial collection creation and then populates the index with fake data. Obviously I could have made this data bit more interesting but hopefully you can see that I've got some male, some female, and some unisex products.</p>
+<p>
+<code>
+&lt;cfset collection = "productgender"&gt;
+&lt;cfcollection action="list" engine="solr" name="collections"&gt;
+<p>&lt;cfif not listFindNoCase(valueList(collections.name),collection)&gt;
+&lt;cfcollection action=&quot;create&quot; collection=&quot;#collection#&quot; path=&quot;#server.coldfusion.rootdir#\collections&quot; engine=&quot;solr&quot; categories=&quot;true&quot;&gt;
+&lt;cfoutput&gt;
+Making collection.
+&lt;p/&gt;
+&lt;/cfoutput&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfset products = queryNew(&quot;id,title,body,gender&quot;,&quot;integer,varchar,varchar,varchar&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 1)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Boy One&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body One&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;male&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 2)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Boy Two&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body Two&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;male&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 3)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Boy Three&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body Three&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;male&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 4)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Girl One&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body One&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;female&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 5)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Girl Two&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body Two&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;female&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 6)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Girl Three&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body Three&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;female&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 7)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Girl Four&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body Four&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;female&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 8)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Girl Five&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body Five&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;female&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 9)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Unisex One&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body One&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;unisex&quot;)&gt;
+&lt;cfset queryAddRow(products)&gt;
+&lt;cfset querySetCell(products, &quot;id&quot;, 10)&gt;
+&lt;cfset querySetCell(products, &quot;title&quot;, &quot;Unisex Two&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;body&quot;, &quot;Body Two&quot;)&gt;
+&lt;cfset querySetCell(products, &quot;gender&quot;, &quot;unisex&quot;)&gt;</p>
+<p>&lt;cfindex action=&quot;refresh&quot; collection=&quot;#collection#&quot; query=&quot;products&quot; key=&quot;id&quot; title=&quot;title&quot; body=&quot;body&quot; category=&quot;gender&quot; status=&quot;s&quot;&gt;
+&lt;cfdump var=&quot;#s#&quot;&gt;
+</code></p>
+<p>
+<p>Very exciting, right? Well let's look at the search interface where things do get a bit interesting.</p>
+<p>
+<code>
+&lt;cfparam name="form.search" default=""&gt;
+&lt;cfparam name="form.gender" default=""&gt;
+<p>&lt;cfoutput&gt;
+&lt;form action=&quot;test.cfm&quot; method=&quot;post&quot;&gt;
+Keyword:&lt;br/&gt;
+&lt;input type=&quot;test&quot; name=&quot;search&quot; value=&quot;#form.search#&quot;&gt;&lt;br/&gt;
+Gender:&lt;br/&gt;
+&lt;select name=&quot;gender&quot;&gt;
+&lt;option value=&quot;&quot; &lt;cfif form.gender is &quot;&quot;&gt;selected&lt;/cfif&gt;&gt;--&lt;/option&gt;
+&lt;option value=&quot;male&quot; &lt;cfif form.gender is &quot;male&quot;&gt;selected&lt;/cfif&gt;&gt;For Him&lt;/option&gt;
+&lt;option value=&quot;female&quot; &lt;cfif form.gender is &quot;female&quot;&gt;selected&lt;/cfif&gt;&gt;For Her&lt;/option&gt;
+&lt;/select&gt;&lt;br/&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfif len(form.search) or form.gender neq &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfset category = &quot;&quot;&amp;gt;
+&amp;lt;cfif form.gender is &quot;male&quot;&amp;gt;
+	&amp;lt;cfset category = &quot;male,unisex&quot;&amp;gt;
+&amp;lt;cfelseif form.gender is &quot;female&quot;&amp;gt;
+	&amp;lt;cfset category = &quot;female,unisex&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfsearch collection=&quot;productgender&quot; criteria=&quot;#trim(form.search)#&quot; category=&quot;#category#&quot; name=&quot;results&quot;&amp;gt;
+&amp;lt;cfdump var=&quot;#results#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>
+<p>I begin by creating a simple form that allows for both free text entry and selecting &quot;For Him&quot; or &quot;For Her&quot; products. The whole &quot;For&quot; thing was just me being fancy. Below the form is the real interesting part. If a search was made (and we allow you to pick a gender and leave the text field blank) we create a category field based on the gender. We simply append unisex to the selected value and pass this as the category field in the cfsearch tag. You can play with this yourself here:</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/feb232011a/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

@@ -1,0 +1,47 @@
+<h1>Post</h1>
+
+<p>This is probably an old issue, but I thought I'd share it. I'm writing code to support exporting BlogCFC data into WDDX packets. The flip side of this is code to import the WDDX packets.</p>
+<p>The export works just fine - but I ran into a weird issue when importing. I have some columns that are BIT type and allow nulls. When doing the database inserts, I got error saying it couldn't convert the bit value to a null.</p>
+<p>Well, I figured - no big deal - I'll check to see if my value is boolean, and if not, I'll use null=&quot;true&quot; in my cfqueryparam.</p>
+<p>But get this - the CFIF threw an error! That was insane. How can I check if X is a boolean if the actual check throws 'X is not boolean' itself!</p>
+<p>I ended up having to use try/catch to rewrite the data:</p>
+<code>
+&lt;cftry&gt;
+	&lt;cfif not isBoolean(moderated)&gt;
+		&lt;!--- nothing ---&gt;
+	&lt;/cfif&gt;
+	&lt;cfcatch&gt;
+		&lt;cfset querySetCell(data, "moderated", "", currentRow)&gt;
+	&lt;/cfcatch&gt;
+&lt;/cftry&gt;
+</code>
+<p>Then I do this in my query:</p>
+<code>
+&lt;cfif not isBoolean(moderated)&gt;
+	&lt;cfqueryparam cfsqltype="cf_sql_bit" null="true"&gt;
+&lt;cfelse&gt;
+	&lt;cfqueryparam cfsqltype="cf_sql_bit" value="#moderated#"&gt;
+&lt;/cfif&gt;
+</code>
+<p>For a simple test script (and this is what I'll provide to Adobe), create a table with two columns, name and cool, where cool is a bit. Then insert a few rows and make cool null for one row. Then run this:</p>
+<code>
+&lt;cfquery name="getit" datasource="test"&gt;
+select	*
+from	test
+&lt;/cfquery&gt;
+<p>&lt;cfdump var=&quot;#getit#&quot;&gt;</p>
+<p>&lt;cfwddx action=&quot;cfml2wddx&quot; input=&quot;#getit#&quot; output=&quot;packet&quot;&gt;</p>
+<p>&lt;cfoutput&gt;#htmlcodeformat(packet)#&lt;/cfoutput&gt;</p>
+<p>&lt;cfwddx action=&quot;wddx2cfml&quot; input=&quot;#packet#&quot; output=&quot;gigo&quot;&gt;</p>
+<p>&lt;cfoutput query=&quot;gigo&quot;&gt;
+#name#
+&lt;cfif isBoolean(cool)&gt;
+#yesnoformat(cool)#
+&lt;/cfif&gt;
+&lt;br&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>You will then get:</p>
+<p><b>cannot convert the value &quot;''&quot; to a boolean</b></p>
+<p>As a side note - it also appears to apply to ints as well. I wonder if it is an issue with any non-varchar column?</p>
+}

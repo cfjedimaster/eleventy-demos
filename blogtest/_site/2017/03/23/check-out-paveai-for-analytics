@@ -1,0 +1,21 @@
+<h1>Post</h1>
+
+<p>I'm a bit of a stats junkie, but what I love more than a giant pile of charts and tables are tools that can actually help me understand my stats at a high level. I've reviewed such services in the past and have also blogged about my own experiments building dashboards and other views on top of Google Analytics. Earlier this month I was contacted by the folks at <a href="https://www.paveai.com/">PaveAI</a>.</p>
+<p>This is a commercial service (with a free trial!) that provides scheduled reports on your analytics. Typically weekly or monthly (or daily for folks with a <em>lot</em> of traffic), the service will spit out a PDF of analytics about your - well - analytics. I was given a complimentary report (that I've attached below), but I thought I'd share some screen shots from it to call out what I thought was really cool.</p>
+<p>I'll begin with the first page, the Overview.</p>
+<img src="https://static.raymondcamden.com/images/2017/3/paveai1.png" class="imgborder" alt="Report">
+<p>Nice, clear, and not more than I can get from Google Analytics, but definitely a bit quicker to read.</p>
+<p>But then it dives quickly into analyzing my visitors:</p>
+<img src="https://static.raymondcamden.com/images/2017/3/paveai2.png" class="imgborder" alt="Report">
+<p>That's kinda cool. But then it showed me this:</p>
+<img src="https://static.raymondcamden.com/images/2017/3/paveai3.png" class="imgborder" alt="Report">
+<p>So the red arrows there are - obviously - from me - but note how it didn't just show a bunch of graphs, but actually called out some specific, important, things to note about it. I freaking love that.</p>
+<p>Later on in the report, I saw this:</p>
+<img src="https://static.raymondcamden.com/images/2017/3/paveai4.png" class="imgborder" alt="Report">
+<p>I <em>really</em> loved that. I kinda knew that my <a href="https://www.raymondcamden.com/tags/front-end-interview-questions">front end interview questions</a> series was getting decent traffic, but this really brought the point home. I'm going to look into possibly adding to this more later this year.</p>
+<p>Here's another cool stat plus insight:</p>
+<img src="https://static.raymondcamden.com/images/2017/3/paveai5.png" class="imgborder" alt="Report">
+<p>You get the idea. The service doesn't just present the data in a nicer, easier to read format, it also returns some pretty darn interesting insights. You can find <a href="https://www.paveai.com/#pricing">pricing info</a> on the site and it seems pretty reasonable. Note that my report only focused on Google Analytics, they also support integration with AdWords, Facebook Ads, and Twitter Ads as well.</p>
+<p>You can download my sample report here: https://static.raymondcamden.com/enclosures/paveai.pdf</p>
+<p>Note that I've sent them some feedback about the report you see above. For example, that first page of reports shows deltas but doesn't make it clear it is comparing it to the previous month. I've been told by PaveAI they are already adding that in.</p>
+}

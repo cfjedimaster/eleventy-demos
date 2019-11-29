@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>This was mentioned in the article, but at the time of publication it wasn't quite ready. Last night I finally released <a href="http://www.rsswatcher.com">RSSWatcher.com</a>. This is a simple service that lets you monitor various RSS feeds for keywords. When a match is found, an email is sent to you.</p>
+<p>I'm sure a few bugs still exist in the system. If you find any, please drop me a line. Also, feel free to share any suggestions you may have for the site.</p>
+}

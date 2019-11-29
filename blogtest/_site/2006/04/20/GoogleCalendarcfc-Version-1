@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I've updated my GoogleCalendar.cfc. It now correctly (I think) handles time zone offsets and recurrences. I also added a simple way to make it refresh its own cache.</p>
+<p>I think next I'll make a few convenience functions, like getTodaysEvents, getThisMonthsEvents, getThisWeeksEvents. Suggestions are welcome. (And if you use it on your site, let me know!)</p>
+<p>The download is attached to this entry. I'll add a project page later on.</p>
+<p>Oh - and I actually included instructions this time, and, thanks to certain events in the past, a license file as well.<p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fgcal1%2Ezip'>Download attached file.</a></p></p>
+}

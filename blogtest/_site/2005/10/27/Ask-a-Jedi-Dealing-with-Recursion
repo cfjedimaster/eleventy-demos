@@ -1,0 +1,34 @@
+<h1>Post</h1>
+
+<p>This question came in today and I just had to answer it quickly: (Sorry to the 200 other people who have email in my queue!)</p>
+<blockquote>
+How do I return a value from a recursive function? This does not seem to work in cf. I'm basically walking up a hierarchy returning needed items when I find them.
+</blockquote>
+<p>Luckily s/he sent the code. The problem will probably jump out as soon as you see it:</p>
+<code>
+&lt;cffunction name="recursive" returntype="struct"&gt;
+	&lt;cfargument name="id" type="numeric" required="yes" /&gt;
+	&lt;cfset var stThing = structnew() /&gt;
+<pre><code>&amp;lt;!--- do some lookup based on id ---&amp;gt;
+&amp;lt;cfif lookup succesful&amp;gt;
+	&amp;lt;cfreturn stThing /&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;!--- get parent id ---&amp;gt;
+	&amp;lt;cfset recursive(parentid) /&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>Let's trace this line by line to see where the error occurs.</p>
+<ol>
+<li>The first thing we do is create stThing as a new structure.
+<li>Then we do a look up. This is the part of the code that is assumed.
+<li>If the look up was successful, we return the value.
+<li>If not.... and here comes the important part - we call the method again, but notice we don't set a value. Whenever you do, cfset foo(), which is allowed, you are basically running a function and ignoring the result.
+</ol>
+<p>So basically his code does call itself recursively, but each time the result gets &quot;lost&quot; in the ether and isn't returned to the user. If he changed the cfset to:</p>
+<code>
+&lt;cfreturn recursive(parentid)&gt;
+</code>
+<p>It should work correctly. Recursion is like sushi - you need to be <i>very</i> careful when preparing it or the end result is crap (or even better, a server that loops until it crashes).</p>
+}

@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>Gerald asks,</p>
+<blockquote>
+Ray, I am trying to get back to a tabbed page from my process.cfm by checking for the existance of the btn that submitted the form (each tab has it's own unique button for submitting to process.cfm). Then I set a URL var and cfrelocation back to the flash form where the selectedItem="#url.currtab#". Works great except the darn flash form reinitializes every time because that attribute gets changed. How can I do this without causing a recompile of the form?
+</blockquote>
+<p>Yes, it is possible - and this solution comes right from <a href="http://www.mikenimer.com">Mike Nimer</a> (aka 'The Flash Form Guy'). Instead of using selectedIndex=&quot;#url.currTab#&quot;, you can bind the value to a hidden form field. Consider:</p>
+<code>
+&lt;cfparam name="url.tab" default="0"&gt;
+<p>&lt;cfform format=&quot;flash&quot; width=&quot;400&quot; height=&quot;200&quot; name=&quot;foo&quot;&gt;</p>
+<pre><code>&amp;lt;cfinput type=&quot;hidden&quot; name=&quot;thetab&quot; value=&quot;#url.tab#&quot;&amp;gt;
+&amp;lt;cfformgroup type=&quot;tabnavigator&quot; selectedIndex=&quot;{foo.thetab.text}&quot;&amp;gt;
+
+	&amp;lt;cfformgroup type=&quot;page&quot; label=&quot;Tab One&quot; /&amp;gt;
+	&amp;lt;cfformgroup type=&quot;page&quot; label=&quot;Tab Two&quot; /&amp;gt;
+	&amp;lt;cfformgroup type=&quot;page&quot; label=&quot;Tab Three&quot; /&amp;gt;
+	&amp;lt;cfformgroup type=&quot;page&quot; label=&quot;Tab Four&quot; /&amp;gt;
+	
+&amp;lt;/cfformgroup&amp;gt;
+</code></pre>
+<p>&lt;/cfform&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;a href=&quot;#cgi.script_name#?tab=0&quot;&gt;Tab 1&lt;/a&gt;&lt;br&gt;
+&lt;a href=&quot;#cgi.script_name#?tab=1&quot;&gt;Tab 2&lt;/a&gt;&lt;br&gt;
+&lt;a href=&quot;#cgi.script_name#?tab=2&quot;&gt;Tab 3&lt;/a&gt;&lt;br&gt;
+&lt;a href=&quot;#cgi.script_name#?tab=3&quot;&gt;Tab 4&lt;/a&gt;&lt;br&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>Notice how the value for selectedIndex isn't hard coded, but bound to the hidden form field. Also note how you have to use <i>formname.fieldname</i> when binding to a hidden field. For a non-hidden field, you can just use <i>fieldname</i>. Also note that the selectedIndex for a navigator item is 0 based - in other words, tab 1 is index 0, tab 2 is index 1, etc.</p>
+<p>Enjoy - and again - thank Nimer for this tip. (Unless it is broken - then um - it is a Microsoft bug. Yeah, that's it!)</p>
+}

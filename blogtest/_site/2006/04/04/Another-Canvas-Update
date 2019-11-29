@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>Rob Gonda pointed out a bug in Canvas where it would throw an error when using a link as the first element. That has been fixed in the new release, 1.2.100. For the heck of it, I added three new &quot;variablecomponents&quot; to Canvas. Variable components are a method to add dynamic data to the Wiki. So for example, to include the version number of the current page, you simply do:</p>
+<p>{version}</p>
+<p>How hard is it to write these? Here is how version.cfc was built:</p>
+<code>
+&lt;cfcomponent hint="To display the page version, use {version}"&gt;
+<pre><code>&amp;lt;cffunction name=&quot;render&quot; access=&quot;public&quot; returnType=&quot;string&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;pageBean&quot; type=&quot;any&quot; required=&quot;true&quot;&amp;gt;
+	
+	&amp;lt;cfreturn arguments.pageBean.getVersion()&amp;gt;
+	
+&amp;lt;/cffunction&amp;gt;
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>Canvas uses the hint in the page editing help. It passes the pageBean to the render method and all you need to do is work with that object. Once you have written the CFC, you drop it in the proper folder and refresh the Model-Glue cache with init=true. That's it.</p>
+<p>So I added a few more of these. I also modified the last updated variable component to <i>not</i> prefix the result. This will let you add your own text to be placed in front of the date.</p>
+<p>As always, you can download it from the <a href="http://ray.camdenfamily.com/projects/canvas">project page</a>.</p>
+}

@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>Today <a href="http://labs.adobe.com/technologies/spry/">Spry 1.6</a> was released. Along with the new build is a new <a href="http://labs.adobe.com/technologies/spry/home.html">website/portal</a>   which contains links to demos, docs and more. Also, the Spry Team has an updated blog entry on the 1.6 release:</p>
+<p><a href="http://blogs.adobe.com/spryteam/">Spry 1.6 and the Dreamweaver Updater</a></p>
+<p>One of my favorite bits from the entry:</p>
+<blockquote>
+We have included packed and minimized javascript files for everything. This gets all of us some significant file size savings, for example: SpryData.js: 128kb to 41Kb. SpryEffects.js: 77 to 29.
+</blockquote>
+<p>I'll try to do some demos of Spry 1.6 later on during the week, but definitely check it out now!<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fspry%5Ffma%2Ejpg'>Download attached file.</a></p></p>
+}

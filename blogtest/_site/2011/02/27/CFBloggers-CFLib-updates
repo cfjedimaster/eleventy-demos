@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Just a quick note to point out some updates to my sites.</p>
+<p>First - <a href="http://www.cfbloggers.org">CFBloggers.org</a> has always had an incredibly slow <a href="http://www.coldfusionbloggers.org/feeds.cfm">Feeds</a> page. This was due to how I had set up my click logging and reporting. I've modified my database a bit and now it runs a heck of a lot quicker. It was always cached, but when not cached, it would take close to a minute to run one tab. Now it's around 2-3 seconds.</p>
+<p>Secondly - I updated <a href="http://coldfish.riaforge.org">ColdFish</a> over on <a href="http://www.cflib.org">CFLib</a>. ColdFish is used for code rendering and I had a pretty old version. This probably won't impact anybody but it makes it more shiny which makes me happy.</p>
+<p>As always - any comments/suggestions to make either site more usable would be welcome.</p>
+}

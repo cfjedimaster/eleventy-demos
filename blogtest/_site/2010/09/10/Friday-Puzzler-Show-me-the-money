@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p><img src="https://static.raymondcamden.com/images/cfjedi/money.jpg" align="left" style="margin-right: 10px" /> Today's Friday Puzzler (it's been a while - sorry!) is from LessThanDot: <a href="http://forum.lessthandot.com/viewtopic.php?f=102&t=8743">How many days before I double my money</a>. Their problem was: Given 1000 dollars and 1% interest every day - now long until you double your money. Since ColdFusion makes everything simpler, I'm going to make this a bit more complex. Your challenge is to write a generic UDF that:</p>
+<ul>
+<li>Takes in an initial balance
+<li>Takes in a percentage interest value
+<li>Takes in a desired total
+</ul>
+<p>Given the parameters above, your UDF will return how many days it takes to go from the initial balance to the total. If you want - just write the UDF. If you're bored - write a program that will chart out the balance growth every day.</p>
+<p>Want some incentive? The best entry will get a 20 dollar gift certificate. &quot;Best&quot; will be 100% subjective and probably unfair.</p>
+<br clear="left">}

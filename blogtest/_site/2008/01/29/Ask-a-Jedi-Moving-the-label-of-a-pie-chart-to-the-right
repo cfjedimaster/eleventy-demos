@@ -1,0 +1,32 @@
+<h1>Post</h1>
+
+<p>Andy asks:</p>
+<blockquote>
+<p>
+Dear Jedi. How can I get the legend to show up on the right of my pie chart. It seems perpetually stuck at the top. I'm using cf7 (and will upgrade to 8 in the next few months).
+</p>
+</blockquote>
+<p>There is no direct way, but once again, the Chart Editor that ships with ColdFusion comes to the rescue. I loaded it up, selected a Pie chart, and edited the Legend property. I selected Right alignment, and took the generated XML. Now the XML I got had a few extra elements, but I stripped it down to this:</p>
+<code>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;pieChart&gt;
+          &lt;legend placement="Right"/&gt;
+&lt;/pieChart&gt;
+</code>
+<p>All together, the code then is:</p>
+<code>
+&lt;cfsavecontent variable="style"&gt;
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;pieChart&gt;
+          &lt;legend placement="Right"/&gt;
+&lt;/pieChart&gt;
+&lt;/cfsavecontent&gt;
+<p>&lt;cfchart format=&quot;flash&quot; show3d=&quot;true&quot; style=&quot;#style#&quot;&gt;
+&lt;cfchartseries type=&quot;pie&quot;&gt;
+&lt;cfchartdata item=&quot;Like Pacman&quot; value=&quot;75&quot;&gt;
+&lt;cfchartdata item=&quot;Not like Pacman&quot; value=&quot;25&quot;&gt;		
+&lt;/cfchartseries&gt;
+&lt;/cfchart&gt;
+</code></p>
+<p>Here is a screen shot of the default pie chart followed by the modified one. As you can see, the colors change a bit too, but if you don't like the colors you can tweak that as well.</p>
+<img src="https://static.raymondcamden.com/images//Picture 15.png">}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>The first update I have today is for <a href="http://www.raymondcamden.com/projects/toxml/">toXML</a>. While I find myself using JSON more, I sitll find toXML to be a very useful component. It converts arrays, lists, structs, and queries to XML. Today's update is a simple one. The queryToXML function now lets you specify the columns you want to serialize. This can help keep XML packets a bit slimmer (if only there was such an easy solution for people).</p>
+<p>The next update will be in about two hours and will hopefully be a bit more exciting.</p>
+<p>You can download toXML <a href="http://www.coldfusionjedi.com/downloads/toxml.zip">here</a>.</p>
+}

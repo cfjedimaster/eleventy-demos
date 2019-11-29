@@ -1,0 +1,71 @@
+<h1>Post</h1>
+
+<p>This week I had an interesting (email) conversation with a reader. Jason is a .Net developer using jQuery to build a simple form. On his page he had a UI feature where one of two DIVs were displayed. He had no problem with handling the logic of showing one div or another on the client side, but he was interested in how he could persist that change when he submitted his form. I worked up a simple demo of one way that this could be handled.</p>
+<!--more-->
+<p>I began by creating a very simple form.</p>
+<code>
+&lt;form id="myform" method="post"&gt;
+name: &lt;input type="text" name="name"&gt;&lt;br/&gt;
+email: &lt;input type="text" name="email"&gt;&lt;br/&gt;
+&lt;input type="submit"&gt;
+<p>&lt;/form&gt;
+</code></p>
+<p>Instead of using two divs, I went with div that could be hidden or shown. The idea is that the div could be used for instructions.</p>
+<code>
+&lt;input type="button" id="toggleinstructions" value="Toggle Instructions"&gt;
+&lt;div id="instructions" style="display:none"&gt;These are the instructions for the slow people.&lt;/div&gt;
+</code>
+<p>Next I whipped up some quick jQuery to support the toggle:</p>
+<code>
+$("#toggleinstructions").click(function() {
+	$("#instructions").toggle()
+})
+</code>
+<p>So far so good. How can we help persist the state of the instructions? Well one way would be with cookies. We could modify the click event handler to set a cookie every time the status changed. My problem with this though is that it seems a bit overkill to use a cookie just to remember the status of a UI item on the form. I decided to take another approach. What if we passed the status of the div when the form is submitted?</p>
+<p>The first thing I did was to add a new hidden form field to the form:</p>
+<code>
+&lt;input type="hidden" name="instruction_status" id="instruction_status"&gt;
+</code>
+<p>I then added a form submit handler:</p>
+<code>
+$("#myform").submit(function() {
+	status = $("#instructions").is(":visible")
+	$("#instruction_status").val(status)
+})
+</code>
+<p>This was my first time making use of the jQuery <a href="http://docs.jquery.com/Traversing/is#expr">IS</a> operator. This was a new one for me. As you can guess, it allows you to run a simple check on the currently selected item. In this case I'm checking for the visible property. This will return a boolean that then gets passed to the hidden form field.</p>
+<p>Here is the complete template. You can see that I've added some server side logic to check for the hidden field and set the visibility accordingly.</p>
+<code>
+&lt;html&gt;
+&lt;head&gt;
+&lt;script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+	$("#toggleinstructions").click(function() {
+		$("#instructions").toggle()
+	})
+<pre><code>$(&quot;#myform&quot;).submit(function() {
+	status = $(&quot;#instructions&quot;).is(&quot;:visible&quot;)
+	console.log(status)
+	$(&quot;#instruction_status&quot;).val(status)
+})
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfparam name=&quot;form.instruction_status&quot; default=&quot;false&quot;&gt;
+&lt;input type=&quot;button&quot; id=&quot;toggleinstructions&quot; value=&quot;Toggle Instructions&quot;&gt;
+&lt;div id=&quot;instructions&quot; &lt;cfif form.instruction_status is false&gt;style=&quot;display:none&quot;&lt;/cfif&gt;&gt;These are the instructions for the slow people.&lt;/div&gt;</p>
+<p>&lt;form id=&quot;myform&quot; method=&quot;post&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;instruction_status&quot; id=&quot;instruction_status&quot;&gt;
+name: &lt;input type=&quot;text&quot; name=&quot;name&quot;&gt;&lt;br/&gt;
+email: &lt;input type=&quot;text&quot; name=&quot;email&quot;&gt;&lt;br/&gt;
+&lt;input type=&quot;submit&quot;&gt;</p>
+<p>&lt;/form&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;</p>
+<p>&lt;cfdump var=&quot;#form#&quot;&gt;
+</code></p>
+<p>Does it make sense for me to use a hidden form field for this? I don't know. It kind of feels like I'm cluttering up the form with non-essential data. Then again, I do think I prefer this over the cookie approach. Either way - it's just one more way to solve a problem in jQuery!</p>
+}

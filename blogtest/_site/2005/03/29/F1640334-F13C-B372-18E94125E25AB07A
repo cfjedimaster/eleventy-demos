@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I made a simple update to <a href="http://www.rsswatcher.com">RSSWatcher</a> tonight. It blocked any RSS feeds with query strings in the URL. They should now be allowed.</p>
+}

@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>So - I have a real cool client. This client had a request for code that would integrate with Google's <a href="http://www.google.com/apis/maps/documentation/index.html#Geocoding_API">Geocode API</a>. This same client also had no problem with me making a nice CFC out of the code <i>and</i> sharing it with the world. This client wants to remain anonymous, but he has my thanks.</p>
+<p>You can download the CFC here: <a href="http://googlegeocode.riaforge.org/">http://googlegeocode.riaforge.org/</a>.</p>
+<p>I also created a simple <a href="http://ray.camdenfamily.com/demos/googlegeocode/test.cfm">demo</a>.</p>
+<p>Enjoy.</p>
+<p>Oh - and if you were using <a href="http://www.riaforge.org">RIAForge</a> today and noticed some downtime - sorry. I've been trying to get a system update all week and I finally got it finished today. (Yes, I did a major system update at 3PM on a Friday and yes, I know how dumb that is.)</p>
+}

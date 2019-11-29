@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>So I was preparing a small article on Flex/Flash Remoting and Error Handling and I wanted to check the docs for the fault object. For the life of me though I couldn't remember what the full name/class of the fault object was. I'm sure I missed something obvious in Flex Builder, but I wanted to know if there was a way (in general) to take an object and return it's class name. Thanks to Chafic Kazoun of Adobe for the answer: Use flash.utils.getQualifiedClassName().</p>
+<code>
+Alert.show(flash.utils.getQualifiedClassName(someobject),"What is someobject?");
+</code>
+<p>See more about flash.utils at the <a href="http://livedocs.macromedia.com/flex/2/langref/flash/utils/package-detail.html">livedocs page</a>. Chafic also suggested these related functions:</p>
+<p>flash.utils.getDefinitionByName<br>
+flash.utils.getQualifiedSuperclassName<br></p>
+}

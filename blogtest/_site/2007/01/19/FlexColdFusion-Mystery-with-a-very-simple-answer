@@ -1,0 +1,26 @@
+<h1>Post</h1>
+
+<p>Yesterday I was working on a Flex project when I hit a brick wall. I had a very simple form. Flex was using remoting to send the form information to ColdFusion. ColdFusion was doing <i>nothing</i> with the data. It was just an empty method. However, every time I'd try to send the data I'd get an error.</p>
+<p>Here is where things got weird. The first thing I tried was launching ServiceCapture so I could see the response from ColdFusion. However - when I would send the form data, ServiceCapture would actually hang. I had to force it down.</p>
+<p>So then I went to my ColdFusion logs. Nothing was reported in the error log but an empty string. At this point I'm really confused. I go into my Application.cfc file's onError and added this:</p>
+<code>
+&lt;cfsavecontent variable="temp"&gt;
+&lt;cfdump var="#arguments#"&gt;
+&lt;/cfsavecontent&gt;
+&lt;cffile action="write" file="c:\foo.html" output="#temp#"&gt;
+</code>
+<p>Now I get somewhere. When I look at the file, I see no message, no detail, but I do see a type for the error:</p>
+<p>java.lang.StackOverflowError</p>
+<p>What the heck? (Ok, I didn't say heck.) So now I start trying random crap. First I change the method names. Doesn't help. Finally I change my Flex code to send nothing to ColdFusion. And it works.</p>
+<p>Um. Ok.</p>
+<p>I restored my code and noticed something....</p>
+<code>
+core.addAdminUser(username,password);
+</code>
+<p>username and password were the <b>form elements</b>, not the <b>values</b> of the form elements. Somehow Flex thought this was ok. Can you really send a <i>component</i> over the wire? Flex could. And while it didn't die, it was enough to freak out ServiceCapture and ColdFusion. Changing my Flex to:</p>
+<code>
+core.addAdminUser(username.text,password.text);
+</code>
+<p>made everything kosher. Whew!</p>
+<p>Coming later today - the second silly mistake I made...</p>
+}

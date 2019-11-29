@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>Earlier today the Ionic folks published an article about Ionic 2 and PWA (Progressive Web Apps) - <a href="http://blog.ionic.io/announcing-pwa-support-in-ionic-2/">&quot;Announcing PWA support in Ionic 2&quot;</a>. The gist is that - you guessed it - Ionic 2 apps will support PWAs out the box. You don't have to actually make use of PWA of course, but if you want to build an Ionic 2 app for the web, and <em>not</em> hybrid mobile, then Ionic has done some of the grunt work to get you started down that path. I thought it might be useful to remind folks how you can build an Ionic web apps instead of hybrid mobile apps.</p>
+<!--more-->
+<p>First and foremost, if you've been playing with Ionic V2 apps, most likely you've been using the beta version of the Ionic CLI. A few weeks ago the CLI was updated to 2.0 and you should no longer be using the beta version. To be clear, while the Ionic CLI is at version 2, the Ionic framework itself still defaults to version 1 (and Angular 1). To work with V2 apps, you need to pass the <code>--v2</code> flag when creating your application.</p>
+<p>To work with a web app, not Cordova, you should add another flag: <code>-w</code>. This tells the CLI to not add platforms and other Cordova-related stuff.</p>
+<p>So to summarize - you can create your new app like so:</p>
+<code>
+ionic start noHybridNoProblem --v2 -w
+</code>
+<p>Once done, you've good to go. But then you may wonder - how in the heck do you actually <em>view</em> your app? Normally I use <code>ionic emulate ios</code> to see my builds in the simulator. Since we aren't using Cordova, that's not an option.</p>
+<p>Instead - you'll want to use the Gulp script included in the project. Don't worry if you aren't familiar with Gulp, it's basically a simple automation library for projects. To &quot;build&quot; your app into something you can browse, simply do:</p>
+<code>
+gulp build
+</code>
+<p>You should see output like so:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/09/ionic1.png" alt=""></p>
+<p>And you can then see the results in your <code>www</code> folder. When I tested, I used <code>httpster</code> to fire up a little web server. Everything worked as expected, but you want to remove the line including <code>cordova.js</code> in your index.html file since it won't exist.</p>
+<p>Finally, if you want the code to build automatically while you edit, use:</p>
+<code>
+gulp watch
+</code>
+<p>That's it. Enjoy.</p>
+}

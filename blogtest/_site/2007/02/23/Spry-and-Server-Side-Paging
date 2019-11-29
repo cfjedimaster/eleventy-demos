@@ -1,0 +1,102 @@
+<h1>Post</h1>
+
+<p>A while ago I promised a demo showing how to use Spry's new PagedView feature to combine client and server side paging. Taking the &quot;walk before you run&quot; lesson to heart - I decided to first show a demo of how to do server side paging with Spry. This would be useful for huge datasets.</p>
+<!--more-->
+<p>Let's first start with the server side code. I wanted something you guys could download and play with, so the server side code is <i>not</i> using a database. Anyway - here is the code:</p>
+<code>
+&lt;cfsetting enablecfoutputonly="true" showdebugoutput="false"&gt;
+&lt;cfparam name="url.start" default="1"&gt;
+&lt;cfparam name="url.end" default="100"&gt;
+<p>&lt;cfset total = 1000&gt;</p>
+<p>&lt;cfif url.start gt total&gt;
+&lt;cfset url.start = total&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfif url.end gt total&gt;
+&lt;cfset url.end = total&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfcontent type=&quot;text/xml&quot;&gt;&lt;cfoutput&gt;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;people&gt;&lt;cfloop index=&quot;x&quot; from=&quot;#url.start#&quot; to=&quot;#url.end#&quot;&gt;&lt;person&gt;&lt;id&gt;#x#&lt;/id&gt;&lt;name&gt;Name #x#&lt;/name&gt;&lt;/person&gt;&lt;/cfloop&gt;&lt;/people&gt;&lt;/cfoutput&gt;
+</code></p>
+<p>I begin with a cfsetting to reduce the whitespace. This is important when returning XML. I then have two cfparams. One for the start row and one for the end row. I default these to sensible values.</p>
+<p>Next I have a &quot;total&quot; value. This wouldn't be hard coded but would rather come from the database. (Don't forget my <a href="http://ray.camdenfamily.com/index.cfm/2007/1/24/MySQL-Tip--Finding-total-rows-for-a-query-that-uses-Limit">MySQL</a> tip on how you can get a total and a page all in one query.)</p>
+<p>Since I know how many rows of data I have - I can then do sanity checks on start and end. Now I'm ready to generate my XML. Since I'm not using a database I've done a simple cfloop that &quot;fakes&quot; my data. I'm assuming folks have no questions on this so I'll move on.</p>
+<p>The client side is a bit more complex than a simple Spry dataview. As before I'll show you the code than walk through what I did:</p>
+<code>
+&lt;script type="text/javascript" src="/spry/xpath.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/spry/SpryData.js"&gt;&lt;/script&gt;
+<p>&lt;script type=&quot;text/javascript&quot; &gt;
+var start = 1;
+var perdatapage = 20;
+var end = start + perdatapage;</p>
+<p>var baseurl = &quot;testdata.cfm?&quot;;</p>
+<p>function getURL() {
+var s = baseurl;
+s+=&quot;start=&quot;+start;
+s+=&quot;&amp;end=&quot;+end;
+return s;
+}</p>
+<p>var mydata = new Spry.Data.XMLDataSet(getURL(),&quot;//people/person&quot;);</p>
+<p>Spry.Data.Region.debug=false;</p>
+<p>function goBack() {
+start=start-perdatapage;
+if(start &lt; 1) start=1;
+end = start+perdatapage;
+mydata.setURL(getURL());
+mydata.loadData();	
+}</p>
+<p>function goForward() {
+start=start+perdatapage;
+end = start+perdatapage;
+mydata.setURL(getURL());
+mydata.loadData();	
+}
+&lt;/script&gt;</p>
+<p>&lt;div id=&quot;mydata&quot; spry:region=&quot;mydata&quot;&gt;</p>
+<pre><code>&amp;lt;table border=&quot;1&quot; width=&quot;500&quot;&amp;gt;
+	&amp;lt;tbody spry:repeat=&quot;mydata&quot;&amp;gt;
+		&amp;lt;tr&amp;gt;
+			&amp;lt;td&amp;gt;ds_RowID={ds_RowID}&amp;lt;/td&amp;gt;
+			&amp;lt;td&amp;gt;id from db={id}&amp;lt;/td&amp;gt;
+			&amp;lt;td&amp;gt;{name}&amp;lt;/td&amp;gt;
+		&amp;lt;/tr&amp;gt;
+	&amp;lt;/tbody&amp;gt;
+	&amp;lt;tr align=&quot;right&quot;&amp;gt;
+		&amp;lt;td colspan=&quot;3&quot;&amp;gt;
+		&amp;lt;a href=&quot;javaScript:goBack()&quot;&amp;gt;&amp;lt;&amp;lt; Previous&amp;lt;/a&amp;gt; | 
+		&amp;lt;a href=&quot;javaScript:goForward()&quot;&amp;gt;Next &amp;gt;&amp;gt;&amp;lt;/a&amp;gt;
+		&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+&amp;lt;/table&amp;gt;	
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>Ok, lots to cover here. I'm going to skip over the things that I assume most folks know - like the first two script tags that include the main Spry libraries. Let's begin by looking at how we track where we are in the dataset:</p>
+<code>
+var start = 1;
+var perdatapage = 20;
+var end = start + perdatapage;
+<p>var baseurl = &quot;testdata.cfm?&quot;;</p>
+<p>function getURL() {
+var s = baseurl;
+s+=&quot;start=&quot;+start;
+s+=&quot;&amp;end=&quot;+end;
+return s;
+}
+</code></p>
+<p>These lines initialize my start, end, and page size variables. Because my server side code accepts a start and end value, I created a helper function, getURL(), that will generate my URL for me. This was just for convenience. I use this in my dataset creation line:</p>
+<code>
+var mydata = new Spry.Data.XMLDataSet(getURL(),"//people/person"); 
+</code>
+<p>So skipping ahead a bit - you can see where I use a simple table to output the values from the XML. Notice I show both the ID, which comes from the data, and Spry's ds_RowID value. I do this just to show you the difference between the row in the dataset on the client side and the server side's row ID.</p>
+<p>To enable paging, I added two links at the bottom of the table that call JavaScript functions. Let's now take a look at these - first the code to move to the next page:</p>
+<code>
+function goForward() {
+	start=start+perdatapage;
+	end = start+perdatapage;
+	mydata.setURL(getURL());
+	mydata.loadData();	
+}
+</code>
+<p>I begin with some simple arithmetic. Then I use setURL() on the dataset. This lets me update the URL, again I use my getURL function. Then loadData() is called which refreshes the dataset. That's it. The code to handle moving backwards is the same - except for some logic to ensure we don't go below 1.</p>
+<p>For a demo of this, go here: <a href="http://ray.camdenfamily.com/demos/spryserverpaging/">http://ray.camdenfamily.com/demos/spryserverpaging/</a></p>
+<p>You may also download the code attached to this entry. This code isn't perfect though. It will gladly let you go past the 1k limit. How can we fix that? I'll answer that in the next post.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Ftestingzone%2Ezip'>Download attached file.</a></p></p>
+}

@@ -1,0 +1,42 @@
+<h1>Post</h1>
+
+<p>Matt asks:</p>
+<blockquote>
+My question is - is there a simple way to check for nameconflict on cffile action=rename like there ins on cffile action=upload. I have an application where I want to rename whatever they upload to match their order number.  It's fine if they just upload one image, but not cool if there is more than one.  I'm just checking to see if there is an easier way than some kind of fileexists, then add a 1 to the filename before the rename.
+</blockquote>
+<p>Unfortunately there isn't a simpler way, not that I'm aware of. Your solution is one I used myself very recently. Here is a live working example of code that is run <i>after</i> I used cffile/upload and did security checks. That portion is done and now I just need to copy it to the storage directory.</p>
+<!--more-->
+<code>
+&lt;cflock type="exclusive" name="#variables.lockname#" timeout="30"&gt;
+<pre><code>&amp;lt;cfif not directoryExists(folder)&amp;gt;
+	&amp;lt;cflog file=&quot;picard&quot; text=&quot;created a file store for #folder#&quot;&amp;gt;
+	&amp;lt;cfdirectory action=&quot;create&quot; directory=&quot;#folder#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- before we move our file out of ram and onto disk, need to look for files w/ same name. If so, 
+we prepend N_ in front, going up forever basically ---&amp;gt;
+&amp;lt;cfif fileExists(folder &amp; &quot;/&quot; &amp; getFileFromPath(newFile))&amp;gt;
+	&amp;lt;cfset var keepGoing = true&amp;gt;
+	&amp;lt;cfset var counter = 1&amp;gt;
+	&amp;lt;cfloop condition=&quot;keepGoing&quot;&amp;gt;
+		&amp;lt;cfset uniqueFileName = folder &amp; &quot;/&quot; &amp; counter &amp; &quot;_&quot; &amp; getFileFromPath(newFile)&amp;gt;
+		&amp;lt;cfif fileExists(uniqueFileName)&amp;gt;
+			&amp;lt;cfset counter++&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;cfset dest = uniqueFileName&amp;gt;
+			&amp;lt;cfset keepGoing = false&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfset dest = folder &amp; &quot;/&quot; &amp; getFileFromPath(newFile)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cffile action=&quot;move&quot; source=&quot;#newFile#&quot; destination=&quot;#dest#&quot;&amp;gt;		
+</code></pre>
+<p>&lt;/cflock&gt;	
+</code></p>
+<p>So a few notes on this code block. It's written for ColdFusion 9 which is why you use var keywords littered throughout. To get this to work in a CF8 CFC you would simply ensure you do the vars at the beginning.</p>
+<p>The lock is critical here. In this case, all file moves are done via one FileService component. So the exclusive lock here ensures that only one move is done at a time. I did my best to minimize the size of the lock. It's only done after the upload processing and security checks. This is also an big <b>hole</b> in the logic. It assumes only ColdFusion has access to the folder. Obviously ColdFusion has no way to <i>really</i> lock a folder by itself. Some other process could drop a file in the folder at the same time.</p>
+<p>I assume the main logic of this is pretty simple. I use a conditional loop that increments a counter which is prepended to the file name. In theory this should run pretty darn quickly. Outside of this block I've used logic to create date based folders so that ensures I don't end up with one folder that contains a few thousand files.</p>
+<p>Lastly - there is another nice way to handle this as well. Use UUID file names. You can grab the extension of the original file and simply use the UUID as the filename. So foo.jpg becomes #createUUID()#.jpg. This will create an ugly, but unique file name, in far fewer lines of code. I'd use this if you don't care about the original file name. A good example of this would be for things like images.</p>
+}

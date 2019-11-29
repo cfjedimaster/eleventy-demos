@@ -1,0 +1,79 @@
+<h1>Post</h1>
+
+<p>This is a topic I cover pretty often, but as I still get emails about it I figure it doesn't hurt to repeat myself. One of the number one reasons folks have issues with Ajax and ColdFusion is the use of Application.cfc and onRequestStart. If you output <b>anything</b> in onRequestStart, like a header, or a footer (in onRequestEnd obviously), it will <b>always</b> output, even when you make requests to CFCs. Let's look at a quick example of this.</p>
+<!--more-->
+<p>
+<p>I'll begin with my front end fancy Ajax application. It's incredibly complex. It's going to use jQuery to call a CFC method that returns an array. It will take the array and make a nice UL out of it. Here's the code.</p>
+<p>
+<code>
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+$.post(&quot;test.cfc?method=getarr&amp;returnformat=json&quot;, {}, function(res,code) {
+var s = &quot;&lt;h2&gt;Results&lt;/h2&gt;&lt;ul&gt;&quot;;
+for(var i=0; i&lt;res.length; i++) {
+s+= &quot;&lt;li&gt;&quot;+res[i]+&quot;&lt;/li&gt;&quot;;
+}
+s+=&quot;&lt;/ul&gt;&quot;;
+$(&quot;#result&quot;).html(s);
+},&quot;json&quot;);
+})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;div id=&quot;result&quot;&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>The CFC is trivial, but for completeness sake, here it is:</p>
+<p>
+<code>
+component {
+<pre><code>remote array function getArr() { return [1,2,3]; }
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>(By the way, to the person who just called ColdFusion &quot;tag soup&quot; on Twitter... suck it.) Ok, if everything works, we should see this:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip190.png" />
+<p>
+<p>However, when I ran my code I saw this instead:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip191.png" />
+<p>
+<p>Global Corp? Eh? Turns out I had an Application.cfc file and I used onRequestStart to output a header for all my files:</p>
+<p>
+<code>
+component {
+<pre><code>this.name=&quot;root&quot;;
+public boolean function onApplicationStart() {  
+		return true;    
+}    
+
+public boolean function onRequestStart(string req) {
+	writeOutput(&quot;&amp;lt;h1&amp;gt;Global Corp!&amp;lt;/h1&amp;gt;&quot;);
+		return true;	
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>The problems becomes more apparent when you make use of Chrome Dev Tools or Firebug. <b>And folks, again, please please please please make use of these tools. You cannot, should not, must not, do Ajax development without them.</b> Look at what my CFC returned:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip192.png" />
+<p>
+<p>You can see the header being output before the CFC. This is not a bug. You told ColdFusion to output the text on every request. Luckily it is easy enough to fix.</p>
+<p>
+<code>
+    public boolean function onRequestStart(string req) {
+    	if(listLast(arguments.req,".") != "cfc") writeOutput("&lt;h1&gt;Global Corp!&lt;/h1&gt;");
+    	return true;	
+    }
+</code>
+<p>
+<p>I hope this helps (even if a repeat). As a reminder, I tend to recommend <i>against</i> using onRequestStart/End for templates just for this reason.</p>
+}

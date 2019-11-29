@@ -1,0 +1,87 @@
+<h1>Post</h1>
+
+<p>So after releasing an updated version of my <a href="http://cfyahoo.riaforge.org">CFYahoo</a> project at lunch, I thought I'd whip up a super quick demo that made use of it. While researching some of the API changes last night, I came across <a href="http://www.ooer.com/yahoobattle/index.php">YahooBattle!</a>. With a name like that, how could I <i>not</i> click? The idea is simple - provide two search terms and it tells you which term has the most results. I decided to quickly whip up an example that would allow you to compare multiple keywords.</p>
+<!--more-->
+<p>I began with just a form:</p>
+<code>
+&lt;form&gt;
+&lt;input type="button" id="reportBtn" value="Display Report"&gt;&lt;br/&gt;
+Keywords:&lt;br/&gt;
+&lt;div id="keywordgutter"&gt;
+&lt;input type="text" name="keyword"&gt;&lt;br/&gt;
+&lt;input type="text" name="keyword"&gt;&lt;br/&gt;
+&lt;/div&gt;
+&lt;input type="button" id="addBtn" value="+" title="Add Keyword"&gt;
+&lt;/form&gt;
+</code>
+<p>I've got 2 keyword fields, a &quot;add&quot; button at the bottom, and I put my Display Report button top. Now for the jQuery:</p>
+<code>
+$(document).ready(function() {
+<pre><code>//add a new keyword when you hit +	
+$(&quot;#addBtn&quot;).click(function() {
+	var s = '&amp;lt;span&amp;gt;&amp;lt;input type=&quot;text&quot; name=&quot;keyword&quot;&amp;gt;&amp;lt;input type=&quot;button&quot; value=&quot;-&quot; name=&quot;remove&quot; title=&quot;Remove Keyword&quot;&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/span&amp;gt;'
+	$(&quot;#keywordgutter&quot;).append(s)
+})
+
+//support removing new keywords only
+$(&quot;input[name='remove']&quot;).live(&quot;click&quot;,function() {
+	$(this).parent().remove()
+})
+
+//display report
+$(&quot;#reportBtn&quot;).click(function() {
+	var keywords = []
+	$(&quot;input[name='keyword']&quot;).each(function() {
+		var value = $.trim($(this).val())
+		if(value != '') keywords[keywords.length] = $(this).val()
+	})
+	if(keywords.length &amp;gt; 0) {
+		$(&quot;#report&quot;).html(&quot;&amp;lt;i&amp;gt;Checking your keywords - please stand by...&amp;lt;/i&amp;gt;&quot;)
+		$(&quot;#report&quot;).load('report.cfm',{keywords:keywords})
+	}
+})
+</code></pre>
+<p>})
+</code></p>
+<p>There are 3 main functions here. The first adds support for adding keyword fields. I do this with a simple bit of HTML that gets appended to my form. Notice the span around the field. That will come back later.</p>
+<p>The second function handles removing data. Now because I'm adding stuff on the fly, I have to use the jQuery live function. This is a way to handle items that don't exist in the DOM at the time of script execution. Since the new keyword fields are being added dynamically, I can use the live method to kind of 'monitor' them as they get added. Now to actually remove the keyword, I just have to bind to the button I added, and then just grab the parent. Remember how I wrapped the keyword field and the minus button with a span? That's the parent. So I can just do .parent().remove(). God I hate jQuery for being so simple.</p>
+<p>The next function handles loading the report. I gather up all the form fields using the name keyword. For each, I do a quick trim and then add it to an array. If we actually have values, I pass them all to ColdFusion to handle generating the report.</p>
+<p>So the actual ColdFusion code is almost as simple.</p>
+<code>
+&lt;cfparam name="form.keywords" default=""&gt;
+<p>&lt;cfif form.keywords is &quot;&quot;&gt;
+&lt;p&gt;
+No keywords were sent to the report.
+&lt;/p&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfset searchAPI = createObject(&quot;component&quot;, &quot;cfyahoo.org.camden.yahoo.search&quot;)&gt;</p>
+<p>&lt;cfset scores = {}&gt;
+&lt;cfset total = 0&gt;</p>
+<p>&lt;cfloop index=&quot;word&quot; list=&quot;#form.keywords#&quot;&gt;
+&lt;cfinvoke component=&quot;#searchAPI#&quot; method=&quot;search&quot; returnVariable=&quot;result&quot;&gt;
+&lt;cfinvokeargument name=&quot;query&quot; value=&quot;#word#&quot;&gt;
+&lt;!--- we ask just for one because all we care about is the total ---&gt;
+&lt;cfinvokeargument name=&quot;results&quot; value=&quot;1&quot;&gt;
+&lt;/cfinvoke&gt;
+&lt;cfset scores[word] = result.totalavailable&gt;
+&lt;cfset total+=result.totalavailable&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;style&gt;
+h2 { font-family:Arial; }
+&lt;/style&gt;</p>
+<p>&lt;h2&gt;Number of Yahoo Results per Keyword&lt;/h2&gt;
+&lt;cfchart format=&quot;flash&quot; chartheight=&quot;400&quot; chartwidth=&quot;400&quot;&gt;
+&lt;cfchartseries type=&quot;pie&quot;&gt;
+&lt;cfloop item=&quot;word&quot; collection=&quot;#scores#&quot;&gt;
+&lt;cfchartdata item=&quot;#word#&quot; value=&quot;#scores[word]#&quot;&gt;
+&lt;/cfloop&gt;
+&lt;/cfchartseries&gt;
+&lt;/cfchart&gt;
+</code></p>
+<p>As you can see, I loop over the keywords and for each I ran a query against Yahoo. All I need are the totals so I tell the API to return only one result. I don't actually even care what it is - I just grab the total.</p>
+<p>Lastly, I take the data and simply pass it over to a pie chart.</p>
+<p>Have you ever wondered how &quot;megamouth shark&quot;, &quot;cylon&quot;, and &quot;mustache trimmer&quot; would compare? Now you know:</p>
+<img src="https://static.raymondcamden.com/images/Picture 259.png" />
+<p>You can test this yourself here: <a href="http://www.coldfusionjedi.com/demos/cfyahoo2/test.cfm">http://www.coldfusionjedi.com/demos/cfyahoo2/test.cfm</a></p>
+}

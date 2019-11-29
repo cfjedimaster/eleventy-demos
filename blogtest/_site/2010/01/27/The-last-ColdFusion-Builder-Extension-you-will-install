@@ -1,0 +1,38 @@
+<h1>Post</h1>
+
+<p>I have to begin by apologizing. ColdFusion Builder is - already - a pretty darn cool tool. While it still has warts (and to be fair, it is still in beta), it has been my day to day programming tool for a few months now. One of the cooler features of CFB is how easy it is to extend it with custom extensions. You can find a bunch on <a href="http://www.riaforge.org/index.cfm?event=page.category&id=14">RIAForge</a> now. Unfortunately for them, though, I'm releasing an extension today that makes all of them pointless. (Warning, the size of this SWF is rather large - I recorded it on a large screen.)</p>
+<!--more-->
+<p>
+<a href="http://s3.coldfusionjedi.com/thisiscrap.swf"><img src="https://static.raymondcamden.com/images/Screen shot 2010-01-27 at 8.21.52 AM.png" title="Click me for ridiculous-sized video" border="0" /></a>
+<p>
+Ok, so if you watched the video and returned, sorry to waste your time. I do have one redeeming point to this blog entry. You may have noticed that the file I was editing in the video was refreshed automatically. Extensions can do this, but there is a typo in the documentation. In order to refresh the file that was right clicked on, you can use the following code (taken from the 'fix bugs' extension):
+<p>
+<code>
+&lt;cfsetting enablecfoutputonly="true" showdebugoutput="false"&gt;
+&lt;cfparam name="ideeventinfo"&gt;
+&lt;cfset data = xmlParse(ideeventinfo)&gt;
+&lt;cfset myFile = data.event.ide.projectview.resource.xmlAttributes.path&gt;
+&lt;cfset projectName = data.event.ide.projectview.xmlAttributes.projectname&gt;
+<p>&lt;cffile action=&quot;read&quot; file=&quot;#myfile#&quot; variable=&quot;code&quot;&gt;
+&lt;cfset code = &quot;&lt;cftry&gt;#code#&lt;cfcatch&gt;&lt;/cfcatch&gt;&lt;/cftry&gt;&quot;&gt;
+&lt;cffile action=&quot;write&quot; file=&quot;#myfile#&quot; output=&quot;#code#&quot;&gt;</p>
+<p>&lt;cfsavecontent variable=&quot;res&quot;&gt;
+&lt;cfoutput&gt;
+&lt;response&gt;
+&lt;ide&gt;
+&lt;commands&gt;
+&lt;command type=&quot;refreshfile&quot;&gt;
+&lt;params&gt;
+&lt;param key=&quot;filename&quot; value=&quot;#myfile#&quot; /&gt;
+&lt;param key=&quot;projectname&quot; value=&quot;#projectname#&quot; /&gt;
+&lt;/params&gt;
+&lt;/command&gt;
+&lt;/commands&gt;
+&lt;/ide&gt;
+&lt;/response&gt;
+&lt;/cfoutput&gt;
+&lt;/cfsavecontent&gt;</p>
+<p>&lt;cfheader name=&quot;Content-Type&quot; value=&quot;text/xml&quot;&gt;&lt;cfoutput&gt;#res#&lt;/cfoutput&gt;
+</code></p>
+<p>
+Specifically, I believe the docs say to use <command <b>name</b>="refreshfile">, while what you really want is <b>type</b> instead. I've included the complete extension as an attachment to this entry.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FCode%20Assistant%2Ezip'>Download attached file.</a></p>}

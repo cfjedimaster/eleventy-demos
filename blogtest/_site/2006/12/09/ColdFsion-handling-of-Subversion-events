@@ -1,0 +1,64 @@
+<h1>Post</h1>
+
+<p>I consider myself a casual user of Subversion (SVN). So every now and then I get surprised by what you can do with it. One of the cooler features of SVN is <a href="http://svnbook.red-bean.com/nightly/en/svn.reposadmin.create.html#svn.reposadmin.create.hooks">hook scripts</a>. These are scripts that run based on SVN events, such as committing a file. As you can imagine this is a pretty powerful tool as it lets you have finer control and additional monitoring of your SVN repository.</p>
+<!--more-->
+<p>So naturally the first thing I thought this morning was - How can I get ColdFusion hooked up to this?</p>
+<p>Hook scripts are text files stored in the repository. To start using them you simply create the file. SVN provides samples for each of the events. On a Windows machine (where I was), you need to use <i>actionname</i>.bat or .exe for your file name. I wanted to write something that would fire after a commit action, so I created a file named post-commit.bat.</p>
+<p>Now the question is - how do you run ColdFusion from a command prompt? Unfortunately there is no direct way of doing this. I took Ashwin's <a href="http://blogs.sanmathi.org/ashwin/2006/09/14/howto-call-cf-from-the-command-line/">suggestion</a> and downloaded Curl. Curl is a command line tool to download a URL.</p>
+<p>Each hook script has different parameters passed to it. The post-commit script is passed the repository URL and revision number. In a bat file you can use these attributes as %1 and %2. Here is the bat file I used:</p>
+<code>
+c:\progra~1\curl\curl.exe "http://127.0.0.1/testingzone/test.cfm?repos=%1&rev=%2"
+</code>
+<p>So to recap - when I check a file into this repository, SVN will automatically fire off my bat file and pass in the repo URL and revision number.</p>
+<p>So what did my ColdFusion script do? I could have simply sent an email with the information I was passed (repository and revision), but that isn't very helpful. I used SVN's command line tool to grab more information about the revision. Using CFEXECUTE I ran this command:</p>
+<code>
+svn log file:///#repository# -r #revision# -v --xml
+</code>
+<p>The log command simply returns the information about the revision. The -r attribute sets the revision to examine. The -v attribute tells SVN to verbose. Finally, and this is the coolest part, the --xml tells SVN to return the result in XML. Once I had the XML I had everything I needed to send out an email with the information about the commit action.</p>
+<p>Before I paste the full ColdFusion code I used - a few notes. First off - Rob Gonda has some very cool Subversion wrapper code in ColdFusion. I bug him about once a week to release it as a project on <a href="http://www.riaforge.org">RIAForge</a>. :) I point it out to make the point that the code I used could have been done simpler with his API. (I know this as I use it at RIAForge and it has been very simple to use.) Secondly - SVN can return even more information then just a list of files. I could have also shown the diff in the email as well. Don't think you are limited to what I showed. Enjoy. If you actually use this code, let me know!</p>
+<code>
+&lt;cfparam name="url.repos" default=""&gt;
+&lt;cfparam name="url.rev" default=""&gt;
+<p>&lt;cfif len(url.repos) and len(url.rev)&gt;</p>
+<pre><code>&amp;lt;cfset url.repos = trim(url.repos)&amp;gt;
+
+&amp;lt;cftry&amp;gt;
+&amp;lt;cfset svnexe = &quot;c:\progra~1\subversion\bin\svn.exe&quot;&amp;gt;
+&amp;lt;cfset svncommand=&quot;log file:///#url.repos# -r #url.rev# -v --xml&quot;&amp;gt;
+
+&amp;lt;cfexecute name=&quot;#svnexe#&quot; arguments=&quot;#svncommand#&quot; variable=&quot;result&quot; timeout=&quot;30&quot; /&amp;gt; 
+&amp;lt;cfset resultXML = xmlparse(result)&amp;gt;	
+
+&amp;lt;cfset author = resultXML.log.logentry.author&amp;gt;
+&amp;lt;cfset msg = resultXML.log.logentry.msg&amp;gt;
+
+&amp;lt;cfset files = arrayNew(1)&amp;gt;
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(resultXML.log.logentry.paths.path)#&quot;&amp;gt;
+	&amp;lt;cfset thefile = resultXML.log.logentry.paths.path[x].xmlText&amp;gt;
+	&amp;lt;cfset arrayAppend(files, thefile)&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfmail to=&quot;ray@camdenfamil.com&quot; from=&quot;svn@camdenfamily.com&quot; subject=&quot;SVN Commit&quot;&amp;gt;
+</code></pre>
+<p>Repository:  #url.repos#
+Revision:    #url.rev#
+Message:
+#msg#</p>
+<p>Files:&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(files)#&quot;&gt;
+#files[x]#&lt;/cfloop&gt;
+&lt;/cfmail&gt;</p>
+<pre><code>&amp;lt;cfcatch&amp;gt;
+	&amp;lt;cfmail to=&quot;ray@camdenfamil.com&quot; from=&quot;svn@camdenfamily.com&quot; subject=&quot;SVN HandlerError&quot; type=&quot;html&quot;&amp;gt;
+	&amp;lt;cfif isDefined(&quot;result&quot;)&amp;gt;
+	result=#htmlcodeformat(result)#
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfdump var=&quot;#cfcatch#&quot;&amp;gt;
+	&amp;lt;/cfmail&amp;gt;		
+&amp;lt;/cfcatch&amp;gt;
+
+&amp;lt;/cftry&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+}

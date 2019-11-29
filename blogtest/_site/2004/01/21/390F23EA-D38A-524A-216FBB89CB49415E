@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Robert Redpath on cf-talk shared an excellent link today. The doc for <a href="http://livedocs.macromedia.com/coldfusion/6.1/htmldocs/tags-pb3.htm">cfmailpart</a> shares an excellent example of how to send both HTML and plain text emails at once.</p>
+}

@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>One of the shortcuts that Spry borrowed from prototype was this:</p>
+<code>
+var someitem = $("idofitem");
+</code>
+<p>In order to avoid conflicts with folks using Spry and Prototype or other frameworks, this syntax has been changed:</p>
+<code>
+var someitem = Spry.$("idofitem");
+</code>
+<p>I saw this in the release notes, but Peter <a href="http://ray.camdenfamily.com/index.cfm/2007/4/7/Using-AJAX-and-Server-Side-Search-2#cB8D587BD-D34D-F5F7-3235810428D436B2">noted</a> how it had tripped him up so I thought I'd warn folks.</p>
+}

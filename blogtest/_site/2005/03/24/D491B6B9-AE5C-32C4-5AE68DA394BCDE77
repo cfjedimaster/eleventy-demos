@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<ol>
+<li>
+<p>This I have not been able to reproduce - and it was before my coffee - but I swear that I saw an entry with a posted date of X become Y when I clicked to edit.</p>
+</li>
+<li>
+<p>getCategories does not respect the new &quot;hide&quot; logic for entries in the future. Neither does getEntry, but I think that is ok since you would need to know the UUID to get the posting. Also, an admin may want to share a blog posting with others before publishing to the public.</p>
+</li>
+</ol>
+<p>Anyway, I'll work on this and try to get a release today. There is another new feature I'll add to make it worth the trouble.</p>
+}

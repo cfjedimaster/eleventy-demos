@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Last week I <a href="http://www.camdenfamily.com/morpheus/blog/index.cfm?mode=entry&entry=B7B47AE9-D4B3-AB2D-B07DE78FFAB8C6E5">posted</a> about a friend having an issue w/ their DB server after migrating to MX. Turns out their database didn't have any indexes, including primary keys. Once this was corrected the site began to work perfectly. This serves as a good reminder that you can't forget best practices when setting up your DB. I know for a <b>fact</b> that I don't always do the best job I can, so I'm going to try to do better in the future.</p>
+}

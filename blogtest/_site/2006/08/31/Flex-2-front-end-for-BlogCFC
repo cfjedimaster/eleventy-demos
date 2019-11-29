@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>A few months ago (actually, back earlier this year), I worked on a Flex 2 front end for BlogCFC. This was a bit difficult because I had not built BlogCFC to be used in that way. (In other words, Ray's fault, not Flex's fault.) I had a lot of help from Mike Nimer on this - so he deserves the credit. You can view source by doing a right click. Notice that I had to rename the blogproxy CFC to a text file so the server could load it up. Anyway, I'll be writing an article for Adobe.com later this week about my experiences building it. Enjoy.</p>
+<p><a href="http://www.raymondcamden.com/BlogCFC/bin/blogcfc.html">BlogCFC attacked by the Green Flex Monster</a></p>
+}

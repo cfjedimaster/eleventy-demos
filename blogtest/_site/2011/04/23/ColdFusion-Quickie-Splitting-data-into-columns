@@ -1,0 +1,53 @@
+<h1>Post</h1>
+
+<p>This is something I've done many times in the past, but I thought I'd whip up a quick example and share it. Imagine you have a set of data you need to display in columns. With a table it's trivial. You loop and simply begin a new TR every two cells. But what if you aren't using tables? Imagine a CSS based layout with two columns side by side. The contents of the left column need to be every other item, starting with the first one. The contents of the right column need to be every other item, starting with the second one. Here is a quick snippet of code that demonstrates this.</p>
+<!--more-->
+<p>
+<code>
+&lt;cfset data = [1,2,3,4,5,6,7,8,9]&gt;
+<p>&lt;cfset col1 = []&gt;
+&lt;cfset col2 = []&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(data)#&quot;&gt;
+&lt;cfset item = data[x]&gt;
+&lt;cfif x mod 2 is 1&gt;
+&lt;cfset arrayAppend(col1, item)&gt;
+&lt;cfelse&gt;
+&lt;cfset arrayAppend(col2, item)&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>I create an initial set of data with 9 items. I then create two arrays - one for each column. Finally I loop over the data set and if odd, add it to column 1, and if even, add it to column two. So to render this I just output my HTML/CSS and loop over each column.</p>
+<p>
+<code>
+<p>&lt;style&gt;
+#left {
+float: left;
+width: 200px;
+}
+#right {
+float: left;
+width: 200px;
+}
+&lt;/style&gt;</p>
+<p>&lt;div id=&quot;left&quot;&gt;
+&lt;b&gt;col1&lt;/b&gt;&lt;br/&gt;
+&lt;cfloop index=&quot;i&quot; array=&quot;#col1#&quot;&gt;
+&lt;cfoutput&gt;
+#i#&lt;br/&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+&lt;/div&gt;
+&lt;div id=&quot;right&quot;&gt;
+&lt;b&gt;col2&lt;/b&gt;&lt;br/&gt;
+&lt;cfloop index=&quot;i&quot; array=&quot;#col2#&quot;&gt;
+&lt;cfoutput&gt;
+#i#&lt;br/&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+&lt;/div&gt;
+</code></p>
+<p>
+<p>Here is how it looks - fancy, eh?</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip73.png" />}

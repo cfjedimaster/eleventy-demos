@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<p>After my presentation yesterday, someone in the audience asked an interesting question. He wanted to shrink an image, but keep the original size. So imagine taking a large image, shrinking down the visual part of it, but keeping the image at the same size with some form of background now. This is relatively easy to do. First we can read in our source image:</p>
+<code>
+&lt;cfset source = "presentations/webmaniacs/images_lecture/originals/insp_captkirk.png"&gt;
+<p>&lt;!--- read it ---&gt;
+&lt;cfset myimage = imageRead(source)&gt;
+</code></p>
+<p>Then we can shrink it:</p>
+<code>
+&lt;!--- shrink it ---&gt;
+&lt;cfset imageScaleToFit(myimage,250,250)&gt;
+</code>
+<p>Now let's create a new canvas. This will be a blank image. I'm picking an arbitrary size here. You could have checked the original images size instead, but for this example, I'll just use 400x400. Also note I intentionally picked a non-white background so I could see it working.</p>
+<code>
+&lt;!--- new canvas ---&gt;
+&lt;cfset img = imageNew("", 400, 400, "rgb", "##c0c0c0")&gt;
+</code>
+<p>Lastly, all you do is paste the shrunken image over the blank canvas we just made:</p>
+<code>
+&lt;!--- paste it in ---&gt;
+&lt;cfset imagePaste(img, myimage, 0,0)&gt;
+</code>
+<p>Here is the final result:</p>
+<img src="https://static.raymondcamden.com/images/imgs.png">}

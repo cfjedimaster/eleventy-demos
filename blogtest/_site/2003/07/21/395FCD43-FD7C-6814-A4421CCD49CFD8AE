@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>This weekend I had to find a way to calculate the size (on disk) of a MS SQL Sever database. I got two solutions, both of which worked great. The first solution came from one of my <a href="http://www.mindseye.com">coworkers</a>, Dave An:</p>
+<p>SELECT (size * 8) as filesize, filename from sysfiles</p>
+<p>This returned the size of both the main data file and the log file. Dave made sure to mention that this assumes a default setting for the database page  size.</p>
+<p>Another solution was provided by Jared Riley:</p>
+<p>&lt;CFSTOREDPROC DATASOURCE=&quot;yourdatasource&quot; PROCEDURE=&quot;sp_helpdb&quot; RETURNCODE=&quot;Yes&quot;&gt;<br>
+   &lt;CFPROCRESULT NAME=&quot;RS1&quot;&gt;<br>
+&lt;/CFSTOREDPROC&gt;</p>
+<p>CFOUTPUT QUERY = RS1&gt;<br>
+#name# #ReplaceNoCase(db_size,  &quot; MB&quot;,  &quot;&quot;,  &quot;ALL&quot;)# #owner# #created#<br>
+&lt;/CFOUTPUT&gt;</p>
+<p>This returns the <i>complete</i> size of the db, i.e., the data and log file combined.</p>
+}

@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>Jay (my second US gov emailer today) asks:</p>
+<blockquote>
+I have not done much with this so I am not sure of the best approach currently I am working on a cf7 server and I am uploading files with some code.
+<p>My users would like to be able to see the file name they chose below the upload field since the field is not long enough to display all of it at once.</p>
+</blockquote>
+<p>My initial response was no - since I know the browser locks down those form file fields. But then I remembered that JavaScript <i>should</i> be able to read the setting. Sure enough, it can:</p>
+<code>
+&lt;cfform name="foo"&gt;
+&lt;cfinput type="file" name="fileone"&gt;
+&lt;cfdiv bind="{fileone}"&gt;
+&lt;/cfform&gt;
+</code>
+<p>Of course, he asked for a CF7 version. Here is a slightly more verbose version that should work in CF7 (or anything really, even languages on their <a href="http://www.php.net">dead bed</a>).</p>
+<code>
+&lt;script&gt;
+function setFilename() {
+	var filefield = fileone.value;
+	var output = document.getElementById('filename');
+	output.innerHTML = filefield;
+}
+&lt;/script&gt;
+<p>&lt;cfform name=&quot;foo2&quot;&gt;
+&lt;cfinput type=&quot;file&quot; name=&quot;fileone&quot; onChange=&quot;setFilename()&quot;&gt;
+&lt;div id=&quot;filename&quot;&gt;&lt;/div&gt;
+&lt;/cfform&gt;
+</code></p>
+}

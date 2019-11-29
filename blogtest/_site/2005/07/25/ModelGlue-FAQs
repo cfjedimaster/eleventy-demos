@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>As I work my way through rebuilding CFLib (and yes, I still plan on deploying it live so people can see the progress) I ran into a few issues that I needed help. I'll make the assumption that my questions aren't stupid and share them here...</p>
+<ol>
+<li>Inside a controller I want to make an instance of a CFC. No big deal, but I needed the full path to the CFC. This was: cflib2005.model.library. As you can probably guess though, &quot;cflib2005&quot; was the root mapping for my site. I didn't want to hard code that in. Turns out you have a few options. The first is to simply use the &lt;setting&gt; tag in your ModelGlue.xml file. Then you can use this code:</li>
+</ol>
+<p>getModelGlue().getConfigSetting(&quot;applicationMapping&quot;)</p>
+<p>Thanks go to Sean for pointing this out. The other option is to use a <a href="http://www.model-glue.com/quickstart/index.html#configbeans">ConfigBean</a>. Personally this is the option I prefer. This way I can keep my ModelGlue.xml file focused on the events, and put my setting in a separate XML file.</p>
+<ol start="2">
+<li>How do you pass arguments to a view? In the past, I've code layout like so:</li>
+</ol>
+<div class="code"><FONT COLOR=MAROON>&lt;cf_layout title=<FONT COLOR=BLUE>"CF Rocks"</FONT>&gt;</FONT><br>
+Content<br>
+<FONT COLOR=MAROON>&lt;/cf_layout&gt;</FONT></div>
+<p>I wasn't sure how I would do the same thing in MG. Turns out, you can pass an argument to a view very simply:</p>
+<div class="code"><FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;include name=<FONT COLOR=BLUE>"main"</FONT> template=<FONT COLOR=BLUE>"layout.main.cfm"</FONT>&gt;</FONT></FONT><br>
+<FONT COLOR=NAVY>&lt;value name=<FONT COLOR=BLUE>"title"</FONT> value=<FONT COLOR=BLUE>"Welcome to CFLib.org"</FONT> /&gt;</FONT><br>
+<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;/include&gt;</FONT></FONT></div>
+<p>Once you do that, the variable &quot;title&quot; is available in the view state. Of course, my next question was, how do I make it dynamic? You simply use the view state again:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfset viewState.setValue(<FONT COLOR=BLUE>"title"</FONT>, library.getName())&gt;</FONT></div>
+<p>What's cool then is that my view works just fine with either methods, since they both write to the same view state collection.</p>
+<p>I have to say - for no real reason I can think - I'm really enjoying the rewrite of <a href="http://www.cflib.org">CFLib</a> into Model-Glue. I actually tried this once before, with MachII, and I just didn't like it as much. In fact I gave up after a while. I'm not dissing MachII though - I'm just saying that Model-Glue seems to be &quot;sticking&quot; with me a lot better.</p>
+}

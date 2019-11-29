@@ -1,0 +1,91 @@
+<h1>Post</h1>
+
+<p>A friend of mine recently pinged me with a question about the ColdFusion docs. She noticed that in version 8, the search capability was removed. Now while you can obviously search the PDF, that can be a bit slow, and if you aren't online and can use <a href="http://www.cfquickdocs.com/cf8">cfQuickDocs</a>, you have to use your local docs. CFEclipse includes the CF docs and also provides a searchable interface. I don't use Dreamweaver but I'm sure it supports it as well.</p>
+<!--more-->
+<p>Another option is to use Verity. Since the docs are all HTML based, you could quickly index the docs and build a simple search interface to the collection. The benefit to this is you get the power of Verity's search engine, and can do things like offer suggestions in case you misspell a CF tag. I wrote up a quick script that does all of this in one hit. It both looks for and creates a cfdocs collection if it doesn't exist, and then has a simple search interface. You could drop this right in your web root and run it. The only line you would need to modify is the very first line of code. I can't sniff where you install the cfdocs so I hard coded the line. (Technically I could make some guesses, like under CF's webroot, but if you have CF tied to Apache or IIS, it may be under your main web root instead.)</p>
+<p>The code itself isn't too interesting. I will point out that there is <i>still</i> an old bug with file based Verity collections and the URL property. If you specify a value like I have:</p>
+<code>
+&lt;cfindex collection="cfdocs" action="update" type="path" key="#docpath#" recurse="true" urlpath="/cfdocs/htmldocs/" status="s"&gt;
+</code>
+<p>The result query from a search will be broken. Instead of getting something like this:</p>
+<p>/cfdocs/htmldocs/raymond.html</p>
+<p>You always get one letter removed:</p>
+<p>/cfdocs/htmldocs/aymond.html</p>
+<p>So I hacked around this by using the KEY value, which was the full path to the file. Anyway, the file is included below. Enjoy. And if you have any questions about what I did, ask away.</p>
+<code>
+&lt;!--- physical location of docs ---&gt;
+&lt;cfset docpath = "c:/coldfusion8/wwwroot/cfdocs/htmldocs/"&gt;
+<p>&lt;!--- Set up collection if we need too ---&gt;
+&lt;cfcollection action=&quot;list&quot; name=&quot;collections&quot;&gt;
+&lt;cfif not listFindNoCase(valueList(collections.name), &quot;cfdocs&quot;)&gt;</p>
+<pre><code>&amp;lt;!--- makes the collection ---&amp;gt;
+&amp;lt;cfset cdir = server.coldfusion.rootdir &amp; &quot;/verity/collections/&quot;&amp;gt;
+&amp;lt;cfcollection action=&quot;create&quot; collection=&quot;cfdocs&quot; path=&quot;#cdir#&quot;&amp;gt;
+&amp;lt;!--- populate it. ---&amp;gt;
+&amp;lt;cfoutput&amp;gt;
+#repeatString(&quot; &quot;, 250)# &amp;lt;!--- IE Hack ---&amp;gt;
+&amp;lt;p&amp;gt;
+I'm indexing the cfdocs directory. Please stand by...
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+&amp;lt;cfflush&amp;gt;
+
+&amp;lt;cfindex collection=&quot;cfdocs&quot; action=&quot;update&quot; type=&quot;path&quot; key=&quot;#docpath#&quot; recurse=&quot;true&quot; urlpath=&quot;/cfdocs/htmldocs/&quot; status=&quot;s&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfparam name=&quot;url.search&quot; default=&quot;&quot;&gt;
+&lt;cfparam name=&quot;form.search&quot; default=&quot;#url.search#&quot;&gt;
+&lt;cfparam name=&quot;url.startrow&quot; default=&quot;1&quot;&gt;
+&lt;cfset perpage = 10&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;form action=&quot;#cgi.script_name#&quot; method=&quot;post&quot;&gt;
+&lt;input type=&quot;text&quot; name=&quot;search&quot; value=&quot;#form.search#&quot;&gt; &lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfif len(trim(form.search))&gt;
+&lt;cfsearch collection=&quot;cfdocs&quot; name=&quot;results&quot; contextPassages=&quot;3&quot; maxRows=&quot;#perpage#&quot; startrow=&quot;#url.startrow#&quot; status=&quot;r&quot; suggestions=&quot;always&quot;
+contextHighlightBegin=&quot;<em><strong>999</strong></em>&quot; contextHighlightEnd=&quot;<em><strong>000</strong></em>&quot; criteria=&quot;#trim(form.search)#&quot;&gt;</p>
+<pre><code>&amp;lt;cfif results.recordCount&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	Your search for '#form.search#' returned #r.found# result(s) out of #r.searched# entries.&amp;lt;br /&amp;gt;
+	&amp;lt;cfif structKeyExists(r, &quot;suggestedquery&quot;) and len(r.suggestedquery)&amp;gt;
+	You may also want to search for &amp;lt;a href=&quot;#cgi.script_name#?search=#urlencodedformat(r.suggestedquery)#&quot;&amp;gt;#r.suggestedquery#&amp;lt;/a&amp;gt;.&amp;lt;br /&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+
+	&amp;lt;cfoutput query=&quot;results&quot;&amp;gt;
+		&amp;lt;!--- fix url ---&amp;gt;
+		&amp;lt;cfset newurl = listLast(key, &quot;/\&quot;)&amp;gt;
+		&amp;lt;p&amp;gt;
+		&amp;lt;b&amp;gt;#rank#) &amp;lt;a href=&quot;/cfdocs/htmldocs/#newurl#&quot;&amp;gt;#title#&amp;lt;/a&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;br /&amp;gt;
+		&amp;lt;!--- fix context ---&amp;gt;
+		&amp;lt;cfset newcontext = htmlEditFormat(context)&amp;gt;
+		&amp;lt;cfset newcontext = replace(newcontext, &quot;___999___&quot;, &quot;&amp;lt;span style='background-color:yellow'&amp;gt;&quot;, &quot;all&quot;)&amp;gt;
+		&amp;lt;cfset newcontext = replace(newcontext, &quot;___000___&quot;, &quot;&amp;lt;/span&amp;gt;&quot;, &quot;all&quot;)&amp;gt;
+		#newcontext#
+		&amp;lt;/p&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+
+	&amp;lt;cfif url.startrow gt 1&amp;gt;
+		&amp;lt;cfoutput&amp;gt;&amp;lt;a href=&quot;#cgi.script_name#?search=#urlencodedformat(form.search)#&amp;startrow=#max(1,url.startrow-perpage)#&quot;&amp;gt;Previous&amp;lt;/a&amp;gt;&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+			
+	&amp;lt;cfif r.found gt url.startrow + perpage&amp;gt;
+		&amp;lt;cfoutput&amp;gt;&amp;lt;a href=&quot;#cgi.script_name#?search=#urlencodedformat(form.search)#&amp;startrow=#url.startrow+perpage#&quot;&amp;gt;Next&amp;lt;/a&amp;gt;&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;cfelse&amp;gt;
+
+	&amp;lt;cfoutput&amp;gt;
+	Your search for '#form.search#' returned no results out of #r.searched# entries.&amp;lt;br /&amp;gt;
+	&amp;lt;cfif structKeyExists(r, &quot;suggestedquery&quot;) and len(r.suggestedquery)&amp;gt;
+	You may want to search for &amp;lt;a href=&quot;#cgi.script_name#?search=#urlencodedformat(r.suggestedquery)#&quot;&amp;gt;#r.suggestedquery#&amp;lt;/a&amp;gt; instead.&amp;lt;br /&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	
+
+&amp;lt;/cfif&amp;gt;	
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+}

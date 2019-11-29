@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>This tip is 100% thanks to <a href="https://twitter.com/benhillis">Ben Hillis</a>, a developer working on the Windows Subsystem for Linux (WSL). Yesterday I needed to copy a file under WSL to the my system clipboard. If you Google for how to do this, you'll see a CLI called <code>clip</code> that works under Unbuntu, however, that doesn't work under WSL. If I had to guess I'd say because there's isn't a GUI involved with WSL but to be honest, I'd be guessing.</p>
+<p>When I asked on Twitter, Ben had a simple solution - use clip.exe. I keep forgetting that WSL provides complete access to Windows executables. I knew this - heck - it's how my <a href="https://www.raymondcamden.com/2017/09/19/run-visual-studio-code-insiders-from-wsl/">tip</a> on loading VSCode Insiders from WSL worked. But I didn't even think to check if Windows had a utility to copy to the clipboard.</p>
+<p>In case you're curious, this is how you would copy a file under WSL to your Windows clipboard:</p>
+<pre><code>cat report.txt | clip.exe
+</code></pre>
+<p>And I'm sure there's numerous other ways too. Anyway, I'm mainly just blogging this so I don't forget.</p>
+}

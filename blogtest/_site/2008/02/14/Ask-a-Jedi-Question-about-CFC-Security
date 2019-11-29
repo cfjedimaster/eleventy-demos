@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Timothy asks:</p>
+<blockquote>
+<p>
+Are there security advantages to having cfc's located outside of the webroot in the gateway/cfc folder accessed through a mapping compared to having the cfc's reside inside the specific project in the webroot?
+</p>
+</blockquote>
+<p>In general the only thing you have to worry about are people invoking your CFCs remotely. CFC methods, if you do not specify an access setting, will default to public, which means they can't access them remotely. So in order for your CFC to be insecure, you would have to go out of your way to set the method to remote.</p>
+<p>Now with that being said - I view CFCs as resources like includes and custom tags, and therefore they have no place under web root anyway. Moving them out is better (imho) for organization. You can still provide a remote facade using proxy CFCs as services.</p>
+}

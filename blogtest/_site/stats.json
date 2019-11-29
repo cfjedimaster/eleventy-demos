@@ -1,0 +1,20 @@
+
+
+{
+	"totalPosts": 695,
+	"totalWords": 525777,
+	"avgWords": 756.5136690647482,
+	"firstPost": {
+		"title": "Using Grunt and Jasmine and having issues with XHR? Read this.",
+		"date": "Thu Jan 01 2015 21:58:09 GMT-0600 (Central Standard Time)"
+	},
+	"lastPost": {
+		"title": "Serverless JAMStack AndCats Demo",
+		"date": "Wed Nov 13 2019 18:00:00 GMT-0600 (Central Standard Time)"
+	},
+	"tags": {"front-end-interview-questions":3,"bluemix":22,"mobilefirst":25,"ionic":89,"cordova":64,"phonegap":2,"harpjs":1,"strongloop":15,"swift":1,"nodejs":24,"nativescript":15,"javascript":53,"windows":7,"html5":2,"loopback":5,"advent of code":10,"openwhisk":87,"visual studio code":6,"jekyll":3,"alexa":11,"hugo":1,"watson":4,"development":4,"vuejs":80,"pwa":4,"webpack":1,"webtask":12,"azure":9,"stitch":1,"vue components ftw":4,"graphql":1},
+	"categories": {"development":332,"javascript":257,"coldfusion":31,"misc":34,"jquery":7,"html5":31,"mobile":162,"design":3,"uncategorized":12,"games":2,"movies":9,"video games":7,"books":11,"adoption":2,"static sites":27,"television":1,"serverless":113,"music":2},
+	"years": {"2015":252,"2016":148,"2017":154,"2018":85,"2019":56},
+	"months": [74,64,73,67,55,49,51,57,52,57,45,51],
+	"days": [69,141,139,114,122,88,22]
+}

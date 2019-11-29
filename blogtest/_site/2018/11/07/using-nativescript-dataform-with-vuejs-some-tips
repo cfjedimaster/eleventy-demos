@@ -1,0 +1,162 @@
+<h1>Post</h1>
+
+<p>As I've mentioned recently, I'm currently working on a <a href="https://nativescript-vue.org/">NativeScript Vue</a> application
+for a client and as part of that work, I'm dealing with custom forms. My initial approach made use of <a href="https://www.raymondcamden.com/2018/10/31/working-with-dynamic-components-in-vuejs">custom components</a>, which Vue made pretty trivial, but I've decided to give <a href="http://docs.telerik.com/devtools/nativescript-ui/introduction">NativeScript UI</a> a try. This is a set of free components covering the following features:</p>
+<ul>
+<li>Calendar</li>
+<li>Chart</li>
+<li>ListView</li>
+<li>DataForm</li>
+<li>SideDrawer</li>
+<li>Gauge</li>
+<li>AutoComplete</li>
+</ul>
+<p>Specifically, <a href="http://docs.telerik.com/devtools/nativescript-ui/Controls/NativeScript/DataForm/dataform-overview">DataForm</a> looked like it could be useful. While it's not too difficult to build forms with NativeScript, DataForm attempts to automate as much as possible of the process. As an example, consider the following data:</p>
+<pre><code class="language-js">{
+	&quot;name&quot;:&quot;Raymond Camden&quot;,
+	&quot;yearBorn&quot;:1973,
+	&quot;cool&quot;:true,
+	&quot;email&quot;:&quot;raymondcamden@gmail.com&quot;
+}
+</code></pre>
+<p>Now imagine we tie this to a dataform control:</p>
+<pre><code class="language-markup">&lt;RadDataForm ref=&quot;dataForm&quot; :source=&quot;person&quot; /&gt;
+</code></pre>
+<p>And if we literally leave it at this - the control will automatically render a nice form for us:</p>
+<img src="https://static.raymondcamden.com/images/2018/11/df1.jpg" alt="Screenshot of form" class="imgborder imgcenter">
+<p>Notice how the control looked at my data properties and figured out what controls to use as well as how to create labels. <code>yearBorn</code> for example becomes <code>Year Born</code>. This all happens by default and is freaking cool, but you can control all of this as well if you don't care for their defaults.</p>
+<p>All in all a neat little control, but I ran into some issues right away as soon as I started trying some of the more advanced features. Part of this is due to some poor docs (I've already sent reports in!) and I hope this post can help others avoid the issues I ran into.</p>
+<h3>Install with Vue Issues</h3>
+<p>So the docs tell you to install the relevant plugin, but right after that things go a bit awry.</p>
+<p>The <a href="http://docs.telerik.com/devtools/nativescript-ui/Controls/Vue/DataForm/getting-started">&quot;Getting Started&quot;</a> for the Vue docs and DataForm, which isn't even labelled that (in the nav it's called &quot;Provide the Source&quot; tell you to do this:</p>
+<p>&quot;Add this to the main Javascript or Typescript file, usually called main.js or main.ts:&quot;</p>
+<pre><code class="language-js">import RadDataForm from 'nativescript-ui-dataform/vue';
+
+Vue.use(RadListView);
+Vue.use(RadDataForm);
+</code></pre>
+<p>Ok, I did that. Then it says:</p>
+<p>&quot;Before proceeding, make sure that the nativescript-ui-dataform/vue module is required inside your application. This module handles the registration of the custom directives and elements required by nativescript-vue.</p>
+<p>After that simply add the RadDataForm tag to the HTML and set its source accordingly:
+&quot;</p>
+<p>So that first paragraph didn't make sense. I mean, didn't I already do that? To make matters worse, the code sample below doesn't provide any additional help.</p>
+<p>I was only able to get things working by going to the NativeScript Playground, dragging a DataForm control on the page, and looking at what it did.</p>
+<p>Based on that, this is what worked for me:</p>
+<ol>
+<li>
+<p>Do <em>not</em> add code to main.js/maint.js. From what I can see it wasn't necessary.</p>
+</li>
+<li>
+<p>In your component, do require the dataform like so:</p>
+</li>
+</ol>
+<p><strong>Edit on 11/7/2018, a mere hour after posting... @bundyo reduced the original 5 lines of code I had to just one:</strong></p>
+<pre><code class="language-js">import 'nativescript-ui-dataform/vue';
+</code></pre>
+<p>Looking at that code, the paragraph I quoted above makes sense now, but I had no idea what code to even use. If the code sample on the page had included this, it would have saved me about two hours - I kid you not.</p>
+<h3>Working with Groups</h3>
+<p>Alright - so the main reason I even looked at the dataform control was to make use of the &quot;groups&quot; feature. This lets you take a large form and create groups that can ben opened and collapsed. It isn't an &quot;accordion&quot; control per se, but it achieves the same purpose. (For folks curious, there <em>is</em> a <a href="https://github.com/triniwiz/nativescript-accordion">NativeScript Accordion</a> control but it has certain restrictions that made it unusable for my case.) Here are two screenshots I stole from the docs - first the Android version:</p>
+<img src="https://static.raymondcamden.com/images/2018/11/df2.png" alt="Android example of Groups" class="imgborder imgcenter">
+<p>And then iOS:</p>
+<img src="https://static.raymondcamden.com/images/2018/11/df2a.png" alt="iOS Groups example" class="imgborder imgcenter">
+<p>So, while cool, the docs on this were pretty slim, especially in regards to providing <em>dynamic</em> groups, by that I mean groups defined in data and not hard coded as tags on the page. I spent a heck of a lot of time trying to get this to work and finally gave up and asked for help on the NS Slack group. Thankfully <a href="https://github.com/bundyo">@bundyo</a> came to the rescue. What follows is <em>his</em> solution, not mine. My data is still hard coded but you can see where it could be modified to support data loaded from Ajax or some such.</p>
+<pre><code class="language-markup">&lt;template&gt;
+    &lt;Page class=&quot;page&quot;&gt;
+        &lt;ActionBar title=&quot;Demo&quot; class=&quot;action-bar&quot; /&gt;
+        &lt;ScrollView&gt;
+            &lt;RadDataForm  ref=&quot;dataForm&quot; :source=&quot;album&quot; :metadata=&quot;md&quot; :groups=&quot;groups&quot;&gt;
+            &lt;/RadDataForm&gt;
+        &lt;/ScrollView&gt;
+    &lt;/Page&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import { RadDataForm, PropertyGroup } from 'nativescript-ui-dataform';
+
+require(&quot;nativescript-vue&quot;).registerElement(
+    &quot;RadDataForm&quot;,
+    () =&gt; require(&quot;nativescript-ui-dataform&quot;).RadDataForm
+);
+
+export default {
+    data() {
+        return {
+            groups:[],
+            album: {
+                bandName: &quot;Edwhat Sheeran&quot;,
+                albumName: &quot;X&quot;,
+                year: &quot;2017&quot;,
+                owned: true,
+                myRating: 9.5,
+            },
+            md:{
+
+            }
+        };
+    },
+    created() {
+
+        this.md = {                 
+            propertyAnnotations:[
+                    {
+                        name:&quot;bandName&quot;,
+                        displayName:&quot;My band name&quot;,
+                        required:true,
+                        groupName:&quot;Group One&quot;
+                    },
+                    {
+                        name:&quot;albumName&quot;,
+                        displayName:&quot;My album&quot;,
+                        required:true
+                    },
+                    {
+                        name:&quot;year&quot;,
+                        required:true,
+                        groupName:&quot;Group One&quot;
+                    },
+                    {
+                        name:&quot;owned&quot;,
+                        required:true,
+                        groupName:&quot;Group Two&quot;
+                    },
+                    {
+                        name:&quot;myRating&quot;,
+                        required:true,
+                        groupName:&quot;Group Two&quot;
+                    }
+                ]
+        };
+
+        let pg = new PropertyGroup(); 
+        
+        pg.name = &quot;Group One&quot;; 
+        pg.collapsible = true;
+        pg.collapsed = false;
+            
+        this.groups.push(pg);
+
+        pg = new PropertyGroup(); 
+        
+        pg.name = &quot;Group Two&quot;; 
+        pg.collapsible = true;
+        pg.collapsed = true;
+            
+        this.groups.push(pg);
+
+    }
+};
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+&lt;/style&gt;
+</code></pre>
+<p>Let's break it down. First, look at the dataform:</p>
+<pre><code class="language-markup">&lt;RadDataForm  ref=&quot;dataForm&quot; :source=&quot;album&quot; :metadata=&quot;md&quot; :groups=&quot;groups&quot;&gt;
+&lt;/RadDataForm&gt;
+</code></pre>
+<p>There's two new attributes here - <code>metadata</code> and <code>groups</code>. So <code>metadata</code> is where you can do overrides on the default behaviors of the control. Don't like the label it selects for your property value? You can tweak it here. Want to use a custom drop down with specific values? You can set it here. We use this feature to specify the groups for each field. (And again, it's hard coded here but it could be dynamic.)</p>
+<p>The next part is creating the groups. In this case we use an instance of <code>PropertyGroup</code>, one for each group, and ensure that the names match the names used in metadata.</p>
+<p>If you want to see, and play with, a slimmer version, check out the Playground @bundyo made here: <a href="https://play.nativescript.org/?template=play-vue&amp;id=qWbsL5&amp;v=3">https://play.nativescript.org/?template=play-vue&amp;id=qWbsL5&amp;v=3</a> It really does a nice job of setting up the groups and fields all in one fell swoop. And because it's on the Playground, you can point the NativeScript Playground app at it and have it running on your device in 10 seconds.</p>
+<img src="https://static.raymondcamden.com/images/2018/11/df3.jpg" alt="Groups example running on phone" class="imgborder imgcenter">
+<p>Anyway, I hope this helps. As I said, the docs here were a bit painful, but I've sent multiple reports in to the NativeScript folks so hopefully it gets improved soon. If you have any questions, just drop me a line below!</p>
+}

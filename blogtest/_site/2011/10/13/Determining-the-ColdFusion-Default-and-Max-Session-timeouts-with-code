@@ -1,0 +1,45 @@
+<h1>Post</h1>
+
+<p>How do you determine the current server's default and max session timeouts via code? This question came up on Twitter today and I thought I'd whip up a quick example. The answer is relatively simple - make use of the Admin API. Here's a quick example.</p>
+<!--more-->
+<p>
+<code>
+&lt;cfset admin = createObject("component", "CFIDE.adminapi.administrator")&gt;
+&lt;cfset admin.login("admin")&gt;
+&lt;cfset runtime = createObject("component", "CFIDE.adminapi.runtime")&gt;
+<p>&lt;cfset sessionDefaultTimeout = runtime.getScopeProperty(&quot;sessionScopeTimeout&quot;)&gt;
+&lt;cfset sessionMaxTimeout = runtime.getScopeProperty(&quot;sessionScopeMaxTimeout&quot;)&gt;</p>
+<p>&lt;cfoutput&gt;
+The default timeout for sessions is #sessionDefaultTimeout# and the max value is #sessionMaxTimeout#.
+&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>This results in (well, on my server anyway):</p>
+<p>
+<blockquote>
+The default timeout for sessions is 0,0,20,0 and the max value is 2,0,0,0.
+</blockquote>
+<p>
+<p>Those values are a string where the first number is days, the second is hours, the third is minutes, and the last is seconds. If you need to do math with the numbers, convert it to something real, like minutes:</p>
+<p>
+<code>
+&lt;!--- convert to minutes ---&gt;
+&lt;cfset parts = listToArray(sessionDefaultTimeout)&gt;
+&lt;!--- my total ---&gt;
+&lt;cfset totalMinutes = 0&gt;
+&lt;!--- add in days ---&gt;
+&lt;cfset totalMinutes += 1440 * parts[1]&gt;
+&lt;!--- add in hours ---&gt;
+&lt;cfset totalMinutes += 60 * parts[2]&gt;
+&lt;!--- add in minutes ---&gt;
+&lt;cfset totalMinutes += parts[3]&gt;
+&lt;!--- and seconds ---&gt;
+&lt;cfset totalMinutes += parts[4]/60&gt;
+<p>&lt;p/&gt;
+&lt;cfoutput&gt;
+Total minutes for default sessionTimeout is #totalMinutes#.
+&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>This returns 20 on my server.</p>
+}

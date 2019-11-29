@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Tony asks:</p>
+<blockquote>
+When an application.cfm and an application.cfc file are both in the root of an application, do both get executed? Or does the .cfc take over, and the .cfm is just ignored?
+</blockquote>
+<p>First off - I wouldn't put both files in the same folder. ColdFusion won't throw an error, but I still wouldn't do it. That being said - if both exist, the CFC version will run instead of the CFM. They definitely do not both run.</p>
+<p>By the way - this surprised me. CF is normally <i>super</i> backwards compatible. I had assumed the CFM file would win over the CFC.</p>
+}

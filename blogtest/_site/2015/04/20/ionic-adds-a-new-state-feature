@@ -1,0 +1,47 @@
+<h1>Post</h1>
+
+<p>To be fair, this may not be <i>very</i> new, I've been working with an alpha version of the Ionic CLI while I test push (and other stuff ;) so my version has been a bit out of sync. Today I switched from the alpha to the release version and discovered a cool new feature - State.</p>
+<!--more-->
+<p>The State feature lets you quickly save and restore plugins and platforms for an Ionic project. By default, when you add a platform or a plugin, Ionic will store this information in the package.json file. Here is an example of adding a platform:</p>
+<p><a href="http://www.raymondcamden.com/wp-content/uploads/2015/04/ionic1.png"><img src="https://static.raymondcamden.com/images/wp-content/uploads/2015/04/ionic1.png" alt="ionic1" width="750" height="319" class="alignnone size-full wp-image-6032" /></a></p>
+<p>(And as an aside - did you notice it added icons and splashscreens? Freaking awesome.) And here is adding a new plugin:</p>
+<p><a href="http://www.raymondcamden.com/wp-content/uploads/2015/04/ionic21.png"><img src="https://static.raymondcamden.com/images/wp-content/uploads/2015/04/ionic21.png" alt="ionic2" width="750" height="189" class="alignnone size-full wp-image-6034" /></a></p>
+<p>When done, here is how package.json is updated:</p>
+<pre><code class="language-javascript">{
+  "name": "apr20-2",
+  "version": "1.0.0",
+  "description": "apr20-2: An Ionic project",
+  "dependencies": {
+    "gulp": "^3.5.6",
+    "gulp-sass": "^1.3.3",
+    "gulp-concat": "^2.2.0",
+    "gulp-minify-css": "^0.3.0",
+    "gulp-rename": "^1.2.0"
+  },
+  "devDependencies": {
+    "bower": "^1.3.3",
+    "gulp-util": "^2.2.14",
+    "shelljs": "^0.3.0"
+  },
+  "cordovaPlugins": [
+    "org.apache.cordova.device",
+    "org.apache.cordova.console",
+    "com.ionic.keyboard",
+    "org.apache.cordova.device-motion"
+  ],
+  "cordovaPlatforms": [
+    "ios"
+  ]
+}</code></pre>
+<p>To skip this, you can use --nosave for both platform and plugin modifications. Now comes the cool part. To quickly load in plugins and platforms, you can simply do:</p>
+<pre><code>ionic state restore</code></pre>
+<p>And Ionic will add in the appropriate plugins and platforms. This will be incredibly useful for folks checking out your Ionic project from a source control repository.</p>
+<p>You can also do:</p>
+<pre><code>ionic state save</code></pre>
+<p>To store the current platforms and plugins to the package.json. I would imagine you would use this feature if you used the --nosave option to test a plugin you weren't sure you wanted to actually keep around.</p>
+<p>You may want to remove everything. You can do this with:</p>
+<pre><code>ionic state clear</code></pre>
+<p>But be aware this really, really does remove everything, including the default plugins Ionic always install. Finally, you can do:</p>
+<pre><code>ionic state reset</code></pre>
+<p>This will remove everything then bring back what you have specified in the package.json file.</p>
+}

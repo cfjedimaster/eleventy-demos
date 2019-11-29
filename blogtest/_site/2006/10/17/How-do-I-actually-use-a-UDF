@@ -1,0 +1,41 @@
+<h1>Post</h1>
+
+<p>Over the past few days I've had multiple people ask me the same question - and that means one thing to me... blog post!</p>
+<p>The question these people were asking was the same - I know how to write a UDF, but not sure how to actually use it on a page? By that they didn't mean the &quot;function&quot; syntax (x = foo()), but how to include the UDF so that it could be used on a page.</p>
+<p>The answer is simple once you realize that a UDF is nothing more than another kind of ColdFusion variable. Consider this code:</p>
+<code>
+&lt;cfoutput&gt;
+#x#
+&lt;/cfoutput&gt;
+</code>
+<p>What do you have to do to make this not throw an error? There are multiple ways to handle this. First, define it on the page:</p>
+<code>
+&lt;cfset x = "DJ Jazzy Jeff and the Fresh Prince"&gt;
+&lt;cfoutput&gt;#x#&lt;/cfoutput&gt;
+</code>
+<p>Another way:</p>
+<code>
+&lt;cfinclude template="thisiswherexismade.cfm"&gt;
+&lt;cfoutput&gt;#x#&lt;/cfoutput&gt;
+</code>
+<p>There are other ways of course, but you get the idea. So to use a UDF you follow the same rules. Here are two more examples using the same format as above:</p>
+<code>
+&lt;cfscript&gt;
+function cic() { return "monkey"; }
+&lt;/cfscript&gt;
+&lt;cfoutput&gt;#cic()#&lt;/cfoutput&gt;
+</code>
+<p>And then the cfinclude version:</p>
+<code>
+&lt;cfinclude template="filewithcfcUDFinit.cfm"&gt;
+&lt;cfoutput&gt;#cic()#&lt;/cfoutput&gt;
+</code>
+<p>Just like other variables, UDFs can be placed in the shared scopes. You can't do it directly though but rather must reassign:</p>
+<code>
+&lt;cfscript&gt;
+function dharma() { return "swan"; }
+request.dharma  = dharma;
+&lt;/cfscript&gt;
+<p>&lt;cfoutput&gt;#request.dharma()#&lt;/cfoutput&gt;
+</code></p>
+}

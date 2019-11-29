@@ -1,0 +1,59 @@
+<h1>Post</h1>
+
+<p>Su asks:</p>
+<blockquote>
+<p>
+I am trying to use CFCHART to create bar graphs.  I need to specifically format them to match to a predefined sized width of bars.  Is there a way to control the width of bars produced by the CFchart?  Thanks for any help.
+</p>
+</blockquote>
+<!--more-->
+I could have sworn that there was a specific attribute for this from with the core ColdFusion language itself, but I did not see it. So, as always, I went to the WebCharts graphical editor. I found the setting right away: elements:shapeSize. 
+<p>I generated the XML from the chart, stripped out all the extra stuff, and got to this:</p>
+<code>
+&lt;!--- style from webcharts ---&gt;
+&lt;cfsavecontent variable="style"&gt;
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;frameChart&gt;
+&lt;elements shapeSize="50" /&gt;
+&lt;/frameChart&gt;
+&lt;/cfsavecontent&gt;
+</code>
+<p>Just change 50 to whatever you would like and whatever makes sense for your data. For a complete demo, you can run this code below. It creates a fake query and then uses that to source a bar chart with 5 sets of sales figures. Note how I pass in the XML to the cfchart tag.</p>
+<code>
+<p>&lt;cfset q = queryNew(&quot;dept,year,sales&quot;,&quot;varchar,integer,integer&quot;)&gt;
+&lt;!--- generate random sales data ---&gt;
+&lt;cfloop index=&quot;y&quot; from=&quot;1995&quot; to=&quot;2000&quot;&gt;
+&lt;cfscript&gt;
+queryAddRow(q);
+querySetCell(q, &quot;dept&quot;, &quot;Alpha&quot;);
+querySetCell(q, &quot;year&quot;, y);
+querySetCell(q, &quot;sales&quot;, randRange(80,120));
+queryAddRow(q);
+querySetCell(q, &quot;dept&quot;, &quot;Beta&quot;);
+querySetCell(q, &quot;year&quot;, y);
+querySetCell(q, &quot;sales&quot;, randRange(60,100));
+queryAddRow(q);
+querySetCell(q, &quot;dept&quot;, &quot;Gamma&quot;);
+querySetCell(q, &quot;year&quot;, y);
+querySetCell(q, &quot;sales&quot;, randRange(80,220));
+&lt;/cfscript&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;!--- style from webcharts ---&gt;
+&lt;cfsavecontent variable=&quot;style&quot;&gt;
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;frameChart&gt;
+&lt;elements shapeSize=&quot;50&quot; /&gt;
+&lt;/frameChart&gt;
+&lt;/cfsavecontent&gt;</p>
+<p>&lt;cfchart chartWidth=&quot;500&quot; chartHeight=&quot;500&quot; title=&quot;Sales by Department&quot; style=&quot;#style#&quot;&gt;
+&lt;cfloop index=&quot;y&quot; from=&quot;1995&quot; to=&quot;2000&quot;&gt;
+&lt;cfquery name=&quot;salesdata&quot; dbtype=&quot;query&quot;&gt;
+select	*
+from	q
+where	[year] = &lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#y#&quot;&gt;
+&lt;/cfquery&gt;
+&lt;cfchartseries type=&quot;bar&quot; query=&quot;salesdata&quot; itemColumn=&quot;dept&quot; valueColumn=&quot;sales&quot; seriesLabel=&quot;#y#&quot; /&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;/cfchart&gt;
+</code></p>
+}

@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I just ran into an interesting imageScaleToFit bug. I was writing some code to handle scaling an uploaded image when I got this error:</p>
+<blockquote>
+For gray scale images the interpolation argument must be one of: NEAREST | BILINEAR | BICUBIC | HIGHESTQUALITY | HIGHQUALITY | MEDIUMQUALITY | HIGHESTPERFORMANCE | HIGHPERFORMANCE | MEDIUMPERFORMANCE
+</blockquote>
+<p>According to the <a href="http://www.cfquickdocs.com/cf8/?getDoc=ImageScaleToFit">docs</a>, the default interpolation is highestQuality so I don't quite get what CF is thinking I'm using. Specifying the interpolation made the error go away of course and then works just fine for grayscale or non-grayscale images. (I filed a bug report for this already.)</p>
+}

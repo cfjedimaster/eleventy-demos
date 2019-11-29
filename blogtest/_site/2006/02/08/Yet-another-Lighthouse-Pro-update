@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Sorry folks, I swear I do normally do QA, but for some reason I just completely skipped my normal checking for the recent <a href="http://ray.camdenfamily.com/projects/lhp">Lighthouse Pro</a> update. I've refreshed the zip again after Dave Shuck discovered a bug.</p>
+<p>Personally I think this bug is Dave's fault. I mean - he found it - right? He even wrote the code to fix it. Therefore, I blame Dave. Hopefully this will be the end of the bugs (until the next time I add a feature).</p>
+<p>(Ahem, thanks Dave. :)</p>
+}

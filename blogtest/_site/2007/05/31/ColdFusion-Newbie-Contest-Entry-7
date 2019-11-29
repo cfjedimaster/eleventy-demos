@@ -1,0 +1,34 @@
+<h1>Post</h1>
+
+<p>Welcome to the 7th entry in the <a href="http://ray.camdenfamily.com/index.cfm/2007/4/16/ColdFusion-Newbie-Contest-Announced--Monster-Maker">ColdFusion Newbie Contest</a>. The entries just keep getting more and more interesting. I've got about 3 more after this so I'm hoping to wrap this series by next week. Today's entry is from Jonathon Stierman and his coworker Nicholas. I'm not quite sure if it was just Nicholas though.</p>
+<!--more-->
+<p>Take a look at the design. I know I keep saying it - but I'm really shocked at the design level of some of these entries. I know I wasn't doing design this week back in the day. Oh - and I'm not doing it this well now either.</p>
+<p>This one can run as a demo - check it out <a href="http://ray.camdenfamily.com/demos/contest6/camdencontest/">here</a>.</p>
+<p>First off - notice on the game display that the top portion, the pie charts, are actually built with ColdFusion's charting. That is one of the most unique uses of charting I have ever seen. Sometimes I forget how powerful and useful the charting is in ColdFusion.</p>
+<p>I also found his creature a heck of a lot easier to keep happy. That right there earns him brownie points. (But I'm pretty tired today so I wanted something easy!)</p>
+<p>Now that I've praised it is time to complain. First off - his code made use of multiple paths that were hard coded. I counted about three variables that broke down on my machine because my paths did not match his. This isn't the first entry to do this - but the point is critical.</p>
+<p>In my case - the situation was a bit more radical. He developed on Windows. I ran it on a Mac. But even if you never have to switch operating systems, it is certainly possible that you might have to move from c:\websites\yoursite to d:\hosts\yoursite.com\wwwroot.</p>
+<p>If you had to do this right now - would your code break? It is something to consider.</p>
+<p>Like other projects - this one too doesn't do quite enough validation. A good example is in index.cfm:</p>
+<code>
+&lt;cfif isDefined("form.submitted")&gt;
+	&lt;!---CREATE THE MONSTER WITH THE NAME ENTERED---&gt;
+	&lt;cfset form.imagePath = "stock/creatures/"&form.imagePath /&gt;
+</code>
+<p>Note that he doesn't check that form.imagepath actually exists.</p>
+<p>I liked how he put his main displays into a folder named displays. It reminds me a lot of Model-Glue views.</p>
+<p>Another thing I like is that he documented exactly what each action did to the creatures stats:</p>
+<code>
+&lt;!---
+Feed ( hunger++ )
+Pet ( affect happiness++ and sanity+ )
+Fetch ( affects happiness+++ )
+Cuddle ( affect happiness+ and sanity++ )
+Groom ( affect sanity+++)
+---&gt;
+</code>
+<p>I think maybe one other entry did this. This is very helpful for debugging and just QAing the project in general.</p>
+<p>As for his CFC - he uses a CFC similar to an earlier entry - part bean - part generic handler. It is an interesting mix and now that I've seen it twice - it makes me wonder why folks are mixing two concepts like that into one CFC? I'm not saying it is horrible - just interesting.</p>
+<p>Oh - and he forgot to var scope at places. I know - folks are tired of me saying that. But I won't keep reminding folks about our friend the var scope.</p>
+<p>Ok - download the code folks and share your thoughts please!<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2FCamdenContest%2Ezip'>Download attached file.</a></p></p>
+}

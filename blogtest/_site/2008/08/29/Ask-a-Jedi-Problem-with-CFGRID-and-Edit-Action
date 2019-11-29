@@ -1,0 +1,44 @@
+<h1>Post</h1>
+
+<p>Patrice asks:</p>
+<blockquote>
+<p>
+This ajax cfgrid lets you enter a percentage, then updates
+the database. I have to pass two parameters to my update query, WORKORDER and DIVISION_NO. I need to pass the DIVISION_NO that is on the same row as the
+percentage entered. My problem is that after entering the percent, the update fires off, but with the DIVISION_NO from what ever row your cursor ends up on. Any help would be appreciated. Thanks!
+</p>
+</blockquote>
+<!--more-->
+This was a subtle error on her part. Let's look at her grid (which I modified a bit to work in my environment) to see what went wrong. 
+<code>
+&lt;cfset variables.workorder = 99&gt;
+<p>&lt;cfform name=&quot;form01&quot;&gt;
+&lt;cfinput type=&quot;Hidden&quot; name=&quot;WORKORDER&quot; value=&quot;#variables.WORKORDER#&quot;&gt;
+&lt;cfinput type=&quot;hidden&quot; name=&quot;DIVISION_NO&quot; bind=&quot;{grid01.DIVISION_NO}&quot; bindonload=&quot;Yes&quot;&gt;</p>
+<p>&lt;cfgrid format=&quot;html&quot; name=&quot;grid01&quot; pagesize=26 selectonload=&quot;False&quot; stripeRows=true stripeRowColor=&quot;##c0c0c0&quot; colheaderbold=&quot;Yes&quot;
+bind=&quot;cfc:test.getTaskorderDivision({cfgridpage},{cfgridpagesize},{cfgridsortcolumn},{cfgridsortdirection},{WORKORDER})&quot;
+delete=&quot;yes&quot; selectmode=&quot;edit&quot; onchange=&quot;cfc:test.editData({cfgridaction},{cfgridrow},{cfgridchanged},{WORKORDER},{DIVISION_NO})&quot;&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;DIVISION_NO&quot; display=true header=&quot;Division&quot; width=&quot;60&quot; select=&quot;no&quot;/&gt;
+&lt;cfgridcolumn name=&quot;DIV_NAME&quot; display=true header=&quot;Division Name&quot; width=&quot;180&quot; select=&quot;no&quot;/&gt;
+&lt;cfgridcolumn name=&quot;PERCENT&quot; display=true header=&quot;Percent&quot; width=&quot;60&quot;/&gt;
+&lt;/cfgrid&gt;</p>
+<p>&lt;/cfform&gt;
+</code></p>
+<p>Focus in on the onchange action. Note that it's going to call my test CFC, editData method, and pass four arguments: cfgridaction, cfgridrow, cfgridchanged, WORKORDER, DIVISION_NO. Believe it or not, as much as I had played with the new CFGRID in CF8, I had yet to try an edit action with it. I was surprised how easy it was to set up. But I did immediately see the issue when I examined the post in Firebug. (And yes, I'm going to mention Firebug again. 9 out of 10 problems sent to me would be fixed if people would use Firebug to help flesh out the issues. Even if your organization is an IE only shop, you need to install Firefox/Firebug on your development machine. <b>Please!</b>)</p>
+<p>When I edited the percent column, I saw the following POST data sent:</p>
+<p>gridaction=U - This means update, which makes sense. It was an edit event after all.</p>
+<p>gridrow=<br />
+division_no: 2<br />
+div_name: div 2<br />
+percent: 2</p>
+<p>This represents the row you modified. Note the right division is there. (I had edited the percent value in the second row.)</p>
+<p>gridrowchanged:<br />
+percent: 20</p>
+<p>This represents what you changed. I had changed percent from 2 to 20.</p>
+<p>workorder: 99<br />
+The hard coded work order. Well, hard coded for me test. Her code had it as a variable.</p>
+<p>do: 1</p>
+<p>This is what you are seeing wrong, but consider that your hidden form field, division_no, is bound to the grid. So this is what happens. I was on row 2. I edited, then clicked row 1. At that point 2 things happened. An edit event was raised. That edit event was ALSO bound to the hidden field, and THAT was bound to the grid and gets the CURRENT
+value. Since I had clicked on row 1, it shows row 1 value.</p>
+<p>So the fix here was to simply not bother passing the division number value at all. Since the entire row is sent in the post, you can get all the data from the row that was modified.</p>
+}

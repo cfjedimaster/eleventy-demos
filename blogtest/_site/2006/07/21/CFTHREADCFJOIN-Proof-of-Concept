@@ -1,0 +1,50 @@
+<h1>Post</h1>
+
+<p>Damon Cooper of Adobe has <a href="http://www.dcooper.org/blog/client/index.cfm?mode=entry&entry=916FEFD9-4E22-1671-57A23859C50FFF47">posted</a> a proof of concept for two new tags for the ColdFusion language: CFTHREAD and CFJOIN. These tags let you fire off events and simply forget about them. Right now there is an issue where you can't &quot;completely&quot; forget about them, but you can still run a large set of events asynchronously. Consider this example:</p>
+<!--more-->
+<code>
+&lt;cfif not isDefined("url.slow")&gt;
+	&lt;cfset good = true&gt;
+&lt;cfelse&gt;
+	&lt;cfset good = false&gt;
+&lt;/cfif&gt;
+<p>&lt;cfhttp url=&quot;http://ray.camdenfamily.com/rss.cfm&quot; result=&quot;result&quot;&gt;
+&lt;cfset myrss = result.filecontent&gt;
+&lt;cfset myrssParsed = xmlParse(myrss)&gt;
+&lt;cfset myurls = xmlSearch(myrssParsed, &quot;/rss/channel/item/link/text()&quot;)&gt;
+&lt;cfset links = arrayNew(1)&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(myurls)#&quot;&gt;
+&lt;cfset arrayAppend(links, myurls[x].xmlvalue)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfif good&gt;</p>
+<pre><code>&amp;lt;cfloop index=&quot;loopcounter&quot; from=&quot;1&quot; to=&quot;#arrayLen(links)#&quot;&amp;gt; 
+	&amp;lt;cfset threadname = &quot;thread_&quot; &amp; loopcounter&amp;gt;
+
+	&amp;lt;cfthread name=&quot;#threadname#&quot;&amp;gt;
+		
+		&amp;lt;cfhttp url=&quot;#links[loopcounter]#&quot; result=&quot;result&quot;&amp;gt;
+		&amp;lt;cffile action=&quot;write&quot; file=&quot;c:\web\url#loopcounter#.txt&quot; output=&quot;#result.filecontent#&quot;&amp;gt;
+		
+	&amp;lt;/cfthread&amp;gt;
+
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfloop index=&quot;loopcounter&quot; from=&quot;1&quot; to=&quot;#arrayLen(links)#&quot;&amp;gt; 
+	&amp;lt;cfset threadname = &quot;thread_&quot; &amp; loopcounter&amp;gt;
+	&amp;lt;cfjoin thread=&quot;#threadname#&quot;&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;cfelse&gt;</p>
+<pre><code>&amp;lt;cfloop index=&quot;loopcounter&quot; from=&quot;1&quot; to=&quot;#arrayLen(links)#&quot;&amp;gt; 
+		&amp;lt;cfhttp url=&quot;#links[loopcounter]#&quot; result=&quot;result&quot;&amp;gt;
+		&amp;lt;cffile action=&quot;write&quot; file=&quot;c:\web\url#loopcounter#.txt&quot; output=&quot;#result.filecontent#&quot;&amp;gt;
+		
+
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;br&gt;
+Work Complete!&lt;br&gt;
+</code></p>
+<p>What I've done is written two sets of code. One shows the use of cfthread/cfjoin, and one does not. The code downloads my RSS feed and gets an array of URLs. It then fetches each URL and saves it to a file. If you compare the &quot;good&quot; version versus the &quot;bad&quot; one (load the file with slow=true in the URL), you will see an incredible speed difference, and this is even with the bug. While the threads all run at the same time, you have to wait for the threads to end, whereas in the (hopefully) final version, you would not need to.</p>
+}

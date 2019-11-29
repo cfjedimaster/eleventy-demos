@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>One of my favorite features in ColdFusion 8 is the ability to create and populate structs and arrays in one line of code:</p>
+<code>
+&lt;cfset a = ["paris","britney","lindsey"]&gt;
+&lt;cfset s = {name="Raymond",age="Almost 35",weight="204"}&gt;
+</code>
+<p>This is <i>so</i> darn useful I can't imagine life without it.</p>
+<p>ColdFusion 8.0.1 makes this even better by letting you nest these implicit creations:</p>
+<code>
+&lt;cfset s = {name="Raymond",age="Almost 35",weight="204",kids=["Jacob","Lynn","Noah"]}&gt;
+&lt;cfdump var="#s#"&gt;	
+</code>
+<p>Which results in:</p>
+<img src="https://static.raymondcamden.com/images/Picture 111.png">
+<p>Now obviously you don't want to go crazy with this. You still want to keep things readable!</p>
+<p>(Sorry for all the blog entries. I can't sleep and I figured I'd share some of my favorite parts of 8.0.1.)</p>
+}

@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Thanks to reader Mikel Shilling for pointing this out to me. The most excellent (as Bill would say) folks at <a href="http://www.figleaf.com">FigLeaf</a> have released a <b>free</b> ColdFusion 10 and jQuery Mobile tutorial. You can download the bits here:</p>
+<p><a href="http://training.figleaf.com/curriculum/cfjqm.cfm">http://training.figleaf.com/curriculum/cfjqm.cfm</a></p>
+<p>Objectives for the course are:</p>
+<ul>
+<li>Define and use AJAX/JSON(P) web services using ColdFusion 10
+<li>Define and use REST web services using ColdFusion 10
+<li>Using REST services with jQuery Mobile
+<li>Implement real-time communications with HTML5 web sockets
+</ul>}

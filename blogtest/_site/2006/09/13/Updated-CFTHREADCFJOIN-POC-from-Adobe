@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Damon has updated the <a href="http://www.dcooper.org/blog/client/index.cfm?mode=entry&entry=A71F310C-4E22-1671-5E287AE8918A048B">cfthread/cfjoin proof of concept</a> code and I'm very happy with the changes. Threads have their own scope now and can even have their own attributes. There are many other changes as well. <b>Definitely</b> check it out. When I return from the deep hole I'm in I'll post an updated demo.</p>
+}

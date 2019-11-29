@@ -1,0 +1,109 @@
+<h1>Post</h1>
+
+<p>Earlier today Rey Bango posted an excellent article about jQuery Templates (<a href="http://blog.reybango.com/2010/07/09/not-using-jquery-javascript-templates-youre-really-missing-out/">Not Using jQuery JavaScript Templates? You're Really Missing Out.</a>) This was something I had meant to look at before but just never got around to it. If you haven't looked at this feature, please stop reading and catch up on <a href="Not Using jQuery JavaScript Templates? You're Really Missing Out.">Rey's post</a>. After reading it, I thought it would be cool to employ the technique to update the demo I posted earlier today (<a href="http://www.raymondcamden.com/index.cfm/2010/7/9/Another-simple-jQueryColdFusion-example">Another simple jQuery/ColdFusion example</a>). It took me a grand total of five minutes. Here is the original code used to render categories:</p>
+<!--more-->
+<p>
+<code>
+$.getJSON("data.cfc?method=getcategories&returnformat=json&queryformat=column", {}, function(res,code) {
+	//create a string for our result
+	var s = ""
+	for(var i=0; i&lt;res.DATA.ID.length; i++) {
+		s += "&lt;a href='' class='navLink' id='nav_" + res.DATA.ID[i]+ "'&gt;"+res.DATA.NAME[i]+"&lt;/a&gt;&lt;br/&gt;"
+	}
+<pre><code>//&quot;draw&quot; s onto the screen
+$(&quot;#nav&quot;).html(s)
+</code></pre>
+<p>})
+</code></p>
+<p>
+<p>Compare that with the template version:</p>
+<p>
+<code>
+&lt;script id="categoryTemplate" type="text/html"&gt;
+&lt;a href="" class="navLink" id="nav_${ID}"&gt;${NAME}&lt;/a&gt;&lt;br/&gt;
+&lt;/script&gt;
+(more stuff here cut out...)
+//Call the CFC to get queries
+$.getJSON("data.cfc?method=getcategories&returnformat=json&queryformat=column", {}, function(res,code) {
+	var newData = []
+	for(var i=0; i&lt;res.DATA.ID.length; i++) {
+		newData[newData.length] = { "ID":res.DATA.ID[i], "NAME":res.DATA.NAME[i]}
+	}
+	$("#categoryTemplate").tmpl(newData).appendTo("#nav")
+})
+</code>
+<p>
+<p>As you see - I had to reform the data returned by ColdFusion to make it work with the template engine. I could do this at the CFC, but I like my CFC being abstract and not tied to any implementation. So I didn't trim many lines of code here (I may have actually went up by one or two), but the <i>way</i> it works is much cleaner now. I'm reminded of Adobe Spry, which to me has always shined in the area of actually <i>displaying</i> Ajax content.</p>
+<p>
+<p>Next up I rewrote the detail portion:</p>
+<p>
+<code>
+&lt;script id="detailTemplate" type="text/html"&gt;
+&lt;h2&gt;${NAME}&lt;/h2&gt;
+This person is ${AGE} years old.
+&lt;/script&gt;
+(more stuff here....)
+<p>//listen for clicks on navLink
+$(&quot;.navLink&quot;).live(&quot;click&quot;, function(e) {
+var clickedId = $(this).attr(&quot;id&quot;)
+var id = clickedId.split(&quot;_&quot;)[1]</p>
+<pre><code>//load the detail
+$.getJSON(&quot;data.cfc?method=getdetail&amp;returnformat=json&quot;, {&quot;id&quot;:id}, function(res,code) {
+	$(&quot;#content&quot;).html($(&quot;#detailTemplate&quot;).tmpl(res))
+})
+	
+e.preventDefault()
+</code></pre>
+<p>})
+</code></p>
+<p>
+<p>This modification was even simpler. My simple CFML struct worked just fine for the template engine. All in all a very painless modification, but I <b>really</b> dig it. You can find out more about the Template plugin here: <a href="http://github.com/nje/jquery-tmpl">http://github.com/nje/jquery-tmpl</a></p>
+<p>
+<p>Here is the entire page for the new version:</p>
+<p>
+<code>
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;jquery.tmpl.js&quot;&gt;&lt;/script&gt;</p>
+<p>&lt;script id=&quot;categoryTemplate&quot; type=&quot;text/html&quot;&gt;
+&lt;a href=&quot;&quot; class=&quot;navLink&quot; id=&quot;nav_${ID}&quot;&gt;${NAME}&lt;/a&gt;&lt;br/&gt;
+&lt;/script&gt;</p>
+<p>&lt;script id=&quot;detailTemplate&quot; type=&quot;text/html&quot;&gt;
+&lt;h2&gt;${NAME}&lt;/h2&gt;
+This person is ${AGE} years old.
+&lt;/script&gt;</p>
+<p>&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>//Call the CFC to get queries
+$.getJSON(&quot;data.cfc?method=getcategories&amp;returnformat=json&amp;queryformat=column&quot;, {}, function(res,code) {
+	var newData = []
+	for(var i=0; i&amp;lt;res.DATA.ID.length; i++) {
+		newData[newData.length] = { &quot;ID&quot;:res.DATA.ID[i], &quot;NAME&quot;:res.DATA.NAME[i]}
+	}
+	$(&quot;#categoryTemplate&quot;).tmpl(newData).appendTo(&quot;#nav&quot;)
+})
+
+//listen for clicks on navLink
+$(&quot;.navLink&quot;).live(&quot;click&quot;, function(e) {
+	var clickedId = $(this).attr(&quot;id&quot;)
+	var id = clickedId.split(&quot;_&quot;)[1]
+	
+	//load the detail
+	$.getJSON(&quot;data.cfc?method=getdetail&amp;returnformat=json&quot;, {&quot;id&quot;:id}, function(res,code) {
+		$(&quot;#content&quot;).html($(&quot;#detailTemplate&quot;).tmpl(res))
+	})
+	
+	e.preventDefault()
+})
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div id=&quot;nav&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;div id=&quot;content&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

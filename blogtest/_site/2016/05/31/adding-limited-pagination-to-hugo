@@ -1,0 +1,42 @@
+<h1>Post</h1>
+
+<p>This is probably only going to be useful to a limit audience but I thought I'd share. When converting my site from WordPress to <a href="http://gohugo.io/">Hugo</a> I discovered that the built-in <a href="http://gohugo.io/extras/pagination/">pagination support</a> was a bit problematic for my site. Why? I have a large amount of content and at the default page size, I ended up with over five hundred pages of - well - pages.</p>
+<!--more-->
+<p>To me - the solution was simple. Just get rid of the pagination. Frankly, I rarely &quot;page back&quot; to see older content. Heck, I rarely visit a blog's home page anyway. I'm typically on a blog because of a Google search result. Recently though I found myself trying to get links for my own content from a week or so ago and wanting to do a bit of paging. I did some basic research into how I could add pagination, but only for a limited subset of my content, say five pages or so. This is how I did it.</p>
+<p>First, I edited the main pagination partial. My copy was blank as I didn't want pagination at all, so I copied the version from my theme and added a bit of logic.</p>
+<pre><code class="language-javascript">
+{{ if lt .Paginator.PageNumber 5 }}
+	&lt;nav id=&quot;page-nav&quot;&gt;
+	{{ if or (.Paginator.HasPrev) (.Paginator.HasNext) }}
+		{{ if .Paginator.HasPrev }}
+			&lt;a class=&quot;extend prev&quot; rel=&quot;prev&quot; href=&quot;{{.Paginator.Prev.URL}}&quot;&gt;
+				&#x00ab; {{with .Site.Data.l10n.pagination.previous}}{{.}{% endraw %}}{% raw %}{{end}}
+			&lt;/a&gt;
+		{{ end }}
+		{{ if .Paginator.HasNext }}
+			&lt;a class=&quot;extend next&quot; rel=&quot;next&quot; href=&quot;{{.Paginator.Next.URL}}&quot;&gt;
+				{{with .Site.Data.l10n.pagination.next}}{{.}{% endraw %}}{% raw %}{{end}} &#x00bb;
+			&lt;/a&gt;
+		{{ end }}
+	{{ end }}
+	&lt;/nav&gt;
+{{ end }}
+</code></pre> 
+<p>Even if you've never seen Go templates and Hugo before, you can probably figure out what's going on here. My change was literally just the IF condition wrapping the logic. I chose 5 as the total number of pages but you could use any number here.</p>
+<p>The next change was in the article_list partial. My code was initially this:</p>
+<pre><code class="language-javascript">
+{{ range first 10 (where .Site.Pages "Type" "post") }}
+</code></pre>
+<p>Again - I assume if you've never seen Go/Hugo before you can guess as to the logic here. The default code uses pagination and had looked like this before I removed it:</p>
+<pre><code class="language-javascript">
+{{ $paginator := .Paginate (where .Site.Pages "Type" "post") }}
+{{ range $paginator.Pages }}
+</code></pre>
+<p>So my goal was to bring pagination back, but to limit it to the subset of posts that would be covered by the 5 pages of content I wanted to support. Here is what I came up with:</p>
+<pre><code class="language-javascript">
+{{ $paginator := .Paginate ((first 50 (where .Site.Pages "Type" "post"))) }}
+{{ range $paginator.Pages }}
+</code></pre>
+<p>Obviously that's a bit of a hack. In theory I could use a site-wide variable and handle both parts dynamically, but for now, this is what worked for me.</p>
+<p>Actually, it didn't quite work. It seemed fine when I tested, but when I generated my static output, I was getting a huge amount of additional pages due to pagination. I <a href="https://discuss.gohugo.io/t/restrict-pagination-to-x-pages/3437/2">posted on the forums</a> and actually got support from the developer who implemented pagination for Hugo. That's what I call good support!</p>
+}

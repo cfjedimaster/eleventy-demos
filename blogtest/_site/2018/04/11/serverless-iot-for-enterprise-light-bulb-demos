@@ -1,0 +1,70 @@
+<h1>Post</h1>
+
+<p>Before I start, let me state a quick warning. No, this is not an Enterprise demo. Yes, it does involve a light bulb. This post was inspired by Burke Holland's post yesterday on his own light bulb/serverless demo (<a href="https://css-tricks.com/displaying-the-weather-with-serverless-and-colors/">Displaying the Weather With Serverless and Colors</a>). No, my post is not as cool as his, but yes, I'll share a picture from my office which I <em>know</em> is far cooler.</p>
+<p>A few months ago I was given a <a href="https://www.tp-link.com/us/products/details/cat-5609_LB100.html">LB100</a> &quot;Smart Wi-Fi LED Light Bulb&quot; as a speaker gift. Out of the box it has great Alexa integration. As lame as it sounds, walking into my office and saying, &quot;Computer, office light on&quot;, is a small thrill every day. And yes, I say it in this guy's voice:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/04/makeitso.jpg" alt="I'm like Picard, but with more hair."></p>
+<p>While Alexa integration is nice and all, I was curious if there was a proper API for the device. While there seems to be no official, documented API (a strike against it imo), I found not one, but two npm packages for it:</p>
+<ul>
+<li><a href="https://www.npmjs.com/package/tplink-lightbulb">tplink-lightbulb</a></li>
+<li><a href="https://www.npmjs.com/package/tplink-smarthome-api">tplink-smarthome-api</a></li>
+</ul>
+<p>I found the first one to be a bit easier so I stuck with it. It's both a CLI as well as a package you can use in your code. In order to use it, you need to figure out the IP address of your bulb. The mobile app that you use to setup the device reports the MAC address so I had to check my router to get the IP: 10.0.1.5.</p>
+<p>My own particular bulb doesn't have many features. It doesn't support color for example. But it can be dimmed. So for my first test, I wrote this little script.</p>
+<pre><code class="language-js">const TPLSmartDevice = require('tplink-lightbulb');
+
+const light = new TPLSmartDevice('10.0.1.5')
+light.power(true, 5000, {
+	'brightness':100
+})
+.then(status =&gt; {
+console.log(status);
+})
+.catch(e =&gt; console.error(e));
+</code></pre>
+<p>The second argument, <code>5000</code>, simply refers to how long the bulb should take to change brightness. I ran it - and - voila - it got dark. I got a little bit excited about that. Just a little. But of course, this would be far cooler if it was serverless, right?</p>
+<p>I popped over to <a href="https://webtask.io">Webtask.io</a> and created a new empty function. I added the npm module my original script used and came up with this little beauty:</p>
+<pre><code class="language-js">'use strict';
+
+const TPLSmartDevice = require('tplink-lightbulb');
+
+/**
+* @param context {WebtaskContext}
+*/
+module.exports = function(context, cb) {
+
+  const light = new TPLSmartDevice(context.secrets.ipaddress)
+
+  light.power(true, 2000, { 'brightness':0});
+  setTimeout(() =&gt; {
+    light.power(true, 2000, { 'brightness':100})
+    .then(status =&gt; {
+      cb(null, {status:status});
+    });
+  },2100);
+  
+};
+</code></pre>
+<p>So what's with the nesting and timeouts and so forth? While the light API has a callback, it represents the successful call out to the hardware. It does <em>not</em> represent the end of an operation, which in this case is 2000ms along with other network delays. Therefore I used the callback of the &quot;dim&quot; operation (setting <code>brightness</code> to 0) to set up a timeout for <em>a bit more</em> then my first duration to kick off another call to brighten the bulb up again.</p>
+<p>Yes - this could be written better. I got some great support from the creator of the tplink-lightbulb package (<a href="https://github.com/konsumer">David Konsumer</a>) and he wrote it in a much sexier fashion (although reversed):</p>
+<pre><code class="language-js">import TPLSmartDevice from 'tplink-lightbulb'
+
+// wait delay ms to resolve
+const later = delay =&gt; new Promise(resolve =&gt; setTimeout(resolve, delay))
+
+const light = new TPLSmartDevice('10.0.0.200')
+
+const main = async () =&gt; {
+  await light.power(true, 1000, {brightness: 100})
+  await delay(1000)
+  await light.power(true, 1000, {brightness: 0})
+}
+main()
+</code></pre>
+<p>See folks, this is why I don't pass Google interviews! My version was almost ready, except I had to open a port. Yes, I opened a port on my network.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/04/jb.jpg" alt="OMG"></p>
+<p>Believe it or not, it actually was this dramatic as I had to figure out the port and Apple's clunky interface for their router.</p>
+<p>But it was so worth it. I copied the URL out of the webtask editor and set it as the webhook for one of my GitHub repos. For the hell of it, I also set it as a Netlify hook (my host) to run when a build is complete. Now, whenever one of those events occurs, my light will dim and get bright again as a nice, passive notification.</p>
+<p>I tried to take a video of it, but while it looked perfectly fine in real life, the video just didn't do it justice. Therefore I created a really horrible animated gif out of it:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/04/badvid.gif" alt="OMG"></p>
+<p>I apologize for that.</p>
+}

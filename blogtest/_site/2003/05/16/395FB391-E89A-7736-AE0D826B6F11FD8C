@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>There was an issue with the RSS field where the top listing of items was not limited to 15 entries - yet the body of the items were limited. The code now uses the maxEntries() feature so it's no longer an issue. As always, you can download from the link in the right hand corner.</p>
+}

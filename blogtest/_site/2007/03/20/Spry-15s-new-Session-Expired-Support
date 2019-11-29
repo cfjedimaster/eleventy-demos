@@ -1,0 +1,49 @@
+<h1>Post</h1>
+
+<p>I <a href="http://ray.camdenfamily.com/index.cfm/2007/3/15/Spry-15-Preview">blogged</a> about the Spry 1.5 preview a few days ago and finally made time to whip up a quick demo of one of the new features - <a href="http://labs.adobe.com/technologies/spry/preview/samples/session_handling/">Session Handling</a></p>
+<!--more-->
+<p>First and foremost - let me explain exactly what is meant by this. As you know, ColdFusion can't alert you when your session expires. It is a server side event. So obviously Spry can't get the notification from the server.</p>
+<p>Instead what Spry supports is noticing a particular <i>result</i> from the server. So imagine a site with a login system. Typically you hit the site. Log in. Access the data. Now imagine you sit there on a Spry-ified page and let your session time out. You click to load a new page of AJAX data and Spry throws an error. Why? Because the back end returned a login form instead of a proper XML (or JSON) result.</p>
+<p>So what to do? Well you now return a message to your AJAX requests. This message is the literal string: session expired. It doesn't need to be in XML. If Spry sees this as the result of a data request, it will then fire off an event. So consider this simple page:</p>
+<code>
+&lt;div spry:region="mydata"&gt;
+<pre><code>&amp;lt;div spry:state=&quot;loading&quot;&amp;gt;Loading...&amp;lt;/div&amp;gt;
+&amp;lt;div spry:state=&quot;error&quot;&amp;gt;Oh crap, something went wrong!&amp;lt;/div&amp;gt;
+&amp;lt;div spry:state=&quot;expired&quot;&amp;gt;
+	&amp;lt;strong&amp;gt;Your session has expired!&amp;lt;/strong&amp;gt; 
+&amp;lt;/div&amp;gt;	
+&amp;lt;div spry:state=&quot;ready&quot;&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;table width=&quot;500&quot; border=&quot;1&quot;&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('name','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Name&amp;lt;/th&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('age','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Age&amp;lt;/th&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('gender','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Gender&amp;lt;/th&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;tr spry:repeat=&quot;mydata&quot;&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{name}&amp;lt;/td&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{age}&amp;lt;/td&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{gender}&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+&amp;lt;/table&amp;gt;	
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;a href=&quot;javaScript:mydata.loadData()&quot;&amp;gt;Reload&amp;lt;/a&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>I have a loading, error, and ready div, along with a new expired div. If Spry sees &quot;session expired&quot; in the result, it will display that div automatically. (And you could include a nice link to the login page of course.)</p>
+<p>To see a demo of this, visit this <a href="http://www.raymondcamden.com/demos/session/index.cfm?initial=1">link</a>.  Click the reload link a few times, then simply go idle for 45 seconds. Click the Reload link again and you will (hopefully) see the session expired message.</p>
+<p>How did I handle this? In my onRequestStart in Application.cfc I used this code:</p>
+<code>
+&lt;cfif not structKeyExists(session, "loggedin") and findNoCase("people.cfm", thePage)&gt;
+	&lt;cfcontent type="text/html" reset="true"&gt;&lt;cfoutput&gt;session expired&lt;/cfoutput&gt;&lt;cfabort&gt;
+&lt;/cfif&gt;
+</code>
+<p>Notice that I check both for the session variable as well as the page. For any other page I want to force the user to the login form, but for AJAX requests I want to display the proper message. You could make this process easier by using a URL format like xml.foo.cfm for all AJAX requests. (I do something similar for my Model-Glue site.)</p>
+<p>By the way - curious about the cfcontent? I discovered something interesting. Right now Spry is <i>very</i> picky. If you have any whitespace before or after the session expired message, it won't work. My Application.cfc did make use of output=false in both the cfcomponent and cffunction tag. Yet somehow I was still ending up with white space. My theory is - and I'll try to prove this tomorrow - is that when CF encountered the cfabort in onRequestStart, it didn't have a chance to &quot;cleanup&quot; the white space the method had generated.</p>
+}

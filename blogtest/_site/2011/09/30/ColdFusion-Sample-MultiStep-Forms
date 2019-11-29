@@ -1,0 +1,678 @@
+<h1>Post</h1>
+
+<p>The &quot;ColdFusion Sample&quot; series is a collection of blog entries that describe how to do common tasks in web development with ColdFusion. They are not meant to be the only solution, but simply one solution, presented in such a fashion that you can take the code and immediately use it (with modifications of course) in a production environment. For today's entry I'm going to demonstrate how to handle a multi-step form in ColdFusion. My example will be the fairly common checkout form seen on e-commerce sites. Multi-step forms <i>can</i> be done completely client side. For this entry though I'm going to rely on a simpler solution. One quick aside. I try like heck to keep my code samples as simple as possible. So for example, if I wanted to demonstrate how to output the current time in ColdFusion, I'm not going to bother with a 'complete' HTML page. While all of the extra HTML may make for a &quot;Proper&quot; HTML result, it's stupid to clutter up one line of CFML with 10 lines of HTML. That being said I decided to try out the <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> toolkit to make my demo look a bit nicer. At the very end of this blog entry I'll have a few notes on Bootstrap and what I both liked and disliked.</p>
+<!--more-->
+<p>
+<p>Before we get into the code, let's describe at a high level how we can handle a multi-step form. There a few different approaches:</p>
+<p>
+<ol>
+<li>Each step of the form is one HTML page. State data (what you entered already) is preserved in hidden form fields.
+<li>Each step of the form is one HTML page. State data (what you entered already) is stored in a persistent server side scope unique to the user.
+<li>The entire form is loaded onto the client and CSS/JS is used to show/hide one step at a time.
+</ol>
+<p>
+<p>In approach one, you have to ensure that you store the previous data in hidden form fields. This can be get cumbersome especially after a few steps. I already mentioned that we weren't going to cover the completely client-side approach. So for this demo, we will make use of ColdFusion's Session scope. Let's then begin with our Application.cfc file:</p>
+<p>
+<code>
+component {
+	this.name="formdemo";
+	this.sessionManagement="true";
+<pre><code>public void function onSessionEnd(sessionScope,appScope) {
+	//consider logging an incomplete form
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Two things I want to point out here. First, notice I'm not using onSessionStart. You may be thinking, &quot;Don't we want to default some data for the form?&quot; We may. But - in a complete web site, you can't assume all users are going to actually perform a check out. Therefore we will only setup the data when we need to. Secondly - what about the empty onSessionEnd? This is purely a reminder about the fact that you <b>can run</b> things on a session expiring. I've <a href="http://www.raymondcamden.com/index.cfm/2006/10/20/How-ColdFusion-can-save-you-business">blogged/preached</a> about this feature before and I truly don't think it is used often enough. Now let's move on to the first step.</p>
+<p>
+<h2>step1.cfm</h2>
+<code>
+&lt;!---
+Initial check to see if we have a core structure to store our data.
+---&gt;
+&lt;cfif not structKeyExists(session, "checkout")&gt;
+	&lt;cfset session.checkout = {}&gt;
+&lt;/cfif&gt;
+&lt;!--- initial defaults for the first section ---&gt;
+&lt;cfif not structKeyExists(session.checkout, "bio")&gt;
+	&lt;cfset session.checkout.bio = {firstname="", lastname="", email=""}&gt;
+&lt;/cfif&gt;
+<p>&lt;!--- form fields will default according to session values ---&gt;
+&lt;cfparam name=&quot;form.firstname&quot; default=&quot;#session.checkout.bio.firstname#&quot;&gt;
+&lt;cfparam name=&quot;form.lastname&quot; default=&quot;#session.checkout.bio.lastname#&quot;&gt;
+&lt;cfparam name=&quot;form.email&quot; default=&quot;#session.checkout.bio.email#&quot;&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;submit&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset errors = []&amp;gt;
+&amp;lt;cfset form.firstname = trim(htmlEditFormat(form.firstname))&amp;gt;
+&amp;lt;cfset form.lastname = trim(htmlEditFormat(form.lastname))&amp;gt;
+&amp;lt;cfset form.email = trim(htmlEditFormat(form.email))&amp;gt;
+&amp;lt;cfif not len(form.firstname)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;First name is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.lastname)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Last name is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.email) or not isValid(&quot;email&quot;, form.email)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Email is empty or not correct.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif not arrayLen(errors)&amp;gt;
+	&amp;lt;cfset session.checkout.bio = {firstname=form.firstname, 
+								   lastname=form.lastname,
+								   email=form.email}&amp;gt;
+	&amp;lt;cflocation url=&quot;step2.cfm&quot; addToken=&quot;false&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Check Out Form - Step 1&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=ISO-8859-1&quot; /&gt;	
+&lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css&quot;&gt;
+&lt;script src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap-alerts.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;h1&amp;gt;Step 1: Your Name&amp;lt;/h1&amp;gt;
+	
+	&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+		&amp;lt;div class=&quot;alert-message block-message error&quot; data-alert=&quot;alert&quot;&amp;gt;
+		&amp;lt;a class=&quot;close&quot; href=&quot;#&quot;&amp;gt;&amp;times;&amp;lt;/a&amp;gt;
+		&amp;lt;p&amp;gt;&amp;lt;strong&amp;gt;Oh snap! You got an error!&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+		&amp;lt;ul&amp;gt;
+		&amp;lt;cfloop index=&quot;error&quot; array=&quot;#errors#&quot;&amp;gt;
+			&amp;lt;cfoutput&amp;gt;
+			&amp;lt;li&amp;gt;#error#&amp;lt;/li&amp;gt;
+			&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;/ul&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;form method=&quot;post&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;firstname&quot;&amp;gt;Your Name:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;firstname&quot; id=&quot;firstname&quot; placeholder=&quot;First&quot; value=&quot;#form.firstname#&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;lastname&quot; id=&quot;lastname&quot; placeholder=&quot;Last&quot; value=&quot;#form.lastname#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;email&quot;&amp;gt;Your Email Address:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;email&quot; name=&quot;email&quot; id=&quot;email&quot; value=&quot;#form.email#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+
+	&amp;lt;div class=&quot;actions&quot;&amp;gt;
+		&amp;lt;input type=&quot;submit&quot; class=&quot;btn primary&quot; name=&quot;submit&quot; value=&quot;Save&quot;&amp;gt;
+	&amp;lt;/div&amp;gt;
+	  
+	&amp;lt;/form&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Ok, we've got a lot going on here so let's approach this at a high level (ie, not just top to bottom). I will, though, point out the top of the file handles some start up logic necessary for the process. I begin by initializing a checkout structure. This is going to hold all of the data for the entire process. Next, I default a structure just for this step. I've named it bio and it includes three keys.</p>
+<p>
+<p>The file is a self-posting form. What that means is that when you hit submit, it's going to send the FORM data to itself. This makes handling errors a lot simpler. In the bottom half of the page you can see our form consists of 3 fields: 2 for our name and one for an email address. If you go back up towards the top, you can see my form validation. This by itself shouldn't be new. But pay attention to what we do when no errors exist. We copy the value to the session scope, specifically session.checkout.bio, and then use cflocation to move to the next step. Now let's look at step 2.</p>
+<p>
+<h2>step2.cfm</h2>
+<code>
+&lt;!---
+If no checkout, send them to step 1
+---&gt;
+&lt;cfif not structKeyExists(session, "checkout")&gt;
+	&lt;cflocation url="step1.cfm" addToken="false"&gt;
+&lt;/cfif&gt;
+&lt;!--- initial defaults for the section ---&gt;
+&lt;cfif not structKeyExists(session.checkout, "address")&gt;
+	&lt;cfset session.checkout.address = {street="", city="", state="", postal=""}&gt;
+&lt;/cfif&gt;
+<p>&lt;!--- form fields will default according to session values ---&gt;
+&lt;cfparam name=&quot;form.street&quot; default=&quot;#session.checkout.address.street#&quot;&gt;
+&lt;cfparam name=&quot;form.city&quot; default=&quot;#session.checkout.address.city#&quot;&gt;
+&lt;cfparam name=&quot;form.state&quot; default=&quot;#session.checkout.address.state#&quot;&gt;
+&lt;cfparam name=&quot;form.postal&quot; default=&quot;#session.checkout.address.postal#&quot;&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;submit&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset errors = []&amp;gt;
+&amp;lt;cfset form.street = trim(htmlEditFormat(form.street))&amp;gt;
+&amp;lt;cfset form.city = trim(htmlEditFormat(form.city))&amp;gt;
+&amp;lt;cfset form.state = trim(htmlEditFormat(form.state))&amp;gt;
+&amp;lt;cfset form.postal = trim(htmlEditFormat(form.postal))&amp;gt;
+
+&amp;lt;cfif not len(form.street)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Street is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.city)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;City is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.state)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;State is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.postal) or not isValid(&quot;zipcode&quot;, form.postal)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Postal code is empty or not correct.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif not arrayLen(errors)&amp;gt;
+	&amp;lt;cfset session.checkout.address = {street=form.street, 
+								   city=form.city,
+								   state=form.state,
+								   postal=form.postal}&amp;gt;
+	&amp;lt;cflocation url=&quot;step3.cfm&quot; addToken=&quot;false&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Check Out Form - Step 2&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=ISO-8859-1&quot; /&gt;	
+&lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css&quot;&gt;
+&lt;script src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap-alerts.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;h1&amp;gt;Step 2: Your Address&amp;lt;/h1&amp;gt;
+	
+	&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+		&amp;lt;div class=&quot;alert-message block-message error&quot; data-alert=&quot;alert&quot;&amp;gt;
+		&amp;lt;a class=&quot;close&quot; href=&quot;#&quot;&amp;gt;&amp;times;&amp;lt;/a&amp;gt;
+		&amp;lt;p&amp;gt;&amp;lt;strong&amp;gt;Oh snap! You got an error!&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+		&amp;lt;ul&amp;gt;
+		&amp;lt;cfloop index=&quot;error&quot; array=&quot;#errors#&quot;&amp;gt;
+			&amp;lt;cfoutput&amp;gt;
+			&amp;lt;li&amp;gt;#error#&amp;lt;/li&amp;gt;
+			&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;/ul&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;form method=&quot;post&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;street&quot;&amp;gt;Your Street:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;street&quot; id=&quot;street&quot; value=&quot;#form.street#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;city&quot;&amp;gt;Your City:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;city&quot; id=&quot;city&quot; value=&quot;#form.city#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;state&quot;&amp;gt;Your State:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;cfinclude template=&quot;states.cfm&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;street&quot;&amp;gt;Your Postal Code:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;postal&quot; id=&quot;postal&quot; value=&quot;#form.postal#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+	&amp;lt;/cfoutput&amp;gt;
+
+	&amp;lt;div class=&quot;actions&quot;&amp;gt;
+		&amp;lt;input type=&quot;submit&quot; class=&quot;btn primary&quot; name=&quot;submit&quot; value=&quot;Save&quot;&amp;gt;
+	&amp;lt;/div&amp;gt;
+	  
+	&amp;lt;/form&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>For the most part, this template follows the flow of the previous one, but notice that the very beginning of the file checks to see if the checkout structure exists. If it doesn't, then we want to push the user back to step 1. All of the next few steps will follow this exact same logic. Outside of that though nothing else is different. Step 2 deals with the address so I use the &quot;location&quot; of session.checkout.address. The fields here are different, but the flow is the same. Step 3 is the <b>exact</b> same but with shipping data instead.</p>
+<p>
+<h2>step3.cfm</h2>
+<code>
+&lt;!---
+If no checkout, send them to step 1
+---&gt;
+&lt;cfif not structKeyExists(session, "checkout")&gt;
+	&lt;cflocation url="step1.cfm" addToken="false"&gt;
+&lt;/cfif&gt;
+&lt;!--- initial defaults for the section ---&gt;
+&lt;cfif not structKeyExists(session.checkout, "shippingaddress")&gt;
+	&lt;cfset session.checkout.shippingaddress = {street="", city="", state="", postal=""}&gt;
+&lt;/cfif&gt;
+<p>&lt;!--- form fields will default according to session values ---&gt;
+&lt;cfparam name=&quot;form.street&quot; default=&quot;#session.checkout.shippingaddress.street#&quot;&gt;
+&lt;cfparam name=&quot;form.city&quot; default=&quot;#session.checkout.shippingaddress.city#&quot;&gt;
+&lt;cfparam name=&quot;form.state&quot; default=&quot;#session.checkout.shippingaddress.state#&quot;&gt;
+&lt;cfparam name=&quot;form.postal&quot; default=&quot;#session.checkout.shippingaddress.postal#&quot;&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;submit&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset errors = []&amp;gt;
+&amp;lt;cfset form.street = trim(htmlEditFormat(form.street))&amp;gt;
+&amp;lt;cfset form.city = trim(htmlEditFormat(form.city))&amp;gt;
+&amp;lt;cfset form.state = trim(htmlEditFormat(form.state))&amp;gt;
+&amp;lt;cfset form.postal = trim(htmlEditFormat(form.postal))&amp;gt;
+
+&amp;lt;cfif not len(form.street)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Street is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.city)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;City is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.state)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;State is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.postal) or not isValid(&quot;zipcode&quot;, form.postal)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Postal code is empty or not correct.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif not arrayLen(errors)&amp;gt;
+	&amp;lt;cfset session.checkout.shippingaddress = {street=form.street, 
+								   city=form.city,
+								   state=form.state,
+								   postal=form.postal}&amp;gt;
+	&amp;lt;cflocation url=&quot;step4.cfm&quot; addToken=&quot;false&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Check Out Form - Step 3&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=ISO-8859-1&quot; /&gt;	
+&lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css&quot;&gt;
+&lt;script src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap-alerts.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;h1&amp;gt;Step 3: Your Shipping Address&amp;lt;/h1&amp;gt;
+	
+	&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+		&amp;lt;div class=&quot;alert-message block-message error&quot; data-alert=&quot;alert&quot;&amp;gt;
+		&amp;lt;a class=&quot;close&quot; href=&quot;#&quot;&amp;gt;&amp;times;&amp;lt;/a&amp;gt;
+		&amp;lt;p&amp;gt;&amp;lt;strong&amp;gt;Oh snap! You got an error!&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+		&amp;lt;ul&amp;gt;
+		&amp;lt;cfloop index=&quot;error&quot; array=&quot;#errors#&quot;&amp;gt;
+			&amp;lt;cfoutput&amp;gt;
+			&amp;lt;li&amp;gt;#error#&amp;lt;/li&amp;gt;
+			&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;/ul&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;form method=&quot;post&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;street&quot;&amp;gt;Your Street:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;street&quot; id=&quot;street&quot; value=&quot;#form.street#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;city&quot;&amp;gt;Your City:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;city&quot; id=&quot;city&quot; value=&quot;#form.city#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;state&quot;&amp;gt;Your State:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;cfinclude template=&quot;states.cfm&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;street&quot;&amp;gt;Your Postal Code:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;postal&quot; id=&quot;postal&quot; value=&quot;#form.postal#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+	&amp;lt;/cfoutput&amp;gt;
+
+	&amp;lt;div class=&quot;actions&quot;&amp;gt;
+		&amp;lt;input type=&quot;submit&quot; class=&quot;btn primary&quot; name=&quot;submit&quot; value=&quot;Save&quot;&amp;gt;
+	&amp;lt;/div&amp;gt;
+	  
+	&amp;lt;/form&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>And here is our 4th step, the one that handles credit card data.</p>
+<p>
+<h2>step4.cfm</h2>
+<code>
+&lt;!---
+If no checkout, send them to step 1
+---&gt;
+&lt;cfif not structKeyExists(session, "checkout")&gt;
+	&lt;cflocation url="step1.cfm" addToken="false"&gt;
+&lt;/cfif&gt;
+&lt;!--- initial defaults for the section ---&gt;
+&lt;cfif not structKeyExists(session.checkout, "ccinfo")&gt;
+	&lt;cfset session.checkout.ccinfo = {number="", name="", expmonth="", expyear=""}&gt;
+&lt;/cfif&gt;
+<p>&lt;!--- form fields will default according to session values ---&gt;
+&lt;cfparam name=&quot;form.number&quot; default=&quot;#session.checkout.ccinfo.number#&quot;&gt;
+&lt;cfparam name=&quot;form.name&quot; default=&quot;#session.checkout.ccinfo.name#&quot;&gt;
+&lt;cfparam name=&quot;form.expmonth&quot; default=&quot;#session.checkout.ccinfo.expmonth#&quot;&gt;
+&lt;cfparam name=&quot;form.expyear&quot; default=&quot;#session.checkout.ccinfo.expyear#&quot;&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;submit&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset errors = []&amp;gt;
+&amp;lt;cfset form.number = trim(htmlEditFormat(form.number))&amp;gt;
+&amp;lt;cfset form.name = trim(htmlEditFormat(form.name))&amp;gt;
+&amp;lt;cfset form.expmonth = trim(htmlEditFormat(form.expmonth))&amp;gt;
+&amp;lt;cfset form.expyear = trim(htmlEditFormat(form.expyear))&amp;gt;
+
+&amp;lt;cfif not len(form.number) or not isValid(&quot;creditcard&quot; ,form.number)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Credit card number is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.name)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Name on credit card is empty.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.expmonth)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Expiration month not selected.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.expyear)&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Expiration year not selected.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif len(form.expyear) and len(form.expmonth) and form.expyear is year(now()) and form.expmonth lt month(now())&amp;gt;
+	&amp;lt;cfset arrayAppend(errors, &quot;Credit card expiration is in the past.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif not arrayLen(errors)&amp;gt;
+	&amp;lt;cfset session.checkout.ccinfo = {number=form.number, 
+								   name=form.name,
+								   expmonth=form.expmonth,
+								   expyear=form.expyear}&amp;gt;
+	&amp;lt;cflocation url=&quot;step5.cfm&quot; addToken=&quot;false&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Check Out Form - Step 4&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=ISO-8859-1&quot; /&gt;	
+&lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css&quot;&gt;
+&lt;script src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap-alerts.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;h1&amp;gt;Step 4: Your Credit Card&amp;lt;/h1&amp;gt;
+	
+	&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+		&amp;lt;div class=&quot;alert-message block-message error&quot; data-alert=&quot;alert&quot;&amp;gt;
+		&amp;lt;a class=&quot;close&quot; href=&quot;#&quot;&amp;gt;&amp;times;&amp;lt;/a&amp;gt;
+		&amp;lt;p&amp;gt;&amp;lt;strong&amp;gt;Oh snap! You got an error!&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+		&amp;lt;ul&amp;gt;
+		&amp;lt;cfloop index=&quot;error&quot; array=&quot;#errors#&quot;&amp;gt;
+			&amp;lt;cfoutput&amp;gt;
+			&amp;lt;li&amp;gt;#error#&amp;lt;/li&amp;gt;
+			&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;/ul&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;form method=&quot;post&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;number&quot;&amp;gt;Your Credit Card Number:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;number&quot; id=&quot;number&quot; value=&quot;#form.number#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;name&quot;&amp;gt;Name on Credit Card:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;input type=&quot;text&quot; name=&quot;name&quot; id=&quot;name&quot; value=&quot;#form.name#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+	&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+		&amp;lt;label for=&quot;expmonth&quot;&amp;gt;CC Expiration:&amp;lt;/label&amp;gt;
+		&amp;lt;div class=&quot;input&quot;&amp;gt;
+			&amp;lt;select class=&quot;small&quot; name=&quot;expmonth&quot; id=&quot;expmonth&quot;&amp;gt;
+				&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;12&quot;&amp;gt;
+					&amp;lt;option value=&quot;#x#&quot; &amp;lt;cfif form.expmonth is x&amp;gt;selected&amp;lt;/cfif&amp;gt;&amp;gt;#monthAsString(x)#&amp;lt;/option&amp;gt;
+				&amp;lt;/cfloop&amp;gt;
+			&amp;lt;/select&amp;gt;
+			&amp;lt;select class=&quot;small&quot; name=&quot;expyear&quot; id=&quot;expyear&quot;&amp;gt;
+				&amp;lt;cfloop index=&quot;x&quot; from=&quot;#year(now())#&quot; to=&quot;#year(now())+10#&quot;&amp;gt;
+					&amp;lt;option value=&quot;#x#&quot; &amp;lt;cfif form.expyear is x&amp;gt;selected&amp;lt;/cfif&amp;gt;&amp;gt;#x#&amp;lt;/option&amp;gt;
+				&amp;lt;/cfloop&amp;gt;
+			&amp;lt;/select&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+
+
+	&amp;lt;/cfoutput&amp;gt;
+
+	&amp;lt;div class=&quot;actions&quot;&amp;gt;
+		&amp;lt;input type=&quot;submit&quot; class=&quot;btn primary&quot; name=&quot;submit&quot; value=&quot;Save&quot;&amp;gt;
+	&amp;lt;/div&amp;gt;
+	  
+	&amp;lt;/form&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Now let's look at step5 - the confirmation page. This one is pretty simple since there isn't really a form involved. I did keep a form in the page though so the user has to do a real form submission to move on. Notice I provide links back to the earlier steps.</p>
+<p>
+<h2>step5.cfm</h2>
+<code>
+&lt;!---
+If no checkout, send them to step 1
+---&gt;
+&lt;cfif not structKeyExists(session, "checkout")&gt;
+	&lt;cflocation url="step1.cfm" addToken="false"&gt;
+&lt;/cfif&gt;
+<p>&lt;cfscript&gt;
+/**</p>
+<ul>
+<li>Escapes a credit card number, showing only the last 4 digits. The other digits are replaced with the * character.</li>
+<li>return just stars if str too short, found by Tony Monast</li>
+<li></li>
+<li>@param ccnum 	 Credit card number you want to escape. (Required)</li>
+<li>@return Returns a string.</li>
+<li>@author Joshua Miller (josh@joshuasmiller.com)</li>
+<li>@version 2, April 26, 2009
+<em>/
+function ccEscape(ccnum){
+if(len(ccnum) lte 4) return &quot;</em>**<em>&quot;;
+return &quot;#RepeatString(&quot;</em>&quot;,val(Len(ccnum)-4))##Right(ccnum,4)#&quot;;
+}
+&lt;/cfscript&gt;</li>
+</ul>
+<p>&lt;cfif structKeyExists(form, &quot;submit&quot;)&gt;</p>
+<pre><code>&amp;lt;!--- do something ---&amp;gt;
+&amp;lt;!--- clear info ---&amp;gt;
+&amp;lt;cfset session.checkout = {}&amp;gt;
+&amp;lt;cflocation url=&quot;step6.cfm&quot; addToken=&quot;false&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Check Out Form - Step 5&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=ISO-8859-1&quot; /&gt;	
+&lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css&quot;&gt;
+&lt;script src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap-alerts.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;h1&amp;gt;Step 5: Confirm&amp;lt;/h1&amp;gt;
+	
+	&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+		&amp;lt;div class=&quot;alert-message block-message error&quot; data-alert=&quot;alert&quot;&amp;gt;
+		&amp;lt;a class=&quot;close&quot; href=&quot;#&quot;&amp;gt;&amp;times;&amp;lt;/a&amp;gt;
+		&amp;lt;p&amp;gt;&amp;lt;strong&amp;gt;Oh snap! You got an error!&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+		&amp;lt;ul&amp;gt;
+		&amp;lt;cfloop index=&quot;error&quot; array=&quot;#errors#&quot;&amp;gt;
+			&amp;lt;cfoutput&amp;gt;
+			&amp;lt;li&amp;gt;#error#&amp;lt;/li&amp;gt;
+			&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;/ul&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;cfoutput&amp;gt;		
+	&amp;lt;h2&amp;gt;You&amp;lt;/h2&amp;gt;
+	&amp;lt;div class=&quot;row&quot;&amp;gt;
+		&amp;lt;div class=&quot;span2&quot;&amp;gt;
+			Name:
+		&amp;lt;/div&amp;gt;
+		&amp;lt;div class=&quot;span6&quot;&amp;gt;
+			#session.checkout.bio.firstname# #session.checkout.bio.lastname#
+		&amp;lt;/div&amp;gt;	
+	&amp;lt;/div&amp;gt;
+	&amp;lt;div class=&quot;row&quot;&amp;gt;
+		&amp;lt;div class=&quot;span2&quot;&amp;gt;
+			Email:
+		&amp;lt;/div&amp;gt;
+		&amp;lt;div class=&quot;span6&quot;&amp;gt;
+			#session.checkout.bio.email#
+		&amp;lt;/div&amp;gt;	
+	&amp;lt;/div&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	&amp;lt;a href=&quot;step1.cfm&quot;&amp;gt;[Return to Step 1]&amp;lt;/a&amp;gt;
+	&amp;lt;/p&amp;gt;
+	
+	&amp;lt;h2&amp;gt;Your Address&amp;lt;/h2&amp;gt;
+	&amp;lt;address&amp;gt;
+	#session.checkout.address.street#&amp;lt;br/&amp;gt;
+	#session.checkout.address.city#, #session.checkout.address.state# #session.checkout.address.postal#
+	&amp;lt;/address&amp;gt;
+
+	&amp;lt;p&amp;gt;
+	&amp;lt;a href=&quot;step2.cfm&quot;&amp;gt;[Return to Step 2]&amp;lt;/a&amp;gt;
+	&amp;lt;/p&amp;gt;
+
+	&amp;lt;h2&amp;gt;Your Shipping Address&amp;lt;/h2&amp;gt;
+	&amp;lt;address&amp;gt;
+	#session.checkout.shippingaddress.street#&amp;lt;br/&amp;gt;
+	#session.checkout.shippingaddress.city#, #session.checkout.shippingaddress.state# #session.checkout.shippingaddress.postal#
+	&amp;lt;/address&amp;gt;
+
+	&amp;lt;p&amp;gt;
+	&amp;lt;a href=&quot;step3.cfm&quot;&amp;gt;[Return to Step 3]&amp;lt;/a&amp;gt;
+	&amp;lt;/p&amp;gt;
+
+	&amp;lt;h2&amp;gt;Your Credit Card&amp;lt;/h2&amp;gt;
+	&amp;lt;div class=&quot;row&quot;&amp;gt;
+		&amp;lt;div class=&quot;span2&quot;&amp;gt;
+			Number:
+		&amp;lt;/div&amp;gt;
+		&amp;lt;div class=&quot;span6&quot;&amp;gt;
+			#ccEscape(session.checkout.ccinfo.number)#
+		&amp;lt;/div&amp;gt;	
+	&amp;lt;/div&amp;gt;
+	&amp;lt;div class=&quot;row&quot;&amp;gt;
+		&amp;lt;div class=&quot;span2&quot;&amp;gt;
+			Name on Card:
+		&amp;lt;/div&amp;gt;
+		&amp;lt;div class=&quot;span6&quot;&amp;gt;
+			#session.checkout.ccinfo.name#
+		&amp;lt;/div&amp;gt;	
+	&amp;lt;/div&amp;gt;
+	&amp;lt;div class=&quot;row&quot;&amp;gt;
+		&amp;lt;div class=&quot;span2&quot;&amp;gt;
+			Expired:
+		&amp;lt;/div&amp;gt;
+		&amp;lt;div class=&quot;span6&quot;&amp;gt;
+			#session.checkout.ccinfo.expmonth#/#session.checkout.ccinfo.expyear#
+		&amp;lt;/div&amp;gt;	
+	&amp;lt;/div&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	&amp;lt;a href=&quot;step4.cfm&quot;&amp;gt;[Return to Step 4]&amp;lt;/a&amp;gt;
+	&amp;lt;/p&amp;gt;
+	
+	&amp;lt;/cfoutput&amp;gt;
+	
+	&amp;lt;form method=&quot;post&quot;&amp;gt;
+
+	&amp;lt;div class=&quot;actions&quot;&amp;gt;
+		&amp;lt;input type=&quot;submit&quot; class=&quot;btn primary&quot; name=&quot;submit&quot; value=&quot;Checkout&quot;&amp;gt;
+	&amp;lt;/div&amp;gt;
+	  
+	&amp;lt;/form&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>All in all, not much to it, right? Most of the code so far really has been the HTML. The final step is really just a thank you page. I'll include it here for completeness sake.</p>
+<p>
+<h2>step6.cfm</h2>
+<code>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Check Out Form - Step 1&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=ISO-8859-1&quot; /&gt;	
+&lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css&quot;&gt;
+&lt;script src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap-alerts.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;h1&amp;gt;Thank You&amp;lt;/h1&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+</code></pre>
+<p>Prosciutto drumstick tri-tip brisket flank meatball shank capicola. Turkey cow shankle pork chop tail, tenderloin strip steak pastrami ball tip meatball capicola ham. Pig meatloaf pork chop bresaola t-bone. Shankle pork chop chuck kielbasa ham hock, cow ball tip tongue prosciutto filet mignon beef biltong meatball. Ground round sirloin turkey turducken, chuck fatback flank jerky bresaola beef. Bresaola spare ribs pancetta, flank beef ribeye ground round pastrami chicken pork loin rump turducken. Salami turkey drumstick, shoulder pork chop shankle jerky prosciutto leberkäse beef t-bone brisket short loin.
+&lt;/p&gt;</p>
+<pre><code>&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>You can try this code by hitting the big demo button below. For a credit card number, use 4111111111111111. I did not post the code for the states include but I've attached all the code as a zip to this blog entry.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/sep302011/step1.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<p>Finally, some notes on the Bootstrap framework. I really like it a lot. It was pretty easy to make my pages look a <b>hell</b> of a lot better than they normally do. I do wish they had proper documentation. I know I can view source to see how they built stuff, but it would be nice to have it on screen too while looking at the demos. Also, some things are missing. So for example, they demonstrate a normal and medium sized select. I guessed that there was a small one and I was right, but why not - you know - document it so you don't have to guess?<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fformdemo1%2Ezip'>Download attached file.</a></p></p>
+}

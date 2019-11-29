@@ -1,0 +1,181 @@
+<h1>Post</h1>
+
+<p>Yesterday I tweeted about the release of the <a href="https://medium.com/the-vue-point/whats-new-in-vue-devtools-4-0-9361e75e05d0">latest version</a> of the devtools extension for Vue.js and one of my followers had this to say:</p>
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">I never find vue tools useful, what is the use of it? I still use console.log to debug js errors</p>&mdash; Muhammed Rashid  N.K (@rashidnk) <a href="https://twitter.com/rashidnk/status/953478396998119424?ref_src=twsrc%5Etfw">January 17, 2018</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p>First off - I'm definitely in the &quot;console.log for debugging&quot; club myself. Yes, I know I can do step by step debugging with dev tools, but honestly, I'm typically quicker with just some logging. That being said, his tweet encouraged me to dig around a bit in the extension myself. I'm going to share what I've found below, but if you don't want to read, just scroll down to the end and I've got a video demonstration of everything covered here. Ok, ready?</p>
+<h1>Where to Get it:</h1>
+<p>The official home page for the Vue DevTools project is up on GitHub: https://github.com/vuejs/vue-devtools. You can find installation instructions, help for some problems, and more. Currently the extension is supported in Chrome and Firefox but apparently there is also a work around for Safari. Obviously you want to begin with installing the extension and don't forget to reload your page if you've got a Vue app already opened. Yes, I've made this mistake more than once.</p>
+<h1>Getting Started</h1>
+<p>Let's begin with a super simple Vue app. Here is the entire thing:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+	&lt;input type=&quot;text&quot; v-model=&quot;name&quot;&gt;
+	&lt;ul&gt;
+		&lt;li v-for=&quot;cat in cats&quot;&gt;{{cat.name}}&lt;/li&gt;
+	&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+const app = new Vue({
+	el:'#app',
+	data() {
+		return {
+			name:'Luna the Destroyer of Dogs',
+			cats:[
+				{name:'Simba',age:11},
+				{name:'Robin',age:5},
+				{name:'Luna',age:9},
+				{name:'Cracker',age:6},
+				{name:'Pig',age:3}
+				]
+		}
+	}
+
+});
+&lt;/script&gt;
+</code></pre>
+<p>As you can see, I've got one input field bound to a model called <code>name</code> and then an unordered list that iterates over an array of cats. First thing you may notice in your devtools is the extension kind of &quot;announcing&quot; itself - you know - just in case you forget to notice the tab on the right.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt1.jpg" alt="The vue extension saying hi"></p>
+<p>Clicking on the Vue tab will expose the Vue-specific options. First up is components. In my app I just have one, a root app, and when you click it, it highlights the data available to it. Which could be cool if your view is only showing some of the data. Here I can see it all.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt2.jpg" alt="Component data inspection"></p>
+<p>This is &quot;live&quot; so if I type in the input field it will be reflected immediately in the dev tools view. Even better, you can directly edit within devtools. Mousing over the items will give you controls for editing:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt3.jpg" alt="Editing data"></p>
+<p>This also extends to the array - with options to completely remove or add items. To add an item, you need to enter valid JSON, but the extension will provide live feedback as you type.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt4a.jpg" alt="Nope, not JSON"></p>
+<p><i>A little bit later...</i></p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt5.jpg" alt="Now that's JSON!"></p>
+<p>The extension will also handle computed properties. Consider this version:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+	&lt;input type=&quot;text&quot; v-model=&quot;name&quot;&gt;
+	&lt;ul&gt;
+		&lt;li v-for=&quot;cat in oldcats&quot;&gt;{{cat.name}}&lt;/li&gt;
+	&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+const app = new Vue({
+	el:'#app',
+	data() {
+		return {
+			name:'Luna the Destroyer of Dogs',
+			cats:[
+				{name:'Simba',age:11},
+				{name:'Robin',age:5},
+				{name:'Luna',age:9},
+				{name:'Cracker',age:6},
+				{name:'Pig',age:3}
+				]
+		}
+	},
+	computed:{
+		oldcats() {
+			return this.cats.filter(c =&gt; {
+				return c.age &gt; 10;
+			});
+		}
+	}
+
+});
+&lt;/script&gt;
+</code></pre>
+<p>All I've done here is switch to a computed property called <code>oldcats</code>. The extension will now display this along with my data.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt6.jpg" alt="Computed properties"></p>
+<p>You can't edit those values (of course, it's computed!) but if you edit a cat in the data array such that one is older than ten, it will immediately show up below in the computed list.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt7.jpg" alt="Computed properties updated in real time"></p>
+<p>Neat!</p>
+<p>Ok, so seeing data that I've got in my own file may not be terribly exciting. But what if we try a remote data source?</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+	&lt;ul&gt;
+		&lt;li v-for=&quot;film in films&quot;&gt;{{film.title}}&lt;/li&gt;
+	&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+const app = new Vue({
+	el:'#app',
+	data() {
+		return {
+			films:[]
+		}
+	},
+	created() {
+		fetch('https://swapi.co/api/films/')
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			this.films = res.results;
+		});
+	}
+
+});
+&lt;/script&gt;
+</code></pre>
+<p>In this version I've just switched to use the Star Wars API for my data source. Once run, I can see the remote data in my devtools extension and I can even edit it.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt8.jpg" alt="Data from the Star Wars API"></p>
+<h1>Custom Components</h1>
+<p>So what about custom components? Here is a script where I've defined a cat component. Frankly the fact that Vue doesn't ship with one by default is a terrible mistake.</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+	&lt;cat v-for=&quot;cat in cats&quot; :cat=&quot;cat&quot;&gt;&lt;/cat&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+
+Vue.component('cat', {
+	template:'&lt;p @click=&quot;alertCat(cat)&quot;&gt;&lt;strong&gt;{{ cat.name }} is {{ cat.age }} years old.&lt;/strong&gt;&lt;/p&gt;',
+	props:['cat'],
+	methods:{
+		alertCat:function(c) {
+			alert(c.age);
+		}
+	}
+});
+
+const app = new Vue({
+	el:'#app',
+	data() {
+		return {
+			cats:[
+				{name:'Simba',age:11},
+				{name:'Robin',age:5},
+				{name:'Luna',age:9},
+				{name:'Cracker',age:6},
+				{name:'Pig',age:3}
+				]
+		}
+	}
+});
+&lt;/script&gt;
+</code></pre>
+<p>Look now how the devtools recognizes the new component:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt9.jpg" alt="Custom component support"></p>
+<p>Notice how it also picked up on the properties sent to it. Now I'm going to skip over the Vuex tab and go right into Events. This was the only part of the extension that caused me trouble. The readme at the GitHub repo doesn't tell you this, but the Events tab is only for custom events emited by components. So when I had used a simple <code>@click=&quot;doSomethingYo&quot;</code> test and it failed to render, I thought it was broken at first. In the code sample above, you can see I've got a click event, but hitting that did nothing. I had to modify the code to emit a new event.</p>
+<pre><code class="language-js">Vue.component('cat', {
+	template:'&lt;p @click=&quot;alertCat(cat)&quot;&gt;&lt;strong&gt;{{ cat.name }} is {{ cat.age }} years old.&lt;/strong&gt;&lt;/p&gt;',
+	props:['cat'],
+	methods:{
+		alertCat:function(c) {
+			alert(c.age);
+			// this is what triggers it
+			this.$emit('catevent', c);
+		}
+	}
+});
+</code></pre>
+<p>With this in play, you can now see events recorded. What's cool is that the extension will let you know an event was fired:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt10.jpg" alt="Highlighting an event"></p>
+<p>Clicking the tab and then the event lets you inspect what fired it and any additional information.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt11.jpg" alt="Event details"></p>
+<h1>Working with Vuex</h1>
+<p>Getting better and better, right? Now let's look at Vuex. Back in December I <a href="https://www.raymondcamden.com/2017/12/20/an-example-of-vuex-and-state-management-for-vuejs/">blogged</a> an example application that made use of Vuex to build a simple stock game. This is where the Vue DevTools <em>realy</em> kick butt. You get insight into the data within your store as well as a running list of mutations.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt12.jpg" alt="Vuex"></p>
+<p>The stuff on the left is &quot;live&quot; which is pretty cool in my stock app as it has a &quot;heartbeat&quot; that does mutations every few seconds. Clicking on them provide detail about the particular mutation - here is one for buying stock.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt13.jpg" alt="Vuex"></p>
+<p>Even cooler - you can actually reject or roll back your store state by just mousing over a particular mutation.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/vuedt14.jpg" alt="Vuex"></p>
+<p>You can also use an export/import command to save/restore your Vuex state. This is <em>incredibly</em> useful for debugging issues.</p>
+<h1>The TV Version</h1>
+<p>Ok, if none of the above made any sense to you, hopefully the video version will make it more clear. As always, I'd love to hear from my readers about what they thing, if they've made use of the extension, and more. Leave me a comment below!</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/odKVakhMk1o?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>}

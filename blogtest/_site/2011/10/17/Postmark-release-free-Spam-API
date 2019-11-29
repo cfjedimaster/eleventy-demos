@@ -1,0 +1,170 @@
+<h1>Post</h1>
+
+<p>Earlier today Postmark released a free (*) API to perform SpamAssasin checks. This means you can now integrate a free spam check into your application. The API, documented <a href="http://spamcheck.postmarkapp.com/doc">here</a>, is very easy to use. You simply pass in your email and get either a score back or a score and a full report on how the score was generated. The only real difficult part fo the API is that you are intended to send a full email document. By that I mean the text file that represents what an email looks like &quot;raw&quot;. Here's how I built a checker in ColdFusion. I did this all in about twenty minutes so please feel free to do this better/faster/quicker.</p>
+<!--more-->
+<p>
+<p>First, I did a &quot;typical&quot; self-posting form with basic error checking. The idea is that the form would allow an admin to send out a newsletter to his or her users. The code just handles form and validation. An actual newsletter implementation would take about five more minutes. (cfquery to cfmail is about as simple as you can make it!)</p>
+<p/>
+<code>
+&lt;cfparam name="form.title" default=""&gt;
+&lt;cfparam name="form.body" default=""&gt;
+<p>&lt;!--- used for fake email ---&gt;
+&lt;cfset fromaddress = &quot;raymondcamden@gmail.com&quot;&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;send&quot;)&gt;
+&lt;!--- auto trim ---&gt;
+&lt;cfset form.title = trim(form.title)&gt;
+&lt;cfset form.bod = trim(form.body)&gt;</p>
+<pre><code>&amp;lt;cfset errors = &quot;&quot;&amp;gt;
+
+&amp;lt;cfif not len(form.title)&amp;gt;
+	&amp;lt;cfset errors &amp;= &quot;You must include a title.&amp;lt;br/&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;	
+
+&amp;lt;cfif not len(form.body)&amp;gt;
+	&amp;lt;cfset errors &amp;= &quot;You must include a body.&amp;lt;br/&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;	
+
+&amp;lt;cfif not len(errors)&amp;gt;
+	&amp;lt;!--- send the message out ---&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	Your message, #form.title#, has been sent to your subscribers.
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;cfabort&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;form method=&quot;post&quot;&gt;</p>
+<pre><code>&amp;lt;h2&amp;gt;Newsletter&amp;lt;/h2&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+	&amp;lt;p&amp;gt;
+	&amp;lt;b&amp;gt;Please correct the following:&amp;lt;br/&amp;gt;#errors#&amp;lt;/b&amp;gt;
+	&amp;lt;/p&amp;gt;
+&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;p&amp;gt;
+Title: &amp;lt;input type=&quot;text&quot; name=&quot;title&quot; value=&quot;#form.title#&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+Body:&amp;lt;br/&amp;gt;
+&amp;lt;textarea name=&quot;body&quot; cols=&quot;60&quot; rows=&quot;20&quot;&amp;gt;#form.body#&amp;lt;/textarea&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;p&amp;gt;
+	&amp;lt;input type=&quot;submit&quot; name=&quot;send&quot; value=&quot;Send&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/form&gt;	
+</code></p>
+<p>
+<p>Next I added the spam check. As I said above, you are expected to mimic a &quot;real&quot; email. If you send just the text (in my case, form.body), you will get dinged badly for missing email headers. I went to Gmail, picked a random message, and viewed the original version. I took those headers and stripped it down as much as possible. In my report I get a few minor dings compared to the original version, but I felt like this was an acceptable compromise.</p>
+<p>
+<code>
+&lt;cfsavecontent variable="fakemsg"&gt;&lt;cfoutput&gt;
+Date: Mon, 17 Oct 2011 14:14:13 -0400 (EDT)
+From: #fromaddress#
+To: #fromaddress#
+Subject: #form.title#
+<p>#form.body#
+&lt;/cfoutput&gt;
+&lt;/cfsavecontent&gt;</p>
+<p>&lt;cfhttp url=&quot;http://spamcheck.postmarkapp.com/filter&quot; method=&quot;post&quot;&gt;
+&lt;cfhttpparam type=&quot;formfield&quot; name=&quot;email&quot; value=&quot;#trim(fakemsg)#&quot;&gt;
+&lt;cfhttpparam type=&quot;formfield&quot; name=&quot;options&quot; value=&quot;long&quot;&gt;			
+&lt;/cfhttp&gt;
+&lt;cfset respRaw = cfhttp.filecontent.toString()&gt;
+&lt;cfset response = deserializeJSON(respRaw)&gt;
+&lt;cfif response.score gt 5&gt;
+&lt;cfset errors &amp;= &quot;Your report scored too high on the SpamAssasin check (#response.score#).&lt;br/&gt;&quot;&gt;
+&lt;!--- possibly show response.report for more detail ---&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>
+<p>The report key in the result is a plain text list of how your score was generated. You can display that in a PRE block or - conversely - parse it up and do what you will with it. You can test this below. Note - this will <i>never</i> send any emails, so feel free to test as many times as you would like. I've included the full code below.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/2011/oct/17/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<ul>
+<li>Note that while this service is free, Postmark said they do not guarantee it will remain free, available, useful, etc for the rest of time.</li>
+</ul>
+<p>
+<code>
+&lt;cfparam name="form.title" default=""&gt;
+&lt;cfparam name="form.body" default=""&gt;
+<p>&lt;!--- used for fake email ---&gt;
+&lt;cfset fromaddress = &quot;raymondcamden@gmail.com&quot;&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;send&quot;)&gt;
+&lt;!--- auto trim ---&gt;
+&lt;cfset form.title = trim(form.title)&gt;
+&lt;cfset form.bod = trim(form.body)&gt;</p>
+<pre><code>&amp;lt;cfset errors = &quot;&quot;&amp;gt;
+
+&amp;lt;cfif not len(form.title)&amp;gt;
+	&amp;lt;cfset errors &amp;= &quot;You must include a title.&amp;lt;br/&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;	
+
+&amp;lt;cfif not len(form.body)&amp;gt;
+	&amp;lt;cfset errors &amp;= &quot;You must include a body.&amp;lt;br/&amp;gt;&quot;&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;!--- check for spammyness ---&amp;gt;
+		
+	&amp;lt;cfsavecontent variable=&quot;fakemsg&quot;&amp;gt;&amp;lt;cfoutput&amp;gt;
+</code></pre>
+<p>Date: Mon, 17 Oct 2011 14:14:13 -0400 (EDT)
+From: #fromaddress#
+To: #fromaddress#
+Subject: #form.title#</p>
+<p>#form.body#
+&lt;/cfoutput&gt;
+&lt;/cfsavecontent&gt;</p>
+<pre><code>	&amp;lt;cfhttp url=&quot;http://spamcheck.postmarkapp.com/filter&quot; method=&quot;post&quot;&amp;gt;
+		&amp;lt;cfhttpparam type=&quot;formfield&quot; name=&quot;email&quot; value=&quot;#trim(fakemsg)#&quot;&amp;gt;
+		&amp;lt;cfhttpparam type=&quot;formfield&quot; name=&quot;options&quot; value=&quot;long&quot;&amp;gt;			
+	&amp;lt;/cfhttp&amp;gt;
+	&amp;lt;cfset respRaw = cfhttp.filecontent.toString()&amp;gt;
+	&amp;lt;cfset response = deserializeJSON(respRaw)&amp;gt;
+	&amp;lt;cfif response.score gt 5&amp;gt;
+		&amp;lt;cfset errors &amp;= &quot;Your report scored too high on the SpamAssasin check (#response.score#).&amp;lt;br/&amp;gt;&quot;&amp;gt;
+		&amp;lt;!--- possibly show response.report for more detail ---&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfif&amp;gt;	
+
+&amp;lt;cfif not len(errors)&amp;gt;
+	&amp;lt;!--- send the message out ---&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	Your message, #form.title#, has been sent to your subscribers.
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;cfabort&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;form method=&quot;post&quot;&gt;</p>
+<pre><code>&amp;lt;h2&amp;gt;Newsletter&amp;lt;/h2&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+	&amp;lt;p&amp;gt;
+	&amp;lt;b&amp;gt;Please correct the following:&amp;lt;br/&amp;gt;#errors#&amp;lt;/b&amp;gt;
+	&amp;lt;/p&amp;gt;
+&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;p&amp;gt;
+Title: &amp;lt;input type=&quot;text&quot; name=&quot;title&quot; value=&quot;#form.title#&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+Body:&amp;lt;br/&amp;gt;
+&amp;lt;textarea name=&quot;body&quot; cols=&quot;60&quot; rows=&quot;20&quot;&amp;gt;#form.body#&amp;lt;/textarea&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;p&amp;gt;
+	&amp;lt;input type=&quot;submit&quot; name=&quot;send&quot; value=&quot;Send&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/form&gt;	
+</code></p>
+}

@@ -1,0 +1,157 @@
+<h1>Post</h1>
+
+<p><strong>Warning - as I've made clear, I'm in the process of learning <a href="https://vuejs.org">Vue.js</a>. I want to share as I learn, but obviously, I'm still very new to it and you should not consider my code 'best practice', or heck, even 'experienced practice'. I full expect there are better ways of doing what I describe below, but I hope that sharing my learning process is helpful for others as well.</strong></p>
+<p>Out of the box, Vue does a few things, and does them darn well. If you want more, you have to add additional functionality, one of those things is route management. I'm not even sure that's the best term for the feature, but basically it covers the ability to map a URL (route, like /cats or /cats/10) to a particular view of your site.</p>
+<p>The official router for Vue.js is <a href="https://github.com/vuejs/vue-router">vue-router</a>. It supports what I described above as well as more complex routing, for example, nested routes like /user/5/posts. The <a href="http://vuejs.github.io/vue-router">documentation</a> goes into detail and I suggest reading it of course, but I thought I'd share a couple of examples. For my first example, I'm using one from the docs with a few modifications. Let's start with the markup.</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot;&gt;
+  &lt;h1&gt;Hello App!&lt;/h1&gt;
+  &lt;p&gt;
+    &lt;router-link to=&quot;/foo&quot;&gt;Go to Foo&lt;/router-link&gt;
+    &lt;router-link to=&quot;/bar&quot;&gt;Go to Bar&lt;/router-link&gt;
+  &lt;/p&gt;
+  &lt;router-view&gt;&lt;/router-view&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Two things here to note. First, the <code>router-view</code> tag is simply a placeholder for where your content is loaded based on the current path. You could imagine that being the majority of your app's view with the rest being the header and footer for navigation. Speaking of navigation, you can see an example of that in the <code>router-link</code> tag. This maps to an anchor tag by default. The <code>to</code> attribute simply uses the path to link to, but you can also use more complex versions passing custom data to the next view.</p>
+<p>One more quick note - I'm not including the rest of the HTML here, but note that the router takes a new JavaScript file as well. So the bottom of my HTML template includes this:</p>
+<pre><code class="language-markup">&lt;script src="https://unpkg.com/vue"&gt;&lt;/script&gt;
+&lt;script src="https://unpkg.com/vue-router/dist/vue-router.js"&gt;&lt;/script&gt;
+</code></pre>
+<p>Here's the JavaScript.</p>
+<pre><code class="language-javascript">const Foo = { 
+  template: `
+&lt;div&gt;
+&lt;h2&gt;Foo&lt;/h2&gt;
+&lt;p&gt;
+This is the template for foo.
+&lt;/p&gt;
+&lt;/div&gt;
+` 
+};
+
+const Bar = { template: '&lt;div&gt;bar&lt;/div&gt;' };
+
+const routes = [
+  { path: '/foo', component: Foo },
+  { path: '/bar', component: Bar }
+]
+
+const router = new VueRouter({
+  routes // short for `routes: routes`
+});
+
+const app = new Vue({
+  el:'#app',
+  router
+});
+</code></pre>
+<p>There's a few interesting things going on here. First note the definition of two components on top. This confused me. I've just started looking at <a href="https://vuejs.org/v2/guide/components.html">components</a> in Vue, and apparently you can &quot;fake them&quot; with simple JavaScript objects instead of using <code>Vue.component</code>. I guess it's one of those &quot;duck typing&quot; things. Anyway, two components are defined and then set in a new array of objects called <code>routes</code>. Note the mapping of a URL path to a component. This is then used to define a VueRouter which is then passed to a new Vue object.</p>
+<p>And that's it. Now when <code>/foo</code> is loaded, the Foo component will render in <code>router-view</code>, and ditto for <code>/bar</code>. While it isn't terribly exciting, you can see the full code and demo via the CodePen below:</p>
+<p data-height="265" data-theme-id="0" data-slug-hash="yPbqYw" data-default-tab="result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="example of routing in vue" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/yPbqYw/">example of routing in vue</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>One thing you won't see though is the URL changing. It does do that so if you bookmark the Bar view, it loads fine.</p>
+<p>So.... yeah. That's all rather simple. Like - I keep thinking more should be involved, and as I said above, the router does have multiple more complex options, but I absolutely love how simple it is to do basic routing.</p>
+<p>I decided to try my hand at a more complex example, the typical list/detail view. I made a simple demo using the <a href="https://swapi.co/">Star Wars API</a>. The initial view loads a list of movies that you can then click into for a detail. Here it is in action, and then I'll share the code.</p>
+<p data-height="265" data-theme-id="0" data-slug-hash="Kyqwgd" data-default-tab="result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Kyqwgd" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/Kyqwgd/">Kyqwgd</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>Here's the initial HTML:</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot;&gt;
+&lt;h1&gt;Star Wars Films&lt;/h1&gt;
+&lt;router-view&gt;&lt;/router-view&gt;
+&lt;/div&gt;
+</code></pre>
+<p>As you can see, I've basically just got a header and the <code>router-view</code> tag is doing the rendering. Now the JavaScript.</p>
+<pre><code class="language-javascript">const List = Vue.component('List', {
+template:`
+&lt;div&gt;
+	&lt;ul&gt;
+		&lt;li v-for=&quot;film in films&quot; :key=&quot;film.episode_id&quot;&gt;
+		&lt;router-link :to=&quot;{ name:'film', params:{id:film.id} }&quot;&gt;{{ film.title }}&lt;/router-link&gt;
+		&lt;/li&gt;
+	&lt;/ul&gt;
+&lt;/div&gt;
+	`,
+	data:function() {
+		return {
+			films:[]
+		}
+	},
+	created:function() {
+		fetch('https://swapi.co/api/films')
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			/*
+			there is no &quot;id&quot; field, just a URL one - so let's set it manually
+			*/			
+			this.films = res.results.map(film =&gt; {
+				let parts = film.url.split('/');
+				film.id = parts[parts.length-2];
+				return film;
+			});
+		});
+	}
+});
+
+const Detail = Vue.component('Detail', {
+	template:`
+&lt;div&gt;
+&lt;h2&gt;{{film.title}}&lt;/h2&gt;
+&lt;p v-if=&quot;film.director&quot;&gt;
+Director: {{film.director}}&lt;br/&gt;
+Released: {{film.release_date}}&lt;br/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+{{film.opening_crawl}}
+&lt;/p&gt;
+
+&lt;router-link to=&quot;/&quot;&gt;Back&lt;/router-link&gt;
+&lt;/div&gt;
+	`,
+	data:function() {
+		return {
+			film:{}
+		}
+	},
+	created:function() {
+		fetch('https://swapi.co/api/films/'+this.$route.params.id)
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			console.log(res);
+			this.film = res;
+		});
+
+	}
+
+});
+
+const router = new VueRouter({
+	routes:[
+		{
+			path:'/',
+			component:List,
+		},
+		{
+			path:'/film/:id',
+			name:'film',
+			component:Detail
+		}
+	]
+});
+
+const app = new Vue({
+	el:'#app',
+	router
+});
+</code></pre>
+<p>Alright - so this one actually makes use of <code>Vue.component</code>. The first component, List, generates a simple <code>ul</code> list with data provided by the API. Note that I do a bit of manipulation on the results so I can get the ID in my display.</p>
+<p>Note how the link is made:</p>
+<pre><code>&lt;router-link :to=&quot;{ name:'film', params:{id:film.id} }&quot;&gt;
+</code></pre>
+<p>Instead of just a path, I'm using an object that contains both a path name (film) and a set of parameters - in this case just the ID I made. (Technically I didn't need to do this - I could have passed the complete url value from the list to the detail, but... I don't know. I just felt like doing it. ;)</p>
+<p>The next component, <code>Detail</code>, handles displaying the film. Note that I can use the passed in ID like so: <code>this.$route.params.id</code>. Again - simple. (Once again, technically, I don't need to do this. The Star Wars API returns all information for a film when you request all films. I already had all the data I needed. But I wanted to see how it would work if the initial &quot;list&quot; API had returned a slimmer set of data.)</p>
+<h1>Random Final Thoughts</h1>
+<p>Ok - so I just want to wrap up with a few random thoughts. As I said, I really like how simple this is. It's just pleasant.</p>
+<p>I dislike building my components in JavaScript. Template strings make it nicer of course, but I'd rather use something like Vue's <a href="https://vuejs.org/v2/guide/single-file-components.html">Single File Component</a> feature. I love how they look - but I'm also trying to hold off on going into a build system. I've got nothing against using one of course, and that's why I took a look at Webpack recently (see my <a href="https://www.raymondcamden.com/2017/11/07/a-great-tutorial-for-webpack/">suggestion</a> for a great way to learn it), but I feel like once I start using the CLI, Webpack, etc, I'm going to lose some of the &quot;joy&quot; of how simple Vue is. I'll get over it, but as I said, I'm putting it off.</p>
+<p>Anyway, I hope this is helpful for people still considering if they want to learn Vue. I know it makes me happy and just more convinced that Vue is going to be my framework of choice in 2018.</p>
+}

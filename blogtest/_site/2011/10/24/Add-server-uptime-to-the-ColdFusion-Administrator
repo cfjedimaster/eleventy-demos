@@ -1,0 +1,106 @@
+<h1>Post</h1>
+
+<p>On a private list, Ryan Guill asked if it was possible to get the ColdFusion's server uptime in the administrator. You can see this now in the Server Monitor as well as the Server Manager. Here's a quick screen shot of a few of my servers.</p>
+<!--more-->
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip207.png" />
+<p>
+<p>But if you want to put it in the CF Admin itself, it's pretty simple using the Admin API. The servermonitoring CFC has a method called getHeartBeat. This method returns a set of values about the server one of which is the uptime in milliseconds.  Here's a quick snippet that shows this inaction.</p>
+<p>
+<code>
+<p>&lt;cfset admin = createObject(&quot;component&quot;, &quot;CFIDE.adminapi.administrator&quot;)&gt;
+&lt;cfset admin.login(&quot;admin&quot;)&gt;
+&lt;cfset sm = createObject(&quot;component&quot;, &quot;CFIDE.adminapi.servermonitoring&quot;)&gt;
+&lt;cfset hb = sm.getHeartBeat()&gt;</p>
+<p>&lt;!--- miliseconds ---&gt;
+&lt;cfset uptime = hb.serveruptime&gt;
+</code></p>
+<p>
+<p>And that's basically it depending on how you want to display it. So how do you get this in the admin? I've talked about this before, but the first thing you do is open custommenu.xml in your CFADMIN folder:</p>
+<p>
+<code>
+&lt;submenu label="Custom"&gt;
+	&lt;menuitem href="uptime.cfm" target="content"&gt;Uptime&lt;/menuitem&gt;
+&lt;/submenu&gt;
+</code>
+<p>
+<p>And here is uptime.cfm. I added the common header/footer elements used by CF Admin files and made use of <a href="http://cflib.org/udf/duration">Duration</a> from CFLib.</p>
+<p>
+<code>
+<p>&lt;cfscript&gt;
+/**</p>
+<ul>
+<li>
+<p>Duration(dateObj1, dateObj2)
+Takes two date objects and returns a structure containing the duration of days, hours, and minutes.</p>
+</li>
+<li>
+<p>v2 mod by James Moberg to support seconds.</p>
+</li>
+<li></li>
+<li>
+<p>@param dateObj1  	 CF Date Object to compare (Required)</p>
+</li>
+<li>
+<p>@param dateObj2  	 CF Date Object to compare (Required)</p>
+</li>
+<li>
+<p>@return Returns a structure containing the keys Days, Hours, and Minutes with their associated values.</p>
+</li>
+<li>
+<p>@author Chris Wigginton (cwigginton@macromedia.com)</p>
+</li>
+<li>
+<p>@version 2, September 29, 2011
+*/
+function Duration(dateObj1, dateObj2){
+var dateStorage = dateObj2;
+var DayHours = 0;
+var DayMinutes = 0;
+var HourMinutes = 0;
+var timeStruct = structNew();</p>
+<pre><code>if (DateCompare(dateObj1, dateObj2) IS 1)       {
+                dateObj2 = dateObj1;
+                dateObj1 = dateStorage;
+}
+
+timeStruct.days = DateDiff(&quot;d&quot;,dateObj1,dateObj2);
+DayHours = timeStruct.days * 24;
+timeStruct.hours = DateDiff(&quot;h&quot;,dateObj1,dateObj2);
+timeStruct.hours = timeStruct.hours - DayHours;
+
+DayMinutes = timeStruct.days * 1440;
+HourMinutes = timeStruct.hours * 60;
+timeStruct.minutes = DateDiff(&quot;n&quot;,dateObj1,dateObj2);
+timeStruct.minutes = timeStruct.minutes - (DayMinutes + HourMinutes);
+
+DayMinutes = timeStruct.days * 86400;
+HourMinutes = (timeStruct.hours * 3600) + (timeStruct.minutes * 60);
+timeStruct.seconds = DateDiff(&quot;s&quot;,dateObj1,dateObj2);
+timeStruct.seconds = timeStruct.seconds - (DayMinutes + HourMinutes);
+return timeStruct;
+</code></pre>
+</li>
+</ul>
+<p>}
+&lt;/cfscript&gt;</p>
+<p>&lt;cfset sm = createObject(&quot;component&quot;, &quot;CFIDE.adminapi.servermonitoring&quot;)&gt;
+&lt;cfset hb = sm.getHeartBeat()&gt;</p>
+<p>&lt;!--- miliseconds ---&gt;
+&lt;cfset uptime = hb.serveruptime&gt;</p>
+<p>&lt;cfset upat = dateAdd(&quot;l&quot;, -1 * uptime, now())&gt;</p>
+<p>&lt;cfset dur = duration(upat, now())&gt;</p>
+<p>&lt;cfinclude template=&quot;header.cfm&quot;&gt;</p>
+<p>&lt;h2 class=&quot;pageHeader&quot;&gt;Uptime&lt;/h2&gt;</p>
+<p>&lt;cfoutput&gt;
+Up for #dur.days# days, #dur.hours# hours, and #dur.minutes# minutes.
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfinclude template=&quot;footer.cfm&quot;&gt;
+</code></p>
+<p>
+<p>Here's a screen shot:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip208.png" />
+<p>
+<p>Notice I chose to ignore the seconds value. It seems a bit silly to be concerned about that level of detail. Feel free to disagree with me though. The Duration UDF returns it.</p>
+}

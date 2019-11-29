@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>I've updated my <a href="http://cfspry.riaforge.org">CFSPry</a> POC code to now support panels. Please remember that this is using unreleased Spry code, so it is just meant for fun. This update adds support for panels. You can use panels pretty easily:</p>
+<code>
+&lt;cf_panel id="p1" title="Panel of Content"&gt;
+Here is my content.
+&lt;/cf_panel&gt;
+</code>
+<p>You can also default the panel's open state, as well as turn off the animation.</p>
+<p>On that note - next week on the 15th, at 6PM CST, I'll be speaking at the Hartford CT Adobe User group. This will be over <strike>Breeze</strike>Connect and I'll be discussing Spry.</p>
+}

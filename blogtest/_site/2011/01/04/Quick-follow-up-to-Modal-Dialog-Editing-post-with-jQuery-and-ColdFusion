@@ -1,0 +1,128 @@
+<h1>Post</h1>
+
+<p>This weekend I wrote up a <a href="http://www.raymondcamden.com/index.cfm/2011/1/2/Ask-a-Jedi-Example-of-modal-dialog-editing-with-jQuery">quick blog post</a> that demonstrated using jQuery and jQuery UI for front end editing of database content. ColdFusion was used to store changes made via a jQuery dialog and jQuery did all the handling of data back and forth. Alex asked if it was possible to demonstrate the code using a table instead of the lovely green divs I had created. Here is what I came up with. I'm going to focus on the changes so please be sure to read the <a href="http://www.coldfusionjedi.com/index.cfm/2011/1/2/Ask-a-Jedi-Example-of-modal-dialog-editing-with-jQuery">previous entry</a> for details on how this all works together. Ok, so first, the template.</p>
+<!--more-->
+<p>
+<code>
+&lt;cfset getArt = new artservice().getArt()&gt;
+<p>&lt;html&gt;
+&lt;head&gt;
+&lt;script src=&quot;jquery-ui-1.8.7.custom/js/jquery-1.4.4.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;jquery-ui-1.8.7.custom/js/jquery-ui-1.8.7.custom.min.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;jquery-ui-1.8.7.custom/css/overcast/jquery-ui-1.8.7.custom.css&quot; /&gt;
+&lt;script&gt;
+//credit: http://www.mredkj.com/javascript/numberFormat.html
+function dollarFormat(nStr){
+nStr += '';
+x = nStr.split('.');
+x1 = x[0];
+x2 = x.length &gt; 1 ? '.' + x[1] : '';
+var rgx = /(\d+)(\d{3})/;
+while (rgx.test(x1)) {
+x1 = x1.replace(rgx, '$1' + ',' + '$2');
+}
+return &quot;$&quot; + x1 + x2;	
+}</p>
+<p>$(document).ready(function() {</p>
+<pre><code>$(&quot;.editLink&quot;).click(function(e) {
+	var initialRow = $(this).parent().parent();
+
+	//based on which we click, get the current values
+	var artid = $(initialRow).data(&quot;artid&quot;);
+	var name = $(&quot;td:first&quot;, initialRow).text();
+	var price = $(&quot;td:nth-child(2)&quot;, initialRow).data(&quot;price&quot;);
+	console.log(price);
+	var desc = $(&quot;td:nth-child(3)&quot;, initialRow).text();
+	desc = $.trim(desc);
+
+	$(&quot;#artid&quot;).val(artid);		
+	$(&quot;#namefield&quot;).val(name);
+	$(&quot;#pricefield&quot;).val(price);
+	$(&quot;#descriptionfield&quot;).val(desc);
+	
+	$(&quot;#editForm&quot;).dialog({
+		buttons: {
+			&quot;Save&quot;: function() {
+				var thisDialog = $(this);
+				$.post(&quot;artservice.cfc?method=saveart&quot;, 
+				{
+					id:$(&quot;#artid&quot;).val(),
+					name:$(&quot;#namefield&quot;).val(),
+					price:$(&quot;#pricefield&quot;).val(),
+					description:$(&quot;#descriptionfield&quot;).val()
+				}, 
+				function() {
+					//update the initial div
+					$(&quot;td:first&quot;, initialRow).text($(&quot;#namefield&quot;).val());
+					var price = $(&quot;#pricefield&quot;).val();
+					$(&quot;td:nth-child(2)&quot;, initialRow).data(&quot;price&quot;, price);
+					price = parseInt(price).toFixed(2);
+					$(&quot;td:nth-child(2)&quot;, initialRow).text(&quot;Price: &quot;+dollarFormat(price));
+					$(&quot;td:nth-child(3)&quot;, initialRow).text($(&quot;#descriptionfield&quot;).val());
+					$(thisDialog).dialog(&quot;close&quot;);
+				});
+			}
+		}
+	});
+	
+	e.preventDefault();
+});
+</code></pre>
+<p>});
+&lt;/script&gt;
+&lt;style&gt;
+.artdiv {
+padding: 5px;
+margin: 5px;
+background-color: #80ff80;
+}
+#editForm {
+display:none;	
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;table width=&quot;100%&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Price&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;th&gt; &lt;/th&gt;
+&lt;/tr&gt;</p>
+<p>&lt;cfoutput query=&quot;getart&quot;&gt;</p>
+<pre><code>&amp;lt;tr data-artid=&quot;#artid#&quot;&amp;gt;
+	&amp;lt;td&amp;gt;#artname#&amp;lt;/td&amp;gt;
+	&amp;lt;td data-price=&quot;#price#&quot;&amp;gt;
+	Price: #dollarFormat(price)#
+	&amp;lt;/td&amp;gt;
+	&amp;lt;td class=&quot;description&quot;&amp;gt;
+	#description#
+	&amp;lt;/td&amp;gt;
+	&amp;lt;td&amp;gt;&amp;lt;a class=&quot;editLink&quot; href=&quot;&quot;&amp;gt;Edit&amp;lt;/a&amp;gt;&amp;lt;/td&amp;gt;
+&amp;lt;/tr&amp;gt;
+</code></pre>
+<p>&lt;/cfoutput&gt;</p>
+<p>&lt;/table&gt;</p>
+<p>&lt;div id=&quot;editForm&quot; title=&quot;Edit Art&quot;&gt;
+&lt;input type=&quot;hidden&quot; id=&quot;artid&quot;&gt;
+&lt;p&gt;
+&lt;b&gt;Name:&lt;/b&gt;&lt;br/&gt;
+&lt;input type=&quot;text&quot; id=&quot;namefield&quot;&gt;
+&lt;/p&gt;
+&lt;p&gt;
+&lt;b&gt;Price:&lt;/b&gt;&lt;br/&gt;
+&lt;input type=&quot;text&quot; id=&quot;pricefield&quot;&gt;
+&lt;/p&gt;
+&lt;p&gt;
+&lt;b&gt;Description:&lt;/b&gt;&lt;br/&gt;
+&lt;textarea id=&quot;descriptionfield&quot;&gt;&lt;/textarea&gt;
+&lt;/p&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>So the first obvious change is the display at the bottom. Instead of a list of DIVs I output table rows. That's a pretty simple change. I also added an edit link as the fourth column in the table.</p>
+<p>
+<p>Now go back up to the document ready block. I'm now listening for clicks to my new edit link. Note that at the very end I now use e.preventDefault() to block the browser from actually trying to do something with the link. The only other change then is to how I get the various values. Notice I get the table row by using parent.parent on my link. Once I have that, I use a combination of td:first and td:nth-child calls to get at my various items. Outside of that though nothing much else has changed. If you want to run this, please download the attachment from the previous entry and just copy the code above into a new table. Hope this helps!</p>
+}

@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>Here is an issue I've run into a few times in the recent months and I've never figured it out till now. Thanks go to cfconcepts@twitter for pointing me in the right direction.</p>
+<p>From time to time I've noticed that cflog would suddenly stop working. It wouldn't throw an error it just wouldn't... log. I was never able to nail down exactly what the issue was, but today I really wanted to dig into it. I threw out a message on twitter and cfconcepts mentioned that I should check permissions.</p>
+<p>Now - at first - I was sure he (or she) was wrong. Obviously if cflog tried to write to a file that it didn't have permissions for - it would cfthrow, right? Nope. Apparently cflog silently fails.</p>
+<p>How did I get a permissions issue in the first place? I run cf/apache on startup on my Mac. But from time to time I have to stop and restart them. I sometimes use the command line and sometimes use the graphical tools for this. I had stopped and restarted CF as a normal user. When I restarted it using sudo it was suddenly able to write to the file again.</p>
+<p>Anyone else encounter this? Obviously those of you on Windows probably never see this.</p>
+}

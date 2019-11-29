@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>This is my weekly contribution to the &quot;Stupid Developer of the Week&quot; award. I spent the last hour or so trying to diagnose why my ANT script couldn't write to my file system. Apparently there is some Windows 7 bug where folders are marked Read Only and you can't clear it. So despite my ANT script's ability to make a folder I kept getting &quot;Access is denied&quot; errors when it tried to write into the folder. Here is the code I used.</p>
+<p>
+<code>
+&lt;?xml version="1.0"?&gt;
+&lt;project name="test" default="getstuff" basedir="."&gt;
+<pre><code>&amp;lt;property name=&quot;url&quot; value=&quot;http://www.raymondcamden.com&quot; /&amp;gt;
+&amp;lt;property name=&quot;temp.dir&quot; value=&quot;c:/temphttpdump/&quot; /&amp;gt;
+	
+&amp;lt;target name=&quot;getstuff&quot;&amp;gt;
+	&amp;lt;echo message=&quot;About to get ${url} and copy to ${temp.dir}&quot; /&amp;gt;
+	&amp;lt;mkdir dir=&quot;${temp.dir}&quot; /&amp;gt;
+	&amp;lt;attrib file=&quot;${temp.dir}&quot; readonly=&quot;false&quot; system=&quot;false&quot; verbose=&quot;on&quot; /&amp;gt;
+	&amp;lt;get src=&quot;${url}&quot; dest=&quot;${temp.dir}&quot; httpusecaches=&quot;false&quot; verbose=&quot;on&quot; /&amp;gt;
+&amp;lt;/target&amp;gt;
+</code></pre>
+<p>&lt;/project&gt;
+</code></p>
+<p>
+<p>Spot the issue yet? My get task is being told to save the result of my http get operation to a folder. <i>But I didn't tell it the file to use!</i> And because of this, the task assumed I wanted a file named temphttpdump since people often name files without extensions. To fix it I simply added a file name:</p>
+<p>
+<code>
+&lt;get src="${url}" dest="${temp.dir}/result.html" httpusecaches="false" verbose="on" /&gt;
+</code>
+<p>
+<p>In my own defense, &quot;Access is denied&quot; as a message has a much different meaning to most folks. Why couldn't it have said &quot;File exists and I can't overwrite&quot; instead? I would have recognized it was trying to save it as a file and saved an hour of my life.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/picard-facepalm.jpg" />}

@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<p>I've got a deal for you today - two questions answered in one entry! The first question is:</p>
+<blockquote>
+Is there anyway to disable the count feature on a cfgrid so the column doesn't show up?
+</blockquote>
+<p>Yes, there is, although for some reason the attribute name just doesn't seem obvious to me. Anyway, to disable the row counter, all you need to do is add rowHeaders=false to your cfgrid tag. Here is a complete example.</p>
+<code>
+&lt;cfset data = queryNew("id,name,age")&gt;
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;10&quot;&gt;
+&lt;cfset queryAddRow(data)&gt;
+&lt;cfset querySetCell(data,&quot;id&quot;,x)&gt;
+&lt;cfset querySetCell(data,&quot;name&quot;,&quot;User #x#&quot;)&gt;
+&lt;cfset querySetCell(data,&quot;age&quot;,randRange(20,90))&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfform format=&quot;flash&quot;&gt;
+&lt;cfgrid name=&quot;data&quot; query=&quot;data&quot; rowheaders=false /&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>This is one of the features that, for some reason, I always have to look up. Now for the next question:</p>
+<blockquote>
+Is there a way to do an asynchronous process in CFMX? For example, let's say i have a method that spits back XML and then logs a whole bunch of stuff. I'd like it to hand the XML back and then do the logging (this way the requestor doesn't have to wait for the whole log process to finish).
+</blockquote>
+<p>Actually, this is one of the biggest new features added in ColdFusion MX 7. The Event Gateways allow for this now. It is a rather large topic, so I suggest reading the docs on Event Gateways. I then suggest you go to Sean Corfield's <a href="http://www.corfield.org/blog">blog</a> and search for &quot;asynch&quot;. You will find <i>many</i> posts and example code that will get you started.</p>
+}

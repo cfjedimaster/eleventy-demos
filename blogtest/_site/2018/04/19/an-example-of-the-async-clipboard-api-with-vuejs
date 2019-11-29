@@ -1,0 +1,66 @@
+<h1>Post</h1>
+
+<p>A few days ago Google shipped Chrome 66 and one of the new features enabled in that version was the <a href="https://www.w3.org/TR/clipboard-apis/#async-clipboard-api">Async Clipboard API</a>. As you can guess, this provides access to the user's clipboard (both read and write) and is surprisingly easy to use.</p>
+<p>You can read a good introduction to the API here, <a href="https://developers.google.com/web/updates/2018/03/clipboardapi">Unblocking Clipboard Access</a>, but don't do what I did and stop reading as soon as you see the code. The example looks really simple:</p>
+<pre><code class="language-js">navigator.clipboard.writeText('Text to be copied')
+  .then(() =&gt; {
+    console.log('Text copied to clipboard');
+  })
+  .catch(err =&gt; {
+    // This can happen if the user denies clipboard permissions:
+    console.error('Could not copy text: ', err);
+  });
+</code></pre>
+<p>That's writing to the clipboard in case it isn't obvious. When I tried this code it failed and the error was very vague (&quot;Undefined&quot;). Reading more on the article above, you'll see this is actually documented:</p>
+<blockquote>
+As with many new APIs, navigator.clipboard is only supported for pages served over HTTPS. To help prevent abuse, clipboard access is only allowed when a page is the active tab.
+</blockquote>
+<p>And then a bit later...</p>
+<blockquote>
+Since Chrome only allows clipboard access when a page is the current active tab, you'll find some of the examples here don't run quite right if pasted directly into DevTools, since DevTools itself is the active tab.
+</blockquote>
+<p>I feel bad missing that, but it's not like this is the first time I saw code and stopped reading so I could play with it right away.</p>
+<p>So - want to see an example using Vue.js? Of course you do! Imagine a scenario where we have generated a code for our user. We want to make it easier to use so when we can, we'll provide a button to copy it into their clipboard. First, the HTML:</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot; v-cloak&gt;
+  Your cool code:
+  &lt;input v-model=&quot;code&quot;&gt;
+  &lt;button v-if=&quot;supportsCB&quot; @click=&quot;copy&quot;&gt;Copy&lt;/button&gt;
+  &lt;div v-if=&quot;message&quot;&gt;{{message}}&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Make note of the button. It's checking a property to see if it should show up. Now let's look at the JavaScript.</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data() {
+    return {
+      code:'vueIsBetterThanPBJ',
+      supportsCB:false,
+      message:''
+    }
+  },
+  created() {
+    if(navigator.clipboard) {
+      this.supportsCB = true;
+    }
+  },
+  methods:{
+    copy() {
+      navigator.clipboard.writeText(this.code)
+        .then(() =&gt; {
+          console.log('Text is on the clipboard.');
+          this.message = 'Code copied to clipboard.';
+        })
+      .catch(e =&gt; {
+        console.error(e);
+        this.message = 'Sorry, unable to copy to clipboard.'
+      });    
+    }
+  }
+})
+</code></pre>
+<p>I begin by using the <code>created</code> hook to see if  <code>navigator.clipboard</code> exists. If so, I then enable the button by setting the <code>supportsCB</code> property to true. Note that I could make this a bit more secure by checking with the permissions API as well.</p>
+<p>Next - I define my <code>copy</code> method using the <code>writeText</code> call. When done, either successfully or with a failure, I edit a message to let the user know. That may be overkill, but I figured a confirmation would be nice. You can play with this below, but obviously you'll want to use Chrome 66.</p>
+<p data-height="265" data-theme-id="0" data-slug-hash="JvjpYp" data-default-tab="js,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="vue async clipboard" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/JvjpYp/">vue async clipboard</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>  
+<p><i>Header photo by <a href="https://unsplash.com/photos/hVDXjKmDVJc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">rawpixel.com</a> on Unsplash</i></p>
+}

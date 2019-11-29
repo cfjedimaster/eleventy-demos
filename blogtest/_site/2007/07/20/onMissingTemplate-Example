@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>I just added onMissingTemplate support to <a href="http://www.coldfusionbloggers.org">ColdFusionBloggers.org</a>. This is something we should all do with ColdFusion 8 sites as it is so simple it doesn't make sense <i>not</i> to. To test, simply visit:</p>
+<p><a href="http://www.coldfusionbloggers.org/parishiltonisfetch.cfm">http://www.coldfusionbloggers.org/parishiltonisfetch.cfm</a></p>
+<p>Here is what I added to my Application.cfc file:</p>
+<code>
+&lt;cffunction name="onMissingTemplate" returnType="boolean" output="false"&gt;
+	&lt;cfargument name="thePage" type="string" required="true"&gt;
+	&lt;cflog file="cfblgogersmissingfiles" text="#arguments.thePage#"&gt;
+	&lt;cflocation url="404.cfm?thepage=#urlEncodedFormat(arguments.thePage)#" addToken="false"&gt;
+&lt;/cffunction&gt;
+</code>
+<p>The first thing I do is log the request. As I've mentioned before, logging the 404 can be handy as you may see people requesting the same file again and again. It may be worthwhile to add that page and put a redirect there or some other content. I then cflocate to a handler. My handler is rather simple (I've trimmed out some of the silly text):</p>
+<code>
+&lt;cfparam name="url.thePage" default=""&gt;
+<p>&lt;cfif not len(trim(url.thePage))&gt;
+&lt;cflocation url=&quot;index.cfm&quot; addToken=&quot;false&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cf_layout title=&quot;File Not Found&quot;&gt;</p>
+<p>&lt;h2&gt;These are not the droids you are looking for...&lt;/h2&gt;</p>
+<p>&lt;p&gt;
+Sorry, but the page you requested, &lt;cfoutput&gt;#url.thePage#&lt;/cfoutput&gt;, was not
+found on this site.
+&lt;/p&gt;</p>
+<p>&lt;/cf_layout&gt;
+</code></p>
+<p>As you can see, I check for the existence of the URL variable (in case people visit the 404 page directly) and print out a message telling the user that their file didn't exist.</p>
+<p>I've updated the code zip on ColdFusionBloggers.org. It now contains this change and the &quot;auto refreshing div&quot; modification I made yesterday.</p>
+}

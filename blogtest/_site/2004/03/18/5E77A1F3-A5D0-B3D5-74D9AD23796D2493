@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>This update contains a big new feature - the ability to add a &quot;public&quot; face to your bug tracker. By simply adding a viewable=1 property to the ini file for your project, the general public can browse (along w/ filter, search) your bug database. They will not be able to add, edit, or delete, but they can view any bug.</p>
+<p>For example, <a href="http://www.camdenfamily.com/morpheus/bugtracker/view.cfm?bugtracker=lighthouse+bug+tracker">this</a> links to the Lighthouse Bug Tracker</a> project, and  <a href="http://www.camdenfamily.com/morpheus/bugtracker/bug.cfm?id=5E6F1896-D617-6E67-EE8BFE4FAAFC674B&bugtracker=lighthouse%20bug%20tracker&view=1">this</a> links to an individual bug.</p>
+<p>You can download Lighthouse <a href="http://www.camdenfamily.com/morpheus/downloads/bugtracker.zip">here</a>.</p>
+<p>P.S. A bug with sorting on Owner was fixed as well.</p>
+}

@@ -1,0 +1,19 @@
+<h1>Post</h1>
+
+<p>Big thanks to <a href="http://henrylearnstorock.blogspot.com/">Henry Ho</a> for asking about this during my REST presentation earlier this week. Apparently, it is common for REST services to notice an OPTIONS request (by that I mean a request made with the HTTP verb OPTIONS) and return an XML-descriptor of the service. I don't believe our docs cover this, but the feature works quite well actually. Here's a few examples.</p>
+<!--more-->
+<p>Let's start with a very simple REST service:</p>
+<script src="https://gist.github.com/4224826.js?file=gistfile1.cfm"></script>
+<p>To get the descriptor, I wrote a quick test script:</p>
+<script src="https://gist.github.com/4224828.js?file=gistfile1.cfm"></script>
+<p>Which gives:</p>
+<img src="https://static.raymondcamden.com/images/screenshot43.png" />
+<p>How about a more complex service? This one demonstrates dynamic resources.</p>
+<script src="https://gist.github.com/4224850.js?file=gistfile1.cfm"></script>
+<p>In the result, which I've cropped a bit due to the size, you can see that the dynamic nature of the sub resources are documented well.</p>
+<img src="https://static.raymondcamden.com/images/screenshot44.png" />
+<p>And finally - here's an example of how &quot;produces&quot; is represented. Here's a snapshot of a larger REST service. This method is used to return an image of a product.</p>
+<script src="https://gist.github.com/4224885.js?file=gistfile1.cfm"></script>
+<p>And here is how it is returned:
+<img src="https://static.raymondcamden.com/images/screenshot45.png" /></p>
+}

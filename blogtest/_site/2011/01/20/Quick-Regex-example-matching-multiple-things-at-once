@@ -1,0 +1,46 @@
+<h1>Post</h1>
+
+<p>Here is something I've never tried to do before with regex - match multiple &quot;rules&quot; but within one regex. Consider for example password validation. Normally this requires a string pass multiple rules:</p>
+<p>
+<ul>
+<li>Must be N characters long
+<li>Must contain lower case characters
+<li>Must container upper case characters
+</ul>
+<p>
+<p>I can do any of those rules easily enough but in the past I've done it &quot;long&quot; hand:</p>
+<!--more-->
+<p>
+<code>
+&lt;cfset s = ["aaaa","aAa","AAAA","a9", "A9", "aA9","aaaAAA7"]&gt;
+<p>&lt;cfloop index=&quot;test&quot; array=&quot;#s#&quot;&gt;
+&lt;cfoutput&gt;#test# ok? &lt;/cfoutput&gt;</p>
+<pre><code>&amp;lt;cfif len(test) gte 7 and reFind(&quot;[a-z]&quot;, test) and reFind(&quot;[A-Z]&quot;, test)&amp;gt;
+	yes
+&amp;lt;cfelse&amp;gt;
+	no
+&amp;lt;/cfif&amp;gt;&amp;lt;br/&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>That works - but it seemed like there must be <i>some</i> way with regex to say &quot;I want to ensure A matches, and B, and C, but I don't care where.&quot; My Google-fu failed until I came across this excellent blog post: <a href="http://nilangshah.wordpress.com/2007/06/26/password-validation-via-regular-expression/">Password Validation via Regular Expression</a>. In this blog entry, Nilang Shah, makes use of a &quot;positive lookahead.&quot; These are items you can ensure match in a regex but don't get <i>returned</i> in the match.</p>
+<p>
+<p>Let me be honest - I don't quite get how this stuff works. His example though worked perfectly. I took his third example and removed the requirement for a special character and got this:</p>
+<p>
+<code>
+&lt;cfset s = ["aaaa","aAa","AAAA","a9", "A9", "aA9","aaaAAA7"]&gt;
+<p>&lt;cfloop index=&quot;test&quot; array=&quot;#s#&quot;&gt;
+&lt;cfoutput&gt;#test# ok? &lt;/cfoutput&gt;
+&lt;cfset regex = &quot;^.<em>(?=.{7,})(?=.</em>\d)(?=.<em>[a-z])(?=.</em>[A-Z]).*$&quot;&gt;</p>
+<pre><code>&amp;lt;cfif reFind(regex, test)&amp;gt;
+	yes
+&amp;lt;cfelse&amp;gt;
+	no
+&amp;lt;/cfif&amp;gt;&amp;lt;br/&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>I don't quite get why we have to anchor it nor do I get the .* in the look aheads. But I can say it works great.</p>
+}

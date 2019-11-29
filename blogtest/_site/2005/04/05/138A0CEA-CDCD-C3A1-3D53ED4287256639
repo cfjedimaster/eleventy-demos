@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>The stats file didn't work in a database with multiple blogs. This is corrected now. I didn't update the version. If you downloaded the blog yesterday, you can redownload and just copy stats.cfm.</p>
+}

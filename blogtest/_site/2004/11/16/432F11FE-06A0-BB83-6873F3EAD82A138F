@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>So, one of my clients has a few Excel reports that are generated on the fly. They pointed out that leading zeroes were being dropped. This was easy enough to fix in the Excel sheet, but I needed a solution that would work out of the box.</p>
+<p>When I searched Google, I found about a million results, of which 99% told me how to fix it by formatting the columns. This wouldn't work.</p>
+<p>I then saw multiple folks suggest putting a single quote in front of the data. While this fixed the issue, it also showed up in the Excel report, despite claims that it would not. (Or perhaps this worked in earlier versions of Excel.)</p>
+<p>Eventually I found a solution. If you output the zip as</p>
+<p>=&quot;#theZip#&quot;</p>
+<p>It works correctly. Maybe = replaced ' in the latest version of Excel.</p>
+}

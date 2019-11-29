@@ -1,0 +1,52 @@
+<h1>Post</h1>
+
+<p>So by now everyone knows that I love <a href="http://labs.adobe.com/technologies/spry/">Spry</a>, but I thought I'd build another cool little example for folks to look at. First, take a look at the <a href="http://ray.camdenfamily.com/demos/spryrsspod/test2.html">example</a>. What you are seeing is a pod based on the RSS feed from <a href="http://weblogs.macromedia.com/mxna/">MXNA</a>. If you sit there for a few minutes, you may notice something. The pod automatically updates. How is this done? You can view source, but let me break it down for you:</p>
+<!--more-->
+<code>
+&lt;script type="text/javascript" src="xpath.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="SpryData.js"&gt;&lt;/script&gt;
+</code>
+<p>The above lines load the Spry framework.</p>
+<code>
+&lt;script type="text/javascript"&gt;
+var theFeed = "http://weblogs.macromedia.com/mxna/xml/rss.cfm?query=byMostRecent&amp;languages=1";
+var mydata = new Spry.Data.XMLDataSet("xmlproxy.cfm?xmlfeed="+theFeed,"//item", { useCache:  false, loadInterval: 10000 }); 
+&lt;/script&gt;
+</code>
+<p>Line one simply sets the feed. Line two passes the feed to a local ColdFusion file. It uses CFHTTP to fetch the RSS and return it to the browser. Why do I have to do this? Browser security restrictions insist that I only call resources from the same file. I made my CFM file open to any URL, but you probably want to limit it to a set of URLs, or not even allow Spry to set the feed.</p>
+<p>The tricky part is the automatic reloading. That's done with this difficult piece of code:</p>
+<code>
+{ useCache:  false, loadInterval: 10000 }
+</code>
+<p>Pretty hard, eh? The useCache statement tells Spry not to cache the results. (Duh.) The loadInterval statement tells Spry to reload the data every 10000 ms.</p>
+<p>That's it. You could use this pod on your blog and make a &quot;live&quot; view of MXNA (or any other <a href="http://ray.camdenfamily.com">important blog</a>).</p>
+<p>I also do two other things I haven't talked about in my Spry posts yet. First, you may notice that many Spry examples have a &quot;flash&quot; when they load. The &quot;flash&quot; is a quick display of the Spry tokens that goes away when the data beings to load.  Luckily there are a few ways to handle this, and I show two in my example. Consider this block:</p>
+<code>
+&lt;div spry:region="mydata" class="SpryHiddenRegion"&gt;
+<pre><code>&amp;lt;div class=&quot;pod&quot;&amp;gt;
+
+&amp;lt;span spry:repeat=&quot;mydata&quot;&amp;gt;
+&amp;lt;a href=&quot;{link}&quot;&amp;gt;&amp;lt;span spry:content=&quot;{title}&quot; /&amp;gt;&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;
+&amp;lt;/span&amp;gt;
+
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>We have two things going on here. First, notice the class=&quot;SpryHiddenRegion&quot;. In my CSS I set this to:</p>
+<code>
+.SpryHiddenRegion {
+	visibility: hidden;
+}
+</code>
+<p>The name, &quot;SpryHiddenRegion&quot;, is noticed by Spry and will automatically be removed when data is loaded. Now notice:</p>
+<code>
+&lt;span spry:content="{title}" /&gt;
+</code>
+<p>This does two things. First, the {title} token will not show up when the pages loads. Secondly, if I had used a &quot;wrapping&quot; format like so:</p>
+<code>
+&lt;span spry:content="{title}"&gt;Hello non-JS peeps&lt;/span&gt;
+</code>
+<p>If the user has JavaScript disabled, they will see the content inside the span. (You can, of course, use the noscript tag for this type of message as well.)</p>
+<p>For another version of my example, see this <a href="http://ray.camdenfamily.com/demos/spryrsspod/test.html">earlier version</a>. It uses a mouse over to let you read part of the entry and has the debugging turned on.</p>
+}

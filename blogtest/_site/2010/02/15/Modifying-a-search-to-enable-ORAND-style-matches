@@ -1,0 +1,105 @@
+<h1>Post</h1>
+
+<p>Here is a simple question. Given the &quot;typical&quot; search scenario (user searches for X, your SQL searches for &quot;like %x%&quot;), how do you broaden the user's input when multiple words are used? Let me begin with an example of what I mean and then I'll demonstrate a few solutions. Also, note that in this blog entry I'm focusing only on <b>SQL</b> searching, not free text searching ala Lucene (or full text searching like you get in some databases).</p>
+<!--more-->
+<p>I began with an incredibly simple search form tied to the cfartgallery sample database.</p>
+<code>
+&lt;cfparam name="form.search" default=""&gt;
+<p>&lt;form method=&quot;post&quot;&gt;
+&lt;cfoutput&gt;
+&lt;input type=&quot;text&quot; name=&quot;search&quot; value=&quot;#form.search#&quot;&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;
+&lt;/cfoutput&gt;
+&lt;/form&gt;</p>
+<p>&lt;cfif len(trim(form.search))&gt;</p>
+<pre><code>&amp;lt;cfset term = &quot;%&quot; &amp; trim(form.search) &amp; &quot;%&quot;&amp;gt;
+&amp;lt;cfset term = ucase(term)&amp;gt;
+
+&amp;lt;cfquery name=&quot;results&quot; datasource=&quot;cfartgallery&quot;&amp;gt;
+select	artname, description
+from	art
+where	ucase(artname) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#term#&quot;&amp;gt;
+or		ucase(description) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#term#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfdump var=&quot;#results#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>I assume nothing here is too crazy or unique. I basically take the form input, trim it, and wrap it with % characters. (Note the use of ucase here as the Derby databases were case sensitive.) I then check this input against the artname and description columns. While this works, it fails in a few cases. A good example of this involves two pieces of art: &quot;Man in Jeans&quot; and &quot;Man on Stool.&quot; If I knew a piece of art existed that was named &quot;man something something jeans&quot;, a search for &quot;man jeans&quot; would fail to work. My search code here is treating the input as a phrase, so it must match the literal 'man jeans' set of characters anywhere in the two columns.</p>
+<p>One possible way to fix this would be to treat the input like a list of options and allow for a match against <b>any</b> of them. Let's look at that modification first.</p>
+<code>
+&lt;cfparam name="form.search" default=""&gt;
+<p>&lt;form method=&quot;post&quot;&gt;
+&lt;cfoutput&gt;
+&lt;input type=&quot;text&quot; name=&quot;search&quot; value=&quot;#form.search#&quot;&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;
+&lt;/cfoutput&gt;
+&lt;/form&gt;</p>
+<p>&lt;cfif len(trim(form.search))&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;results&quot; datasource=&quot;cfartgallery&quot;&amp;gt;
+select	artname, description
+from	art
+where	1=0 
+	&amp;lt;cfloop index=&quot;word&quot; list=&quot;#trim(form.search)#&quot; delimiters=&quot; &quot;&amp;gt;		
+		&amp;lt;cfset word = &quot;%&quot; &amp; ucase(word) &amp; &quot;%&quot;&amp;gt;
+		or
+		ucase(artname) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#word#&quot;&amp;gt;
+		or
+		ucase(description) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#word#&quot;&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfdump var=&quot;#results#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>Notice I've modified the where clause. I begin with a 1=0 to act as a simple placeholder that will match nothing. Then for each &quot;word&quot; in the input I output OR clauses for each thing. Given the input &quot;man jeans&quot;, the SQL you will end up with is:</p>
+<p>where 1=1<br/>
+or ucase(artname) like '%MAN%'<br/>
+or ucase(description) like '%MAN%'<br/>
+or ucase(artname) like '%JEANS%'<br/>
+or ucase(description) like '%JEANS%'<br/></p>
+<p>This works well, but could a bit too loose. My search for &quot;man jeans&quot; ends up matching both &quot;Man in Jeans&quot; and &quot;Man on Stool.&quot; That isn't horrible - and is better than matching nothing. But if we wanted to be a bit more strict, we can use an AND search. In this example, we will require all the words to exist, but still allow them to match in any column.</p>
+<code>
+&lt;cfparam name="form.search" default=""&gt;
+<p>&lt;form method=&quot;post&quot;&gt;
+&lt;cfoutput&gt;
+&lt;input type=&quot;text&quot; name=&quot;search&quot; value=&quot;#form.search#&quot;&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;
+&lt;/cfoutput&gt;
+&lt;/form&gt;</p>
+<p>&lt;cfif len(trim(form.search))&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;results&quot; datasource=&quot;cfartgallery&quot;&amp;gt;
+select	artname, description
+from	art
+where	
+	&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#listLen(form.search, &quot; &quot;)#&quot;&amp;gt;
+		&amp;lt;cfset word = listGetAt(form.search, x, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset word = &quot;%&quot; &amp; ucase(word) &amp; &quot;%&quot;&amp;gt;
+		&amp;lt;cfif x neq 1&amp;gt;
+		and
+		&amp;lt;/cfif&amp;gt;	
+		(	
+		ucase(artname) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#word#&quot;&amp;gt;
+		or
+		ucase(description) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#word#&quot;&amp;gt;
+		)
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfdump var=&quot;#results#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>The where clause here is different. This time I loop over each word but include the AND prefix for each set of searches. The AND prefix is used only after the first word. So given the &quot;man jeans&quot; example we used earlier, we end up with this clause:</p>
+<p>where<br/>
+(ucase(artname) like '%MEN%'<br/>
+or
+ucase(description) like '%MEN%')<br/>
+and
+(ucase(artname) like '%JEANS%'<br/>
+or
+ucase(description) like '%JEANS%')<br/></p>
+<p>This provides a tighter result set than the previous example. So which is best? It depends. :) What I recommend is - log your searches and spend some time trying them yourselves. See how successful they are. Take that data and then decide what kind of modifications you should make to your search form.</p>
+}

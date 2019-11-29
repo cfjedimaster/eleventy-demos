@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>I'm a big fan of WebSQL, which is, unfortunately, going the way of the Dodo since it was apparently just too easy to use. One of the nice things about the feature is that Chrome Dev Tools make it real easy to use. As an example, here is what you can see on a page making use of WebSQL.</p>
+<!--more-->
+<img src="https://static.raymondcamden.com/images/ScreenClip164.png" />
+<p>As you can see, both the database and its tables are enumerated. If you click on the table, you get a list of data.</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip165.png" />
+<p>There's no UI hint to this, but you can click the columns to sort.</p>
+<p>The coolest feature though is the one that is <i>very</i> non-obvious (in my opinion). If you click the database name, you may notice the right side of the panel empties out...</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip166.png" />
+<p>That's actually an editor. If you start typing you can execute arbitrary SQL. Hell, Chrome will even autocomplete table names and SQL commands for you. Here's an example:</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip167.png" />
+<p>One thing to watch out for. If you execute a SQL command that returns no results, Chrome doesn't display anything. You don't get a nice &quot;0 Results&quot;. In fact, Chrome will remove the SQL from the pane.</p>
+}

@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>As a reminder, if you upload CFML documents that are encrypted, be sure to use binary mode. I spent about an hour trying to figure out why a template was showing it's source instead of running. Turns out my FTP client was uploading all CFMs in ASCII and this was corrupting the encrypted documents.</p>
+}

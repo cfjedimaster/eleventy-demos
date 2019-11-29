@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>After <a href="http://ray.camdenfamily.com/index.cfm/2006/7/21/Friday-Puzzler-All-Fish-Must-Die">last week's Fish Killing</a> puzzle, I thought it was time to take it down a notch and try something a bit less exciting (and harmful). Today's puzzle will have you build an Abstract Data Type, basically, some code that will act like a built in data type (think struct, array, etc), but with distinctive behavior.</p>
+<p>Build a simple CFC that handles an array of data. The CFC will have these methods:</p>
+<p>Push - This adds a new item to the array.<br>
+Pull - This gets (and removes) an item from the array.<br>
+Length - Can you guess?<br>
+IsEmpty - Can you guess?<br></p>
+<p>Here is the catch: The Pull method has to follow a special rule when getting the data. Your CFC should have an Init() method that takes one argument. The argument is a string that determines the Pull behavior. You can pass in FIFO, FILO, or RANDOM.</p>
+<p>If you set the CFC to FIFO mode, the Pull method will return the item that was first entered in the array. Your code should remove the item from the array so that the next Pull also gets the first item.</p>
+<p>FILO mode will return the last item entered in the array.</p>
+<p>And lastly, RANDOM will return a random item.</p>
+<p>Nice and simple and not terribly useless. You may actually have a need to store data and determine at runtime if FIFO or FILO should be used. What is cool is that your code outside the CFC need not know. It just pushes and pulls.</p>
+<p>Enjoy!</p>
+}

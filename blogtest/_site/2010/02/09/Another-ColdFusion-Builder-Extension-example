@@ -1,0 +1,64 @@
+<h1>Post</h1>
+
+<p>Every day I use ColdFusion Builder I like it a bit more. Last night I built out a new extension. Before I describe how it works, let me demonstrate with a video (and once again I apologize for the size - my 30 inch monitor spoils me):</p>
+<p>
+<!--more-->
+<a href="http://www.raymondcamden.com/demos/fw1.swf"><img src="https://static.raymondcamden.com/images/cfjedi/fw1s.png" title="Go ahead and click, you know you want to..." /></a>
+<p>
+<p>This extension demonstrates how you can hook into the &quot;New Project&quot; action of CFB. In this case I added support for generating a &quot;skeleton&quot; application for <a href="http://fw1.riaforge.org">Framework One</a>. FW/1 doesn't ship with a skeleton application in the zip. I've logged a request for it - but honestly, with FW/1 having such a small amount of absolutely necessary files, it may not make sense. However - there are some things that I think a <i>typical</i> FW/1 application will need - hence the need for the extension. So what does the code look like? First, here is the XML for my ide_config.xml:</p>
+<p>
+<code>
+&lt;application&gt;
+ &lt;name&gt;FW/1 Assistant&lt;/name&gt;
+ &lt;author&gt;Raymond Camden&lt;/author&gt;
+ &lt;version&gt;0&lt;/version&gt;
+ &lt;email&gt;ray@camdenfamily.com&lt;/email&gt;	
+ &lt;description&gt;intro.html&lt;/description&gt;  
+ &lt;license&gt;license.html&lt;/license&gt;
+<p>&lt;menucontributions&gt;</p>
+<p>&lt;/menucontributions&gt;</p>
+<p>&lt;events&gt;
+&lt;event type=&quot;onprojectcreate&quot; handlerid=&quot;projectcreate&quot; /&gt;
+&lt;/events&gt;</p>
+<p>&lt;handlers&gt;
+&lt;handler id=&quot;projectcreate&quot; type=&quot;CFM&quot; filename=&quot;projectcreate.cfm&quot; /&gt;
+&lt;/handlers&gt;</p>
+<p>&lt;/application&gt;
+</code></p>
+<p>
+<p>As you can see it has one event defined - projectcreate - that then links to my handler. The handler is pretty simple as well:</p>
+<p>
+<code>
+&lt;cfparam name="ideeventinfo"&gt;
+<p>&lt;cfset xmldoc = XMLParse(ideeventinfo)&gt;</p>
+<p>&lt;cfset project=xmldoc.event.ide.eventinfo.xmlattributes[&quot;projectname&quot;]&gt;
+&lt;cfset projectloc=xmldoc.event.ide.eventinfo.xmlattributes[&quot;projectlocation&quot;]&gt;</p>
+<p>&lt;!---
+Create the following folders
+/controllers
+/layouts
+/services
+/views
+/views/main</p>
+<p>Create the following files:
+/Application.cfc
+/index.cfm
+/views/main/default.cfm
+---&gt;</p>
+<p>&lt;cfdirectory action=&quot;create&quot; directory=&quot;#projectloc#/controllers&quot;&gt;
+&lt;cfdirectory action=&quot;create&quot; directory=&quot;#projectloc#/layouts&quot;&gt;
+&lt;cfdirectory action=&quot;create&quot; directory=&quot;#projectloc#/services&quot;&gt;
+&lt;cfdirectory action=&quot;create&quot; directory=&quot;#projectloc#/views&quot;&gt;
+&lt;cfdirectory action=&quot;create&quot; directory=&quot;#projectloc#/views/main&quot;&gt;</p>
+<p>&lt;!--- copy my _App.cfc (named so as to not be a real app.cfc) ---&gt;
+&lt;cffile action=&quot;copy&quot; source=&quot;#expandPath('./files/_App.cfc')#&quot; destination=&quot;#projectloc#/Application.cfc&quot;&gt;</p>
+<p>&lt;!--- copy my index.cfm ---&gt;
+&lt;!--- FYI, yes, index.cfm is blank, so why bother using a file at <em>all</em>? Well, if in the future stuff goes in there, this will be a bit more future proof. That's my logic for now. ---&gt;
+&lt;cffile action=&quot;copy&quot; source=&quot;#expandPath('./files/index.cfm')#&quot; destination=&quot;#projectloc#/index.cfm&quot;&gt;</p>
+<p>&lt;cffile action=&quot;copy&quot; source=&quot;#expandPath('./files/default.cfm')#&quot; destination=&quot;#projectloc#/views/main/default.cfm&quot;&gt;
+</code></p>
+<p>
+<p>Basically the extension simply makes a few folders and copies three 'template' files over into the new project.</p>
+<p>
+<p>I'm not sure if I'll release this as a proper RIAForge project. I'd like to hear what other FW/1 users think and see if they have ideas on how to expand it. (And yes, I'm also supposed to be working on the Model-Glue CFB extension - sorry - I get distracted easily by shiny objects.) I've included a zip to this entry. Enjoy.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Ffw1ext%2Ezip'>Download attached file.</a></p></p>
+}

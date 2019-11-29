@@ -1,0 +1,40 @@
+<h1>Post</h1>
+
+<p>One of the things I love most about <a href="http://www.ionicframework.com">Ionic</a> is how rapidly you can build applications. Many of the cooler features are simple things that can be quickly implemented for an easy win. I like easy wins. Here is a great example of that - the <a href="http://ionicframework.com/docs/api/service/$ionicLoading/">Ionic Loading</a> widget.</p>
+<!--more-->
+<p>Imagine you've got a simple service method runs over HTTP. This process can be fast or slow based on network conditions, size of the data, and other factors. (Like the Force. Hey, it can happen.) Your code probably looks like this:</p>
+<pre><code class="language-javascript">.controller('SearchCtrl', function($scope,DataService) {
+	$scope.search = {property:''};
+	$scope.results = [];
+	
+	$scope.doSearch = function() {
+		if($scope.search.property === '') return;
+		$scope.results = [];
+		DataService.searchProperties($scope.search.property).then(function(res) {
+			$scope.results = res;
+		});
+	}
+	
+})</code></pre>
+<p>We're not concerned about the service itself. It returns a promise and will take &quot;some time&quot; to return. So if that service happens to be slow today, it could look like this:</p>
+<iframe width="420" height="315" src="https://www.youtube.com/embed/uDyax91JkBU" frameborder="0" allowfullscreen></iframe>
+<p>Notice on click there is no visual feedback to the user that anything is happening. If they are impatient (and what user isn't), they could click multiple times and fire off numerous Ajax requests. Let's fix that:</p>
+<pre><code class="language-javascript">.controller('SearchCtrl', function($scope,DataService,$ionicLoading) {
+	$scope.search = {property:''};
+	$scope.results = [];
+	
+	$scope.doSearch = function() {
+		if($scope.search.property === '') return;
+		$scope.results = [];
+		$ionicLoading.show();
+		DataService.searchProperties($scope.search.property).then(function(res) {
+			$scope.results = res;
+			$ionicLoading.hide();
+		});
+	}
+	
+})</code></pre>
+<p>There are precisely three changes here. I added $ionicLoading to the controller - I ran the show() method on it before I began the async process - and finally I hid it using hide(). That's it. I could customize the widget with a message if I was feeling fancy, but today isn't a fancy day. Here is the change:</p>
+<iframe width="420" height="315" src="https://www.youtube.com/embed/UOuUD_lEfm0" frameborder="0" allowfullscreen></iframe>
+<p>Ok, so this isn't exactly rocket science, but for about 30 seconds of coding I got a much improved experience.</p>
+}

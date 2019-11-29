@@ -1,0 +1,21 @@
+<h1>Post</h1>
+
+<p>No. Ok, so what do I mean? Imagine this simple code:</p>
+<code>
+&lt;h2&gt;Flush Test&lt;/h2&gt;
+<p>&lt;cfdiv bind=&quot;url:testi.cfm&quot; &gt;
+</code></p>
+<p>This page will load, create the div, and then load testi.cfm into the div. What does testi.cfm do?</p>
+<code>
+&lt;p&gt;
+This is how we start...
+&lt;/p&gt;
+&lt;cfoutput&gt;#repeatString(" ", 250)#&lt;/cfoutput&gt;
+<p>&lt;cfflush&gt;</p>
+<p>&lt;cfset sleep(2000)&gt;</p>
+<p>&lt;p&gt;
+This is how we end later on....
+&lt;/p&gt;
+</code></p>
+<p>As you can see - I have an intro paragraph, a flush, a pause (the sleep function), and the rest of the text. When you load the file in your browser, ColdFusion will not display the results in the div until the page is completely done.</p>
+}

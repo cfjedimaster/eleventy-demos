@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>I spent the last 30 minutes or so trying to figure out why in the heck my simple Google Maps demo was giving me this error in the console:</p>
+<blockquote>
+This site has exceeded its usage quota for Google Maps JavaScript API v3. See here for details on usage limits: https://developers.google.com/maps/documentation/javascript/usage
+</blockquote>
+<!--more-->
+The "site" in question was localhost and I knew I was nowhere near my 25,000 daily limit. In fact, the Google API Console reported 44 hits over the past 30 days. To make things even more maddening, when I intentionally included a bad API key I got the exact same error.
+<p>Turns out I had forgotten to <b>enable</b> Google Maps V3. This is done in the &quot;Services&quot; menu:</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip183.png" />
+<p>You must turn on API access on the relevant line:</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip184.png" />
+<p>Obvious, right? I just wish the console message had been actually helpful.</p>
+}

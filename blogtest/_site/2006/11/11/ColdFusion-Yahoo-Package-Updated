@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>I just checked in a new update to the <a href="http://cfyahoo.riaforge.org/">ColdFusion Yahoo Package</a>. This addition has a few small changes but the big addition is in Local Search. Yahoo's Local Search is pretty darn powerful. You can send in any basic query (&quot;comic books&quot;), along with address information in just about any form. The results are very detailed and include maps, ratings, telephone number, address, web site, etc.</p>
+<p>Here is some sample code from the zip:</p>
+<code>
+&lt;cfset localAPI = createObject("component", "org.camden.yahoo.local")&gt;
+<p>&lt;cfset term = &quot;comic book&quot;&gt;
+&lt;cfset zip = &quot;70508&quot;&gt;
+&lt;cfinvoke component=&quot;#localAPI#&quot; method=&quot;search&quot; returnVariable=&quot;results&quot;&gt;
+&lt;cfinvokeargument name=&quot;query&quot; value=&quot;#term#&quot;&gt;
+&lt;cfinvokeargument name=&quot;zip&quot; value=&quot;#zip#&quot;&gt;
+&lt;/cfinvoke&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;h2&gt;Local search for #term#/#zip#&lt;/h2&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfdump var=&quot;#results#&quot;&gt;
+</code></p>
+<p>For fun - try this search:</p>
+<code>
+&lt;cfset term = "aliens"&gt;
+&lt;cfinvoke component="#localAPI#" method="search" returnVariable="results"&gt;
+	&lt;cfinvokeargument name="query" value="#term#"&gt;
+	&lt;cfinvokeargument name="location" value="Roswell, NM"&gt;
+&lt;/cfinvoke&gt;
+</code>
+<p>I tried weapons of mass destruction in Iraq - but somehow I wasn't able to find any. (Sorry, couldn't resist.)</p>
+}

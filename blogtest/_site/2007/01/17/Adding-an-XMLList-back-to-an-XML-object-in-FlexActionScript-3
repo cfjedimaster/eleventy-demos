@@ -1,0 +1,35 @@
+<h1>Post</h1>
+
+<p>ActionScript 3 (and if this was in 2, please correct me) really makes working with XML easy. However, yesterday I ran into a problem that I couldn't find the answer to. It wasn't in the (extremely excellent) ActionScript 3.0 Cookbook nor was it in the docs. Let me back up a bit and talk about what an XMLList is. Consider XML that looks like so:</p>
+<code>
+&lt;root&gt;
+  &lt;kid&gt;Jacob&lt;/kid&gt;
+  &lt;kid&gt;Lynn&lt;/kid&gt;
+  &lt;kid&gt;Noah&lt;/kid&gt;
+  &lt;foo&gt;1&lt;/foo&gt;
+  &lt;moo&gt;2&lt;/moo&gt;
+&lt;/root&gt;
+</code>
+<p>While foo and moo are typical nodes, you can consider kid to be an xmlList. To read this XML list and convert into into an array, you could do this:</p>
+<code>
+for each(var favoriteNode:XML in prefsXML.favorites) {
+ 	if(favoriteNode.toString() != '') favorites[favorites.length] = favoriteNode.toString();
+}
+</code>
+<p>Where prefsXML is an XML object, prefsXML.favorites was the repeating node, and favorites was a simple array.</p>
+<p>So this reads in the data easily enough. What I couldn't figure out was how to write back to the prefsXML object. I first tried this:</p>
+<code>
+prefsXML.favorites = favorites;
+</code>
+<p>But this generated XML that looked like so:</p>
+<code>
+&lt;favorites&gt;1,2,3&lt;/favorites&gt;
+</code>
+<p>Turns out the solution wasn't too complex. Ted Patrick explained it to me (although to be fair, he had to think for a second as well :) like so:</p>
+<code>
+for(i=0;i &lt; favorites.length; i++) {
+	prefsXML.favorites[i] = favorites[i];
+}
+</code>
+<p>Pretty obvious once you look at it.</p>
+}

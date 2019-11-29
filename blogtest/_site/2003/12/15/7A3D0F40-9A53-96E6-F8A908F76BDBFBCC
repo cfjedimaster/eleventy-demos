@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Well, the 3.0 RC is code-ready. I just made the last code changes (see below) which now only leaves the documentation. My goal is to have it ready for XMas (the RC of course, not the final release).</p>
+<p>I have not updated the zip yet, but the changes include:</p>
+<ul>
+<li>The addComment method no longer sends email. I created a separate method, notifyEntry, that sends email to an entry (which basically means send email to everyone who commented). 
+<li>Because the mail code now gets called from the client, we can localize the email. At this point, all text should be localized.
+<li>One thing that bugs me - whenever I get email from an older entry, I have to use the search tool to find it. Now all emails will contain the URL of the entry that was commented on.
+</ul>}

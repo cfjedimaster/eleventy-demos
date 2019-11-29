@@ -1,0 +1,44 @@
+<h1>Post</h1>
+
+<p>When preparing for my last Spry presentation, I noticed two new files that weren't documented: SpryCSVDataSet.js and SpryTSVDataSet.js. I pinged the Spry team and discovered that 1.6 added support for both comma separated value files and tab separated files. They just didn't have time to document it - but the cool thing is that - just like JSON support, once you make the dataset your work is done. Everything else is the same. Consider this example:</p>
+<!--more-->
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script src=&quot;/spryjs/SpryData.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/spryjs/SpryCSVDataSet.js&quot;&gt;&lt;/script&gt;</p>
+<p>&lt;script&gt;
+var ds1 = new Spry.Data.CSVDataSet(&quot;people.txt&quot;);
+&lt;/script&gt;
+&lt;style&gt;
+.hover { background-color: yellow; }
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div spry:region=&quot;ds1&quot;&gt;
+&lt;table border=&quot;1&quot; cellpadding=&quot;10&quot;&gt;
+&lt;tr&gt;
+&lt;th onClick=&quot;ds1.sort('name','toggle')&quot;&gt;Name&lt;/th&gt;
+&lt;th onClick=&quot;ds1.sort('group','toggle')&quot;&gt;Group&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr spry:repeat=&quot;ds1&quot; spry:hover=&quot;hover&quot;&gt;
+&lt;td&gt;{name}&lt;/td&gt;&lt;td&gt;{group}&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>As you can see - the only thing in this file unlike other Spry demos I've shown is the use of the new JS file and the creation of a CSVDataSet. Spry supports both cases where CSV files contain the headers in the first row and when they do not. If your CSV file does not contain headers in the first row, you simply flag it when creating the dataset. You can optionally assign it headers as well:</p>
+<code>
+var ds1 = new Spry.Data.CSVDataSet("employees-01.txt", {firstRowAsHeaders: false, columnNames: [ "lastname", "firstname","userid" ] });
+</code>
+<p>For TSV support, you can even specify a different delimiter:</p>
+<code>
+var ds1 = new Spry.Data.TSVDataSet("employees-01.txt", { delimiter: "|"});
+</code>
+<p>Here are two examples:<br>
+<a href="http://www.raymondcamden.com/demos/sprycsv/test1.html">CSV Example</a><br>
+<a href ="http://www.coldfusionjedi.com/demos/sprycsv/test2.html">TSV Example</a><br></p>
+<p>If you are using Firebug, you can take a look at the text files being loaded. Thanks to Kin Blas for the help!</p>
+}

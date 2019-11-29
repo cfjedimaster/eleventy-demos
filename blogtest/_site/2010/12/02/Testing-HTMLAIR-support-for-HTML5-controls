@@ -1,0 +1,109 @@
+<h1>Post</h1>
+
+<p>There has been some discussion on the <a href="http://groups.google.com/group/air-html-js/topics">HTML/AIR listserv</a> recently about the webkit rendering engine used within AIR, especially in regards to HTML5. There is a great article on the topic at the Adobe Developer Center: <a href="http://www.adobe.com/devnet/air/ajax/articles/air_and_webkit.html">What's new about HTML, HTML5, CSS, and JavaScript in AIR 2.5?</a>. As an experiment, I decided to create a quick HTML/AIR application that would go through all of the HTML5 items related to form fields. For my documentation I used <a href="http://diveintohtml5.org/forms.html">A Form Of Madness</a> (great title!) from the Dive into HTML5 site. I simply went through his examples and created an HTML page with every one.</p>
+<!--more-->
+<p/>
+<code>
+<p>&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;New Adobe AIR Project&lt;/title&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;lib/air/AIRAliases.js&quot;&gt;&lt;/script&gt;</p>
+<pre><code>&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+
+&amp;lt;!-- Sample code thanks to: http://diveintohtml5.org/forms.html --&amp;gt;
+&amp;lt;form&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Placeholder test (should see text in field):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;placeholder&quot; placeholder=&quot;Placeholder FTW&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Autofocus (if you can type in here w/o clicking, it is working):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;autofocus&quot; autofocus&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;email&quot; (on mobile it would use a keyboard optimized for email):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;email&quot; name=&quot;email&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;url&quot; (on mobile it would use a keyboard optimized for urls):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;url&quot; name=&quot;url&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;number&quot; (creates a 'spinbox'):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;number&quot; name=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot; step=&quot;2&quot; value=&quot;6&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;range&quot; (creates a 'slider'):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;range&quot; name=&quot;range&quot; min=&quot;0&quot; max=&quot;10&quot; step=&quot;2&quot; value=&quot;6&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;date&quot; (creates a calendar):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;date&quot; name=&quot;date&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;month&quot; (creates a calendar):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;month&quot; name=&quot;month&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;week&quot; (creates a calendar):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;week&quot; name=&quot;week&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;time&quot; (creates a time picker):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;time&quot; name=&quot;time&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;datetime&quot; (creates a calendar + time picker):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;datetime&quot; name=&quot;datetime&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;datetime-local&quot; (creates a calendar + time picker):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;datetime-local&quot; name=&quot;datetime-local&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;search&quot; (rounded corners):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;search&quot; name=&quot;search&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Type=&quot;color&quot; (creates a color picker):&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;color&quot; name=&quot;color&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;b&amp;gt;Required (would color the field if not filled in:&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;required&quot; required&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;input type=&quot;submit&quot; value=&quot;Submit&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>If you read the &quot;Form of Madness&quot; article than you will quickly see that - like most of HTML5 - support is a bit... varied. So I didn't expect much of the above to work within AIR just yet. From my testing I found the following:</p>
+<p>
+<ul>
+<li>Both autofocus and placeholder work just fine. Those are two darn handy features so I'm glad to see that. 
+<li>Everything else (except range) simply defaulted to a normal text field. Cool. We've got alternatives like <a href="http://ui.jquery.com">jQuery UI</a> so I'm not too concerned.
+<li>The range field - oddly - didn't render at all. That was surprising. It should have simply defaulted to a text field.
+</ul>
+<p>Anyway, I don't know if this is useful for anyone but you can download the .AIR file below if you want to run this yourself.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FHTML5Forms%2Eair'>Download attached file.</a></p></p>
+}

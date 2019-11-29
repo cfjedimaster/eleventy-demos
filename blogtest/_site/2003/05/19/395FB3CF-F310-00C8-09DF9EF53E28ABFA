@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I've posted my MX on the Rocks presentation <a href="http://www.camdenfamily.com/morpheus/downloads/mxontherocks2003.zip">here</a>. One small note - I think I may have made a mistake during my presentation. I <i>know</i> I made the mistake when I was writing my code.</p>
+<p>Anyway - I was trying to show that a private method defined in a CFC would <i>not</i> show up in a child cfc. This is <b>not</b> the case. In fact, CFC private methods act like Java's protected methods. There is no way to make the method exist <i>only</i> in the parent and not the child. I believe I may have said the opposite at the presentation, and if so, forgive me. I had a brain fart!</p>
+}

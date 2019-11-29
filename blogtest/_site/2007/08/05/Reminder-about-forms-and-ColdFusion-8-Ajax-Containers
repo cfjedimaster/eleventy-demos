@@ -1,0 +1,74 @@
+<h1>Post</h1>
+
+<p>While this is covered in the docs, it can be a bit surprising. When working with ColdFusion 8 Ajax-based containers (cfdiv, cflayoutarea, cfpod, and cfwindow), any form inside the area will be posted to the area itself. What that means is - the entire page won't reload, just the container. However - this is only true for cfform, not form. Consider this code example:</p>
+<!--more-->
+<code>
+&lt;cfoutput&gt;loaded #timeFormat(now(), "long")#&lt;/cfoutput&gt;
+&lt;p&gt;
+&lt;hr&gt;
+&lt;p&gt;
+&lt;cflayout type="tab"&gt;
+<pre><code>&amp;lt;cflayoutarea title=&quot;Tab 1&quot;&amp;gt;
+&amp;lt;form&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;name&quot;&amp;gt;
+&amp;lt;input type=&quot;submit&quot; name=&quot;submit&quot;&amp;gt;
+&amp;lt;/form&amp;gt;
+&amp;lt;cfdump var=&quot;#form#&quot;&amp;gt;
+&amp;lt;/cflayoutarea&amp;gt;
+
+&amp;lt;cflayoutarea title=&quot;Tab 2&quot;&amp;gt;
+&amp;lt;cfform&amp;gt;
+&amp;lt;cfinput type=&quot;text&quot; name=&quot;name&quot;&amp;gt;
+&amp;lt;cfinput type=&quot;submit&quot; name=&quot;submit&quot;&amp;gt;
+&amp;lt;/cfform&amp;gt;
+&amp;lt;cfdump var=&quot;#form#&quot;&amp;gt;
+&amp;lt;/cflayoutarea&amp;gt;
+</code></pre>
+<p>&lt;/cflayout&gt;
+</code></p>
+<p>I have a simple page with a time stamp on top. Then I have 2 tabs. The first tab has a FORM based form, and the second tab has a CFFORM based form. If you post the first tab, the entire page reloads. If you post the second form, the content of the second form is replaced.</p>
+<p>And here is where things get freaky. Notice I didn't do an action for the cfform. That means the action is the same as the current page. The current page defines tabs. So guess what I get inside? Yep, tabs within tabs. Consider this screen shot:</p>
+<img src="https://static.raymondcamden.com/images//Picture 21.png">
+<p>Most likely this isn't what you want. You want to be sure you specify an action and that the action isn't the same as the page that hosts the form itself. So here is an example from an upcoming update to <a href="http://www.coldfusionbloggers.org">ColdFusionBloggers</a>:</p>
+<code>
+&lt;cflayout type="tab" style="margin-left: 10px;"&gt;
+<pre><code>&amp;lt;cflayoutarea title=&quot;Login&quot; source=&quot;login.cfm&quot; /&amp;gt;
+
+
+&amp;lt;cflayoutarea title=&quot;Register&quot; source=&quot;register.cfm&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/cflayout&gt;
+</code></p>
+<p>The contents of register.cfm contain just the form itself. (This page is in development right now, so pardon the half-completed error checking.)</p>
+<code>
+&lt;cfset errors = ""&gt;
+<p>&lt;cfif structKeyExists(form, &quot;selected&quot;) and form.selected is &quot;register&quot;&gt;
+&lt;cfif not len(trim(form.username))&gt;
+&lt;cfset errors = errors &amp; &quot;You must enter a username.&lt;br /&gt;&quot;&gt;
+&lt;cfelseif reFind(&quot;[^a-z0-9]&quot;, form.username)&gt;
+&lt;cfset errors = errors &amp; &quot;Usernames can contain only numbers and letters.&lt;br /&gt;&quot;&gt;
+&lt;/cfif&gt;	
+&lt;/cfif&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+Note that all form fields are required.
+&lt;/p&gt;</p>
+<p>&lt;cfform action=&quot;register.cfm&quot; method=&quot;post&quot;&gt;		
+&lt;p&gt;				
+&lt;label&gt;Username&lt;/label&gt;
+&lt;input name=&quot;username&quot; value=&quot;&quot; type=&quot;text&quot; size=&quot;30&quot; /&gt;
+&lt;label&gt;Password&lt;/label&gt;
+&lt;input name=&quot;password&quot; value=&quot;&quot; type=&quot;password&quot; size=&quot;30&quot; /&gt;
+&lt;label&gt;Name&lt;/label&gt;
+&lt;input name=&quot;name&quot; value=&quot;&quot; type=&quot;text&quot; size=&quot;30&quot; /&gt;
+&lt;label&gt;Email Address&lt;/label&gt;
+&lt;input name=&quot;email&quot; value=&quot;&quot; type=&quot;text&quot; size=&quot;30&quot; /&gt;
+&lt;br /&gt;&lt;br /&gt;
+&lt;input class=&quot;button&quot; type=&quot;submit&quot; value=&quot;Login&quot;/&gt;		
+&lt;input type=&quot;hidden&quot; name=&quot;selected&quot; value=&quot;register&quot;&gt;	
+&lt;/p&gt;		
+&lt;/cfform&gt;		
+&lt;/cfoutput&gt;
+</code></p>
+<p>So all in all a pretty cool feature. I'll be able to reload inside my tab without reloading the entire page - but it is definitely something you have to watch out.</p>
+}

@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>I was playing around with a little something today when I ran across a bug. If you try to use cfajaxproxy and bind a textarea to a JavaScript function, you will get an error if the textarea contains a newline. Consider:</p>
+<code>
+&lt;cfajaxproxy bind="javascript:setCount({body2@keyup})"&gt;
+<p>&lt;script&gt;
+function setCount(r) {	
+var cdiv = document.getElementById('counter');
+cdiv.innerHTML = cdiv.innerHTML + 'you did it' + r + '&lt;br&gt;';
+}
+&lt;/script&gt;</p>
+<p>&lt;cfform name=&quot;ray&quot;&gt;
+&lt;cftextarea id=&quot;body2&quot; name=&quot;body2&quot;&gt;&lt;/cftextarea&gt;
+&lt;/cfform&gt;
+&lt;div id=&quot;counter&quot;&gt;&lt;/div&gt;
+</code></p>
+<p>Turns out the newline breaks the JavaScript call. If you switch to a CFC call it works fine, but for what I was doing, I didn't need to call the server. Todd pointed out that this is rather trivial code, I could have just done this:</p>
+<code>
+&lt;cftextarea id="body2" name="body2" onkeyup="javascript:setCount(this.value);"&gt;&lt;/cftextarea&gt;
+</code>
+<p>But I wanted to keep it inside cfajaxproxy. I'll report a bug on this in a few minutes.</p>
+}

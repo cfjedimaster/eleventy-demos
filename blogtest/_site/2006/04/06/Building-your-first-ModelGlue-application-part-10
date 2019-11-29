@@ -1,0 +1,197 @@
+<h1>Post</h1>
+
+<p><img src="http://ray.camdenfamily.com/images/mg.jpg" align="left" border="1" hspace="5"> Welcome to the tenth installment of &quot;Building your first Model-Glue application.&quot; This is the final entry dealing with actually building the site, and will be followed by an entry that talks about what I did  right, what I did wrong, what I didn't do, etc. Today's entry will deal with the gallery security problem. If you remember, our photo galleries had three different types of access:</p>
+<!--more-->
+<ul>
+<li>Public - Anyone can view it.
+<li>Private - Only the owner can view it.
+<li>Password - Anyone can view it if they provide the password.
+</ul>
+<p>Let's start adding this logic to our application. The first thing I did was to logon to the application (remember you can demo it <a href="http://pg1.camdenfamily.com">here</a>) and view a public gallery. I then switched to the <a href="http://www.microsoft.com/windows/ie/default.mspx">Devil's Browser</a> and pasted in the same URL. I noticed that it asked to me logon, a totally wrong response for a public gallery. I remembered that my ViewGallery event was running a security check, so I simply removed it from there:</p>
+<code>
+    &lt;event-handler name="ViewGallery"&gt;
+      &lt;broadcasts&gt;
+      	&lt;message name="getGallery" /&gt;
+      	&lt;message name="getImagesForGallery" /&gt;
+      &lt;/broadcasts&gt;
+      &lt;views&gt;
+      	&lt;include name="body" template="dspGallery.cfm" /&gt;
+		&lt;include name="main" template="dspTemplate.cfm" /&gt;
+      &lt;/views&gt;
+      &lt;results&gt;
+      	&lt;result name="badGallery" do="Home" redirect="yes" /&gt;
+      &lt;/results&gt;
+    &lt;/event-handler&gt;
+</code>
+<p>This change was enough to let IE view the gallery, and since the rest of the site was protected, if that user clicked elsewhere, they would still be prompted to logon. The next problem was hiding the &quot;Add Image&quot; form. While I'm sure folks don't mind sharing their galleries, I doubt they want just anyone adding to the gallery. There are a few ways to solve this. One way that occurred to me would be to simply if the current user is logged in, and if so, compare their username to the galleries owner. I already passed the gallery to the view, so why not pass the current user. This seems like something that would be appealing to <i>all</i> my events probably. Model-Glue controllers come with a onRequestStart and onRequestEnd method that are automatically called on each request. This is a great place to put such logic. I've modified onRequestStart to pass in the current user, if one exists.</p>
+<code>
+&lt;cffunction name="OnRequestStart" access="Public" returntype="void" output="false" hint="I am an event handler."&gt;
+  &lt;cfargument name="event" type="ModelGlue.Core.Event" required="true"&gt;
+<p>&lt;cfif isAuthenticated()&gt;
+&lt;cfset arguments.event.setValue(&quot;userBean&quot;, session.userBean)&gt;
+&lt;/cfif&gt;
+&lt;/cffunction&gt;
+</code></p>
+<p>Just in case it isn't clear, the above code will set the userBean into the viewState for every event, if it exists. Let's now modify the ViewGallery view to check for this.</p>
+<code>
+&lt;cfset userBean = viewState.getValue("userBean")&gt;
+<p>&lt;!--- show form? ---&gt;
+&lt;cfif isSimpleValue(userBean) or userBean.getUsername() neq gallery.getUsername()&gt;
+&lt;cfset showForm = false&gt;
+&lt;cfelse&gt;
+&lt;cfset showForm = true&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>This code first grabs the userBean from the viewState. Remember that viewState.getValue will return an empty string if the value doesn't exist. You can also pass a second value as a default if you want. So my logic simply needs to see if userBean is a simple value, or if the username's don't match up. If so, we hide the form. (I just added a cfif to the form on the bottom of the view.) Last but not least, now let's work in the controller to ensure that the gallery is actually pubic if the user isn't logged in. I begin with this modification to getGallery() in the controller:</p>
+<code>
+	&lt;!--- security check ---&gt;
+	&lt;cfif not isAuthenticated() and not gallery.getIsPublic() and not gallery.getIsPassword()&gt;
+		&lt;cfset arguments.event.addResult("badGallery")&gt;
+	&lt;/cfif&gt;
+</code>
+<p>Nice and short. Basically, if I'm not logged in and the gallery isn't public or password protected, add the badGallery event. To test, I simply returned to Firefox, edited the gallery, and reloaded IE, and I was immediately sent away.</p>
+<p>Now let's tackle the next simple security check - the private gallery. I modified the if block above like so:</p>
+<code>
+	&lt;!--- security check ---&gt;
+	&lt;cfif not isAuthenticated() and not gallery.getIsPublic() and not gallery.getIsPassword()&gt;
+		&lt;cfset arguments.event.addResult("badGallery")&gt;
+	&lt;cfelseif gallery.getIsPrivate() and (not isAuthenticated() or gallery.getUsername() neq session.userBean.getUsername())&gt;
+		&lt;cfset arguments.event.addResult("badGallery")&gt;	
+	&lt;/cfif&gt;
+</code>
+<p>This time the logic is - if the gallery is private and either I'm not logged in or the usernames don't match, throw the badGallery result.</p>
+<p>Last but not least - how to handle password protected galleries. The first problem I have is - how do I know what gallery you have access to? I mean sure I can prompt you for a password, ensure it matches, and that works great, for <i>one</i> gallery. How do I then re-prompt you for another, different password protected gallery? I think I'll simply use the session scope. I will store a nice list of gallery IDs that you have been authenticated with. This has one problem. It's possible the gallery owner could change the security settings on the gallery. If the gallery is changed to private, then our security system will catch it. If they change the password, then it will not. I don't think this is a huge big deal though so I won't worry about it. Let's add that check now.</p>
+<code>
+	&lt;!--- security check ---&gt;
+	&lt;cfif not isAuthenticated() and not gallery.getIsPublic() and not gallery.getIsPassword()&gt;
+		&lt;cfset arguments.event.addResult("badGallery")&gt;
+	&lt;cfelseif gallery.getIsPrivate() and (not isAuthenticated() or gallery.getUsername() neq session.userBean.getUsername())&gt;
+		&lt;cfset arguments.event.addResult("badGallery")&gt;	
+	&lt;cfelseif gallery.getIsPassword() and 
+			  	(not isAuthenticated() or gallery.getUsername() neq session.userBean.getUsername())
+				and
+				(not isGalleryAuthenticated(gallery.getID()))&gt;
+	&lt;/cfif&gt;
+</code>
+<p>Notice that I now check to see if the gallery is password protected, and if so, I check a new function, isGalleryAuthenticated(). This is basic abstraction (hey, isn't that a bad Sharon Stone movie?) but also a reflection of me not being 100% sure about the best way to store the fact that you have been authenticated with a gallery. Call this &quot;Planning for my own stupidity.&quot; When I figure out a smarter way to do things later on, I'll just modify the isGalleryAuthenticated() method. And speaking of that - here it is:</p>
+<code>
+&lt;cffunction name="isGalleryAuthenticated" access="private" returnType="boolean" output="false" hint="Internal method to return if a user is ok for a gallery."&gt;
+	&lt;cfargument name="galleryid" type="numeric" required="true"&gt;
+<pre><code>&amp;lt;cfif not structKeyExists(session,&quot;galleryauthenticationlist&quot;)&amp;gt;
+	&amp;lt;cfreturn false&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn listFind(session.galleryauthenticationlist, arguments.galleryid) gte 1&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>This is rather trivial code. It simply checks for a list of IDs in the session scope. If it exists, and if the gallery ID we are checking for is in the list, then return true. If you scan back up the page, you saw that I returned a new result, passwordGallery, if the user needs to authenticate. Let's add that to the Model-Glue config event handler for ViewGallery:</p>
+<code>
+    &lt;event-handler name="ViewGallery"&gt;
+      &lt;broadcasts&gt;
+      	&lt;message name="getGallery" /&gt;
+      	&lt;message name="getImagesForGallery" /&gt;
+      &lt;/broadcasts&gt;
+      &lt;views&gt;
+      	&lt;include name="body" template="dspGallery.cfm" /&gt;
+		&lt;include name="main" template="dspTemplate.cfm" /&gt;
+      &lt;/views&gt;
+      &lt;results&gt;
+      	&lt;result name="badGallery" do="Home" redirect="yes" /&gt;
+      	&lt;result name="passwordGallery" do="PasswordGallery" redirect="yes" append="id"/&gt;
+      &lt;/results&gt;
+    &lt;/event-handler&gt;
+</code>
+<p>Now I add the new event:</p>
+<code>
+    &lt;event-handler name="PasswordGallery"&gt;
+      &lt;broadcasts /&gt;
+      &lt;views&gt;
+      	&lt;include name="body" template="dspPasswordGallery.cfm" /&gt;
+	&lt;include name="main" template="dspTemplate.cfm" /&gt;
+      &lt;/views&gt;
+      &lt;results /&gt;
+    &lt;/event-handler&gt;
+</code>
+<p>Nothing too special here. Basically I tell the event which view to use. Let's look at the view:</p>
+<code>
+&lt;cfset viewState.setValue("title", "PhotoGallery Authentication")&gt;
+<p>&lt;cfset badLogon = viewState.getValue(&quot;badLogon&quot;, false)&gt;
+&lt;cfset id = viewState.getValue(&quot;id&quot;, 0)&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+The gallery you want to view is password protected, please enter the password below.
+&lt;/p&gt;</p>
+<p>&lt;cfif badLogon&gt;
+&lt;p&gt;
+&lt;b&gt;
+The password you entered was not correct.&lt;br /&gt;
+Please try again.
+&lt;/b&gt;
+&lt;/p&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;p&gt;
+&lt;form action=&quot;#viewstate.getValue(&quot;myself&quot;)#passwordgalleryattempt&quot; method=&quot;post&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;id&quot; value=&quot;#id#&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;password:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;password&quot; name=&quot;password&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt; &lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;submit&quot; name=&quot;auth&quot; value=&quot;Authenticate&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/form&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;</code></p>
+<p>Nothing too special here. I basically copied the dspLogon.cfm view and modified it to only prompt for a password. I won't have an array of errors this time, but simply a flag saying my logon was bad. Notice how I use the default value argument to getValue. I'm also grabbing the ID from the viewState. This was the ID of the gallery that I'm trying to view. Now let's add the passwordgalleryattempt event to the config:</p>
+<code>
+    &lt;event-handler name="PasswordGalleryAttempt"&gt;
+      &lt;broadcasts&gt;
+      	&lt;message name="authenticateGallery" /&gt;
+      &lt;/broadcasts&gt;
+      &lt;results&gt;
+      	&lt;result name="galleryAuthenticated" do="ViewGallery" redirect="yes" append="id"/&gt;      	&lt;result name="notGalleryAuthenticated" do="PasswordGallery" redirect="yes"/&gt;
+      &lt;/results&gt;
+    &lt;/event-handler&gt;
+</code>
+<p>This acts much like the Logon event. Broadcast a message - and either get a good or bad response. If it is good, then go ahead and view the gallery. Otherwise, prompt for the password again. The event broadcasts authenticateGallery which I need to add to my controller block:</p>
+<code>
+      &lt;message-listener message="authenticateGallery" function="authenticateGallery" /&gt;
+</code>
+<p>And of course then add to the controller:</p>
+<code>
+&lt;cffunction name="authenticateGallery" access="public" returnType="void" output="false"&gt;
+	&lt;cfargument name="event" type="ModelGlue.Core.Event" required="true"&gt;
+	&lt;cfset var password = arguments.event.getValue("password")&gt;
+	&lt;cfset var id = arguments.event.getValue("id")&gt;
+<pre><code>&amp;lt;cfset gallery = variables.galleryDAO.read(id)&amp;gt;
+
+&amp;lt;cfif gallery.getIsPassword() and gallery.getPassword() is password&amp;gt;
+	&amp;lt;cfif not structKeyExists(session, &quot;galleryauthenticationlist&quot;)&amp;gt;
+		&amp;lt;cfset session.galleryauthenticationlist = &quot;&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfif not listFind(session.galleryauthenticationlist, id)&amp;gt;
+		&amp;lt;cfset session.galleryauthenticationlist = listAppend(session.galleryauthenticationlist, id)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfset arguments.event.addResult(&quot;galleryAuthenticated&quot;)&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfset arguments.event.setValue(&quot;badLogon&quot;, true)&amp;gt;
+	&amp;lt;cfset arguments.event.addResult(&quot;notGalleryAuthenticated&quot;)&amp;gt;	
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>As with the user logon, I do the authentication (this time comparing the password against the gallery password), and if things work out, I update their session value that stores their gallery authentication list. If not, I set the flag for my view and add the proper result.</p>
+<p>Guess what - we are done! The application is definitely far from perfect. In my next entry I'll talk a lot about what I didn't do and what I should have done different. Consider this an open call to folks to rip me a new one. I've done that plenty of times in the contests, so I figure it's time for the community to strike back (grin). I am as flawless as Microsoft and I think people can learn from my mistakes as well as my advice, so those of you who have been holding back - just get ready for the next entry.</p>
+<p>As a reminder, you can view the application here:
+<a href="http://pg1.camdenfamily.com">pg1.camdenfamily.com</a></p>
+<p>If folks want to share images, please post a comment along with the password (if password protected) or just the URL if public.</p>
+<p><b>Summary:</b></p>
+<ul>
+<li>In this entry I finally added the security to the ViewGallery event.
+<li>The security needed to do different things depending on the access level of the gallery.
+<li>I use another session variable to store what galleries you are logged in to. This is important as I need to differentiate between various galleries that you can view with passwords.
+</ul><p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fwwwroot9%2Ezip'>Download attached file.</a></p>}

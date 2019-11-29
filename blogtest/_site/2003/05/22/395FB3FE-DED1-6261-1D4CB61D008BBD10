@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>When I was designing the RSS feed for my site, I followed one of the recommendations for the item body field and limited the data to 250 characters. A good friend pointed out that this wasn't really necessary and it kinda limited the power of blog aggregators. My initial reaction was to say that the RSS feed should really draw traffic back to the original site - but since traffic isn't really a concern, maybe I should simply do as he suggested, and return the full item.</p>
+<p>Thoughts?</p>
+<p>If I do modify the feed, I will probably make it an argument - ie, generateRSS() or generateRSS(mode=full).</p>
+}

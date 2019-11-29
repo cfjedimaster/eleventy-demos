@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>So, you may not know this, but there is a CF function that determines if debugging is turned on. That function is (surprise surprise): isDebugMode().  This can be useful for providing additional debugging information for your applications. You can leave this inside production code since, hopefully, you have not turned on debugging on your live servers.</p>
+<p>What is not so clear from the documentation, however, is that this function is smart enough to recognize that even if debugging is turned on, your IP may not be on the list of IPs allowed to see debug information. Basically, you can use this function without having to worry about the security implications.</p>
+<p>I bring this up because I recently came across code that did a isDebugMode() check and then followed it up with a call to the ServiceFactory to see if the current IP was allowed to see debugging info. This was not necessary for the code to be secure.</p>
+}

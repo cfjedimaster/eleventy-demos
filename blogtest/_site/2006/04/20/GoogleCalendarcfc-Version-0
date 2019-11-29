@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>I've attached to this entry the first version of the GoogleCalendar.cfc. There is no documentation yet so use at your own risk. What it does:</p>
+<ul>
+<li>ReadEntries will return a query of events. Most of the columns should be obvious.
+<li>ReadMeta returns the meta information about the calendar. What you care about is the title field.
+<li>XML is cached so a HTTP call is only done once. I may also add caching of the entry data since it doesn't make sense to parse it N times.
+</ul>
+<p>What it does not yet do:</p>
+<ul>
+<li>Translate times to the right timezone. To make this work, I think I'm going to require folks to send to ReadEntries their GMT offset. 
+<li>Translate recurrence. This will be done, and will be sweet. It's going to be a nice string like "Daily", "Yearly", etc.
+<li>Add entries.
+<li>Simple way to force a refresh of the cache. 
+</ul>
+<p>I've included a test script that read US Holidays. Very, very important note. The Google Calendar API lets you tweak how much data is returned. The default URL for your private calendar ends in &quot;basic&quot;. You must change this to &quot;full&quot;. Look at my test script for an example. I may end up making a basic check for this so folks don't forget.</p>
+<p>Here is an example of how the API is used:</p>
+<code>
+&lt;cfapplication name="gCal"&gt;
+<p>&lt;cfset reload = true&gt;
+&lt;cfif not structKeyExists(application, &quot;gCal&quot;) or reload&gt;
+&lt;cfset application.gCal = createObject(&quot;component&quot;, &quot;GoogleCalendar&quot;).init(&quot;long as heck url here/full&quot;)&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfset r = application.gCal.readEntries()&gt;
+&lt;cfdump var=&quot;#r#&quot;&gt;</p>
+<p>&lt;cfset m = application.gCal.readMeta()&gt;
+&lt;cfdump var=&quot;#m#&quot;&gt;
+</code><p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fgcal%2Ezip'>Download attached file.</a></p></p>
+}

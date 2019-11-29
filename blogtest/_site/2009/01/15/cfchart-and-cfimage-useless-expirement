@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>So after my <a href="http://www.raymondcamden.com/index.cfm/2009/1/14/Ask-a-Jedi-Emailing-CFCHART">last post</a> on embedding cfchart in email, I've been playing with cfchart and image functions. The ability to create an image out of cfchart isn't new, and we've got a butt load of new image functions in ColdFusion 8, so we should be able to mix the two up right? I whipped up a quick demo using <a href="http://imageutils.riaforge.org">imageUtils</a> from RIAForge and a simple chart:</p>
+<code>
+&lt;cfset imageutils = createObject("component","imageutils.imageUtils")&gt;
+<p>&lt;cfchart format=&quot;png&quot; name=&quot;mychart&quot; chartheight=&quot;200&quot; chartwidth=&quot;200&quot; showlegend=&quot;false&quot;&gt;
+&lt;cfchartseries type=&quot;pie&quot;&gt;
+&lt;cfchartdata item=&quot;1Q Sales&quot; value=&quot;500&quot; /&gt;
+&lt;cfchartdata item=&quot;2Q Sales&quot; value=&quot;400&quot; /&gt;
+&lt;cfchartdata item=&quot;3Q Sales&quot; value=&quot;700&quot; /&gt;
+&lt;cfchartdata item=&quot;4Q Sales&quot; value=&quot;200&quot; /&gt;
+&lt;/cfchartseries&gt;
+&lt;/cfchart&gt;</p>
+<p>&lt;cfset mychart = imageNew(mychart)&gt;
+&lt;cfset myfancychart = imageutils.reflectImage(mychart,&quot;Bottom&quot;) /&gt;</p>
+<p>&lt;cfimage action=&quot;writetobrowser&quot; source=&quot;#myfancychart#&quot; /&gt;
+</code></p>
+<p>Nothing too crazy here. I save the image binary into a variable and then 'load' it as an Image object using imageNew. I then use the reflectImage function to create...</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//chart.png">
+<p>I then got artsy:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//chart2.png">
+<p>So yeah, this was a complete waste of time. I can't think of anything I'd use CF8's image functions for that I can't do natively with cfchart itself, but maybe something intelligent will come to me later.</p>
+}

@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I was testing <a href="http://galleon.riaforge.org">Galleon</a> under BlueDragon 7.0.1 and ran into an odd issue. My queries were being returned with the aliases ignored. Ie, I'd do</p>
+<p>select foo as goo<br/>
+from zoo</p>
+<p>And the result query would have a foo column, not goo.</p>
+<p>Turns out this is a known issue with the MySQL connector, and Lori from NA posted a fix <a href="http://forums.newatlanta.com/messages.cfm?threadid=3649010C-29AC-4980-BA8B720D5DD5E683">here</a>.</p>
+}

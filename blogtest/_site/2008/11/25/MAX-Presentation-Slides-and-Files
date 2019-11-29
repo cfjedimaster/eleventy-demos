@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>Almost a week late, but I've posted my MAX 2008 presentation to slide six: <a href="http://slidesix.com/view/ColdFusion-Powered-AJAX">http://slidesix.com/view/ColdFusion-Powered-AJAX</a> You can download the slides and ColdFusion code from there as well. And just cuz I like embedding, here it is on my blog too:</p>
+<object height="425" width="550">
+	<param name="movie" value="http://slidesix.com/viewer/SlideSixViewer.swf?alias=ColdFusion-Powered-AJAX"/>
+	<param name="menu" value="false"/>
+	<param name="scale" value="noScale"/>
+	<param name="allowFullScreen" value="true"/>
+	<embed src="http://slidesix.com/viewer/SlideSixViewer.swf?alias=ColdFusion-Powered-AJAX" allowFullScreen="true" height="425" width="550" type="application/x-shockwave-flash" />
+</object>}

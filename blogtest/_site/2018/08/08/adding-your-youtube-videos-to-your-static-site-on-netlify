@@ -1,0 +1,97 @@
+<h1>Post</h1>
+
+<p>Earlier this month I wrote up a blog post demonstrating how to use client-side JavaScript to render a list of your YouTube videos on your site (<a href="https://www.raymondcamden.com/2018/08/01/adding-your-youtube-videos-to-your-static-site-with-vuejs">&quot;Adding Your YouTube Videos to Your Static Site with Vue.js&quot;</a>). This works well and didn't use any &quot;fancy&quot; JavaScript that would be problematic for older browser (ok technically <code>fetch</code> is a bit modern but you could have replaced that with any other HTTP call) but I was curious to see if there was a way to do within my static site built with <a href="https://jekyllrb.com/">Jekyll</a>.</p>
+<p>While it would be possible to build a plugin to do HTTP calls to generate output, I didn't want to pursue this route because, well, Ruby, and then I remembered something <a href="https://www.hawksworx.com/">Phil Hawksworth</a> had demonstrated a while back. Phil is a developer advocate for <a href="https://www.netlify.com/">Netlify</a>, the service I use to host and deploy this site. I've raved about them often on this blog (and on Twitter) so I'm somewhat of a fanboy. Phil wrote up a great article about how he added comments to his static site: <a href="https://www.hawksworx.com/blog/adding-a-static-comments-system-to-my-jekyll-build/">Adding a Static Comments System to My Jekyll Build</a>.</p>
+<p>His idea was pretty brilliant. He wrote a Gulp script to get his comment data via a simple API, wrote it out to a Jekyll data file, and then when his site is built the data file is used to drive the content for his comments. Netlify lets you specify a build command when deploying and normally I just use <code>jekyll</code>, but by using a Gulp script, you could do a lot more.</p>
+<p>Here is a quick example of this in action. I did <em>not</em> do this for my own site as I was a bit chicken, so I simply generated a default new blog for Jekyll at the command line. Next, I wrote my Gulp script. (I haven't written Gulp scripts in years, so forgive any mistakes. Anything here good is from Phil's original script.)</p>
+<pre><code class="language-js">var gulp        = require('gulp');
+var gutil       = require('gulp-util');
+var shell       = require('gulp-shell');
+var yaml        = require('json2yaml');
+var fs          = require('fs');
+var runSequence = require('run-sequence')
+
+var paths = {
+	source:'site/',
+	deploy: 'site/dist'
+};
+
+// build jekyll
+gulp.task('jekyll', function() {
+	return gulp.src('', {quiet: false})
+	.pipe(shell([
+		'rm -rf ' + paths.deploy,
+		'jekyll build -s '+paths.source + ' -d '+paths.deploy
+	]));
+});
+
+// Get YT videos
+gulp.task(&quot;get:videos&quot;, function() {
+
+	console.log(&quot;Getting YT videos&quot;);
+	//rss url for your videos
+	const url = 'https://www.youtube.com/feeds/videos.xml?channel_id=UC8KROrnEHSnnV3z5J_FoSIg';
+
+	let Parser = require('rss-parser');
+	let parser = new Parser();
+
+	let videos = [];
+
+	(async () =&gt; {
+		let feed = await parser.parseURL(url);
+	
+		feed.items.forEach(item =&gt; {
+			//create a videoId from id
+			item.videoId = item.id.split(&quot;:&quot;).pop();
+			videos.push(item);
+		});
+
+        let ymlText = yaml.stringify(videos);
+
+		fs.writeFile('./site/_data/videos.yml', ymlText, function(err) {
+			if(err) {
+				console.log(err);
+			} else {
+				console.log(&quot;Video data saved.&quot;);
+			}
+		});
+
+	})();
+
+});
+
+gulp.task('build', function(callback) {
+  runSequence(
+    'get:videos',
+    'jekyll',
+    callback
+  );
+});
+
+// The default task.
+gulp.task('default', ['build']);
+</code></pre>
+<p>The important bit here is the <code>get:videos</code> task. I use a RSS parser from npm called, wait for it, <code>rss-parser</code>, which worked well except it didn't seem to pick up one of the properties my own code did in the <a href="https://www.raymondcamden.com/2018/08/01/adding-your-youtube-videos-to-your-static-site-with-vuejs">client-side version</a>, specifically <code>videoId</code> which is used in the embed. Luckily I could get it manually as you see here:</p>
+<pre><code class="language-js">//create a videoId from id
+item.videoId = item.id.split(&quot;:&quot;).pop();
+</code></pre>
+<p>I especially like how easy it was to output YAML for Jekyll:</p>
+<pre><code class="language-js">let ymlText = yaml.stringify(videos);
+</code></pre>
+<p>Once it's written out as a data file then it's easy to use in a template:</p>
+<pre><code class="language-markup">---
+layout: page
+title: Videos
+permalink: /videos/
+---
+
+{% for video in site.data.videos %}
+
+&lt;iframe id=&quot;ytplayer&quot; type=&quot;text/html&quot; width=&quot;640&quot; height=&quot;360&quot; src=&quot;https://www.youtube.com/embed/{{video.videoId}}?autoplay=0&amp;origin=http://example.com&quot; frameborder=&quot;0&quot;&gt;&lt;/iframe&gt;
+
+{% endfor %}
+</code></pre>
+<p>The final step is specify the gulp task in my Netlify settings for my site:</p>
+<img src="https://static.raymondcamden.com/images/2018/08/netlify1.jpg" alt="Netlify settings" class="imgborder">
+<p>And that's it! If you want to actually see this, you can view the live site here: <a href="https://fervent-beaver-e5dc28.netlify.com/videos/">https://fervent-beaver-e5dc28.netlify.com/videos/</a>. The source code for this demo is here: <a href="https://github.com/cfjedimaster/jekyllnetlifydemo">https://github.com/cfjedimaster/jekyllnetlifydemo</a></p>
+}

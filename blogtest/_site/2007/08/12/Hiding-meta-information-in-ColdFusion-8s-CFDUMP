@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I love the new information about queries displayed in ColdFusion 8's cfdump tag (you can see the SQL, the parameters, execution time, and cache status), but if you don't want all the extra information, just use the metainfo attribute:</p>
+<code>
+&lt;cfdump var="#myqueryissocool#" metainfo="false"&gt;
+</code>
+<p>While not new to ColdFusion 8, don't forget you can also do &quot;show&quot; and &quot;hide&quot; to tell ColdFusion what columns to display. (This also works for structures.)</p>
+}

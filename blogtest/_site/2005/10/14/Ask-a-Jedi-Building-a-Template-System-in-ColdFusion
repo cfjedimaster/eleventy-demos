@@ -1,0 +1,45 @@
+<h1>Post</h1>
+
+<p>This question came in this morning, and while I have about two hundred questions in front of it, it was so interesting I had to cover it immidiately. Dave asks:</p>
+<blockquote>
+I have seen CMS applications in PHP that have  templates that use variable for placing content, menu, footer, etc.  Is there a way that such variables can be created using ColdFusion?
+</blockquote>
+<p>Absolutely! Let's look at a very simple example of this. Do note that there are multiple ways of solving this problem, and this is just one way. First, let's build some sample data:</p>
+<code>
+&lt;cfset data = queryNew("id,name,age")&gt;
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;10&quot;&gt;
+&lt;cfset queryAddRow(data)&gt;
+&lt;cfset querySetCell(data,&quot;id&quot;,x)&gt;
+&lt;cfset querySetCell(data,&quot;name&quot;,&quot;User #x#&quot;)&gt;
+&lt;cfset querySetCell(data,&quot;age&quot;,randRange(20,90))&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>This code just creates a ten row query with some random data in it. Now let's create the template. For my template system, I'm going to pick an arbitrary token for replacement. In this case, tokens will be marked with the % character:</p>
+<code>
+&lt;cfsavecontent variable="template"&gt;
+Hi, my name is %name% and I am %age% year(s) old.
+&lt;/cfsavecontent&gt;
+</code>
+<p>As you can see, I've set up two tokens in this template, name and age. These tokens will correspond with the values in my query. Now let's show how we use the tokens:</p>
+<code>
+&lt;!--- tokens to look for are my columns ---&gt;
+&lt;cfset tokenList = data.columnList&gt;
+<p>&lt;cfloop query=&quot;data&quot;&gt;
+&lt;!--- copy template ---&gt;
+&lt;cfset thisTemplate = template&gt;
+&lt;cfloop index=&quot;token&quot; list=&quot;#tokenList#&quot;&gt;</p>
+<pre><code>	&amp;lt;cfset thisTemplate = replaceNoCase(thisTemplate, &quot;%&quot; &amp; token &amp; &quot;%&quot;, data[token][currentRow], &quot;all&quot;)&amp;gt;
+
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+#thisTemplate#
+&amp;lt;hr&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>We begin by creating a token list. This is a list of tokens that we will look for in our template. We get our list based on the query. Now, we could have done this the reverse way. I could have looked at the template and found all the instances of %something%. In my case I took the easy way out and just used the columnlist variable. Which one is better? Well if I had scanned for %something% strings, I would have a list of every token used in the template. If for some reason a token was used that did <i>not</i> exist in the query, I could throw an error. My method will simply ignore those variables though.</p>
+<p>Next we loop over our query. I create a copy of the template inside the loop. Then I look for each token in my token list. The token will just be the word, like &quot;name&quot; or &quot;age&quot;, so in my replaceNoCase call, I add % to the beginning and end of the token. I then replace it with the value from the query.</p>
+<p>Pretty simple. We use something a bit like this in our mail tool at <a href="http://www.mindseye.com">Mindseye</a>. We allow for certain tokens that can be placed in the email body. These tokens are replaced with the values from our mailing list data. This allows for more personalized emails. Again - there are <i>many</i> different ways you could handle this.</p>
+}

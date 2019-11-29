@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>So, I'm an avid Firefox user. I love it. And so far, I'm pretty happy with the 0.9 release. However, Firefox has been plagued by a stupid, and I really mean <b>stupid</b> bug for months now that has not been fixed. What is the bug you ask?</p>
+<p>I'm looking at a page that is the result of a form post in our CMS admin.</p>
+<p>I click View Source.</p>
+<p>.... Firefox says, hey, this is the result of a form post, do you want to repost.</p>
+<p>I say cancel.</p>
+<p>All I want to do is view the source of the file in the browser.</p>
+<p>I don't want to repost. I don't want to perform any kind of HTTP request.</p>
+<p>But, since CANCEL does nothing, I hit OK.</p>
+<p>And I see the source code for the login form for the CMS Admin, since Firefox is performing a HTTP request w/o any cookies.</p>
+<p>To view source.</p>
+<p>Yea, that makes sense. Really.</p>
+<p>-sigh-</p>
+<p><b>Edited:</b> And let me add to this rant. Why can't I say, &quot;Reload this page and don't send the form data again.&quot; Why do I have to resend the form data? Sure the page may break if the application isn't coded correctly, but why not just let me reload??</p>
+}

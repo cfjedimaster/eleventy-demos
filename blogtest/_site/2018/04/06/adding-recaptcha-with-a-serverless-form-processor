@@ -1,0 +1,305 @@
+<h1>Post</h1>
+
+<p>A few days ago I added <a href="https://www.google.com/recaptcha/">Google's reCaptcha</a> support to a ColdFusion site. It was pretty easy (some front end work, some back end work), so I thought I'd whip up a quick demo of how you could add it to a form using a serverless processor, in my case, <a href="https://webtask.io">Webtask</a>. To get started, let's go over a quick demo of how such a processor could look before we add the captcha.</p>
+<h1>BC (Before Captcha)</h1>
+<p>First, here is the form.</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;meta charset=&quot;utf-8&quot;&gt;
+		&lt;title&gt;&lt;/title&gt;
+		&lt;meta name=&quot;description&quot; content=&quot;&quot;&gt;
+		&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+		&lt;style&gt;
+		[v-cloak] {display: none}
+		&lt;/style&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+
+		&lt;form id=&quot;infoForm&quot; v-cloak&gt;
+			&lt;p&gt;
+			&lt;label for=&quot;name&quot;&gt;Name:&lt;/label&gt;
+			&lt;input type=&quot;text&quot; v-model=&quot;name&quot; id=&quot;name&quot; required&gt;
+			&lt;/p&gt;
+
+			&lt;p&gt;
+			&lt;label for=&quot;email&quot;&gt;Email:&lt;/label&gt;
+			&lt;input type=&quot;email&quot; v-model=&quot;email&quot; id=&quot;email&quot; required&gt;
+			&lt;/p&gt;
+
+			&lt;p&gt;
+			&lt;label for=&quot;url&quot;&gt;URL:&lt;/label&gt;
+			&lt;input type=&quot;url&quot; v-model=&quot;url&quot; id=&quot;url&quot;&gt;
+			&lt;/p&gt;
+
+			&lt;p&gt;
+				&lt;input type=&quot;submit&quot; value=&quot;Send Info&quot; @click.prevent=&quot;submitForm&quot;&gt;
+			&lt;/p&gt;
+
+			&lt;div v-if=&quot;errors.length&quot;&gt;
+				&lt;p&gt;
+					&lt;b&gt;Please correct these errors:&lt;/b&gt;
+					&lt;ul&gt;
+						&lt;li v-for=&quot;error in errors&quot;&gt;{{error}}&lt;/li&gt;
+					&lt;/ul&gt;
+				&lt;/p&gt;
+			&lt;/div&gt;
+			&lt;div v-if=&quot;formGood&quot;&gt;
+				&lt;p&gt;
+					Thanks for filling out the form. We care a lot.
+				&lt;/p&gt;
+			&lt;/div&gt;
+		&lt;/form&gt;
+
+		&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+		&lt;script&gt;
+		const taskEndpoint = 'https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.run.webtask.io/form_resp1';
+
+		new Vue({
+			el:'#infoForm',
+			data() {
+				return {
+					name:null,
+					email:null,
+					url:null,
+					errors:[],
+					formGood:false
+				}
+			},
+			methods:{
+				submitForm() {
+					this.errors = [];
+					this.formGood = false;
+					fetch(taskEndpoint, {
+						body:JSON.stringify({ 
+							name:this.name,
+							email:this.email,
+							url:this.url
+						}),
+						headers: {
+							'content-type':'application/json'
+						}, 
+						method:'POST'
+					})
+					.then(res =&gt; res.json())
+					.then(res =&gt; {
+						console.log(res);
+						if(res.status) {
+							this.formGood = true;
+						} else {
+							this.errors = res.errors;
+						}
+					});
+				}
+			}
+		});
+		&lt;/script&gt;
+
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>I've got three form fields and I'm using Vue.js to handle doing a POST via Ajax. I assume that all of this is pretty simple to understand, but as always, if you have any questions, add a comment. The end point is a webtask function. Here it is:</p>
+<pre><code class="language-js">'use strict';
+
+module.exports = function(context, cb) {
+	//first, gather the form fields
+	console.log(context.body)
+	let form = context.body;
+	let errors = checkForm(context.body);
+
+	if(errors.length) {
+		cb(null, {status: false, errors:errors});
+	} else {
+		// we'd also email the results here, or store them, or something
+		cb(null, {status: true});
+	}
+}
+
+/* simple validation routine, returns an array of errors */
+function checkForm(f) {
+	let errors = [];
+	if(!f.name || f.name.trim() === '') errors.push(&quot;Name required.&quot;);
+	if(!f.email || f.email.trim() === '') errors.push(&quot;Email required.&quot;);
+	// could add email validation here
+	return errors;
+}
+</code></pre>
+<p>In this webtask, I simply grab the form data (it is in <code>context.body</code>, and you can read more about the Context object in the <a href="https://webtask.io/docs/context">docs</a>) and pass it to a function called checkForm. My form had three fields, but I only really care about two. If the validation fails (by returning anything in the array), I return a false status and the errors. Otherwise I return true and as the comment says, I'd probably email the form or store it somehow.</p>
+<h1>AC (<strike>Air Conditioning</strike>After Captcha)</h1>
+<p>Working with Google's reCaptcha involves three main steps:</p>
+<ul>
+<li>First, you get a key. Google has made that quite a bit easier now.</li>
+<li>Second, you add the <a href="https://developers.google.com/recaptcha/docs/display">front end code</a>. You've got multiple options on how to do that.</li>
+<li>Finally, you validate the reCaptcha on the server side.</li>
+</ul>
+<p>To get your key, start here: http://www.google.com/recaptcha/admin. Note that you actually get <em>two</em> keys.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/04/rec1.jpg" alt="Screen shot of keys"></p>
+<p>The first key is used in the front end. The second key is used on the server side for validation.</p>
+<p>Adding the captcha is pretty simple. Drop in a script tag and then add a div:</p>
+<pre><code class="language-html">&lt;div class=&quot;g-recaptcha&quot; data-sitekey=&quot;my site key is blah&quot;&gt;&lt;/div&gt;
+</code></pre>
+<p>By itself, this will create a hidden form field and when the user checks the captcha, it will fill in a key. If you are using a &quot;regular&quot; old server like ColdFusion, or even Node, then you would grab the value in the typical way you handle getting form values. However, in our case, we're using client-side code to POST to a serverless web hook, so we need to fetch the key manually. Here's the updated form (with a bit removed to cut down on size):</p>
+<pre><code class="language-html">&lt;form id=&quot;infoForm&quot; v-cloak&gt;
+	&lt;p&gt;
+	&lt;label for=&quot;name&quot;&gt;Name:&lt;/label&gt;
+	&lt;input type=&quot;text&quot; v-model=&quot;name&quot; id=&quot;name&quot; required&gt;
+	&lt;/p&gt;
+
+	&lt;p&gt;
+	&lt;label for=&quot;email&quot;&gt;Email:&lt;/label&gt;
+	&lt;input type=&quot;email&quot; v-model=&quot;email&quot; id=&quot;email&quot; required&gt;
+	&lt;/p&gt;
+
+	&lt;p&gt;
+	&lt;label for=&quot;url&quot;&gt;URL:&lt;/label&gt;
+	&lt;input type=&quot;url&quot; v-model=&quot;url&quot; id=&quot;url&quot;&gt;
+	&lt;/p&gt;
+
+	&lt;div class=&quot;g-recaptcha&quot; data-sitekey=&quot;6Ld5WlEUAAAAAJmHfUirSkYnsFk85br615KDYktz&quot;&gt;&lt;/div&gt;
+	
+	&lt;p&gt;
+		&lt;input type=&quot;submit&quot; value=&quot;Send Info&quot; @click.prevent=&quot;submitForm&quot; :disabled=&quot;disabled&quot;&gt;
+	&lt;/p&gt;
+
+	&lt;div v-if=&quot;errors.length&quot;&gt;
+		&lt;p&gt;
+			&lt;b&gt;Please correct these errors:&lt;/b&gt;
+			&lt;ul&gt;
+				&lt;li v-for=&quot;error in errors&quot;&gt;{{error}}&lt;/li&gt;
+			&lt;/ul&gt;
+		&lt;/p&gt;
+	&lt;/div&gt;
+	&lt;div v-if=&quot;formGood&quot;&gt;
+		&lt;p&gt;
+			Thanks for filling out the form. We care a lot.
+		&lt;/p&gt;
+	&lt;/div&gt;
+&lt;/form&gt;
+
+&lt;script src='https://www.google.com/recaptcha/api.js?onload=onload'&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+const taskEndpoint = 'https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.run.webtask.io/form_resp2';
+
+let app = new Vue({
+	el:'#infoForm',
+	data() {
+		return {
+			name:null,
+			email:null,
+			url:null,
+			errors:[],
+			formGood:false,
+			disabled:true
+		}
+	},
+	methods:{
+		enable() {
+			this.disabled = false;
+		},
+		submitForm() {
+			this.errors = [];
+			this.formGood = false;
+			fetch(taskEndpoint, {
+				body:JSON.stringify({ 
+					name:this.name,
+					email:this.email,
+					url:this.url,
+					recaptcha:grecaptcha.getResponse()
+				}),
+				headers: {
+					'content-type':'application/json'
+				}, 
+				method:'POST'
+			})
+			.then(res =&gt; res.json())
+			.then(res =&gt; {
+				console.log(res);
+				if(res.status) {
+					this.formGood = true;
+				} else {
+					this.errors = res.errors;
+				}
+			});
+		}
+	}
+});
+
+function onload() {
+	app.enable();
+}
+&lt;/script&gt;
+</code></pre>
+<p>Ok, so a few things. First, when I added the script tag, note the <code>onload</code> bit:</p>
+<pre><code class="language-html">&lt;script src='https://www.google.com/recaptcha/api.js?onload=onload'&gt;&lt;/script&gt;
+</code></pre>
+<p>This lets me listen for the load event for the captcha. I need this because I don't want users to submit the form until the captcha has had a chance to load. I added a new variable to my Vue instance that disables the submit button until that event fires. Basically <code>onload</code> just chains to <code>app.enable()</code> which toggles the value.</p>
+<p>The next change is in my POST:</p>
+<pre><code class="language-js">body:JSON.stringify({ 
+	name:this.name,
+	email:this.email,
+	url:this.url,
+	recaptcha:grecaptcha.getResponse()
+}),
+</code></pre>
+<p>You can see I'm using a global object, <code>grecaptcha</code> to get the value from the UI. This will either be blank (the evil user ignored it) or a long string. Here's how it looks:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/04/rec2.png" alt="Screen shot of form with captcha"></p>
+<p>Now let's look at the updated webtask:</p>
+<pre><code class="language-js">'use strict';
+
+const request = require('request');
+
+module.exports = function(context, cb) {
+	//first, gather the form fields
+	let form = context.body;
+	
+	checkForm(context.body, context.secrets.recaptcha)
+	.then(result =&gt; {
+		console.log('result was '+JSON.stringify(result.errors));		
+
+		if(result.errors.length) {
+			cb(null, {status: false, errors:result.errors});
+		} else {
+			// we'd also email the results here, or store them, or something
+			cb(null, {status: true});
+		}
+
+	});
+
+}
+
+/* simple validation routine, returns an array of errors */
+function checkForm(f, recaptchaKey) {
+	return new Promise((resolve, reject) =&gt; {
+
+		let errors = [];
+		if(!f.name || f.name.trim() === '') errors.push(&quot;Name required.&quot;);
+		if(!f.email || f.email.trim() === '') errors.push(&quot;Email required.&quot;);
+		// could add email validation here
+
+		request.post(' https://www.google.com/recaptcha/api/siteverify', {
+			form:{
+				secret:recaptchaKey,
+				response:f.recaptcha
+			}
+		}, (err, resp, body) =&gt; {
+			if(!JSON.parse(body).success) {
+				errors.push('You did not fill out the recaptcha or resubmitted the form.');
+			}
+			resolve({errors:errors});
+
+		});
+
+	});
+}
+</code></pre>
+<p>The first major change is that checkForm is now asynchronous and returns a Promise. I did this because I knew I was going to be making a HTTP call to verify the key. I now pass that key, and the form, like so:</p>
+<pre><code class="language-js">checkForm(context.body, context.secrets.recaptcha)
+</code></pre>
+<p>What is <code>context.secrets.recaptcha</code>? Webtasks allow for <a href="https://webtask.io/docs/editor/secrets">secrets</a> which are really useful for API keys. In my case, I simply set the key via the CLI: <code>wt create form_resp2.js --secret recaptcha=mykeywashere</code>. You can also set the key in the online editor.</p>
+<p>In <code>checkForm</code>, you can see where I do a simple POST to Google's verify end point. If anything goes wrong, I return a generic error (I could make this more precise) and then finally we resolve the array of errors.</p>
+<p>You can test this yourself here: https://cfjedimaster.github.io/Serverless-Examples/recaptcha/test2.html</p>
+<p>And the full source code for both versions may be found here: https://github.com/cfjedimaster/Serverless-Examples/tree/master/recaptcha</p>
+<p>If you have any questions about this, just leave me a comment below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/yfgkWX-2vEA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Steven Wei</a> on Unsplash</i></p>
+}

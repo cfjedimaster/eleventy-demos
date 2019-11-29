@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>Joel asks:</p>
+<blockquote>
+<p>
+I have problems with using CFGRID and hope
+you can help. Here are my issues:
+<ol>
+<li>When sorting the 2nd and 3rd columns
+sort ok, the first causes an error stating an &quot;Error in executing the Query&quot;.</li>
+</ol>
+</p>
+</blockquote>
+<p>This is actually not a CFGRID issue, but an issue with your data provider, which is most likely a CFC. You need to debug why your CFC is throwing an error. This can be done multiple ways. The easiest is to use Firebug - not the request throwing the error, and open the request in a new tab. You will see more information about the error.</p>
+<blockquote>
+<p>
+2. And is there a way to prevent the columns from being moved?
+</p>
+</blockquote>
+<p>Well, I'm not sure why you would want to block that, but if you get access to underlying grid object (using ColdFusion.Grid.getGridObject(), you should be able to use the Grid api to disable this behavior. You may have to look up the Grid docs at Ext first though. (And yes, I'm being lazy, but I figure telling you where to look is a bit helpful. :)</p>
+<p>Now let me assume my Stan &quot;I think I've learned something&quot; pose: This blog entry speaks to two topics I've covered a few times before, and I really think it touches on folks who are just now getting into Ajax stuff because of ColdFusion. It is critical you get that:</p>
+<p>a) Learn to debug. Tools like Firebug are critical for figuring out what went wrong with an Ajax-based request. You must - I repeat, <b>must</b> get familiar with this as it will make your life much easier to handle.</p>
+<p>b) Remember that the Ajax tools that ColdFusion 8 uses are all based on third party tools. You can (and should) go to those sites - read the docs - and get familiar with them if you want to go &quot;beyond the basics&quot; in terms of how you use them within ColdFusion.</p>
+}

@@ -1,0 +1,56 @@
+<h1>Post</h1>
+
+<p>Blaine the Train asks:</p>
+<blockquote>
+I need to find the size of a given folder.  In CF7, that's easy enough, but I'm still using 6.1.  Any ideas to get me the size of a specific folder?
+</blockquote>
+<p>In case you aren't aware, when Blaine says this is easy to do in CFMX7, he is talking about the new recurse=true attribute to cfdirectory. This lets you get a directory and all subdirectories and files. <i>Very</i> handy. I think that a lot of cool code stuff got overlooked (PR wise) in CFMX7, and this is one of them. (Of course, I'm a geek, and while I think Enterprise Gateways are super-cool, I use isValid <b>every single day</b>.)</p>
+<!--more-->
+<p>So since we don't have the recurse attribute in CF6, what can we do? Simply write our own recursive function. Here is the code I wrote for <a href="http://www.cflib.org/udf.cfm/directorylist">directoryList</a> over at CFLib.</p>
+<code>
+cffunction name="directoryList" output="false" returnType="query"&gt;
+	&lt;cfargument name="directory" type="string" required="true"&gt;
+	&lt;cfargument name="filter" type="string" required="false" default=""&gt;
+	&lt;cfargument name="sort" type="string" required="false" default=""&gt;
+	&lt;cfargument name="recurse" type="boolean" required="false" default="false"&gt;
+	&lt;!--- temp vars ---&gt;
+	&lt;cfargument name="dirInfo" type="query" required="false"&gt;
+	&lt;cfargument name="thisDir" type="query" required="false"&gt;
+	&lt;cfset var path=""&gt;
+    &lt;cfset var temp=""&gt;
+<pre><code>&amp;lt;cfif not recurse&amp;gt;
+	&amp;lt;cfdirectory name=&quot;temp&quot; directory=&quot;#directory#&quot; filter=&quot;#filter#&quot; sort=&quot;#sort#&quot;&amp;gt;
+	&amp;lt;cfreturn temp&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;!--- We loop through until done recursing drive ---&amp;gt;
+	&amp;lt;cfif not isDefined(&quot;dirInfo&quot;)&amp;gt;
+		&amp;lt;cfset dirInfo = queryNew(&quot;attributes,datelastmodified,mode,name,size,type,directory&quot;)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfset thisDir = directoryList(directory,filter,sort,false)&amp;gt;
+	&amp;lt;cfif server.os.name contains &quot;Windows&quot;&amp;gt;
+		&amp;lt;cfset path = &quot;\&quot;&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfset path = &quot;/&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfloop query=&quot;thisDir&quot;&amp;gt;
+		&amp;lt;cfset queryAddRow(dirInfo)&amp;gt;
+		&amp;lt;cfset querySetCell(dirInfo,&quot;attributes&quot;,attributes)&amp;gt;
+		&amp;lt;cfset querySetCell(dirInfo,&quot;datelastmodified&quot;,datelastmodified)&amp;gt;
+		&amp;lt;cfset querySetCell(dirInfo,&quot;mode&quot;,mode)&amp;gt;
+		&amp;lt;cfset querySetCell(dirInfo,&quot;name&quot;,name)&amp;gt;
+		&amp;lt;cfset querySetCell(dirInfo,&quot;size&quot;,size)&amp;gt;
+		&amp;lt;cfset querySetCell(dirInfo,&quot;type&quot;,type)&amp;gt;
+		&amp;lt;cfset querySetCell(dirInfo,&quot;directory&quot;,directory)&amp;gt;
+		&amp;lt;cfif type is &quot;dir&quot;&amp;gt;
+			&amp;lt;!--- go deep! ---&amp;gt;
+			&amp;lt;cfset directoryList(directory &amp; path &amp; name,filter,sort,true,dirInfo)&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;cfreturn dirInfo&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>This works well, but probably isn't the best code to run on the root of a drive. Once you have the query, to get the total size, you could simply use query of query to get the sum of the file size.</p>
+<p>Now that's the CFML solution. While slow, it will work in all platforms. The quickest solution would be to write up a quick bat file and fire off a cfexecute to run it. Or potentially use a COM object if you are on Windows. (Here is a COM example: <a href="http://www.cflib.org/udf.cfm?ID=120">http://www.cflib.org/udf.cfm?ID=120</a>) These solutions would probably run a heck of a lot faster, but will tie you to one OS. Frankly I don't think that is a big huge deal. While I know people who have switched database types, I don't know many who have switched operating systems. And if you are using proper code encapsulation techniques, you can always replace an OS specific call with a CFML one.</p>
+}

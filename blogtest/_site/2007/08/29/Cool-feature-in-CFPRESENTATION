@@ -1,0 +1,55 @@
+<h1>Post</h1>
+
+<p>CFPRESENTATION is one of those tags that are pretty good - but I'm not sure how often I'll use it. While working on WACK though I discovered that the tag has a feature that is pretty darn interesting. As you may (or may not know), the CFPRESENTATION tag creates Connect presentations on the fly. This could be useful for multiple purposes. You could use it to create dynamic portfolios for a company. You could use it for tutorials. Etc. This example creates a basic 2 slide static example:</p>
+<code>
+&lt;cfpresentation title="First Presentation" 
+				autoPlay="false"&gt;
+<pre><code>&amp;lt;cfpresentationslide title=&quot;Welcome to CFPRESENTATION&quot; 
+					 notes=&quot;These are some notes.&quot;&amp;gt;
+</code></pre>
+<p>&lt;h1&gt;Welcome to CFPRESENTATION&lt;/h1&gt;</p>
+<p>&lt;p&gt;
+This is content for the first slide. I can include HTML
+and it will be rendered by the presentation.
+&lt;/p&gt;
+&lt;/cfpresentationslide&gt;</p>
+<pre><code>&amp;lt;cfpresentationslide title=&quot;Sales Figures&quot; 
+		 notes=&quot;These are some notes for slide two.&quot;&amp;gt;
+</code></pre>
+<p>&lt;h1&gt;Sales Figures&lt;/h1&gt;</p>
+<p>&lt;p&gt;
+Some fake data.
+&lt;/p&gt;</p>
+<p>&lt;p&gt;
+&lt;table width=&quot;100%&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Product&lt;/th&gt;
+&lt;th&gt;Price&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Apples&lt;/td&gt;&lt;td&gt;$0.99&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Bananas&lt;/td&gt;&lt;td&gt;$1.99&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Nukes&lt;/td&gt;&lt;td&gt;$2.99&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/p&gt;
+&lt;/cfpresentationslide&gt;
+&lt;/cfpresentation&gt;
+</code></p>
+<p>You can see this output <a href="http://www.raymondcamden.com/demos/cfp.cfm">here</a>.</p>
+<p>What I discovered (and the reason for the post is), you can also use CFPRESENTATION to create <i>offline</i> presentations as well. If you supply the directory attribute, the generated Connect presentation will be stored to the file system. This code will have <b>no</b> need for ColdFusion and could be zipped up (using CFZIP) and mailed to someone. The end user could then unzip the files onto their desktop and open the presentation there. Here is a short snippet showing this in action:</p>
+<code>
+&lt;cfset directory = expandPath("./stored")&gt;
+&lt;cfif not directoryExists(directory)&gt;
+	&lt;cfdirectory action="create" directory="#directory#"&gt;
+&lt;/cfif&gt;
+<p>&lt;cfpresentation title=&quot;First Presentation&quot;
+autoPlay=&quot;false&quot; directory=&quot;./stored&quot;&gt;
+More slides here...
+</code></p>
+<p>I've included a simple presentation at the end of this blog post. Just use the download link. For more about CFPRESENTATION, be sure to pick up the WACK!<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fstored%2Ezip'>Download attached file.</a></p></p>
+}

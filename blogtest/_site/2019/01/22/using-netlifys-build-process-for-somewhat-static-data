@@ -1,0 +1,53 @@
+<h1>Post</h1>
+
+<p>A few days ago I blogged about how I was using serverless functions at Netlify to build an API proxy for MailChimp (<a href="https://www.raymondcamden.com/2019/01/08/adding-serverless-functions-to-your-netlify-static-site">&quot;Adding Serverless Functions to Your Netlify Static Site&quot;</a>). This worked really well for me and I built a simple &quot;one pager&quot; for my web site making use of that function. But something really gnawed on me.</p>
+<p>Even though it worked really well and was pretty fast, it seemed like overkill to load data that changes only twice a month. I wasn't worried about being charged for it - I was easily within MailChimp's free limit and easily within Netlify's free tier - but it still seemed like too much. It's then that I remembered that Netlify let's you specify a script to run when your site is built.</p>
+<p>This is a feature I've used for a while now - but basically just to tell Jekyll to build my pages (and before that, Hugo, but let's not speak about Hugo). I didn't really think about the implications of how I could use this for more complex logic. Phil Hawksworth wrote up a good example of this (<a href="https://www.hawksworx.com/blog/keeping-a-jamstack-site-feeling-fresh-with-recent-tweets/">&quot;Keeping a JAMStack Fresh with Recent Tweets&quot;</a>) where he describes how he uses a build script to update data files used by his static site generator.</p>
+<p>My one page site didn't need a static site generator, but I could still use a similar process. I began by creating a simple Node.js script that was nearly a copy of my serverless API wrapper:</p>
+<pre><code class="language-js">console.log('Running build script');
+
+const axios = require('axios');
+const fs = require('fs');
+
+const apiRoot = 'https://us6.api.mailchimp.com/3.0/campaigns?list_id=d00ad8719a&amp;fields=campaigns.long_archive_url,campaigns.send_time,campaigns.settings.title&amp;status=sent';
+
+axios({
+	method:'get', 
+	url:apiRoot,
+	auth:{
+		'username':'anythingreally',
+		'password':process.env.MC_API
+	}
+}).then(res =&gt; {
+	fs.writeFileSync('./static.json', JSON.stringify(res.data), 'UTF-8');
+
+})
+.catch(err =&gt; {
+	console.log('Error getting stuff', err);
+});
+</code></pre>
+<p>There's a couple things I want to point out here. First, my <code>console.log</code> messages will show up in the Netlify build web page which makes it nice for debugging. Second, note how I use <code>process.env.MC_API</code>. This is the environment variable I built to store my MailChimp API. I built it for the serverless function but it's available here as well.</p>
+<p>Finally - I simply hit the remote API and write out the content to my site as static.json. The last bit was to update my Vue.js app to hit <code>/static.json</code> instead of the serverless API. You can see this in action in the completely amazing and awesome site I built for the music newsletter I'm running with Brian:</p>
+<p><a href="https://codabreaker.rocks">https://codabreaker.rocks</a></p>
+<p>I was almost done. The next thing I did was update my build script command I've set in <code>netlify.toml</code>:</p>
+<pre><code class="language-text">[build]
+	Functions = &quot;lambda&quot;
+	Command = &quot;npm run build&quot;
+</code></pre>
+<p>And this is the relevant line in my <code>package.json</code>:</p>
+<pre><code class="language-js">&quot;scripts&quot;: {
+	&quot;start:lambda&quot;: &quot;netlify-lambda serve functions&quot;,
+	&quot;build:lambda&quot;: &quot;netlify-lambda build functions&quot;,
+	&quot;build&quot;:&quot;netlify-lambda build functions; node build.js&quot;
+},
+</code></pre>
+<p>Yes, I'm still using serverless functions &quot;in general&quot; on the site, but mainly now as a testbed for experimentation. As the site is just a &quot;one pager&quot; I don't mind using it for other tricks as well.</p>
+<p>Ok, so I'm almost done. The very last step was to configure MailChimp to trigger a build on Netlify. In my &quot;Deploy Settings&quot; for my Netlify site, I went to &quot;Build hooks&quot; and created a new one. This creates a unique URL that can trigger a build on a POST call:</p>
+<img src="https://static.raymondcamden.com/images/2019/01/nf22.jpg" alt="Shot from Netlify Build Hook page" class="imgborder imgcenter">
+<p>Then I added it as a hook to MailChimp:</p>
+<img src="https://static.raymondcamden.com/images/2019/01/nf23.jpg" alt="Shot from MailChimp" class="imgborder imgcenter">
+<p>And that's it! Now when we post the next newsletter, MailChimp will POST to Netlify, Netlify will create a new build, run my simple script, update the JSON, and that's it.</p>
+<p>And yes... you can absolutely make the case that using Vue and Ajax for this is <em>also</em> overkill. Instead of writing out to <code>static.json</code>, I could read in <code>index.html</code>, look for some kind of token, and replace it with HTML. Then the page would be really, <em>really</em> static. As always, there's multiple ways to skin the cat here.</p>
+<p>Let me know what you think about this approach, and don't forget to check out my <a href="https://codabreaker.rocks">awesome design skills</a>.</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/ymf4_9Y9S_A?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Randy Fath</a> on Unsplash</i></p>
+}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I released a set of custom tags to allow for process creation. Process creation is just a complex way of saying a multi-step form. The tags are based on the PLP service of the old Spectra software. Basically, it means you can worry more about your step code and less about the mechanics of the process. The tags take care of remembering where you are in the process and create a scope you can use through the process. This makes it easy to build multi-step edit forms or shopping carts.</p>
+<p>The code is 100% free. All I ask is that if you use it, you let me know so I can take a look. Also, if you find any bugs, or have any suggestions, please email me.</p>
+<p>The code can be downloaded <a href="http://www.camdenfamily.com/morpheus/downloads/plp.zip">here</a>.</p>
+}

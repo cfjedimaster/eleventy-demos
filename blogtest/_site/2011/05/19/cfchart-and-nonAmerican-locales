@@ -1,0 +1,62 @@
+<h1>Post</h1>
+
+<p>A poster on cf-talk today noticed an interesting issue. Even though she was trying to use the English (UK) locale (or as I call it, Dr. Who's locale), her cfchart was not using Pound symbols for the values. I whipped up a quick example to verify this issue. Luckily, it's easy to get around with - you guessed it - the chart style editor.</p>
+<!--more-->
+<p>
+<p>First, an example that demonstrates the bug.</p>
+<p>
+<code>
+&lt;cfset setLocale("English (UK)")&gt; 
+<p>&lt;cfchart chartheight=&quot;500&quot; chartwidth=&quot;500&quot; title=&quot;Average Price Per&quot; labelFormat=&quot;currency&quot;&gt;</p>
+<pre><code>&amp;lt;cfchartseries type=&quot;bar&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Apples&quot; value=&quot;50.99&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Bananas&quot; value=&quot;40.12&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Cherries&quot; value=&quot;72.00&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Donuts&quot; value=&quot;61.21&quot;&amp;gt;
+&amp;lt;/cfchartseries&amp;gt;
+</code></pre>
+<p>&lt;/cfchart&gt;
+</code></p>
+<p>
+<p>This produces:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip95.png" />
+<p>
+<p>You can see both on the left hand side, and in the tool tip, the values are in American dollars. To fix this, I simply opened up the chart editor, clicked the Y-Axis section, and picked Format. I changed Style to currency and then turned off the click for system locale.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip96.png" />
+<p>
+<p>I took - and stripped down - the XML to get the following code:</p>
+<p>
+<code>
+<p>&lt;cfsavecontent variable=&quot;style&quot;&gt;
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;frameChart is3D=&quot;false&quot;&gt;
+&lt;yAxis scaleMin=&quot;0&quot;&gt;
+&lt;labelFormat style=&quot;Currency&quot; pattern=&quot;#,##0.00&quot;&gt;
+&lt;locale lang=&quot;en&quot; country=&quot;GB&quot; variant=&quot;&quot;/&gt;
+&lt;/labelFormat&gt;
+&lt;parseFormat pattern=&quot;#,##0.###&quot;/&gt;
+&lt;groupStyle&gt;
+&lt;format pattern=&quot;#,##0.###&quot;/&gt;
+&lt;/groupStyle&gt;
+&lt;/yAxis&gt;
+&lt;/frameChart&gt;
+&lt;/cfsavecontent&gt;</p>
+<p>&lt;cfchart chartheight=&quot;500&quot; chartwidth=&quot;500&quot; title=&quot;Average Price Per&quot; labelFormat=&quot;currency&quot; style=&quot;#style#&quot;&gt;</p>
+<pre><code>&amp;lt;cfchartseries type=&quot;bar&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Apples&quot; value=&quot;50.99&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Bananas&quot; value=&quot;40.12&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Cherries&quot; value=&quot;72.00&quot;&amp;gt;
+	&amp;lt;cfchartdata item=&quot;Donuts&quot; value=&quot;61.21&quot;&amp;gt;
+&amp;lt;/cfchartseries&amp;gt;
+</code></pre>
+<p>&lt;/cfchart&gt;
+</code></p>
+<p>
+<p>And here is the result:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip97.png" />
+<p>
+<p>Fixed! In case you're wondering about the <i>other</i> changes, when you use cfchart and don't specify an XML file, ColdFusion passes a set of values based on defaults and the arguments you used. When you specify an XML style yourself, those defaults go away. Sometimes this means a bit more work, but overall you get much more control over the final result.</p>
+}

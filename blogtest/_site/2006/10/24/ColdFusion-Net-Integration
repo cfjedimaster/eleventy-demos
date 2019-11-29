@@ -1,0 +1,51 @@
+<h1>Post</h1>
+
+<p>Again - forgive the haphazard nature of the notes.</p>
+<p>.Net Integration Session</p>
+<p>Why? Leverage functionality available in .Net. Leverage MS products like Word, Excel, Outlook, etc.</p>
+<p>Idea is to keep it simple. (Like rest of ColdFusion.) Right now you can talk to .Net using web services (if the .Net code is available via web services.) With Scorpio you will be able to do it directly.</p>
+<p>How can we interact with .Net?<br>
+Web Services (available now)<br>
+Messaging<br>
+Using COM<br>
+Runtime Unification (new in Scorpio)<br></p>
+<p>Runtime Unification:<br>
+Make .net components locally available. Invoke .net components directly from CFM.
+Using cfobject and createObject. Works very much like cfobject/createobject for Java</p>
+<code>
+&lt;cfobject type=".net" class="xxx" assembly="foo.dll" name="something"&gt;
+&lt;cfset foo = something.method&gt;
+</code>
+<p>Web Services versus RU:</p>
+<p>Loose coupling versus tight coupling.<br>
+Coarse granular and less programmatic control versus fine granular and more programmatic control.<br>
+Low on performance/realiability versus better performance/reliability.<br>
+Stateless versus Stateful.<br>
+Web services more useful for external clients where RU is better for internal clients.</p>
+<p>Features:<br>
+Seamless (no configuration)<br>
+Location independent (components can be remote or local)<br>
+Platform independent (CF can be on any platform calling .Net on a Windows platform)<br>
+Hot deployment of assemblies.<br>
+Can talk to multiple .net servers.<br>
+Secure<br>
+Automatic conversion from/to basic CF datatypes and .Net datatypes.</p>
+<p>Syntax:<br>
+cfobject: class, name, assembly, protocol, secure, server, port</p>
+<p>For assembly, can be a list of exe's or dlls or proxy jars. mscorlib.dll always included.</p>
+<p>For protocol, binary is default with best performance. HTTP can be used across the net.</p>
+<p>For constructors, you manually call init() after the cfobject call.</p>
+<p>For static methods, no need to call init.</p>
+<p>Example shows getting running processes via .Net. Next example is creating Word docs via ColdFusion.</p>
+<p>For datatypes - decimal type not supported. You can use JavaCast on the CF side. JavaCast updated to support byte, short, and char. They have a full mapping of .Net to Java conversions. (Too much to type.)</p>
+<p>A proxy is used to handle communication. This means that if you are on a non-Windows machine, must use a command line tool to create the proxies. Proxies generated for .Net 1.x can be used for 2.0 as well. Proxies generated for 2.0 can only be used for 2.0.</p>
+<p>Deploment scenario: .net and cf on same machine - no configuration - simplest.</p>
+<p>CF and .Net on 2 different machines. The &quot;.Net Side Agent&quot; needs to be installed on other machine and you have to register the assemblies that CF will have access too.</p>
+<p>CF on non-Windows machine. .Net side agent needs to be installed on the .Net machine. Generate proxy. This is done on .Net machine and you copy the generated JAR to the CF machine.</p>
+<p>Limitations:
+Enum and Decimal data type not supported.<br>
+Methods with out parameters as arguments. <br>
+Methods with pointers as arguments or return type.<br>
+.Net UI components<br>
+Callbacks</p>
+}

@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>For the time being, the ability to add new comments to <a href="http://www.cflib.org">CFLib</a> UDFs has been disabled. You can still view existing comments. So why did I do this? Spammers of course. I will probably use a JavaScript pop up window since it seems to work so well on BlogCFC.</p>
+}

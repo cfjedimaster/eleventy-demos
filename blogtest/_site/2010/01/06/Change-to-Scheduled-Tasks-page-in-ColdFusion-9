@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Nothing too critical to report here, but I noticed for the first time last night that ColdFusion 9 now groups scheduled tasks in the Administrator. Each task is grouped by whether it is a one time, daily, or daily every task.</p>
+<img src="https://static.raymondcamden.com/images/tasklist.png" title="Organization FTW" />
+<p>Outside of new settings, are there any other changes people have noticed? The only other one that comes to mind is the new &quot;Save to PDF&quot; option on the Settings Summary.</p>
+}

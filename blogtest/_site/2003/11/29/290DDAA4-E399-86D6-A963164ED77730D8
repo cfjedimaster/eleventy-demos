@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>Two small fixes to the blog 3 beta...</p>
+<ol>
+<li>
+<p>Fixes to editing entries with &lt;more/&gt; being used.</p>
+</li>
+<li>
+<p>Couldn't assign an entry to N categories.</p>
+</li>
+</ol>
+<p>The zip can be found <a href="http://www.camdenfamily.com/morpheus/blog/blog3beta.zip">here</a>. This release has NOT been heavily tested, so be careful.</p>
+}

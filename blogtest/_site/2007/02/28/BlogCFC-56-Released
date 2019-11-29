@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>So I already announced this over at <a href="http://www.blogcfc.com">BlogCFC.com</a>, but it's been a while so I thought I'd mention it here as well. Tonight I released <a href="http://blogcfc.riaforge.org">BlogCFC 5.6</a> to RIAForge, both in zip format and in Subversion. (Although the SVN is being hosted elsewhere for now.)</p>
+<p>There are a lot of small bug fixes included in this release. I haven't had an update for two months now so that tells you how critical these fixes were. But I did add some nice features, including new stats and a much better search feature. (And yes, I will update this blog, but not till I move to the new server.)</p>
+<p>Anyway - enjoy. (30 minutes to my Auckland preso and I'm still somewhat sane. Woohoo!)</p>
+}

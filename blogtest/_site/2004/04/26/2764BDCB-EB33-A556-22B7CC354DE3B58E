@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>I installed Flex on the second machine and now the problem is cropping up again. Something about the Flex install is not working nicely with web services.</p>
+<p>At first I thought things were ok. I installed Flex and confirmed MXML requests worked. My WS, which I had paired down to a method returning 1 did correctly respond. I then modified my WS to return the data it was supposed to - and I got an error about incompatible types. I figured this was the normal issue with CFMX caching WS definitions. However, in the CF Admin/WS listing, I didn't see my WS. I restarted CFMX... no luck. I then went in to cfusionmxroot/wwwroot/WEB-INF/cfc-skeletons and removed the class files I noticed with the same name as my WS.</p>
+<p>I restarted MX again and....</p>
+<p>BAM - back to the class not found exception.</p>
+<p><i>sigh</i></p>
+<p>So, at this point it seems like a Flex issue.</p>
+<p>What is worse is that I restored my web.xml file, before I worked with Flex, stopped CF, removed generated class files and files from cfc-skeletons, restarted CF and I still have the class not found exception.</p>
+}

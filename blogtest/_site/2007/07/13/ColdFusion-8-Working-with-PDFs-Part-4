@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>So far I've covered getting info with PDFs and adding watermarks. In this entry I'll talk about removing pages from a PDF. It will be a short entry as the syntax is rather simple. Why would you want to remove pages? You may want to remove legal junk or other fluff. You may want to take a source PDF and delete most of the PDF to create a preview. Whatever you have in mind, ColdFusion makes it simple to do. Let's take a look at an example.</p>
+<!--more-->
+<p>I'm going to use the same PDF generator I used in the previous entry:</p>
+<code>
+&lt;cfdocument format="pdf" name="mydocument"&gt;
+&lt;cfloop index="x" from="1" to="40"&gt;
+&lt;p&gt;
+doloras lorem upsom doloras paris hilton is my hero loreum ipsom dsoio foom an to dht end of the world
+will anyone actually read this probably not but let me put more realtext in so it flows a bit nicely
+&lt;cfloop index="y" from="1" to="#randRange(1,9)#"&gt;This sentence will appear a random amount of time.&lt;/cfloop&gt;
+&lt;/p&gt;
+&lt;/cfloop&gt;
+&lt;/cfdocument&gt;
+</code>
+<p>I've increased the size a bit. Now let's see how big the PDF is:</p>
+<code>
+&lt;cfpdf action="getinfo" source="mydocument" name="data"&gt;
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+Total pages: #data.totalpages#
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>Because the PDF has a bit of randomness in it, the total you see here will vary. For my last test the number was 5.</p>
+<p>Now lets delete some pages. As you can guess, the action provided to CFPDF is deletePages. To determine what pages are removed, you use the pages attribute. This can be:</p>
+<ul>
+<li>A page number (2 for example)
+<li>A page range (6-10 for exsample)
+<li>Any combination of the above (2,4,9-12)
+</ul>
+<p>For my example I'll delete pages one through three:</p>
+<code>
+&lt;cfpdf action="deletepages" source="mydocument" pages="1-3" overwrite="true" name="mydocument"&gt;
+</code>
+<p>And then display information about the PDF again:</p>
+<code>
+&lt;cfpdf action="getinfo" source="mydocument" name="data"&gt;
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+Total pages now: #data.totalpages#
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>All together here is the demo I wrote:</p>
+<code>
+&lt;cfdocument format="pdf" name="mydocument"&gt;
+&lt;cfloop index="x" from="1" to="40"&gt;
+&lt;p&gt;
+doloras lorem upsom doloras paris hilton is my hero loreum ipsom dsoio foom an to dht end of the world
+will anyone actually read this probably not but let me put more realtext in so it flows a bit nicely
+&lt;cfloop index="y" from="1" to="#randRange(1,9)#"&gt;This sentence will appear a random amount of time.&lt;/cfloop&gt;
+&lt;/p&gt;
+&lt;/cfloop&gt;
+&lt;/cfdocument&gt;
+<p>&lt;cfpdf action=&quot;getinfo&quot; source=&quot;mydocument&quot; name=&quot;data&quot;&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+Total pages: #data.totalpages#
+&lt;/p&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfpdf action=&quot;deletepages&quot; source=&quot;mydocument&quot; pages=&quot;1-3&quot; overwrite=&quot;true&quot; name=&quot;mydocument&quot;&gt;</p>
+<p>&lt;cfpdf action=&quot;getinfo&quot; source=&quot;mydocument&quot; name=&quot;data&quot;&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+Total pages now: #data.totalpages#
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>As an interesting aside, I plan on sharing a demo at the end of this series that demonstrates a lot of these methods rolled together into one application. One of the features my application has is a page viewer. It lets you view one page from a PDF. How did I do this? I simply used deletePages to remove every page <i>but</i> the one you want to see. So while CFPDF doesn't have a getPage action, it is easy enough to build one yourself.</p>
+}

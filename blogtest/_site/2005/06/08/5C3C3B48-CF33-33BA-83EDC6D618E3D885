@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>A user reported an issue with BlueDragon/MySQL. I was able to reproduce the issue. I used code like this:</p>
+<div class="code">,allowcomments = <FONT COLOR=MAROON>&lt;cfqueryparam value=<FONT COLOR=BLUE>"#arguments.allowcomments#"</FONT> cfsqltype=<FONT COLOR=BLUE>"CF_SQL_TINYINT"</FONT>&gt;</FONT></div>
+<p>Which worked fine under CFMX even when the value was a boolean. In BD, it seems as if the queryparam was a bit stricter, which seems to make sense. So I simply added this code (where applicable):</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfif arguments.allowcomments&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfset arguments.allowcomments = 1&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfelse&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfset arguments.allowcomments = 0&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT></div>
+<p>As a warning - watch those queryparams if building code that needs to run both on CFMX and BD. I won't say one is wrong and one is right - but there are definitely differences. Luckily, I've been able to tweak things to run nicely on both platforms w/o using any &quot;hacks.&quot;</p>
+}

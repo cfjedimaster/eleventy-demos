@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>So I've been ranting and raving about how we need to make this the year <i>everyone</i> knows about ColdFusion. Well, I am <i>very</i> happy to say that Yahoo has just updated their <a href="http://developer.yahoo.com/search/">Search SDK</a>, and guess what language makes a <b>brand new appearance??</b>.</p>
+<!--more-->
+<p>Yep - that's right. <b>COLDFUSION!</b> Sorry to &quot;yell&quot; but I'm just that happy about it. The SDK includes both a simple search example and my <a href="http://cfyahoo.riaforge.org/">ColdFusion Yahoo package</a>.</p>
+<p>And there is more coming soon...</p>
+}

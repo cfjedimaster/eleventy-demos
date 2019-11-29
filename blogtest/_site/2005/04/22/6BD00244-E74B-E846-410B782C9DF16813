@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I've blogged about my desire to have a mute button for browsers before. Nothing bugs me more than to have some silly web site play music while my iTunes is playing an mp3. Most of the offenders are Flash apps... and while many have a button to turn sound off, I wish there was a way to simply tell the browser to not let sound out.</p>
+<p>Turns out there is a way - kinda. This <a href="http://virtuelvis.com/archives/2005/04/disable-sound-firefox">blog post</a> mentions how you can use AdBlock to stop certain kinds of media files. I don't think this will work for Flash apps though. I'll have to find one to test with...</p>
+}

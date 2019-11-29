@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Did you ever notice that if you encounter a CF error and use IE, the error template collapses, and hides, the stack trace? Of course, no one <i>I</i> know actually uses IE. All the cool kids use Firefox. Well, it is trivial to update your exception template to hide the strack traces in Firefox as well.</p>
+<p>Open up /web-inf/exception/detail.cfm and find this line:</p>
+<p>&lt;cfset bIE = (cgi.user_agent contains &quot;MSIE&quot;)&gt;</p>
+<p>and change it to:</p>
+<p>&lt;cfset bIE = (cgi.user_agent contains &quot;MSIE&quot; or cgi.user_agent contains &quot;Firefox&quot;)&gt;</p>
+<p>That's it. Enjoy.</p>
+}

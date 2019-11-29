@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I needed to quickly setup SSL for IIS this morning. I didn't need a <i>real</i> certificate, just something that would allow https:// to work. Once again, Google comes to the rescue with this helpful <a href="http://www.somacon.com/iis_ssl/">page</a>.</p>
+}

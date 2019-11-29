@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>In the ColdFusion IRC channel today, someone asked about reading just the top portion of a file. While she was looking for a command line solution and not ColdFusion, I thought it would be interesting to share how easy it is in ColdFusion 8 using the new file attribute to CFLOOP. This code will loop over the first ten lines of a file and display them:</p>
+<code>
+&lt;cfset myfile = server.coldfusion.rootdir & "/logs/server.log"&gt;
+<p>&lt;cfset c = 0&gt;
+&lt;cfloop file=&quot;#myfile#&quot; index=&quot;line&quot;&gt;
+&lt;cfoutput&gt;#line#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;cfset c++&gt;
+&lt;cfif c gte 10&gt;
+&lt;cfbreak&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>I first create a variable to point to my server.log file. I then create a counter variable &quot;c&quot;. Then I simply use the file attribute for cfloop to loop over the file. When I hit 10 lines, I break. No matter how big the file is, this code will run extremely fast as it won't need to parse in the entire file. My server.log file could be 10 gigs and this would still run quickly.</p>
+<p>But wait - it gets betteer. <a href="http://www.phusor.com/">TJ Downes</a> pointed out that you can provide a FROM and TO and the tag will actually display a slice, or portion, of the file. This is <b>not</b> documented as far as I know. The following code is shorter and equivalent to the earlier listing:</p>
+<code>
+&lt;cfset myfile = server.coldfusion.rootdir & "/logs/server.log"&gt;
+<p>&lt;cfloop file=&quot;#myfile#&quot; index=&quot;line&quot; from=&quot;1&quot; to=&quot;10&quot;&gt;
+&lt;cfoutput&gt;#line#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>One thing to watch out - if you try to read beyond the size of the file, you will get an error. In that case, the first listing would be safer as it would support a file of any size.</p>
+}

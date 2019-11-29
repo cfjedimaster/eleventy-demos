@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Another misconception about CFMODULE (and custom tags) - when you call a custom tag, if an application.cfm exists in the same folder as the tag (or above), it is not run. To say it a bit better, calling a custom tag does not cause an application.cfm to be run. Don't be confused though - the caller will still run an application.cfm file if one is found.</p>
+}

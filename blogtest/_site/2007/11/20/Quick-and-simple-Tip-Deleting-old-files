@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<p>Got a log directory that gets stuffed with files? Want a quick and simple way to clean out old files? Here is a simple code snippet. It will scan one directory and remove any file more than 30 days old.</p>
+<!--more-->
+<code>
+&lt;cfset logdir = "/Applications/ColdFusion8/logs"&gt;
+<p>&lt;cfdirectory action=&quot;list&quot; directory=&quot;#logdir#&quot; name=&quot;files&quot; type=&quot;file&quot;&gt;</p>
+<p>&lt;cfset thirtydaysago = dateAdd(&quot;d&quot;, -30, now())&gt;</p>
+<p>&lt;!--- get older files ---&gt;
+&lt;cfquery name=&quot;oldfiles&quot; dbtype=&quot;query&quot;&gt;
+select	name
+from	files
+where	datelastmodified &lt; &lt;cfqueryparam cfsqltype=&quot;cf_sql_timestamp&quot; value=&quot;#thirtydaysago#&quot;&gt;
+&lt;/cfquery&gt;</p>
+<p>&lt;cfoutput&gt;Out of #files.recordCount# files, there are #oldfiles.recordCount# to delete.&lt;/cfoutput&gt;</p>
+<p>&lt;cfif oldfiles.recordCount&gt;
+&lt;cfloop query=&quot;oldfiles&quot;&gt;
+&lt;cffile action=&quot;delete&quot; file=&quot;#logdir#/#name#&quot;&gt;
+&lt;/cfloop&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>Not much going on here. I'll point out the type=&quot;file&quot; attribute to cfdirectory. This was added in ColdFusion 8. It tells the tag to only return files, not subdirectories. Outside of that the code just uses query of query to gather files of a certain age (I won't say old, let's be polite) and it then loops over them to delete them.</p>
+<p>In my next post I'll show an alternative - archiving to a zip.</p>
+<p><b>Edit: I had my &lt; and &gt; messed up above. It is right now.</b></p>
+}

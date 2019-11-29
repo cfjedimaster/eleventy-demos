@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Great presentation, and as always, it covers a topic that CF users simply do not pay attention to (myself inclded). Two very cool applications demonstrated in the presentation that I had not seen before:</p>
+<p><a href="http://www.openqa.org/selenium/">Selenium</a> is a cool web based testing application. It's free and simple to use. There is a Firefox plugin that makes it even easier.</p>
+<p><a href="http://grinder.sourceforge.net/">Grinder</a> is a Java based load tester. I've used the free one from Microsoft before but this looks like something worth checking out as well.</p>
+<p>And of course he talked a lot about <a href="http://www.cfcunit.org/">CFCUnit</a>, which I can't load now due to the buggy wi-fi here. Please forgive any duplicate posts when I submit.</p>
+}

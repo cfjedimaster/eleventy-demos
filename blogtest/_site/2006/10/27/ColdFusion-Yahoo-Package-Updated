@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>I've updated my ColdFusion Yahoo package. You can download it from <a href="http://cfyahoo.riaforge.org">RIAForge</a>. New in this release is support for term extraction (find relevant keywords from a block of text) and audio searching. You can search for artists, songs, albums, and even places to buy music.</p>
+<p>The Yahoo Package now contains easy APIs for...</p>
+<ul>
+<li>Answers
+<li>Audio
+<li>Geocoding
+<li>Maps
+<li>Search
+<li>Term Extraction
+<li>Traffic
+<li>Weather
+</ul>}

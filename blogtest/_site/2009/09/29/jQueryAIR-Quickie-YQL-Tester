@@ -1,0 +1,34 @@
+<h1>Post</h1>
+
+<p>This is absolutely pointless, but I love the fact that it took all of five minutes to write. I've been playing quite a bit with YQL lately (I wrote about it <a href="http://www.raymondcamden.com/index.cfm/2009/9/10/Yahoo-Query-Language">here</a>) and even wrote a simple ColdFusion wrapper for it. I thought I'd take a look at how difficult it would be to write a jQuery based &quot;tester&quot;. Ie, something I could write basic YQL text in and then see the results. I began with a few building HTML building blocks:</p>
+<!--more-->
+<code>
+&lt;form&gt;
+&lt;textarea id="yql" style="width:100%;height:75px"&gt;SELECT * FROM flickr.photos.search WHERE text="cat"&lt;/textarea&gt;
+&lt;input type="button" id="btn" value="Run"&gt;
+&lt;/form&gt;
+<p>&lt;div id=&quot;result&quot;&gt;&lt;/div&gt;
+</code></p>
+<p>As you can see, I've got a textarea, a button, and a div for my results. Why the hard coded YQL? During testing, I hate having to enter things in. I decided to leave this in so folks can immediately see some sample YQL. I then whipped up some jQuery:</p>
+<code>
+$(document).ready(function() {
+<pre><code>$(&quot;#btn&quot;).click(function() {
+	var yql = $(&quot;#yql&quot;).val()
+	yql = $.trim(yql)
+	//air.trace('yql: '+yql)
+	if(yql == &quot;&quot;) return
+	$(&quot;#result&quot;).html(&quot;&amp;lt;i&amp;gt;Loading...&amp;lt;/i&amp;gt;&quot;)
+	$.getJSON(&quot;http://query.yahooapis.com/v1/public/yql?q=&quot;+escape(yql)+&quot;&amp;format=json&quot;,function(data) {
+		$(&quot;#result&quot;).html($.dump(data.query.results))			
+	})
+})
+</code></pre>
+<p>})
+</code></p>
+<p>So basically - get the value from the textarea and then pass it to Yahoo. I then dump the results. How? I modified the free code from this <a href="http://www.netgrow.com.au/files/javascript_dump.cfm">site</a>. The author created a basic JavaScript equivalent of dump and another contribute created a jQuery plugin version. Unfortunately, the code automatically used a new window for the dump. I modified this to just return the output. (I need to get the click events working, but for now, I'm satisfied.) With that simple mod, well, you can see then it just took one line.</p>
+<p>And um, that's it. I wish there was more, but it just plain works. Really goes to show how nice jQuery is and how simple the YQL API is to work with. Here is a screen shot:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2009-09-29 at 5.03.26 PM.png" />
+<p>And finally, a quick installer badge if you want to play with it.</p>
+<p><b>Removed the badge. Need more time to figure out the bug on my blog. Just download below.</b></p>
+<p>p.s. If the badge fails to load (my preview isn't showing) you can download it below.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FYQLTester%2Ezip'>Download attached file.</a></p></p>
+}

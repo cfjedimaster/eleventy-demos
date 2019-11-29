@@ -1,0 +1,81 @@
+<h1>Post</h1>
+
+<p>This morning one of the ColdFusion support forums I subscribe to asked about how one could work with a ColdFusion query sent over Ajax to jQuery. I whipped up a quick example of one way (remember - like ColdFusion - there are many ways to do things in jQuery) you could do it. To start off, I'll show the CFC I'll be using to feed data to the Ajax-based front end. Notice how nothing in it is Ajax-specific. Outside of the fact that it has remote access, this is just a vanilla script-based CFC.</p>
+<!--more-->
+<p>
+<code>
+component {
+<pre><code>remote query function getArt(string search=&quot;&quot;) {
+
+	var q = new com.adobe.coldfusion.query();
+    q.setDatasource(&quot;cfartgallery&quot;);
+    q.setSQL(&quot;select artid, artname, price, description from art where description like :search or artname like :search&quot;);
+    q.addParam(name=&quot;search&quot;,value=&quot;%#arguments.search#%&quot;,cfsqltype=&quot;cf_sql_varchar&quot;);
+    return q.execute().getResult();
+	    
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>The component has one method, getArt. It allows for an optional search search. When run we query against the art table that ships with the ColdFusion samples and returns the id, name, price, and description of each piece of art. Now let's look at the front end.</p>
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>$(document).ready(function() {</p>
+<pre><code>$(&quot;#searchbtn&quot;).click(function(e) {
+	var search = $.trim($(&quot;#search&quot;).val());
+	
+	$.post(&quot;test.cfc?method=getArt&amp;returnFormat=json&amp;queryFormat=column&quot;, {&quot;search&quot;:search}, function(res,code) {
+		if(res.ROWCOUNT &amp;gt; 0) {
+			var s = &quot;&amp;lt;table border='1'&amp;gt;&amp;lt;tr&amp;gt;&amp;lt;th&amp;gt;Name&amp;lt;/th&amp;gt;&amp;lt;th&amp;gt;Price&amp;lt;/th&amp;gt;&amp;lt;th&amp;gt;Description&amp;lt;/th&amp;gt;&amp;lt;/tr&amp;gt;&quot;;
+			for(var i=0; i&amp;lt;res.ROWCOUNT; i++) {
+				s += &quot;&amp;lt;tr&amp;gt;&amp;lt;td&amp;gt;&quot; + res.DATA.ARTNAME[i] + &quot;&amp;lt;/td&amp;gt;&quot;;
+				s += &quot;&amp;lt;td&amp;gt;&quot; + res.DATA.PRICE[i] + &quot;&amp;lt;/td&amp;gt;&quot;;
+				s += &quot;&amp;lt;td&amp;gt;&quot; + res.DATA.DESCRIPTION[i] + &quot;&amp;lt;/td&amp;gt;&quot;;
+				s += &quot;&amp;lt;/tr&amp;gt;&quot;;
+			}
+			s += &quot;&amp;lt;/table&amp;gt;&quot;;
+		} else {
+			var s = &quot;Sorry, nothing matched your search.&quot;;
+		}
+		$(&quot;#results&quot;).html(s);
+			
+	},&quot;json&quot;);
+	
+	e.preventDefault();
+});
+</code></pre>
+<p>});</p>
+<p>&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form&gt;
+&lt;input type=&quot;text&quot; id=&quot;search&quot;&gt; &lt;input type=&quot;submit&quot; id=&quot;searchbtn&quot; value=&quot;Search&quot;&gt;
+&lt;/form&gt;
+&lt;div id=&quot;results&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;</p>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>Before we go up to the JavaScript, let's take a quick look at the layout on the bottom. I've got a search text field, a button, and a blank div. Obviously the text field is where you will enter search terms. The button will fire off the event. And lastly, the blank div will be used to draw out the results.</p>
+<p>
+<p>Now let's go back to the code. The first thing we do is grab (and trim) the search text. We want to allow you to get data even if you don't enter anything so we don't leave the method if the value is empty. Next we do the actual POST operation. I could have used a GET here since the amount of text you end up sending will be small, but POST just seems safer to me.</p>
+<p>
+<p>Now - I want to point out something interesting about the URL. First - we use returnFormat=json to tell ColdFusion to automatically convert the result into JSON. The second argument is a bit different. When ColdFusion serializes queries it can do so in two ways. The queryformat attribute let's us pick one. The default value is row. When you row, the result looks like this:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/screenrow.png" />
+<p>
+<p>Notice that the result contains a COLUMNS array and a DATA array. The DATA array is setup so that the Nth item in the array relates to the Nth COLUMNS value. So to get the ARTNAME for example, you have to know that ARTNAME is array item 1. Totally workable - you can translate the COLUMNS array into a structure. But I thought it might be easier if we switched to the column format. Check out how that looks:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/screencol.png" />
+<p>
+<p>This structure is a a bit simpler. Now our DATA value is a struct where each key is a column that is an array of values. Notice how in the JavaScript I can simply loop from 1 to the included ROWCOUNT value.</p>
+<p>
+<p>If you want to see this in action, hit the big Demo button below. As always, I recommend using a tool like Firebug, Charles, or Chrome's Dev Tools, so you can see the data flowing in the background.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/nov92010/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

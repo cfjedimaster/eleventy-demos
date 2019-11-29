@@ -1,0 +1,148 @@
+<h1>Post</h1>
+
+<p>My past set of blog entries on ColdFusion 10 and web sockets has focused on a simple chat application that I slowly improved over time with various features (and security fixes). Today I thought I'd release a demo of a simpler application - a basic whiteboard. The whiteboard makes use of HTML5 Canvas and web sockets to allow multiple people to draw at the same time. It doesn't do anything fancy like say who is drawing what or allow for erasing, but it does allow for awesome collaborative art like this:</p>
+<p/>
+<!--more-->
+<img src="https://static.raymondcamden.com/images/ScreenClip34.png" />
+<p>
+<p>So, how does it work? Let's look at the code:</p>
+<p>
+<p>First - do not forget that web sockets must be defined in your Application.cfc file. You define your channels and any listeners. In this example, we don't have a CFC listener so it's rather simple:</p>
+<p>
+<code>
+component {
+	this.name="websocket_whiteboard";
+<pre><code>this.wschannels = [
+	{name=&quot;whiteboard&quot;}
+];
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>My main file begins with the cfwebsocket tag:</p>
+<p>
+<code>
+&lt;cfwebsocket name="whiteboardWS" subscribeTo="whiteboard" 
+			 onMessage="msgHandler"&gt;
+</code>
+<p>
+<p>Remember - the purpose of this tag is to tell ColdFusion to output the relevant client-side code to support web sockets. It also automatically subscribes the user to the whiteboard channel and declares that messages should run a handler named msgHandler. Now let's look at the JavaScript:</p>
+<p>
+<code>
+<p>var pointX, pointY;
+var oldX, oldY;
+var canvas;
+var userid;</p>
+<p>function msgHandler(message){
+//notice welcome
+if (message.type == &quot;response&quot; &amp;&amp; !userid) {
+userid = message.clientid;	
+}
+if (message.type == &quot;data&quot;) {
+var data = JSON.parse(message.data);
+//console.dir(m);
+//console.dir(data);
+if(data.origin == userid) return;
+console.dir(data);
+canvas.beginPath();
+canvas.moveTo(data.from.x, data.from.y);
+canvas.lineTo(data.to.x,data.to.y);
+canvas.stroke();
+canvas.closePath();
+}
+}</p>
+<p>$(document).ready(function() {
+var whiteboard = $(&quot;#whiteboard&quot;);
+canvas = whiteboard[0].getContext(&quot;2d&quot;);
+var offset = whiteboard.offset();</p>
+<pre><code>whiteboard.bind(&quot;mousedown&quot;, function(e) {
+	canvas.beginPath();
+	pointX = e.clientX-offset.left;
+	pointY = e.clientY-offset.top;
+	canvas.arc(pointX,pointY, 2, 0, Math.PI*2,false);
+	canvas.strokeStyle = &quot;#000&quot;;
+	canvas.stroke();
+	if(oldX &amp;&amp; oldY) {
+		canvas.lineTo(oldX,oldY);
+		canvas.stroke();
+		whiteboardWS.publish(&quot;whiteboard&quot;, {type:&quot;draw&quot;,origin:userid, from:{x:pointX,y:pointY},to:{x:oldX,y:oldY}});
+	}
+	oldX=pointX, oldY=pointY;
+});
+</code></pre>
+<p>})
+</code></p>
+<p>
+<p>The code consists of two main parts. I've got a canvas that supports mousedown events. For each click, we draw a small circle for the point, and then see if a previous location was drawn. If so, we then draw a line connecting them. The &quot;magic&quot; happens here though:</p>
+<p>
+<code>
+whiteboardWS.publish("whiteboard", {type:"draw",origin:userid, from:{x:pointX,y:pointY},to:{x:oldX,y:oldY}});
+</code>
+<p>
+<p>This broadcasts out over the web socket the line that was just drawn. Now take a look at the msgHandler. For the most part, the logic should be simple - take in the commands - the lines - and draw them. But we don't want to draw <i>our</i> lines, so we've got a bit of code in there to handle noticing lines broadcast from myself. This is done by listening to a &quot;response&quot; message that comes in on the connection and contains a unique identifier for the user. And that's it. You can find the demo below, and the full source of index.cfm as well.</p>
+<p>
+<p><a href="http://fivetag-cf10beta.securecb1cf10.ezhostingserver.com/whiteboard/"><img src="https://static.raymondcamden.com/images/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<code>
+&lt;cfwebsocket name="whiteboardWS" subscribeTo="whiteboard" 
+			 onMessage="msgHandler"&gt;
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+var pointX, pointY;
+var oldX, oldY;
+var canvas;
+var userid;</p>
+<p>function msgHandler(message){
+//notice welcome
+if (message.type == &quot;response&quot; &amp;&amp; !userid) {
+userid = message.clientid;	
+}
+if (message.type == &quot;data&quot;) {
+var data = JSON.parse(message.data);
+//console.dir(m);
+//console.dir(data);
+if(data.origin == userid) return;
+console.dir(data);
+canvas.beginPath();
+canvas.moveTo(data.from.x, data.from.y);
+canvas.lineTo(data.to.x,data.to.y);
+canvas.stroke();
+canvas.closePath();
+}
+}</p>
+<p>$(document).ready(function() {
+var whiteboard = $(&quot;#whiteboard&quot;);
+canvas = whiteboard[0].getContext(&quot;2d&quot;);
+var offset = whiteboard.offset();</p>
+<pre><code>whiteboard.bind(&quot;mousedown&quot;, function(e) {
+	canvas.beginPath();
+	pointX = e.clientX-offset.left;
+	pointY = e.clientY-offset.top;
+	canvas.arc(pointX,pointY, 2, 0, Math.PI*2,false);
+	canvas.strokeStyle = &quot;#000&quot;;
+	canvas.stroke();
+	if(oldX &amp;&amp; oldY) {
+		canvas.lineTo(oldX,oldY);
+		canvas.stroke();
+		whiteboardWS.publish(&quot;whiteboard&quot;, {type:&quot;draw&quot;,origin:userid, from:{x:pointX,y:pointY},to:{x:oldX,y:oldY}});
+	}
+	oldX=pointX, oldY=pointY;
+});
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;style&gt;
+#whiteboard {
+border-style: solid;
+border-width: thin;
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;canvas id=&quot;whiteboard&quot; width=&quot;500&quot; height=&quot;500&quot;&gt;&lt;/canvas&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

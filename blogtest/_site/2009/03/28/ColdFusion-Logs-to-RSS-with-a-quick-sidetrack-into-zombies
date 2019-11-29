@@ -1,0 +1,180 @@
+<h1>Post</h1>
+
+<p>A reader on Friday asked a pretty cool question:</p>
+<blockquote>
+<p>
+I really haven't looked into this, but was hoping that someone had already thought of it: I'd like to take a ColdFusion log file (like app.log) and transform to an RSS feed. Any kind of weird parsing that goes on there? I would assume you'd have to convert the log file to some sort of structure... Text Transformation is certainly not my strong suit, maybe one of the reasons I failed that perl class in college.
+</p>
+</blockquote>
+<p>Didn't the designers of Perl <i>want</i> folks to fail? No? Ok, moving on. So I thought this was a great idea. RSS is a great way to receive updates, and monitoring a log file via RSS could be an awesome way to keep up on things... just as long as the log file isn't going crazy with updates.</p>
+<!--more-->
+<p>So let's take a quick look at how you can accomplish this. The task really isn't that difficult. We need to:</p>
+<p>a) Read the log file (easy!)<br/>
+b) Parse the string (kinda easy!)&lt;br/ &gt;
+c) Convert the string into a query object (not so tough!)<br/>
+d) Convert the query into RSS (simple with CFFEED!)<br/></p>
+<p>One at a time, here we go.</p>
+<code>
+&lt;cfinclude template="udf.cfm"&gt;
+<p>&lt;!--- log file ---&gt;
+&lt;cfset logfile = &quot;/Applications/ColdFusion8/logs/application.log&quot;&gt;</p>
+<p>&lt;cfif not fileExists(logfile)&gt;
+&lt;cfoutput&gt;Log file &quot;#logfile#&quot; does not exist.&lt;/cfoutput&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>I begin by including a UDF library, which in this case is one UDF, <a href="http://www.cflib.org/udf/CSVtoArray">CSVtoArray</a>. I define my log file with a hard coded pointer to the file I want to parse and my local CF install. (Yes, there is a <a href="http://www.raymondcamden.com/index.cfm/2009/2/11/Determining-the-location-of-ColdFusions-log-files">way</a> to find that path dynamically.) I then do a quick sanity check to ensure the file actually exists. Moving on...</p>
+<code>
+&lt;!--- our data, in line form ---&gt;
+&lt;cfset lines = []&gt;
+<p>&lt;!--- flag to let us ignore the first line ---&gt;
+&lt;cfset doneOne = false&gt;
+&lt;cfloop index=&quot;l&quot; file=&quot;#logfile#&quot;&gt;
+&lt;cfif doneOne&gt;
+&lt;cfset arrayAppend(lines, l)&gt;
+&lt;cfelse&gt;
+&lt;cfset doneOne = true&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;!--- reverse it. This code is the suck. Please be aware it is the suck. ---&gt;
+&lt;cfset latestLines = []&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;#arrayLen(lines)#&quot; to=&quot;#max(1,arrayLen(lines)-20)#&quot; step=&quot;-1&quot;&gt;
+&lt;cfset arrayAppend(latestLines, lines[x])&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>Ok, now before going on, I know some of you are screaming at your monitor now. This is <b>not a good way</b> to get the end of the file. Remember we want to show the latest updates in our RSS feed. My code loops through the file, adding each line to an array. I then reverse it by grabbing the last 20 lines. This works, but let me stress. It sucks. It can be done better. I'm going to leave that for tomorrow. For now though, just remember that this is not the most efficient way to get the end of a file.</p>
+<p>I now have an array of 20 lines (at most) of text. These are in the format of:</p>
+<p>&quot;Severity&quot;,&quot;ThreadID&quot;,&quot;Date&quot;,&quot;Time&quot;,&quot;Application&quot;,&quot;Message&quot;<br/>
+&quot;Information&quot;,&quot;jrpp-18&quot;,&quot;12/23/08&quot;,&quot;15:21:20&quot;,,&quot;/Applications/ColdFusion8/logs/application.log initialized&quot;<br/>
+&quot;Error&quot;,&quot;jrpp-26&quot;,&quot;12/23/08&quot;,&quot;17:02:44&quot;,&quot;ApplicationName&quot;,&quot;Variable X is undefined. The specific sequence of files included or processed is: /Library/WebServer/Documents/test4.cfm, line: 6 &quot;<br/></p>
+<p>The first line is a header of columns (which I skipped when reading in the file) and each line is comma delimited and wrapped in quotes. Luckily I can parse this format using the csvToArray UDF mentioned earlier. The only issue I have with the UDF is that it expects a file, not one line. You will see how I handle that in the code below.</p>
+<code>
+&lt;!--- query to send to cffeed ---&gt;
+&lt;cfset q = queryNew("publisheddate,title,content")&gt;
+<p>&lt;!--- for each line, parse it into an array, and add to our query ---&gt;
+&lt;cfloop index=&quot;l&quot; array=&quot;#latestLines#&quot;&gt;
+&lt;cfset data = csvToArray(l)&gt;
+&lt;!--- udf expected N lines, we sent it one, so quickly copy over itself ---&gt;
+&lt;cfset data = data[1]&gt;</p>
+<pre><code>&amp;lt;cfset queryAddRow(q)&amp;gt;
+&amp;lt;!--- array pos 3 and 4 is date and time ---&amp;gt;
+&amp;lt;cfset querySetCell(q, &quot;publisheddate&quot;, data[3] &amp; &quot; &quot; &amp; data[4])&amp;gt;
+&amp;lt;!--- pos 6 is the full string ---&amp;gt;
+&amp;lt;cfset querySetCell(q, &quot;content&quot;, data[6])&amp;gt;
+&amp;lt;!--- make a title from the full string ---&amp;gt;
+&amp;lt;cfset title = left(data[6],100)&amp;gt;
+&amp;lt;cfif len(data[6]) gt 100&amp;gt;
+	&amp;lt;cfset title &amp;= &quot;...&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfset querySetCell(q, &quot;title&quot;, title)&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>The first line above creates the query that I'll give to CFFEED. Well don't forget that when creating RSS feeds with a query, you need to either a) name your columns right or b) use the columnMap feature to tell the feed generator to map certain RSS items to particular query columns. Since I'm building the query from scratch I'll just use the columns that make sense for RSS. I parse the line (and notice how I copy the array over itself, I explained why above), and then I simply copy relevant data items over into my query.</p>
+<p>I made the call that I'd use the date, time, and message values from the ColdFusion log. That made the most sense for this type of log. Other log files would probably warrant different logic. I combine the date and time when adding it to the query. Message comes in as is, and I reuse a portion of the message for my title. 100 characters isn't an RSS requirement - it just felt right for the feed.</p>
+<p>We have our data, but there is one more step before we can create an RSS feed. We have to give some metadata about the feed. The values I chose here were completely arbitrary and really don't matter that much, but they are required by the CFFEED tag.</p>
+<code>
+&lt;cfset meta = {
+	version="rss_2.0",
+	title="ColdFusion Application Logs",
+	link="http://null",
+	description="Latest log items."
+}&gt;
+</code>
+<p>Woot! That's it. Now to just actually convert the query into RSS and serve it up.</p>
+<code>
+&lt;cffeed action="create" query="#q#" properties="#meta#" xmlVar="rss"&gt;
+<p>&lt;cfcontent type=&quot;text/xml; chartset=utf-8&quot;&gt;&lt;cfoutput&gt;#rss#&lt;/cfoutput&gt;
+</code></p>
+<p>You can see the output here, but note that it is a static export, not a live copy: <a href="http://www.coldfusionjedi.com/demos/cfrss/test.xml">http://www.coldfusionjedi.com/demos/cfrss/test.xml</a></p>
+<p>As I said, woot! Nothing says excitement like ColdFusion log files. Maybe we can kick it up a notch? For fun, I decided to build a simple little zombie infestation simulator. It takes a pool of 100 people. Every 'round' there is a chance the infestation will start. Once it done, every round will end up with either a dead zombie or a dead human and one more zombie. (Guess who tends to win?) I wrote the simulator to not only output to the screen but also log the values as well. Check it out:</p>
+<code>
+&lt;cffunction name="logit" returnType="void" output="true" hint="Handle cflogging and printing."&gt;
+	&lt;cfargument name="str" type="string" required="true"&gt;
+	&lt;cfargument name="color" type="string" required="false"&gt;
+<pre><code>&amp;lt;cfif structKeyExists(arguments,&quot;color&quot;) and len(arguments.color)&amp;gt;
+	&amp;lt;cfoutput&amp;gt;&amp;lt;span style=&quot;color: #arguments.color#&quot;&amp;gt;&amp;lt;/cfoutput&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfoutput&amp;gt;#arguments.str# [Humans: #humanpop# / Zombies: #zombiepop#]&amp;lt;/cfoutput&amp;gt;
+&amp;lt;cfif structKeyExists(arguments,&quot;color&quot;) and len(arguments.color)&amp;gt;
+	&amp;lt;/span&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;br /&amp;gt;
+&amp;lt;cflog file=&quot;zombie&quot; text=&quot;#arguments.str# [Humans: #humanpop# / Zombies: #zombiepop#]&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;!--- initial human pop ---&gt;
+&lt;cfset humanpop = 100&gt;</p>
+<p>&lt;!--- initial zombie pop ---&gt;
+&lt;cfset zombiepop = 0&gt;</p>
+<p>&lt;!--- has the infection began? ---&gt;
+&lt;cfset infectionOn = false&gt;</p>
+<p>&lt;!--- sanity check, if we hit this, abort ---&gt;
+&lt;cfset y = 1&gt;</p>
+<p>&lt;!--- checks to see if we are done ---&gt;
+&lt;cfset simDone = false&gt;</p>
+<p>&lt;cfloop condition=&quot;not simDone &amp;&amp; y lt 1000&quot;&gt;</p>
+<pre><code>&amp;lt;!--- ok, if no infection, we have a 5% chance of starting it. ---&amp;gt;
+&amp;lt;cfif not infectionOn&amp;gt;
+	&amp;lt;cfif randRange(1,100) lte 5&amp;gt;
+		&amp;lt;cfset infectionOn = true&amp;gt;
+		&amp;lt;cfset humanpop--&amp;gt;
+		&amp;lt;cfset zombiepop++&amp;gt;
+		&amp;lt;cfset logit(&quot;Zombie infestation begun.&quot;)&amp;gt;	
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfset logit(&quot;All good!&quot;)&amp;gt;		
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;cfelse&amp;gt;
+
+	&amp;lt;!--- Ok, we either kill a human or a zombie. 
+	The more zombies, the greater chance a human dies.
+	Zombies only have a chance to die when the grow in #, since people won't worry about them until they mass up. 
+	It is a bit too late when the zombies mass up, but guess what, thats how these things work.
+	
+	Tweak the +/- to help/hinder the survival rate
+	---&amp;gt;
+	
+	&amp;lt;cfset chanceHumanDied = randRange(1,zombiePop) + 4&amp;gt;
+	&amp;lt;cfset chanceZombieDied = randRange(1,zombiePop) - 0&amp;gt;
+	
+	&amp;lt;cfif randRange(1,100) lte chanceHumanDied&amp;gt;
+		&amp;lt;cfset humanpop--&amp;gt;
+		&amp;lt;cfset zombiepop++&amp;gt;
+		&amp;lt;cfset logit(&quot;Zombie killed a human.&quot;,&quot;red&quot;)&amp;gt;
+	&amp;lt;cfelseif randRange(1,100) lte chanceZombieDied&amp;gt;
+		&amp;lt;cfset zombiepop--&amp;gt;
+		&amp;lt;cfset logit(&quot;Human killed a zombie.&quot;,&quot;green&quot;)&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfset logit(&quot;Nothing happend this time.&quot;)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;/cfif&amp;gt;	
+
+&amp;lt;!--- end the sim if humanpop is 0 or infection started and the zombies were slain ---&amp;gt;
+&amp;lt;cfif humanpop is 0&amp;gt;
+	&amp;lt;cfset logit(&quot;All humans killed. Sim done.&quot;)&amp;gt;
+	&amp;lt;cfset simDone = true&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif infectionOn and zombiepop is 0&amp;gt;
+	&amp;lt;cfset logit(&quot;All zombies killed. Sim done.&quot;)&amp;gt;
+	&amp;lt;cfset simDone = true&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- This is my sanity check in case my logic is crap ---&amp;gt;	
+&amp;lt;cfset y++&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>You can run this yourself here: <a href="http://www.coldfusionjedi.com/demos/cfrss/sim.cfm">http://www.coldfusionjedi.com/demos/cfrss/sim.cfm</a> Have fun. I know I ran it about a hundred times or so. I then used the same code above (and attached to this entry), with a slight modification to the RSS properties:</p>
+<code>
+&lt;cfset meta = {
+	version="rss_2.0",
+	title="FunCo Mall Security Logs",
+	link="http://null",
+	description="Latest log items."
+}&gt;
+</code>
+<p>You can view that XML here: <a href="http://www.coldfusionjedi.com/demos/cfrss/zombie.xml">http://www.coldfusionjedi.com/demos/cfrss/zombie.xml</a> (Again, not 'live', just a save from my machine.)</p>
+<p>Enjoy. I attached all the files to the blog entry.<p><a href='enclosures/E%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fzombie%2Ezip'>Download attached file.</a></p></p>
+}

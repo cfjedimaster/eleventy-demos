@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Just a quick note to say I've released a new extension for <a href="http://code.visualstudio.com">Visual Studio Code</a>. This extension simply takes a document and outputs an escaped version of it appropriate for blog posts
+or other online forums. This is basically the same thing I built for Brackets, but it wasn't possible for
+Visual Studio Code until the release this month. Here's an example of how it looks.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/02/vsc_preview.gif" alt="Example"></p>
+<p>The code I used was based on a simple example made by Erich Gamma of Microsoft. Shoot, 90% of the code is his and I just modified the bare minimum to create my extension. You can find my code here (<a href="https://github.com/cfjedimaster/htmlescape-vscode">https://github.com/cfjedimaster/htmlescape-vscode</a> and you can install it directly within Visual Studio Code itself. You can also download the packaged version
+from the <a href="https://marketplace.visualstudio.com/items?itemName=raymondcamden.htmlescape-vscode-extension">gallery</a> as well.</p>
+}

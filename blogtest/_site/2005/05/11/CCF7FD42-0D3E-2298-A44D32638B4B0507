@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Something very odd happaned today. On a page running a chart, the Flash plugin would throw an error and force the browser to crash. I reproduced this among multiple machines and with both IE and Firefox. Since I had never seen this before I was really thrown for a loop.</p>
+<p>I decided to pop over to the CF Admin to see if anything was logged. I then discovered that the server had reverted to Developer mode and I wasn't allowed in. I went to the box itself - entered the serial - restarted - and when I returned to the site with my browser it all worked fine.</p>
+<p>So - something to look out for folks!</p>
+}

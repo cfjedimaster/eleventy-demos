@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Somone posted the following question on one of the lists I belong to...</p>
+<p>&quot;I have a string of IDs, like so: 3 91 64 37, but I'm not sure how to extract the values since the list doesn't have commas.&quot;</p>
+<p>Don't forget that all list functions, even the cfloop tag, allow you to specify which delimiter to use when parsing the list.</p>
+<p>In her case, all she needed to do was specify the space character as a delimiter.</p>
+}

@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>Ok, this isn't a huge deal - it's no ORM or script based CFCs - however, this is something that has bugged me a for a <b>long</b> time and I'm darn happy to see it fixed. As you know, or hopefully know, ColdFusion has long included a simple way to do server side form validation. This was achieved using form fields with certain names. While this feature was.... ok... it wasn't very graceful and no one I knew actually used the feature in production.</p>
+<p>However - many people would get tripped up by it. If you accidentally named your form fields wrong, ColdFusion would validate them whether you wanted to or not. You would see a post on CF-Talk about it, folks would mention the feature, the dev would rename his form fields, and life would go on.</p>
+<p>Then came Facebook. It's a small social networking site. Maybe you heard of it? One of the ways Facebook's API can integrate with applications is via HTTP POST... and guess what? Facebook uses one of those 'bad' form field names. I mentioned this in my <a href="http://www.adobe.com/devnet/coldfusion/articles/coldfusion_facebook.html">article</a> on Facebook and ColdFusion integration. There <i>is</i> a workaround, but, wouldn't it be nice if you could <b>just turn the darn feature off</b>? Now you can.</p>
+<p>Simple add this new setting within your Application.cfc:</p>
+<code>
+this.serverSideFormValidation="false";
+</code>
+<p>And that's it. I recommend this for all ColdFusion 9 sites. Even if you know to avoid the 'special' form field names, a new developer may not, and this simply makes the problem go away.</p>
+<p>p.s. You can set it in the cfapplication tag as well, but we've all migrated to Application.cfc, right?</p>
+}

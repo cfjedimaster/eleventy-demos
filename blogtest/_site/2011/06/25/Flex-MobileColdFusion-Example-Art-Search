@@ -1,0 +1,253 @@
+<h1>Post</h1>
+
+<p>During my <a href="http://www.raymondcamden.com/index.cfm/2011/6/24/Slides-code-and-recording-from-my-Flex-MobileColdFusion-presentation">presentation</a> earlier this week, I showed an example of a Flex Mobile application that spoke to ColdFusion for it's data. It was a simple application (search and detail records for art work), but I thought I'd take the time to explain it a bit more. It shouldn't be considered a 100% complete application (and I'll end with some notes about what I'd consider adding to make it complete), but I hope it can give you an example what it's like to mix Flex and ColdFusion on the mobile platform.</p>
+<!--more-->
+<p/>
+<p>Let me begin by talking about the application's features. When the application starts up, it will contain a text field and a search button.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip124.png" />
+<p/>
+<p>Here's the code just for the field and the button. Note how I disable the button until something is typed:</p>
+<p/>
+<code>
+&lt;s:TextInput id="searchTerm" width="100%" /&gt;
+&lt;s:Button id="searchButton" label="Search" width="100%" click="doSearch(event)" enabled="{searchTerm.text!=''}" /&gt;
+</code>
+<p/>
+<p>Searching is done via ColdFusion and Flash Remoting. Setting that up is pretty trivial. I begin by creating a RemoteObject in Flex:</p>
+<p/>
+<code>
+&lt;s:RemoteObject id="artService" destination="ColdFusion" source="testingzone.flexpreso.artservice" endpoint="http://127.0.0.1/flex2gateway/ "&gt;
+&lt;/s:RemoteObject&gt;
+</code>
+<p/>
+<p>The ID there, artService, gives me a way to refer to my ColdFusion code (coming up in a bit). If you look back up at the button code, you can see clicking runs doSearch. Let's look at that.</p>
+<p/>
+<code>
+protected function doSearch(event:MouseEvent):void
+{
+	artService.search(searchTerm.text);
+}
+</code>
+<p/>
+<p>So you may be asking yourself. Where's the &quot;when done, do this&quot; code? Here's an interesting little trick I really love. I'm going to display the results of the call in a List control, check it out:</p>
+<p/>
+<code>
+&lt;s:List id="resultsList" width="100%" height="100%" visible="{resultsList.dataProvider.length&gt;0}" dataProvider="{artService.search.lastResult}"
+		 labelField="ARTNAME" click="doDetail(event)"
+		 showEffect="Fade" hideEffect="Fade"/&gt;
+</code>
+<p/>
+<p>There's a bit going on here, but pay particular attention to the dataProvider. I basically create a binding between my control and the last result of calling the search method on my API. I don't have to actually listen out for it. It's automatic. Here's an example of how it looks when a search is performed.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip125.png" />
+<p/>
+<p>The last bit I want to call out is the doDetail handler. That's run when a user clicks on a search result.</p>
+<p/>
+<code>
+protected function doDetail(event:MouseEvent):void
+{
+	var artid:int = resultsList.selectedItem.ARTID;
+	navigator.pushView(ArtView,{artid:artid});
+}
+</code>
+<p/>
+<p>There isn't anything terribly special about this - but note the navigator.pushView line. This is an example of how Flex 4.5's view based framework can make it easy to build a multi-page mobile application. The pushView call there allows me to quickly load a new view up as well as pass data. What's cool then is that the hardware's back button will automatically know where to return. You'll see a quick example of that in a sec. Ok, so before I go any further, here is the complete page so you can see it in context.</p>
+<p/>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;Art Search&quot; destructionPolicy=&quot;never&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Declarations&amp;gt;
+	&amp;lt;s:RemoteObject id=&quot;artService&quot; destination=&quot;ColdFusion&quot; source=&quot;testingzone.flexpreso.artservice&quot; endpoint=&quot;http://127.0.0.1/flex2gateway/ &quot;&amp;gt;
+	&amp;lt;/s:RemoteObject&amp;gt;
+&amp;lt;/fx:Declarations&amp;gt;
+
+&amp;lt;fx:Script&amp;gt;
+&amp;lt;![CDATA[
+
+	import mx.rpc.events.FaultEvent;
+	import mx.rpc.events.ResultEvent;
+
+	protected function doSearch(event:MouseEvent):void
+	{
+		artService.search(searchTerm.text);
+	}
+
+	private function updateResults(evt:ResultEvent):void {
+		trace(&quot;Done&quot;);
+	}
+	
+	public function handleFault(evt:FaultEvent):void {
+		trace(evt.toString());
+		//Do something nice!
+	}
+
+	protected function doDetail(event:MouseEvent):void
+	{
+		var artid:int = resultsList.selectedItem.ARTID;
+		navigator.pushView(ArtView,{artid:artid});
+	}
+	
+]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:layout&amp;gt;
+	&amp;lt;s:VerticalLayout gap=&quot;5&quot; paddingTop=&quot;5&quot; paddingLeft=&quot;5&quot; paddingRight=&quot;5&quot; /&amp;gt;
+&amp;lt;/s:layout&amp;gt;
+
+&amp;lt;s:TextInput id=&quot;searchTerm&quot; width=&quot;100%&quot; /&amp;gt;
+&amp;lt;s:Button id=&quot;searchButton&quot; label=&quot;Search&quot; width=&quot;100%&quot; click=&quot;doSearch(event)&quot; enabled=&quot;{searchTerm.text!=''}&quot; /&amp;gt;
+
+&amp;lt;s:List id=&quot;resultsList&quot; width=&quot;100%&quot; height=&quot;100%&quot; visible=&quot;{resultsList.dataProvider.length&amp;gt;0}&quot; dataProvider=&quot;{artService.search.lastResult}&quot;
+		 labelField=&quot;ARTNAME&quot; click=&quot;doDetail(event)&quot;
+		 showEffect=&quot;Fade&quot; hideEffect=&quot;Fade&quot;/&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p/>
+<p>Let's look at the detail now for the art work. When you click one of the results, you get a view with information about the art and the actual picture.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip126.png" />
+<p/>
+<p>Woot. Fancy, right? Ok, not so much. But let's take a look at the code. When the view loads, I need to immediately get information about the art work. Now technically, I could have gotten that information back when I searched. My data isn't that heavy. But typically your search will probably just return the bare minimum it needs to render results and your detail will need to make another call for more information. My Art View begins by saying, when loaded, run a function:</p>
+<p/>
+<code>
+&lt;s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" viewActivate="init(event)"&gt;
+</code>
+<p/>
+<p>I also define a pointer to my service. (And yes, this is a duplication of code and something I should address.)</p>
+<p/>
+<code>
+&lt;fx:Declarations&gt;
+	&lt;s:RemoteObject id="artService" destination="ColdFusion" source="testingzone.flexpreso.artservice" endpoint="http://127.0.0.1/flex2gateway/ "&gt;
+		&lt;s:method name="getDetail" result="showDetail(event)" fault="handleFault(event)" /&gt;
+	&lt;/s:RemoteObject&gt;
+&lt;/fx:Declarations&gt;
+</code>
+<p/>
+<p>Notice in this version I've explicitly defined a result and fault handler for my getDetail call. This is just another way to handle calls. I could have used that with my search call as well. My init function is simple:</p>
+<p/>
+<code>
+protected function init(event:ViewNavigatorEvent):void
+{
+	artService.getDetail(data.artid);
+}
+</code>
+<p/>
+<p>And the result than simply grabs the values from the remote call.</p>
+<p/>
+<code>
+protected function showDetail(event:ResultEvent):void
+{
+	title = event.result.name;
+	artImage.source = new URLRequest(event.result.image);
+	priceText.text = "Price: " + myCFormatter.format(event.result.price);
+	descText.text = event.result.description;
+}
+</code>
+<p/>
+<p>At this point it probably make sense to just display the entire view. Here it is:</p>
+<p/>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; viewActivate=&quot;init(event)&quot;&gt;
+&lt;fx:Declarations&gt;
+&lt;s:RemoteObject id=&quot;artService&quot; destination=&quot;ColdFusion&quot; source=&quot;testingzone.flexpreso.artservice&quot; endpoint=&quot;http://127.0.0.1/flex2gateway/ &quot;&gt;
+&lt;s:method name=&quot;getDetail&quot; result=&quot;showDetail(event)&quot; fault=&quot;handleFault(event)&quot; /&gt;
+&lt;/s:RemoteObject&gt;
+&lt;s:CurrencyFormatter id=&quot;myCFormatter&quot; /&gt;
+&lt;/fx:Declarations&gt;</p>
+<pre><code>&amp;lt;fx:Script&amp;gt;
+&amp;lt;![CDATA[
+	import mx.rpc.events.FaultEvent;
+	import mx.rpc.events.ResultEvent;
+	
+	import spark.events.ViewNavigatorEvent;
+
+	protected function showDetail(event:ResultEvent):void
+	{
+		title = event.result.name;
+		artImage.source = new URLRequest(event.result.image);
+		priceText.text = &quot;Price: &quot; + myCFormatter.format(event.result.price);
+		descText.text = event.result.description;
+	}
+	
+	protected function handleFault(event:FaultEvent):void
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
+	protected function init(event:ViewNavigatorEvent):void
+	{
+		artService.getDetail(data.artid);
+	}
+
+	private function goBack(event:MouseEvent):void {
+		navigator.popView();
+	}
+
+]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+
+&amp;lt;s:actionContent&amp;gt;
+	&amp;lt;s:Button label=&quot;Back&quot; click=&quot;goBack(event)&quot; /&amp;gt;		
+&amp;lt;/s:actionContent&amp;gt;
+
+&amp;lt;s:layout&amp;gt;
+	&amp;lt;s:VerticalLayout gap=&quot;10&quot; paddingLeft=&quot;10&quot; paddingRight=&quot;10&quot; paddingTop=&quot;10&quot; /&amp;gt;
+&amp;lt;/s:layout&amp;gt;
+
+&amp;lt;s:Label id=&quot;priceText&quot; /&amp;gt;
+&amp;lt;s:Label id=&quot;descText&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Image id=&quot;artImage&quot; width=&quot;100%&quot; height=&quot;100%&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p/>
+<p>So the only thing I didn't show yet was the ColdFusion. My service is a CFC with two methods: search and getDetail. Here's the entire file.</p>
+<p/>
+<code>
+component {
+<pre><code>remote query function search(required string term) {
+	var q = new com.adobe.coldfusion.query();    
+    q.setDatasource(&quot;cfartgallery&quot;);    
+    q.setSQL(&quot;select artid, artname from art where artname like :term or description like :term&quot;);    
+    q.addParam(name=&quot;term&quot;,value=&quot;%#arguments.term#%&quot;,cfsqltype=&quot;cf_sql_varchar&quot;);    
+    return q.execute().getResult();	
+}
+
+remote function getDetail(required numeric id) {
+	var q = new com.adobe.coldfusion.query();    
+    q.setDatasource(&quot;cfartgallery&quot;);    
+    q.setSQL(&quot;select artid, artname, description, price, largeimage from art where artid = :id&quot;);    
+    q.addParam(name=&quot;id&quot;,value=&quot;#arguments.id#&quot;,cfsqltype=&quot;cf_sql_integer&quot;);    
+	var qresult = q.execute().getResult();	
+	var result = { &quot;id&quot;=qresult.artid, &quot;name&quot;=qresult.artname, 
+				   &quot;description&quot;=qresult.description, &quot;price&quot;=qresult.price
+				  };
+	//handle image
+	result[&quot;image&quot;] = &quot;http://127.0.0.1/cfdocs/images/artgallery/&quot; &amp; qresult.largeimage;
+	
+	return result;
+}
+</code></pre>
+<p>}
+</code></p>
+<p/>
+<p>What I like about this is it isn't anything special, <b>which is kind of the point</b>. The same CFCs you've been - hopefully - writing for a while can usually be just used as is via your mobile applications. Sometimes you'll literally just need to add remote access to a method and be done with it. Most of the time you'll probably need to do <i>some</i> tweaking, but what I'm hoping is clear here is that the actual CFML isn't anything special in regards to having it work in the mobile space. This is probably no surprise. You've seen this in all my jQuery (AJAX) demos. But it bears repeating. ColdFusion is the absolute easiest way to build services for a variety of clients.</p>
+<p/>
+<p>So I mentioned that this is a bit incomplete. What would I modify to make this more &quot;production&quot; ready?</p>
+<p/>
+<ul>
+<li>There's simple support for adding a splash screen. I could add that.
+<li>My fault handlers are horrible incomplete. You really, really should plan for faults. For an application like this, I could ship a local database of art data. That way if there is some fault on the server side, or, more likely, the user is offline, they can still view data. It may be older data, but it's better than nothing.
+</ul>
+<p/>
+<p>I've included the FXP for this project in the attached zip. This allows you to easily import it into Flash Builder if you want to play with it. I also included the code as is (because you may not have Flash Builder) and a copy of the CFC.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FForBlogPost3%2Ezip'>Download attached file.</a></p></p>
+}

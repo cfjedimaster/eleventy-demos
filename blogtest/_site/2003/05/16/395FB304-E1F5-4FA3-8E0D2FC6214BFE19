@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Just a note to those who attended my presentation - the code will be online Monday morning. I have net access, but won't be able to upload the zip till then.</p>
+<p>For those who missed my presentation - I can now share some good news. The &quot;page context&quot; bug in CFCs is fixed and will be in the next update. Many other CFC bugs are fixed as well. There will also be support for super() (see my other blog entry), and you will be able to edit the core component.cfc that every CFC extends automatically. Yummy. I love CFCs and am happy to see them getting improved.</p>
+}

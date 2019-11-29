@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Don't forget that when you pass a struct, query, or CFC to a UDF, custom tag, or CFC method, you are passing it by reference, not by value. In English that means if you modify the value inside the udf/tag/method, you end up modifying the original as well. The best way to handle that is to simply use duplicate in your call:</p>
+<p>cfset x = foo(duplicate(mystruct))</p>
+<p>Of course, don't forget that duplicate() will not work on a CFC instance. If you need to pass a CFC and NOT modify the original CFC, have the CFC itself define a duplicate or clone method and work on a real copy.</p>
+}

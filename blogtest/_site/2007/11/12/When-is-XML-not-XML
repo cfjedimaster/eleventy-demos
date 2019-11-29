@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>Here is a mystery for folks. I've updated my parsing engine for <a href="http://www.coldfusionbloggers.org">coldfusionbloggers.org</a>. I'm using CFHTTP now so I can check Etag type stuff. I take the result text and save it to a file to be parsed by CFFEED.</p>
+<p>But before I do that I check to ensure it's valid XML. Here is where it gets weird. <a href="http://cfblog.griefer.com/">Charlie Griefer's blog</a> works with CFFEED directly, but isXML on the result returns false. But - I can xmlParse the string no problem. Simple example:</p>
+<code>
+&lt;cfset f= "http://cfblog.griefer.com/feeds/rss2-0.cfm?blogid=30"&gt;
+&lt;cfhttp url="#f#"&gt;
+&lt;cfset text = cfhttp.filecontent&gt;
+<p>&lt;cfif isXml(text)&gt;
+yes
+&lt;cfelse&gt;
+no
+&lt;cfset z = xmlParse(text)&gt;
+&lt;cfdump var=&quot;#z#&quot;&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>If you run this, you will see &quot;no&quot; output, and than an XML object. If you use CFFEED on the URL directly, that works as well. So it seems like isXML is being strict about something. I can update my code to try/catch an xmlParse obviously, but I'd rather figure out <i>why</i> the above is happening first.</p>
+}

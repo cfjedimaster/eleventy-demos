@@ -1,0 +1,41 @@
+<h1>Post</h1>
+
+<p>Abhishek asks:</p>
+<blockquote>
+<p>
+I've a doubt, what i'm doing is that i'm generating chart using
+cfchart inside cfsavecontent and then i want to send the entire data of the cfsavecontent in mail using cfmail. Mail is working fine but unable to get the chart in the mail instead of that there comes red x image and in view source it is showing a path somewhat like this /CFID/GraphData.cfm?graphCache=wc5. Please give some solution.
+</p>
+</blockquote>
+<!--more-->
+Well, don't forget that, by default, when you use cfhcart you are going to get object/embed tags pointing back to your server to load a dynamic Flash SWF file. I'd be surprised if any mail client would render Flash client in context. 
+<p>You could switch to PNG of course. If you use HTML email you could then embed that image in one of two ways. One way would be to save the PNG to your web server. Your HTML email would then simply point to your web server. If the email is viewed offline then the image won't load, but that's probably not a huge concern.</p>
+<p>The other option is to the cfmailparam tag and an inline image. I had never used this before but the docs made it fairly simple. Here is a complete example and then I'll go over the salient points:</p>
+<code>
+&lt;cfchart format="png" name="chart"&gt;
+	&lt;cfchartseries type="pie"&gt;
+		&lt;cfchartdata item="1Q Sales" value="500" /&gt;
+		&lt;cfchartdata item="2Q Sales" value="400" /&gt;
+		&lt;cfchartdata item="3Q Sales" value="700" /&gt;
+		&lt;cfchartdata item="4Q Sales" value="200" /&gt;
+	&lt;/cfchartseries&gt;
+&lt;/cfchart&gt;
+<p>&lt;cfset savedFile = getTempFile(getTempDirectory(),&quot;foremail&quot;) &amp; &quot;.png&quot;&gt;
+&lt;cfset fileWrite(savedFile,chart)&gt;</p>
+<p>&lt;cfoutput&gt;#savedFile#&lt;/cfoutput&gt;
+&lt;cfmail to=&quot;ray@camdenfamily.com&quot; from=&quot;ray@camdenfamily.com&quot; subject=&quot;Sales&quot; type=&quot;html&quot;&gt;
+&lt;cfmailparam contentID=&quot;img1&quot; file=&quot;#savedFile#&quot; disposition=&quot;inline&quot;&gt;</p>
+<p>&lt;h2&gt;Sales Figures&lt;/h2&gt;
+&lt;p&gt;
+Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum.
+Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum.
+Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum.
+Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum.
+Lorem ipsum. Lorem ipsum.
+&lt;/p&gt;</p>
+<p>&lt;img src=&quot;cid:img1&quot; /&gt;</p>
+<p>&lt;/cfmail&gt;
+</code></p>
+<p>The chart (in this case a hard coded chart) is stored into a variable using the name attribute. I save the file in the temp directory. The cfmailparam tag points to the file and provides an ID that the HTML can refer to later. Notice the image tag uses cid: instead of http:</p>
+<p>I did test this just to make sure it actually worked, and it did (which always tends to surprise me!):</p>
+<img src="https://static.raymondcamden.com/images/Picture 132.png">}

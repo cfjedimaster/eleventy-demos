@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>I just ran across this little gem in some code I'm looking at. It works, but... I'm not sure I'd ever recommend actually doing it. I'll show the code first, explain how it works, and then how I'd rewrite it.</p>
+<!--more-->
+<p>The following code was in a component, but I can demonstrate it with a simple CFM as well.</p>
+<code>
+&lt;cffunction name="test" output="true"&gt;
+  #test2()#
+&lt;/cffunction&gt;
+&lt;cffunction name="test2"&gt;
+  &lt;cfset variables.iran="sofaraway"&gt;
+&lt;/cffunction&gt;
+<p>&lt;cfset test()&gt;
+&lt;cfdump var=&quot;#variables#&quot;&gt;
+</code></p>
+<p>Looks a bit odd, right? If you run this, you will actually see IRAN as one of the Variables. The output=&quot;true&quot; on test() evaluates the CFML inside the method. It would be the same as if I had done:</p>
+<code>
+&lt;cfoutput&gt;#test2()#&lt;/cfoutput&gt;
+</code>
+<p>So that <i>works</i>, but, again, it's a bit odd. I'd rewrite the method like so:</p>
+<code>
+&lt;cffunction name="test" output="false"&gt;
+  &lt;cfset test2()&gt;
+&lt;/cffunction&gt;
+</code>
+<p>It has the exact same effect, but, is a bit more direct. You can toggle output back on again and it won't change a thing.</p>
+}

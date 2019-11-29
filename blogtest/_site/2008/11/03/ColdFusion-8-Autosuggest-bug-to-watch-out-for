@@ -1,0 +1,45 @@
+<h1>Post</h1>
+
+<p>Here is an odd bug a reader ran into this weekend involving ColdFusion 8's new autosuggest feature. It was difficult to debug but ended up being quite trivial.</p>
+<p>The reader was not using an Ajax call to load the data for the suggestion list. Instead he performed a query, used valueList twice, and supplied those lists to two autosuggest cfinput fields.</p>
+<p>One worked fine, but the other threw a JavaScript error. The problem ended up being his data. His list included a record that had double quotes in it. Here is a simple example:</p>
+<code>
+&lt;cfset list = "apple,orange,peaches ""and"" cream,klingon birds of prey"&gt;
+</code>
+<p>In this list, the 3rd item, peaches &quot;and&quot; cream, includes quotes. Notice that I've escaped the quotes for ColdFusion to parse it correctly. When you run a page that makes use of this...</p>
+<code>
+&lt;cfform name="foo"&gt;
+&lt;cfinput name="test" autosuggest="#list#"&gt;
+&lt;/cfform&gt;
+</code>
+<p>You end up with this generated in the browser:</p>
+<code>
+_cf_autosuggestarray="apple,orange,peaches "and" cream,klingon birds of prey".split(",");
+</code>
+<p>What's sad about this is that ColdFusion could easily handle this for you. In fact, it provides multiple options. One, toScript, handles the quotes just fine:</p>
+<code>
+&lt;cfset list = "apple,orange,peaches ""and"" cream,klingon birds of prey"&gt;
+&lt;cfoutput&gt;
+&lt;script&gt;
+var #toScript(list,"mylist")#;
+&lt;/script&gt;
+&lt;/cfoutput&gt;
+</code>
+<p>This returns:</p>
+<code>
+&lt;script&gt;
+var mylist = "apple,orange,peaches \"and\" cream,klingon birds of prey";
+;
+&lt;/script&gt;
+</code>
+<p>See how it is escaped? This bug doesn't exist if yo use Ajax to load the data. If I change my input field to this:</p>
+<code>
+&lt;cfinput name="test" autosuggest="url:test3.cfm?v={cfautosuggestvalue}"&gt;
+</code>
+<p>And then simply do:</p>
+<code>
+&lt;cfset list = "apple,orange,peaches ""and"" cream,klingon birds of prey"&gt;
+&lt;cfoutput&gt;#serializeJSON(list)#&lt;/cfoutput&gt;
+</code>
+<p>It works fine. Something to watch out for folks! (And I'm going to file a quick bug report now.)</p>
+}

@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>This is a pretty minor update, but the changes are listed below:</p>
+<ul>
+<li>RSS feed uses a unique identifier since duplicate links were possible. Thanks to Tom Thomas.
+<li>Fixed a typo in messages.cfm
+<li>Added RSS auto-discovery for Firefox. Thanks to Tom again.
+<li>Fixed stylesheet for links in message footer.
+</ul>
+<p>You may download Galleon ColdFusion Forums for free <a href="http://ray.camdenfamily.com/downloads/forums.zip">here</a>.</p>
+}

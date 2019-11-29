@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>Today's puzzle is pretty simple, but I'm curious to see how people solve it. Write a UDF that takes two arguments. The first argument is a set - and by that I mean a list of possible values. So a set could be: A,B,C. The second argument is the length of a string to generate. So given: arrResults = func(&quot;A,B,C&quot;,2) the result would be an array of every possible string combination. Like so:</p>
+<code>
+AA
+AB
+AC
+BA
+BB
+BC
+CA
+CB
+CC
+</code>
+<p>Good luck!</p>
+}

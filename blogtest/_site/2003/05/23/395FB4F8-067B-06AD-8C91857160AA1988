@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Had an error with my RSS link. As you know, it's dynamic now - if you click on it while viewing entries of category Foo, you get a RSS feed for Foo. However, Rob Brooks-Bilson found a bug with the Short mode version. Thanks Rob! The zip is updated.</p>
+<p>Sean Corfield suggested I provide an API/Doc/etc for my RSS feed. I'll add that next week.</p>
+}

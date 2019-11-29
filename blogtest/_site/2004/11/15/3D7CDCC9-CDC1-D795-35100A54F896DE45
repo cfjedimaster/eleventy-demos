@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Steven Erate (<a href="http://www.talkingtree.com">blog</a>) has released a <a href="http://www.talkingtree.com/blog/index.cfm?mode=entry&entry=39E8F1FD-45A6-2844-7B1D789C2B221C59">converter</a> to migrate entries from CFXML_Blog to BlogCFC format. This will be in the core zip next time I do a release.</p>
+}

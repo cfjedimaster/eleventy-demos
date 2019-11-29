@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>Earlier today I filed an ER to add <a href="http://cfbugs.adobe.com/cfbugreport/flexbugui/cfbugtracker/main.html#bugId=82437">logging to the ColdFusion Administrator</a>. This would add simple auditing to actions done within the administrator. So for example you could see when a user added a DSN, or when another user tweaked mail settings. In theory this should be easy to implement, and I think it would be a great addition. If you agree, don't forget that you can vote for bugs on the public bug tracker so add yours to the <a href="http://cfbugs.adobe.com/cfbugreport/flexbugui/cfbugtracker/main.html#bugId=82437">request</a>. On a whim though I thought I'd try to see if I could hack it in. I know that the administrator hasn't really been updated a lot lately (except for new settings!) and I guessed - correctly - that it still made use of Application.cfm, <i>not</i> Application.cfc.</p>
+<p/>
+For the heck of it, I just dropped this in my /CFIDE/Administrator folder as a new Application.cfc file:
+<p/>
+<code>
+component {
+<pre><code>public boolean function onRequest(string req) {
+	include &quot;Application.cfm&quot;;
+	include arguments.req;
+	writelog(file=&quot;admin&quot;, text=&quot;User #getauthuser()# running #req#?#cgi.query_string#&quot;);
+	return true;
+}
+</code></pre>
+<p>}
+</code></p>
+<p/>
+<p>And guess what? It worked like a charm:</p>
+<p/>
+<p>&quot;Information&quot;,&quot;jrpp-107&quot;,&quot;03/15/10&quot;,&quot;14:21:41&quot;,&quot;CFADMIN&quot;,&quot;User admin running /CFIDE/administrator/settings/server_settings.cfm?targeted=false&quot;<br/>
+&quot;Information&quot;,&quot;jrpp-109&quot;,&quot;03/15/10&quot;,&quot;14:21:41&quot;,&quot;CFADMIN&quot;,&quot;User admin running /CFIDE/administrator/navserver.cfm?&quot;<br/>
+&quot;Information&quot;,&quot;jrpp-111&quot;,&quot;03/15/10&quot;,&quot;14:21:42&quot;,&quot;CFADMIN&quot;,&quot;User admin running /CFIDE/administrator/settings/limits.cfm?&quot;<br/>
+&quot;Information&quot;,&quot;jrpp-101&quot;,&quot;03/15/10&quot;,&quot;14:21:43&quot;,&quot;CFADMIN&quot;,&quot;User admin running /CFIDE/administrator/settings/server_settings.cfm?&quot;<br/>
+&quot;Information&quot;,&quot;jrpp-109&quot;,&quot;03/15/10&quot;,&quot;14:21:45&quot;,&quot;CFADMIN&quot;,&quot;User admin running /CFIDE/administrator/settings/memoryvariables.cfm?&quot;<br/></p>
+<p/>
+<p>Obviously it isn't as nice as it could be, but it took all of two minutes to write. The CFC above will only work in ColdFusion 9, but you could convert it to old school tags in a few additional minutes.</p>
+}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I was going to blog this after MX on the Rocks, but since someone already has, it's certainly ok to go ahead and mention it here as well. The next update for MX will have many CFC fixes - and will have support for super() - this allows you to call a parent CFC method from within a CFC that extends that parent.</p>
+<p>What does this mean? Imagine a CFC called PressRelease that extends a CFC called Article. Article has a display method. You would like to use Article's display method but you have to modify it slightly. Currently you have two ways of doing this. Use a method with a different name in PressRelease, like prDisplay, which then calls display(), or cut and paste the code from the Article CFC. Obviously neither option is really great. But with super(), you will be able to code a display method in PressRelease and simply call super.display() to call the parent's display method.</p>
+<p>Along with the fixes, this is very exciting news for CFC users.</p>
+}

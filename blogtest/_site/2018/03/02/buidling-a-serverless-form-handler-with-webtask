@@ -1,0 +1,226 @@
+<h1>Post</h1>
+
+<p>Earlier this week I decided to build a rather simple application with <a href="https://webtask.io/">Auth0 Webtask</a>, a form handler. This was something I did many <a href="https://www.raymondcamden.com/2017/02/15/building-a-form-handler-service-in-openwhisk-part-two/">months ago</a> with OpenWhisk and I was curious what the experience would be with Auth0 Webtask. As usual in such things, even though it was pretty simple, I did run into a few things that helped me understand Auth0 Webtask a bit more. Here is how I approached it.</p>
+<p>First, I built a form. I actually had a simple form I used last week in my (very last) OpenWhisk talk, so I just copied that over.</p>
+<pre><code class="language-html">&lt;form method=&quot;post&quot; action=&quot;&quot;&gt;
+	
+	&lt;div class=&quot;form-group&quot;&gt;
+		&lt;label for=&quot;name&quot;&gt;Name&lt;/label&gt;
+		&lt;input type=&quot;text&quot; class=&quot;form-control&quot; name=&quot;name&quot; id=&quot;name&quot; required&gt;
+	&lt;/div&gt;
+
+	&lt;div class=&quot;form-group&quot;&gt;
+		&lt;label for=&quot;email&quot;&gt;Email&lt;/label&gt;
+		&lt;input type=&quot;email&quot; class=&quot;form-control&quot; name=&quot;email&quot; id=&quot;email&quot; required&gt;
+	&lt;/div&gt;
+
+	&lt;div class=&quot;form-group&quot;&gt;
+		&lt;label for=&quot;acc&quot;&gt;Current Accuracy&lt;/label&gt;
+		&lt;select name=&quot;acc&quot; id=&quot;acc&quot; class=&quot;form-control&quot; required&gt;
+			&lt;option&gt;&lt;/option&gt;
+			&lt;option&gt;Sharp Shooter!&lt;/option&gt;
+			&lt;option&gt;Reasonable Accuracy&lt;/option&gt;
+			&lt;option&gt;I can hit anything except a rebel&lt;/option&gt;
+		&lt;/select&gt;
+	&lt;/div&gt;
+
+
+	&lt;div class=&quot;form-group&quot;&gt;
+		&lt;label for=&quot;emp&quot;&gt;The Empire is...&lt;/label&gt;
+		&lt;select name=&quot;emp&quot; id=&quot;emp&quot; class=&quot;form-control&quot; required&gt;
+			&lt;option&gt;&lt;/option&gt;
+			&lt;option&gt;Awesome!&lt;/option&gt;
+			&lt;option&gt;Totally Not Evil!&lt;/option&gt;
+			&lt;option&gt;Whatever &quot;Better than Awesome&quot; is!&lt;/option&gt;
+		&lt;/select&gt;
+	&lt;/div&gt;
+
+
+	&lt;div class=&quot;form-group&quot;&gt;
+		&lt;label for=&quot;why&quot;&gt;Why you want to join the Stormtrooper ranks:&lt;/label&gt;
+		&lt;textarea name=&quot;why&quot; id=&quot;wh&quot; class=&quot;form-control&quot; required&gt;&lt;/textarea&gt;
+	&lt;/div&gt;
+
+	&lt;button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;&gt;Submit (No, seriously, submit!)&lt;/button&gt;
+
+&lt;/form&gt;
+</code></pre>
+<p>I used Bootstrap to make it a bit nicer. If you want to see the final result, I'll be sharing the URL at the end. I created the first draft of my handler with the smallest code possible.</p>
+<pre><code class="language-js">'use strict';
+
+module.exports = function(context, cb) {
+	//first, gather the form fields
+	let form = context.body;
+	console.log(form);
+	cb(null, {form:form})
+}
+</code></pre>
+<p>Form data is available in the context argument so I've simply made a copy of it to address it a bit nicer. I log it and return it. To deploy this, I saved that code as form_handler_v1.js and used the following command line:</p>
+<pre><code>wt create form_hander_v1.js --name form_handler
+</code></pre>
+<p>What's with the <code>--name</code> part? By default the CLI will give your webtask a name based on the filename. I was planning on writing multiple different versions of this application so I used the name argument to specify exactly what I wanted. As I go on and add newer versions, I'll just keep using the same name.</p>
+<p>The command line spit out the URL for me: https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.run.webtask.io/form_handler and I simply pasted that into my form. I filled out some data, hit submit, and got a nice, but not very helpful, JSON response:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/03/wtf1.jpg" alt="JSON output"></p>
+<p>I also opened up a new tab in my terminal and ran <code>wt logs</code> so I could see the log output as the webtask was run:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/03/wtf2.jpg" alt="Log output"></p>
+<p>Sweet. Practically done, right? I then switched to a new version, <code>form_handler_v2.js</code>:</p>
+<pre><code class="language-js">'use strict';
+
+const RECIPS = [&quot;raymondcamden@gmail.com&quot;,&quot;ray@camdenfamily.com&quot;];
+
+module.exports = function(context, req, res) {
+	//first, gather the form fields
+	let form = context.body;
+
+	let from = RECIPS[0];
+	let to = RECIPS[0];
+
+	//let the form specify a from
+	if(form._from) {
+		from = form[&quot;_from&quot;];
+	}
+
+	if(form[&quot;_to&quot;]) {
+		if(RECIPS.indexOf(form[&quot;_to&quot;]) === -1) {
+			cb(&quot;Invalid _to address: &quot;+form[&quot;_to&quot;]);
+		} else {
+			to = form[&quot;_to&quot;];
+		}
+	}
+
+	let subject = form[&quot;_subject&quot;] || 'Form Submission';
+
+	let next = form[&quot;_next&quot;] || context.headers.referer;
+
+	//Generate the text
+	let date = new Date();
+    let content = `
+Form Submitted at ${date}
+--------------------------------
+`;
+
+    for(let key in form) {
+        //blanket ignore if _*
+        if(key.indexOf(&quot;_&quot;) != 0) {
+            content += `
+${key}:         ${form[key]}
+`;
+        }
+    }
+	
+	//fire off the request to send an email - we don't want the user to wait so this is fire and forget
+	sendEmail(to,from,subject,content);
+
+	res.writeHead(301, {'Location': next });
+	res.end();
+
+}
+
+function sendEmail(to, from, subject, body) {
+}
+</code></pre>
+<p>This one kicks it up a notch by adding features and functionality from my original OpenWhisk demo.</p>
+<p>First - I have support for looking for a form variable called <code>_from</code>. If it exists, I'll use it as the sender for the email generated by the form. I also allow for a dynamic address as well, but restrict it to a hard coded list of valid values (<code>RECIPS</code>). As before, I use a form field with an underscore (<code>_to</code>).</p>
+<p>Next, I look for a <code>_subject</code> field to allow customization for the email.</p>
+<p>Finally, I look for <code>_next</code> as a way to know where to send the user after the form is processed. If nothing was specified for that, I simply send them back to where they came from. That's probably not a good idea, but I needed some default.</p>
+<p>After working with the &quot;special&quot; variables, I then gather up the form fields into a simple string. Note we skip any field that begins with an underscore. I wrote a mocked out <code>sendEmail</code> function and then did my redirect. I deployed this version by using <code>wt create form_handler_v2.js --name form_handler</code> and...</p>
+<p>It broke. Why? I kept getting an error about form._form not existing. Turns out, when you use a webtask with this form: <code>function(context, req, res)</code>, the expectation is that you are going to parse the request body to get what you want out of it. I had switched to this form so I could do the redirect at the end. This issue with the context value is documented, but needs to be cleaned up a bit (my job!). Luckily, there's an easy fix - add <code>--parse-body</code> to your CLI call. You can find this if you run <code>wt create -h</code>. So my new command was:</p>
+<pre><code>wt create form_handler_v2.js --name form_hamdler --parse-body
+</code></pre>
+<p>I didn't need to update my URL in the form as it already had the right value. I did change the email field to use <code>_from</code> though.</p>
+<p>Ok, almost there! Now let's add in actual email support. I used sendgrid before so I figured I'd use it again. I already had a developer key so that saved me the trouble of getting a new one. Here's the updated version (form_handler_v3.js):</p>
+<pre><code class="language-js">'use strict';
+
+const helper = require('sendgrid').mail;
+const RECIPS = [&quot;raymondcamden@gmail.com&quot;,&quot;ray@camdenfamily.com&quot;];
+
+module.exports = function(context, req, res) {
+	//first, gather the form fields
+	let form = context.body;
+
+	let from = RECIPS[0];
+	let to = RECIPS[0];
+
+	//let the form specify a from
+	if(form._from) {
+		from = form[&quot;_from&quot;];
+	}
+
+	if(form[&quot;_to&quot;]) {
+		if(RECIPS.indexOf(form[&quot;_to&quot;]) === -1) {
+			cb(&quot;Invalid _to address: &quot;+form[&quot;_to&quot;]);
+		} else {
+			to = form[&quot;_to&quot;];
+		}
+	}
+
+	let subject = form[&quot;_subject&quot;] || 'Form Submission';
+
+	let next = form[&quot;_next&quot;] || context.headers.referer;
+
+	//Generate the text
+	let date = new Date();
+    let content = `
+Form Submitted at ${date}
+--------------------------------
+`;
+
+    for(let key in form) {
+        //blanket ignore if _*
+        if(key.indexOf(&quot;_&quot;) != 0) {
+            content += `
+${key}:         ${form[key]}
+`;
+        }
+    }
+	
+	//fire off the request to send an email - we don't want the user to wait so this is fire and forget
+	sendEmail(to,from,subject,content, context.secrets.sg_key)
+	.then(() =&gt; {
+		res.writeHead(301, {'Location': next });
+		res.end();
+	}).catch(e =&gt; {
+		// handle error
+	});
+
+}
+
+function sendEmail(to, from, subject, body, key, cb) {
+
+	let to_email = new helper.Email(to);
+	let from_email = new helper.Email(from);
+    let mailContent = new helper.Content('text/plain', body);
+    let mail = new helper.Mail(from_email, subject, to_email, mailContent);
+	let sg = require('sendgrid')(key);
+
+	var request = sg.emptyRequest({
+		method: 'POST',
+		path: '/v3/mail/send',
+		body: mail.toJSON()
+	});
+        
+	return new Promise((resolve, reject) =&gt; {
+		sg.API(request, function(error, response) {
+			if(error) {
+				console.log(error.response.body);
+				reject(error.response.body);
+			} else {
+				console.log('good response from sg');
+				resolve();
+			}
+		});
+	});
+
+}
+</code></pre>
+<p>So notice I changed how I called <code>sendEmail</code>. Instead of &quot;fire and forget&quot;, I actually wait for it to finish. The code inside <code>sendEmail</code> is virtually the same from my previous demo and is just boilerplate email code. However, to get it to work, I need to add the sendgrid npm module. The visual editor has a slick UI for this, but as I'm using the CLI, I'll just use that. Luckily there's yet another argument for this, <code>--dependency</code>. Note, <code>--dependancy</code> will not work, because that's not how it's spelled. Learn to spell. (I'm talking to myself, by the way.)</p>
+<p>Here's the final version of the CLI call:</p>
+<pre><code>wt create form_handler_v3.js --name form_handler --parse-body --dependency sendgrid --secret sg_key=mysecretsarebetterthanyours
+</code></pre>
+<p>Notice I also added my sendgrid key as well. That was used here: <code>context.secrets.sg_key</code>. At this point, the CLI is a bit long, so I'd probably create a simple shell script to simplify it a bit. To finish testing, I added this to my form:</p>
+<pre><code class="language-html">&lt;input type=&quot;hidden&quot; name=&quot;_subject&quot; value=&quot;Stormtrooper Form&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;_next&quot; value=&quot;https://auth0.com&quot;&gt;
+</code></pre>
+<p>This provides a custom subject line for the email and an address to go to when done. You are more than welcome to test the form here - https://cfjedimaster.github.io/Serverless-Examples/webtask/test_form.html. Please note I won't actually be reading the emails. ;) You can find the full source code for all three versions of the handler here: https://github.com/cfjedimaster/Serverless-Examples/tree/master/webtask. Enjoy!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/G_xJrvHN9nk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Samuel Zeller</a> on Unsplash</i></p>
+}

@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I was working on a project today when I noticed cfchart wasn't working on my server. Turns on - your server has to have a valid display adapter in order to use the cfchart tag. I had never bothered to install a display adapter since I was only using the box as a server and Terminal Services would work just fine without it. When I find out more about this issue, I'll post it. As far as I can tell, this is not documented anywhere but I could be wrong.</p>
+<p>Updated: A contact at Macromedia said this was a bug that was fixed by before MX was released. This contact is checking to see if the bug wasn't really fixed (which is certainly what I'm seeing). Also, someone else confirmed that under Linux, you need to have the XWindows libraries installed.</p>
+}

@@ -1,0 +1,166 @@
+<h1>Post</h1>
+
+<p>A few weeks back, I wrote up (<a href="https://www.raymondcamden.com/2019/05/21/reading-client-side-files-for-validation-with-vuejs">&quot;Reading Client-Side Files for Validation with Vue.js&quot;</a>) an example of using JavaScript to check files selected in an input field to perform basic validation. It uses the fact that once a user has selected a file, your code has read access to the file itself. I was thinking about this more earlier this week and thought of another useful example of this - validating a selected image both for file size as well as dimensions (height and width).</p>
+<p>The code in this entry is heavily based on my <a href="https://www.raymondcamden.com/2019/05/21/reading-client-side-files-for-validation-with-vuejs">previous example</a> so be sure to read that blog entry first.</p>
+<p>Let's begin by addressing the two main requirements - getting the size of the file and image dimensions.</p>
+<p>File size is easy. Once you've selected a file, it's available in the <code>size</code> property of the file object. There's other properties available as well, like the last time it was modified, and you check the <a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a> docs at MDN for more information.</p>
+<p>Getting dimensions is also pretty easy, as long as your careful. You can use JavaScript to make a new image object and assign the source:</p>
+<pre><code class="language-js">let img = new Image();
+img.src = someUrl;
+</code></pre>
+<p>At that point you can immediately check <code>img.height</code> and <code>img.width</code>, but you will find that you sometimes get <code>0</code> for both results. Why? The image hasn't loaded yet! Luckily this is easily fixable:</p>
+<pre><code class="language-js">let img = new Image();
+
+img.onload = () =&gt; {
+	console.log(`the image dimensions are ${img.width}x${img.height}`);
+}
+
+img.src = someUrl;
+</code></pre>
+<p>Ok, so given that, let's begin with a simple example that just displays the information. First, the layout:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  &lt;input type=&quot;file&quot; ref=&quot;myFile&quot; @change=&quot;selectedFile&quot; accept=&quot;image/*&quot;&gt;&lt;br/&gt;
+
+  &lt;div v-if=&quot;imageLoaded&quot;&gt;
+    Image size is {{image.size}}&lt;br/&gt;
+    Image width and height is {{image.width}} / {{image.height}}
+  &lt;/div&gt;
+
+&lt;/div&gt;
+</code></pre>
+<p>The second <code>div</code> tag shows up conditionally and you can see I'm displaying all three properties we care about. Note I've added an <code>accept=&quot;image/*&quot;</code> to the <code>input</code> field. This will help direct the users towards images.</p>
+<p>Here's the code and note I'm going to focus on what's different from the previous example.</p>
+<pre><code class="language-js">Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+const app = new Vue({
+  el:'#app',
+  data: {
+    image:{
+      size:'',
+      height:'',
+      width:''
+    },
+    imageLoaded:false
+  },
+  methods:{
+    selectedFile() {
+      this.imageLoaded = false;
+      
+      let file = this.$refs.myFile.files[0];
+      if(!file || file.type.indexOf('image/') !== 0) return;
+      
+      this.image.size = file.size;
+      
+      let reader = new FileReader();
+      
+      reader.readAsDataURL(file);
+      reader.onload = evt =&gt; {
+        let img = new Image();
+        img.onload = () =&gt; {
+          this.image.width = img.width;
+          this.image.height = img.height;
+          this.imageLoaded = true;
+        }
+        img.src = evt.target.result;
+      }
+
+      reader.onerror = evt =&gt; {
+        console.error(evt);
+      }
+      
+    }
+  }
+})
+</code></pre>
+<p>First off, the size value is trivial - we just copy it from the file object.  We read the file using <code>readAsDataURL</code>, which is different from the previous example. This will return a URL encoded with a base64 version of the image data. Once we have that, we can assign it to a new <code>Image</code>, wait for <code>onload</code>, and then get the dimensions. You can see this yourself below:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="QXwEyq" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="vue file image thing">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/QXwEyq/">
+  vue file image thing</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>Now that you've seen the basics, let's consider an example using validation. We'll specify a max size in bytes, a max width, and a max height. Here's the updated HTML:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  &lt;input type=&quot;file&quot; ref=&quot;myFile&quot; @change=&quot;selectedFile&quot; accept=&quot;image/*&quot;&gt;&lt;br/&gt;
+
+  &lt;div v-if=&quot;imageError&quot; class=&quot;imageError&quot;&gt;
+    {{imageError}}
+  &lt;/div&gt;
+
+&lt;/div&gt;
+</code></pre>
+<p>The only real change here is an optional <code>div</code> shown when an error is thrown. Now let's look at the JavaScript.</p>
+<pre><code class="language-js">Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+// max size, 100KB, width and height
+const MAX_SIZE = 100000;
+const MAX_WIDTH = 500;
+const MAX_HEIGHT = 300;
+
+const app = new Vue({
+  el:'#app',
+  data: {
+    image:{
+      size:'',
+      height:'',
+      width:''
+    },
+    imageError:''
+  },
+  methods:{
+    selectedFile() {
+      this.imageError = '';
+      
+      let file = this.$refs.myFile.files[0];
+      
+      if(!file || file.type.indexOf('image/') !== 0) return;
+      this.image.size = file.size;
+      if(this.image.size &gt; MAX_SIZE) {
+        this.imageError = `The image size (${this.image.size}) is too much (max is ${MAX_SIZE}).`;
+        return;
+      }
+      
+      let reader = new FileReader();
+      
+      reader.readAsDataURL(file);
+      reader.onload = evt =&gt; {
+        let img = new Image();
+        img.onload = () =&gt; {
+          this.image.width = img.width;
+          this.image.height = img.height;
+          console.log(this.image);
+          if(this.image.width &gt; MAX_WIDTH) {
+            this.imageError = `The image width (${this.image.width}) is too much (max is ${MAX_WIDTH}).`;
+            return;
+          }
+          if(this.image.height &gt; MAX_HEIGHT) {
+            this.imageError = `The image height (${this.image.height}) is too much (max is ${MAX_HEIGHT}).`;
+            return;
+          }
+          
+          
+        }
+        img.src = evt.target.result;
+      }
+
+      reader.onerror = evt =&gt; {
+        console.error(evt);
+      }
+      
+    }
+  }
+})
+</code></pre>
+<p>For the most part this is pretty similar to the last example, except now we've got checks for the size, width, and height. Note that my code will <em>only</em> throw one error, so for example if both the width and height are too big, you'll only see the first error, but that can be changed rather easily too. Here's the code in action:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="ewmzjX" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="vue file image thing (2)">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/ewmzjX/">
+  vue file image thing (2)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p><i>Header photo by <a href="https://unsplash.com/@clemono2?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Clem Onojeghuo</a> on Unsplash</i></p>
+}

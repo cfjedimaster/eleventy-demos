@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>I spoke with Hemant at CFUNITED about onServerStart and what should happen if something goes wrong in the method. Currently if an error occurs, it gets logged, but the server just carries on. I made the argument that the server should stop loading as something has gone wrong. I also made the argument that it should act like onApplicationStart - where if you intentionally return false, the application will not load.</p>
+<p>After speaking with Adam Lehman though, I think he had a good counterpoint. (Oh, and my idea was shut down, so it's not changing in the final release. ;) First, Adam made the point that ColdFusion should always try to start. Fair point. He then made another suggestion which I thought was good. If we check something, like a datasource, and are unable to connect, then it may make more sense to simply use a server variable as a flag. Our applications could then check that flag in onApplicationStart and react accordingly.</p>
+<p>I have to say - I didn't really think I'd make much use of onServerStart, but I think I came up with a pretty good use case. If you host your ColdFusion site on a VPS and want to get a notice when the service restarts (in case you aren't the one doing it!) then this simple example will handle that:</p>
+<code>
+component {
+<pre><code>public function onServerStart() {
+
+	writeLog(file=&quot;myserver&quot;,text=&quot;Server starting up.&quot;);
+	myMail = new mail(to=&quot;ray@camdenfamily.com&quot;, from=&quot;ray@camdenfamily.com&quot;, subject=&quot;Server started&quot;, body=&quot;The server has started. Woot&quot;);
+	myMail.send();
+	
+}
+</code></pre>
+<p>}
+</code></p>
+<p>Normally I check the server.log file when I'm worried about my ColdFusion service restarting, but this would be a more in your face type approach.</p>
+<p>Does anyone else have any plans for this feature?</p>
+}

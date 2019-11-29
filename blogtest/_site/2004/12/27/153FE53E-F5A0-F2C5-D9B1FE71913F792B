@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>One of the things that really bugs me about IIS is that you can't run multiple web sites under XP Pro. I guess Microsoft assumes &quot;Pros&quot; will have an XP Server box for every developer. This is the main reason I use Apache on my dev box and my laptop.</p>
+<p>A coworker pointed me to an ISAPI filter called MultiSite. You can find it <a href="http://www.hairy-spider.com/multisite.aspx">here</a>. I haven't tried it yet, but it seems like the perfect solution.</p>
+}

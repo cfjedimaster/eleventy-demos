@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>Today I ran into an interesting issue. I was trying to wrap a component with a &quot;wrapper&quot;, like how you can do with ColdFusion:</p>
+<code>
+&lt;cf_layout title="Pirates are people too"&gt;
+&lt;cf stuff in here&gt;
+&lt;/cf_layout&gt;
+</code>
+<p>My Flex code looked like so:</p>
+<code>
+&lt;views:PageWrapper title="My other car is a Star Destroyer"&gt;
+ &lt;views:soAndSoView /&gt;
+&lt;/views:PageWrapper&gt;
+</code>
+<p>I immediately ran into a runtime, not compile tile, bug:</p>
+<blockquote>
+Multiple sets of visual children have been specified for this component
+</blockquote>
+<p>Turns out this is a known problem with Flex, with a cool workaround. Peter Ent blogged about this almost a full year ago:</p>
+<p><a href="http://weblogs.macromedia.com/pent/archives/2006/03/component_templ.cfm">Component &quot;Templates&quot; in Flex 2.0</a></p>
+<p>Forgive the simple crosspost here - but I bet I won't be the only ColdFusion developer who runs into this.</p>
+}

@@ -1,0 +1,38 @@
+<h1>Post</h1>
+
+<p>A reader (nicely) asked me something before I left for Boston, and I never got around to answering. He had an interesting problem. He wanted to list directories and files, in a recursive fashion, using HTML's unordered list display to handle the directories and their children.</p>
+<p>Now I thought this was a simple thing - just use the recurse=true option in &lt;cfdirectory&gt;. However - the more I thought about it - the more difficult it seemed. You can sort the &lt;cfdirectory&gt; result - but not in an way you can simply output with HTML.</p>
+<p>My first thought was to switch back to a recursive &lt;cfdirectory&gt;, and while that would work, I assumed I'd lose a lot in terms of speed due to all the file operations. So what I came up with was a mix of recursive CFML and the built-in recursive &lt;cfdirectory&gt; tag:</p>
+<code>
+&lt;cfset initialDir = "c:\apache2\htdocs\testingzone\blogcfc_flex2"&gt;
+&lt;cfdirectory directory="#initialDir#" recurse="yes" name="files" sort="directory asc"&gt;
+<p>&lt;cfset display(files,initialDir)&gt;</p>
+<p>&lt;cffunction name=&quot;display&quot; returnType=&quot;void&quot; output=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;files&quot; type=&quot;query&quot; required=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;parent&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset var justMyKids = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;justMyKids&quot; dbtype=&quot;query&quot;&amp;gt;
+select	*
+from	arguments.files
+where	directory = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.parent#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;	
+
+&amp;lt;cfoutput&amp;gt;&amp;lt;ul&amp;gt;&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfoutput query=&quot;justMyKids&quot;&amp;gt;
+	&amp;lt;li&amp;gt;#directory#\#name#&amp;lt;/li&amp;gt;
+	&amp;lt;cfif type is &quot;Dir&quot;&amp;gt;
+		#display(arguments.files, directory &amp; &quot;\&quot; &amp; name)#
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>As you can see, I do the initial &lt;cfdirectory&gt; and have it fetch all the files. The UDF simply handles displaying items from the query. I don't normally do output from UDFs, so to be honest, I feel a bit dirty. I'd probably just wrap it up in a cfsavecontent and return that, but this was written in about 5 minutes. Another problem - note I hard code \ as my file delimiter. I could have made this more dynamic by using a Java call:</p>
+<code>
+&lt;cfset separator = createObject("java","java.io.File").separator&gt;
+</code>
+<p>In general, the use of &quot;/&quot; will work just fine in any OS, however, since I was doing a string comparison in my query, I'd probably want to use the same separator CF used.</p>
+}

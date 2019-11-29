@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>This question came in via Twitter and I didn't have a great answer. Thought it would be nice to open it to my readers and get some good suggestions. The question is:</p>
+<blockquote>
+For ColdFusion devs looking to get into mobile, what's the best training sites or courses you've come across?
+</blockquote>
+<p>Speaking for myself, I've been mainly focused on <b>non-native</b> mobile development. First Flex, and now PhoneGap. While there is a <a href="http://blogs.nitobi.com/andrew/2011/10/26/PhoneGap-Beginners-Guide/">PhoneGap book</a>, I've primarily learned it from the online documentation.</p>
+<p>Outside of that - I've been mainly focused on trying to learn performance and UI things - for times when I'm not using jQuery Mobile. There is no one good spot for that (not that I know of).</p>
+<p>So... how are folks learning mobile? (Both native and non-native is fine!)</p>
+}

@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>A friend reported the following bug with HS+</p>
+<ol>
+<li>Open a largish file in Homesite+ via RDS
+<li>Make a change to the file and hit save
+<li>Before the first file is finished saving, open a second file via RDS
+</ol>
+<p>When the above happens, there is a chance that one of the files will overwrite the other. This has been confirmed in HS+ 5.5, HS+ 5.2, and ColdFusion Studio 5.0.</p>
+<p>I pinged a contact I have on the HS+ 5.5 team who confirmed the issue and opened a bug report for it.</p>
+}

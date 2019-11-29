@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>I've blogged a few times now about my attempts to build an Alexa Skill with OpenWhisk (<a href="https://www.raymondcamden.com/2017/03/09/an-introduction-to-creating-alexa-skills-with-openwhisk">An Introduction to Creating Alexa Skills with OpenWhisk</a> and <a href="https://www.raymondcamden.com/2017/03/17/creating-alexa-skills-with-openwhisk-part-two">Creating Alexa Skills with OpenWhisk - Part Two</a>) and I'm happy to say today that my skill finally passed certification!</p>
+<!--more-->
+<p><img src="https://static.raymondcamden.com/images/2017/3/alexa20a.png" alt="Happy Letter of Happiness"></p>
+<p>Alexa Skills have their own product pages and you can see mine here: https://www.amazon.com/dp/B06XP7Q3K3/ref=sr_1_1?s=digital-skills&amp;ie=UTF8&amp;qid=1490026649&amp;sr=1-1&amp;keywords=cat+namer</p>
+<p>So - how was the verification process?</p>
+<p>Initially - I made mistakes with my sample utterances (a configuration you provide for the skill) and the sample tests I sent to the verification team. Stuff like my skill supporting:</p>
+<pre><code>ask cat namer to give my cat a name
+</code></pre>
+<p>and me saying this would work:</p>
+<pre><code>ask cat namer to give my cat a new name
+</code></pre>
+<p>My brain kinda glossed over the difference there, but it was enough to make it fail verification.</p>
+<p>A second issue I had was supporting the &quot;open&quot; event, or basically, someone using my skill without actually asking anything. That's a requirement and your code has to handle it. Basically, I just sniffed for no intent:</p>
+<pre><code class="language-javascript">if(!request.intent) request.intent = {name:'randomName'};
+</code></pre>
+<p>Your skill, of course, may do something different in that case.</p>
+<p>Finally - and this was the tricky one - I had suggested &quot;foo&quot; for a name prefix (my cat namer supports letting you pass in the first part of the name, it then appends a random name after that). Alexa would translate foo to four though. This is what I got from the verification team:</p>
+<blockquote>
+User: "Alexa, ask cat namer to give my cat a name that starts with foo"
+Skill recognizes it as "Alexa ask cat namer to give my cat a name that starts with four" and responds with "Your random cat is 4 King Dumpster Fire"
+</blockquote>
+<p>Now to me - that smells like an Alexa issue. The user said &quot;foo&quot;, but it heard &quot;four&quot; - I honestly don't know how I'm expected to fix that. But I removed foo from my slot type options, removed it from the suggested type, crossed my fingers and submitted and then it passed. On the Alexa Slack channel, some folks suggested simply resubmitting sometimes worked well.</p>
+<p>All in all - the process wasn't too painful, and I'm working on a new skill now (but as I've got two big trips back to back, it may be a while). If you want to see the full source for my released skill, I've put it up here: https://github.com/cfjedimaster/Serverless-Examples/tree/master/randomcat3</p>
+<p>If I can answer any questions about this process, or provide more info on the OpenWhisk side, just ask!</p>
+}

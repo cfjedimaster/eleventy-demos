@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>Simple question - but does anyone know why CFEXECUTE tags <i>must</i> be closed? In other words, you can't do this:</p>
+<code>
+&lt;cfexecute name="parispic" variable="result"&gt;
+</code>
+<p>You must either do this:</p>
+<code>
+&lt;cfexecute name="parispic" variable="result" /&gt;
+</code>
+<p>Or</p>
+<code>
+&lt;cfexecute name="parispic" variable="result"&gt;&lt;/cfexecute&gt;
+</code>
+<p>The docs say you that you should not put anything between the closing and end tags, but this is perfectly valid:</p>
+<code>
+&lt;cfexecute name="parispic" variable="result"&gt;
+&lt;cfset x = 1&gt;
+&lt;/cfexecute&gt;
+</code>
+<p>But if you try to use X, you get an error. It's almost as if the ColdFusion developers imagined some other tag that would work on the inside - but then changed their mind.</p>
+}

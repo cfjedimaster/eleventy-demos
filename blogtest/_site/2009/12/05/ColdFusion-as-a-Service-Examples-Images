@@ -1,0 +1,170 @@
+<h1>Post</h1>
+
+<p>I promised a few weeks ago that I'd eventually get around to posting some of the code from my RIAUnleashed presentation. This morning I'm going to share two of them - both related to the Image service. The first one is really simple. It allows you to enter a URL to an image. CFaaS is then used to perform a gray scale on the image and return the result to the user. The code behind this demo could be a bit cleaner perhaps, but let's take a look at it.</p>
+<!--more-->
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" xmlns:cf="coldfusion.service.mxml.*" backgroundColor="0xFFFFFF"&gt;
+<p>&lt;mx:Script&gt;
+&lt;![CDATA[
+import mx.controls.Alert
+import mx.rpc.events.ResultEvent</p>
+<p>private function doGray():void {
+imageService.execute()
+}</p>
+<p>private function handleResult(event:ResultEvent):void {
+image.source=event.result.toString()
+}</p>
+<p>private function handleError(event:Event):void {
+mx.controls.Alert.show(event.toString())
+}</p>
+<p>]]&gt;
+&lt;/mx:Script&gt;</p>
+<p>&lt;cf:Config id=&quot;conf&quot; cfServer=&quot;127.0.0.1&quot; cfPort=&quot;80&quot; serviceUserName=&quot;cfremoteuser1&quot; servicePassword=&quot;password&quot; /&gt;</p>
+<p>&lt;cf:Image id=&quot;imageService&quot; action=&quot;GrayScale&quot; source=&quot;{sourceurl.text}&quot; result=&quot;handleResult(event)&quot; fault=&quot;handleError(event)&quot; /&gt;</p>
+<p>&lt;mx:HBox width=&quot;100%&quot;&gt;
+&lt;mx:Label text=&quot;Enter source url: &quot; /&gt; &lt;mx:TextInput id=&quot;sourceurl&quot; width=&quot;100%&quot; /&gt; &lt;mx:Button label=&quot;Render&quot; click=&quot;doGray()&quot; /&gt;		
+&lt;/mx:HBox&gt;</p>
+<p>&lt;mx:Image width=&quot;100%&quot; height=&quot;100%&quot; id=&quot;image&quot; /&gt;</p>
+<p>&lt;/mx:WindowedApplication&gt;
+</code></p>
+<p>I want go over every line, but let's look at the CFaaS specific portions. First note the import of the namespace:</p>
+<code>
+xmlns:cf="coldfusion.service.mxml.*"
+</code>
+<p>This works because my project imported the cfservices SWC that ships with ColdFusion. This gives me access to the Flex components that make use of CFaaS. This demo only uses two of them. The first is the config block:</p>
+<code>
+&lt;cf:Config id="conf" cfServer="127.0.0.1" cfPort="80" serviceUserName="cfremoteuser1" servicePassword="password" /&gt;
+</code>
+<p>This is obviously hard coded for my server. You would need to edit this as well as ensuring you actually create a user for CFaaS in your administrator. A better application would abstract that out as well. The next component is for the image service:</p>
+<code>
+&lt;cf:Image id="imageService" action="GrayScale" source="{sourceurl.text}" result="handleResult(event)" fault="handleError(event)" /&gt;
+</code>
+<p>Now one thing that confused me about CFaaS was why they used components with actions in them. In a way, it's like saying you only want to use one particular action (in this case, GrayScale) for images. What I realized later is that you certainly do not need to hard code in the action. You can easily change the action at run time with ActionScript. The flip side to this though is that we can provide specific event handlers for our operation. We probably want to react differently if a gray scale fails compared to some other call. Any way, the real magic is within the click handler for the button:</p>
+<code>
+private function doGray():void {
+	imageService.execute()
+}
+</code>
+<p>All CFaaS components (except for config) have an execute() method which - as you can probably guess - will execute the desired action. The result of this is plopped with a simple image component. Altogether you get this kick butt AIR application that I plan on selling for $9.99:</p>
+<img src="https://static.raymondcamden.com/images/Picture 263.png" />
+<p>Pretty trivial, right? The second example is a bit more full featured. Along with providing hooks to various ColdFusion services, CFaaS also provides simple file upload support. This allows you to send files to the ColdFusion server so that they can be processed. Before working on my CFaaS presentation I had never done any file uploads with Flex before, so forgive me if the code below is a bit off.</p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" xmlns:cf="coldfusion.service.mxml.*" creationComplete="init()" paddingTop="0" paddingLeft="5" paddingRight="5"&gt;
+<pre><code>&amp;lt;mx:Script&amp;gt;
+&amp;lt;![CDATA[
+import mx.rpc.events.ResultEvent
+import coldfusion.service.Util
+
+private var uploadURL:URLRequest
+private var fileref:FileReference = new FileReference()
+private var fileTypes:Array = new Array()
+private var imageTypes:FileFilter = new FileFilter(&quot;Images (*.jpg; *.jpeg; *.gif; *.png)&quot; ,&quot;*.jpg; *.jpeg; *.gif; *.png&quot;);	
+
+[Bindable] private var imageSrc:String
+
+private function init():void {
+	imageSrc = ''
+	
+	//Set up the uploader
+	uploadURL = new URLRequest()		
+	uploadURL.url = &quot;http://&quot;+conf.cfServer+&quot;:&quot;+conf.cfPort+conf.cfContextRoot+&quot;/&quot;+Util.UPLOAD_URL; 
+	var variables:URLVariables = new URLVariables();
+	variables.serviceusername = conf.serviceUserName; 
+	variables.servicepassword = conf.servicePassword; 
+	uploadURL.data = variables; 
+	uploadURL.method=&quot;POST&quot;;		
+	trace(uploadURL.url)
+
+	//add the image types to the fileTYpes array
+	fileTypes.push(imageTypes)
+	
+	//listen for the button click
+	btnFilePicker.addEventListener(MouseEvent.CLICK, browseFiles);
+
+	//listen for picking a file
+	fileref.addEventListener(Event.SELECT, selectHandler);
+	
+}			
+
+private function browseFiles(event:Event):void {
+	fileref.browse(fileTypes);
+}
+
+private function selectHandler(event:Event):void {
+	var fileRef:FileReference = event.currentTarget as FileReference
+	fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, dataHandler)
+	fileRef.addEventListener(IOErrorEvent.IO_ERROR, uploadErrorHandler)
+	fileRef.upload(uploadURL)
+}	
+
+private function dataHandler(event:DataEvent):void {
+	//Util.extractURLFromUploadResponse(event.data.toString())}; 
+	imageSrc = Util.extractURLFromUploadResponse(event.data.toString())
+	trace('dataHandler')
+	trace(Util.extractURLFromUploadResponse(event.data.toString()))
+}
+
+private function uploadErrorHandler(event:Event):void {
+	trace(&quot;OH CRAP&quot;)
+}
+
+private function handleResult(event:ResultEvent):void {
+	trace('result url='+event.result.toString())
+	imageSrc = event.result.toString()
+}
+
+private function handleDownload():void {
+	var request:URLRequest = new URLRequest();
+	request.url = imageSrc;
+	request.method = URLRequestMethod.GET;
+	var fileToDownload:FileReference = new FileReference();
+	try {
+		fileToDownload.download(request);
+	} catch (error:Error) {
+		trace(&quot;Unable to download file.&quot;);
+	}
+
+}
+
+private function doBatch():void {
+	//Note to audience - bug with Flip via batchoperation requires us to pass transpose
+	var attributes:Array = [
+	{GrayScale:{}},
+	{Blur:{}},
+	{Flip:{transpose:&quot;180&quot;}}
+	]
+	batchImageService.attributes = attributes
+	batchImageService.execute()
+}
+]]&amp;gt;
+&amp;lt;/mx:Script&amp;gt;
+
+&amp;lt;cf:Config id=&quot;conf&quot; cfServer=&quot;127.0.0.1&quot; cfPort=&quot;80&quot; cfContextRoot=&quot;&quot; serviceUserName=&quot;cfremoteuser1&quot; servicePassword=&quot;password&quot; /&amp;gt;
+
+&amp;lt;cf:Image id=&quot;gsImageService&quot; action=&quot;GrayScale&quot; source=&quot;{imageSrc}&quot; result=&quot;handleResult(event)&quot; /&amp;gt;
+&amp;lt;cf:Image id=&quot;blurImageService&quot; action=&quot;Blur&quot; source=&quot;{imageSrc}&quot; result=&quot;handleResult(event)&quot; /&amp;gt;
+&amp;lt;cf:Image id=&quot;flipImageService&quot; action=&quot;Flip&quot; source=&quot;{imageSrc}&quot; result=&quot;handleResult(event)&quot; /&amp;gt;
+&amp;lt;cf:Image id=&quot;batchImageService&quot; action=&quot;batchoperation&quot; source=&quot;{imageSrc}&quot; result=&quot;handleResult(event)&quot; /&amp;gt;
+
+
+&amp;lt;mx:ControlBar width=&quot;100%&quot;&amp;gt;		
+&amp;lt;mx:Button id=&quot;btnFilePicker&quot; label=&quot;Select a Picture&quot; /&amp;gt;
+&amp;lt;mx:Spacer width=&quot;100%&quot; /&amp;gt;
+&amp;lt;mx:Button label=&quot;Gray&quot; click=&quot;gsImageService.execute()&quot; enabled=&quot;{imageSrc!=''}&quot; /&amp;gt;
+&amp;lt;mx:Button label=&quot;Blur&quot; click=&quot;blurImageService.execute()&quot; enabled=&quot;{imageSrc!=''}&quot; /&amp;gt;	
+&amp;lt;mx:Button label=&quot;Flip&quot; click=&quot;flipImageService.execute()&quot; enabled=&quot;{imageSrc!=''}&quot; /&amp;gt;
+&amp;lt;mx:Button label=&quot;Do all&quot; click=&quot;doBatch()&quot; enabled=&quot;{imageSrc!=''}&quot; /&amp;gt;	
+&amp;lt;mx:Button label=&quot;Download&quot; click=&quot;handleDownload()&quot; enabled=&quot;{imageSrc!=''}&quot; /&amp;gt;	
+
+&amp;lt;/mx:ControlBar&amp;gt;
+
+&amp;lt;mx:Image width=&quot;100%&quot; height=&quot;100%&quot; id=&quot;image&quot; source=&quot;{imageSrc} &quot;/&amp;gt;
+</code></pre>
+<p>&lt;/mx:WindowedApplication&gt;
+</code></p>
+<p>So there is a lot more going on in this one, but it's really just a minor update to the previous version. Going from the top to the bottom, the first big change is support for handling the file uploads. You can see that the URL is built dynamically based off both the config objects as well as a UPLOAD_URL constant returned by our ColdFusion server. When the user selects a file and uploads it, we display it in an image component below and turn on our buttons. Each button makes use of a different image operation. For the most part these are simple, but note the batch operation. This one, as you can guess, allows us to perform multiple operations at once. (And make note - GrayScale is buggy within a batch operation. You must pass an empty value for it's arguments if you want to use the default operation.) Each button/service will simply do it's thing and then update the image below.</p>
+<p>The last part of the application is the download button. As you can guess, this will let us download our modified image after we've played with it. We now have a mini-Photoshop if you will. I plan on selling this application for 19.99.
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture 341.png" /><p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fimagedemos%2Ezip'>Download attached file.</a></p></p>
+}

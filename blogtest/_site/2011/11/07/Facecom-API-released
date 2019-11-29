@@ -1,0 +1,48 @@
+<h1>Post</h1>
+
+<p>Wow, another cool API was just released today. <a href="http://face.com">Face.com</a> has released an API for facial recognition. Not only will it do facial recognition, it will also do training (so it can help learn people) and integration with Facebook and Twitter. I played around with the API today and it's easy to use. You can see the <a href="http://developers.face.com/docs/api/">docs</a> for yourself, and that's <i>without</i> having to register. (Sorry, I get ticked off at API providers that require you to give over your personal information before deigning to tell you what their API looks like.) I whipped up a super quick ColdFusion sample to show you how it works. (And again, this is just an example of their facial recognition, they do more.)</p>
+<!--more-->
+<p>
+<code>
+&lt;cfset apikey = "yeah, you need to sign in for this"&gt;
+&lt;cfset apisecret = "see above"&gt;
+<p>&lt;cfset apiUrl = &quot;http://api.face.com/faces/detect.json&quot;&gt;</p>
+<p>&lt;cfset sourceimage = &quot;c:\users\raymond\dropbox\photos\two starbucks.jpg&quot;&gt;</p>
+<p>&lt;cfhttp url=&quot;#apiurl#?api_key=#apikey#&amp;api_secret=#apisecret#&quot; method=&quot;post&quot;&gt;
+&lt;cfhttpparam name=&quot;body&quot; type=&quot;file&quot; file=&quot;#sourceimage#&quot;&gt;
+&lt;/cfhttp&gt;</p>
+<p>&lt;cfset resultStr = cfhttp.filecontent&gt;
+&lt;cfif isJSON(resultStr)&gt;
+&lt;cfset result = deserializeJSON(resultStr)&gt;
+&lt;cfif result.status is &quot;success&quot; and arraylen(result.photos)&gt;
+&lt;!--- read in our image ---&gt;
+&lt;cfset img = imageRead(sourceimage)&gt;
+&lt;!--- API supports N photos at once, but we assume 1 photo ---&gt;
+&lt;cfset photo = result.photos[1]&gt;</p>
+<pre><code>	&amp;lt;cfloop index=&quot;tag&quot; array=&quot;#photo.tags#&quot;&amp;gt;
+		&amp;lt;!--- to draw our square, we will need to get upper left corner, we are given a center+w,h ---&amp;gt;
+		&amp;lt;!--- tag.center.x/y == % of total size ---&amp;gt;
+		&amp;lt;cfset centerReal = { x=tag.center.x/100 * photo.width, y=tag.center.y/100*photo.height}&amp;gt;
+		&amp;lt;cfset widthReal = tag.width/100*photo.width&amp;gt;
+		&amp;lt;cfset heightReal = tag.height/100*photo.height&amp;gt;
+		&amp;lt;cfset upperLeft = { x=centerReal.x-(widthReal/2), y=centerReal.y-(heightReal/2)}&amp;gt;
+		&amp;lt;cfset imageDrawRect(img, upperLeft.x, upperLeft.y, widthReal, heightReal)&amp;gt;
+		&amp;lt;cfdump var=&quot;#tag.attributes#&quot; label=&quot;Tag attributes&quot;&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#img#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>
+<p>In the template above, I create a URL request based on my API key and secret (which took all of two minutes to get when I signed up) and pass in a photo from my hard drive. They also support URLs as well as sending multiple images at once. Even better, if you are concerned about the speed of the response, you can provide a call back url and their service will ping you back with the results. Finally - and this I really dig - they will also tell you how many API calls you have left and how soon it will reset. I love how thorough they seem to be here.</p>
+<p>
+<p>Ok, so after I make the call, I start to work with the result. You get an array of photo results back, one for each you sent. Since my code is working with one I just assume the array has one item. Within that struct you have an array of tags. The tags contain data about your matches. Oddly - even though they know the size of your image, they return everything in percentages. That was the only part of this API I really didn't care for. You can see where I do a bit of math to convert these into values that make sense for my photo. Once I have that though it is relatively easy to draw a rectangle. I also dump the tag attributes. This is a pretty cool feature where it tells you how confident it is and things like gender, glasses, and if the person is smiling!</p>
+<p>
+<p>Finally, I use a quick writeToBrowser to test out the results. Here are a few samples.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip214.png" />
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip215.png" />
+<p>Now check out this final copy. It correctly gets that Scott and I have glasses. it correctly says Dave isn't smiling. It gets my 'smile' factor wrong, but do note how lose the confidence is.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip216.png" />}

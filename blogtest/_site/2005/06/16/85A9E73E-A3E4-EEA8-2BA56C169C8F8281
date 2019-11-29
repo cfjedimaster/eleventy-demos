@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>One of the new tools in Verity under ColdFusion MX is the status attribute. When searching, it gives you a wealth of information about your search (how many documents were searched, suggestions, etc.). What I didn't know is that CFINDEX also has a status attribute. This lets you know how many items were added, updated, or deleted. It also lets you know if an error occured.</p>
+<p>I was trying to use CFINDEX to update my collection data for one record, but it wasn't working. When I looked at the status message, I saw an error saying my key wasn't valid. Turns out - I had forgot to specify type=&quot;custom&quot;, which meant CFINDEX thought my key was a file.</p>
+}

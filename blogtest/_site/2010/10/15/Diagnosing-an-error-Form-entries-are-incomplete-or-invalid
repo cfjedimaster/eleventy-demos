@@ -1,0 +1,105 @@
+<h1>Post</h1>
+
+<p>Last night a reader of mine wrote with an interesting issue. His error handler was firing off quite a few emails (<a href="http://www.raymondcamden.com/index.cfm/2010/10/14/Proof-of-Concept--Throttling-automatic-emails-in-ColdFusion">this would help!</a>) but the error wasn't quite clear. I've recreated the error below and I'll explain how I went about diagnosing it. The short summary is that - once again - ColdFusion's ancient automatic form checker was the culprit, which luckily is easy to get around in ColdFusion 9. But first - let's look at the errors that were generated.</p>
+<!--more-->
+<p/>
+<p>Ok, first - here is a snapshot of what the error looked like:</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/screen16.png" />
+<p/>
+<p>When I saw this, I immediately noticed that both the Message and the StackTrace talked about form validation. This was my first clue that something with ColdFusion's built in form validation was being triggered. You can read about this feature <a href="http://help.adobe.com/en_US/ColdFusion/9.0/Developing/WSc3ff6d0ea77859461172e0811cbec22c24-7a7b.html">here</a>. For the most part, no one uses this nor do they even think about it until they accidentally name a field something_required and accidentally trigger it.</p>
+<p/>
+<p>Now I asked the developer if he had anything named like that and he said not. But this is an important point. <b>Even if you don't name anything something_required, if a remote request sends that, it will trigger the error.</b> So to be clear, I can force that error on your server right now by just writing my own form. It isn't a big deal for sure, but it is something to remember. Here is where things got weird though. In his error handler he was dumping out the form and it was empty! I noticed his code looked like so:</p>
+<p/>
+<code>
+&lt;cfif isDefined("form.fieldnames")&gt;
+	&lt;cfdump var="#form#" label="FORM"&gt;
+&lt;/cfif&gt;
+</code>
+<p/>
+<p>So - at this point - I was still pretty lost. I asked him to add this to his error handler:</p>
+<p/>
+<code>
+&lt;cfdump var="#getHTTPRequestData()#"&gt;
+</code>
+<p/>
+<p>This then revealed form data within the content of the request. I then realized the issue. ColdFusion wasn't populating form.fieldnames. If he had just dumped the form scope itself it would have worked. So for some reason, when a form validation error occurs, form.fieldnames will not exist. Confused yet? Let's look at a complete example. First, my Application.cfc.</p>
+<p/>
+<code>
+&lt;cfcomponent output="false"&gt;
+<pre><code>&amp;lt;cfset this.name = &quot;demo2&quot;&amp;gt;
+&amp;lt;cfset this.sessionManagement = true&amp;gt;
+
+
+&amp;lt;cffunction name=&quot;onApplicationStart&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfreturn true&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;onError&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;exception&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;event&quot;&amp;gt;
+	&amp;lt;cfdump var=&quot;#arguments#&quot; abort&amp;gt;
+&amp;lt;/cffunction&amp;gt;    
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p/>
+<p>Next - this is the file being hit by the remote server.</p>
+<p/>
+<code>
+Testing from test3.cfm
+<p>&lt;cfdump var=&quot;#getHTTPRequestData()#&quot;&gt;
+</code></p>
+<p/>
+<p>Right now it just echos back data. And finally, here is my tester:</p>
+<p/>
+<code>
+&lt;h1&gt;testing from test1&lt;/h1&gt;
+<p>&lt;cfhttp url=&quot;http://localhost/test3.cfm&quot; method=&quot;post&quot; result=&quot;result&quot;&gt;
+&lt;cfhttpparam type=&quot;formfield&quot; name=&quot;stuff&quot; value=&quot;ray&quot;&gt;
+&lt;/cfhttp&gt;</p>
+<p>&lt;cfoutput&gt;#result.fileContent#&lt;/cfoutput&gt;
+</code></p>
+<p/>
+<p>Notice the form field is just stuff. Ok, so here is the result of a good post.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/screen17.png" />
+<p/>
+<p>And now - let's break it. Here is my new tester:</p>
+<p/>
+<code>
+&lt;h1&gt;testing from test1&lt;/h1&gt;
+<p>&lt;cfhttp url=&quot;http://localhost/test3.cfm&quot; method=&quot;post&quot; result=&quot;result&quot;&gt;
+&lt;cfhttpparam type=&quot;formfield&quot; name=&quot;stuff_required&quot; value=&quot;ray&quot;&gt;
+&lt;/cfhttp&gt;</p>
+<p>&lt;cfoutput&gt;#result.fileContent#&lt;/cfoutput&gt;
+</code></p>
+<p/>
+<p>As you can see - I just renamed the field to include something to trip up ColdFusion's validation.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/screen18.png" />
+<p/>
+<p>As you can see - even this is a bit confusing. Why is my form value in there? No idea. So what to do?</p>
+<p/>
+<p>First off - in ColdFusion 9 you can fix this in two seconds:</p>
+<p/>
+<code>
+&lt;cfset this.serverSideFormValidation = false&gt;
+</code>
+<p/>
+<p>I see no reason to <b>never</b> use this line of code - unless you actually are using that old feature and if so... um... stop. Now unfortunately the user was still on ColdFusion 8. Luckily you can just look at the exception and not email if it happens. Here is an example.</p>
+<p/>
+<code>
+&lt;cffunction name="onError"&gt;
+	&lt;cfargument name="exception"&gt;
+	&lt;cfargument name="event"&gt;
+	&lt;cfif arguments.exception.message is not "Form entries are incomplete or invalid."&gt;
+		&lt;cfdump var="#arguments#" abort&gt;
+	&lt;/cfif&gt;
+&lt;/cffunction&gt;    
+</code>
+<p/>
+<p>Since the remote site wasn't doing anything valid on the server anyway, this is probably a fine response. (Although I'd also consider noting the IP and blocking it at the network level.)</p>
+<p/>
+<p>Anyway - I hope this helps others!</p>
+}

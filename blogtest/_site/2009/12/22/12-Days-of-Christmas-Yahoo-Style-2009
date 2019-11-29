@@ -1,0 +1,452 @@
+<h1>Post</h1>
+
+<p>Two years ago I whipped up a <a href="http://www.raymondcamden.com/index.cfm/2007/12/14/12-Days-of-Christmas--Yahoo-Style">quick blog entry</a> demonstrating how to make use of the <a href="http://cfyahoo.riaforge.org">CFYahoo</a> ColdFusion library to retrieve images related to the 12 Days of Christmas. I was thinking of this entry and thought it would be nice to repost the code and use more current results. So nothing new here, nothing serious, just something a bit cute (imho). The code:</p>
+<!--more-->
+<code>
+&lt;cfset imageAPI = createObject("component", "CFYahoo.org.camden.yahoo.image")&gt;
+<p>&lt;cfset gifts = [&quot;A partridge in a pear tree&quot;,&quot;Two turtle doves&quot;,&quot;Three French hens&quot;,&quot;Four calling birds&quot;,&quot;Five golden rings&quot;,&quot;Six geese a-laying&quot;,
+&quot;Seven swans a-swimming&quot;,&quot;Eight maids a-milking&quot;,&quot;Nine ladies dancing&quot;,&quot;Ten lords a-leaping&quot;,&quot;Eleven pipers piping&quot;,&quot;Twelve drummers drumming&quot;]&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(gifts)#&quot;&gt;</p>
+<pre><code>&amp;lt;cfinvoke component=&quot;#imageAPI#&quot; method=&quot;search&quot; returnVariable=&quot;result&quot;&amp;gt;
+    &amp;lt;cfinvokeargument name=&quot;query&quot; value=&quot;#gifts[x]#&quot;&amp;gt;
+    &amp;lt;cfinvokeargument name=&quot;results&quot; value=&quot;3&quot;&amp;gt;
+&amp;lt;/cfinvoke&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;h2&amp;gt;Image search for #gifts[x]#&amp;lt;/h2&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfoutput query=&quot;result&quot;&amp;gt;
+&amp;lt;cfif len(thumbnail)&amp;gt;
+&amp;lt;img src=&quot;#thumbnail#&quot; width=&quot;#thumbnailwidth#&quot; height=&quot;#thumbnailheight#&quot; alt=&quot;#title#&quot; style=&quot;align:left&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;h3&amp;gt;#title#&amp;lt;/h3&amp;gt;
+URL: &amp;lt;a href=&quot;#clickurl#&quot;&amp;gt;#result.url#&amp;lt;/a&amp;gt;&amp;lt;br /&amp;gt;    
+Summary: #summary#
+&amp;lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;hr&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+&amp;lt;cfflush&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>Nothing fancy there - just looping over the array and performing the search. I did have to get anal with the BR/clear tag as Chrome did not support br clear=left when I used align=&quot;left&quot; in the image. Outside of that though the code worked perfectly well. And here is the result. Enjoy.</p>
+<p>Also let me take this opportunity to wish everyone a Merry Christmas!</p>
+ <h2>Image search for A partridge in a pear tree</h2> 
+<pre><code>&lt;img src=&quot;http://thm-a01.yimg.com/image/74b5c82f5c5f0a8a&quot; width=&quot;111&quot; height=&quot;140&quot; alt=&quot;Partridge in a Pear Tree jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;Partridge in a Pear Tree jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.julesavenuegraphics.com/Partridge_in_a_Pear_Tree.jpg&quot;&gt;http://www.julesavenuegraphics.com/Partridge_in_a_Pear_Tree.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Partridge in a pear tree card
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/56b72eb0a212640c&quot; width=&quot;94&quot; height=&quot;135&quot; alt=&quot;12 days partridge pear tree jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;12 days partridge pear tree jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.msgr.ca/msgr-2/12%20days%20partridge%20pear%20tree.jpg&quot;&gt;http://www.msgr.ca/msgr-2/12%20days%20partridge%20pear%20tree.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: My true love gave to me A Partridge in a Pear Tree
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/7013fc5fae372af0&quot; width=&quot;125&quot; height=&quot;119&quot; alt=&quot;Partridge In A Pear Tree Pin JPG&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;Partridge In A Pear Tree Pin JPG&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.distinctgiftshop.com/media/Partridge_In_A_Pear_Tree_Pin.JPG&quot;&gt;http://www.distinctgiftshop.com/media/Partridge_In_A_Pear_Tree_Pin.JPG&lt;/a&gt;&lt;br /&gt;    
+Summary: Partridge In A Pear Tree Pin
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Two turtle doves&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/31acbfe593131320&quot; width=&quot;136&quot; height=&quot;150&quot; alt=&quot;12daysofxmas 2 turtle doves jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;12daysofxmas 2 turtle doves jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.deanperry.co.uk/images/seasonalextras/12days/12daysofxmas-2-turtle-doves.jpg&quot;&gt;http://www.deanperry.co.uk/images/seasonalextras/12days/12daysofxmas-2-turtle-doves.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Three French Hens Two Turtle Doves A Partridge in a Pear Tree
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/1d00578b24effe04&quot; width=&quot;130&quot; height=&quot;107&quot; alt=&quot;2turtledoves jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;2turtledoves jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.fashion-era.com/images/xmas/xmas_traditions/2turtledoves.jpg&quot;&gt;http://www.fashion-era.com/images/xmas/xmas_traditions/2turtledoves.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: On the second day of Christmas  my true love gave to me Two Turtle Doves and a partridge in a pear tree
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/716530596d304856&quot; width=&quot;130&quot; height=&quot;130&quot; alt=&quot;dove jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;dove jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.bevo.co.uk/blog/dove.jpg&quot;&gt;http://www.bevo.co.uk/blog/dove.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 5 58 pm | General Chatter My day has been random       Woke up in a strange house fully cloathed scared to death coz I didn t know where I was  Went for a walk through the Wellington in a short sleeved shirt saw
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Three French hens&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/af25c66d294a5878&quot; width=&quot;101&quot; height=&quot;130&quot; alt=&quot;three french hens 2 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;three french hens 2 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://quidnimis.squarespace.com/storage/three_french_hens_2.jpg&quot;&gt;http://quidnimis.squarespace.com/storage/three_french_hens_2.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: And what about those three hens    Help is on the way
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/f67aa9c771964de8&quot; width=&quot;135&quot; height=&quot;131&quot; alt=&quot;3 french hens jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;3 french hens jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.ashmolean.org/assets/images/Shop/larger/3_french_hens.jpg&quot;&gt;http://www.ashmolean.org/assets/images/Shop/larger/3_french_hens.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/bf9219cff30c4e26&quot; width=&quot;109&quot; height=&quot;140&quot; alt=&quot;22 threefrenchhens72 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;22 threefrenchhens72 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.porterfieldsfineart.com/JohnnyKarwan/images/22-threefrenchhens72.jpg&quot;&gt;http://www.porterfieldsfineart.com/JohnnyKarwan/images/22-threefrenchhens72.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Four calling birds&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/ff0af7e3df11a75e&quot; width=&quot;125&quot; height=&quot;82&quot; alt=&quot;1217 day four copy jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;1217 day four copy jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.in-forum.com/gfx/photos/thumbs/1217%20day%20four%20copy.jpg&quot;&gt;http://www.in-forum.com/gfx/photos/thumbs/1217%20day%20four%20copy.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/e74405bbe5a2d952&quot; width=&quot;125&quot; height=&quot;118&quot; alt=&quot;4callingbirds 200 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;4callingbirds 200 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://shopping.originpublishing.com/chart_images/4callingbirds_200.jpg&quot;&gt;http://shopping.originpublishing.com/chart_images/4callingbirds_200.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/77041180632ea214&quot; width=&quot;109&quot; height=&quot;140&quot; alt=&quot;20 fourcallingbirds72 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;20 fourcallingbirds72 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.porterfieldsfineart.com/JohnnyKarwan/images/20-fourcallingbirds72.jpg&quot;&gt;http://www.porterfieldsfineart.com/JohnnyKarwan/images/20-fourcallingbirds72.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Five golden rings&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/eadde6248c1ce184&quot; width=&quot;125&quot; height=&quot;125&quot; alt=&quot;3905 JPG&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;3905 JPG&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.rembrandtcharms.com/charm_img/3905.JPG&quot;&gt;http://www.rembrandtcharms.com/charm_img/3905.JPG&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/2c3e67c3533a240a&quot; width=&quot;135&quot; height=&quot;36&quot; alt=&quot;5rings jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;5rings jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.cashbarn.com/gif/5rings.jpg&quot;&gt;http://www.cashbarn.com/gif/5rings.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: PLUS    5 SECOND PLACE PRIZES RETAIL  $180 00 EACH FIVE  5  GOLDEN RINGS This diamond band is beautifully crafted in 14K Yellow Gold and includes 13 round diamonds of equal size  The shared prong setting allows the maximum amount of light to
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/1635a02245f8acf8&quot; width=&quot;127&quot; height=&quot;135&quot; alt=&quot;5goldrings jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;5goldrings jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://guy-sports.com/fun_pictures/christmas/5goldrings.jpg&quot;&gt;http://guy-sports.com/fun_pictures/christmas/5goldrings.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: my true love gave to me Six Geese a laying  five golden rings  four calling birds  three French hens  two turtle doves  and a partridge in a pear tree
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Six geese a-laying&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/566577de3329bee0&quot; width=&quot;136&quot; height=&quot;150&quot; alt=&quot;6 geese a laying jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;6 geese a laying jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.deanperry.co.uk/images/seasonalextras/12days/6-geese-a-laying.jpg&quot;&gt;http://www.deanperry.co.uk/images/seasonalextras/12days/6-geese-a-laying.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Eight Maids A Milking Seven Swans A Swimming Six Geese A Laying Five Gold Rings
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/ab7bf54bbb964514&quot; width=&quot;145&quot; height=&quot;110&quot; alt=&quot;Six Geese a  laying1 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;Six Geese a  laying1 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.shanart.com/images%20/Six-Geese-a--laying1.jpg&quot;&gt;http://www.shanart.com/images%20/Six-Geese-a--laying1.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Six Geese a Laying
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/9bbbb80bcb89860c&quot; width=&quot;102&quot; height=&quot;135&quot; alt=&quot;36972 reg jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;36972 reg jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.giftcorral.com/giftcorral/images/items/36972_reg.jpg&quot;&gt;http://www.giftcorral.com/giftcorral/images/items/36972_reg.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Our Price  $7 00  Big Sky Carvers Six Geese A Laying Ornament
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Seven swans a-swimming&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/701110778efe8d34&quot; width=&quot;145&quot; height=&quot;138&quot; alt=&quot;seven swans a swimming jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;seven swans a swimming jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.artshole.co.uk/arts/artists/anna%20charity/seven-swans-a-swimming.jpg&quot;&gt;http://www.artshole.co.uk/arts/artists/anna%20charity/seven-swans-a-swimming.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: seven swans a swimming
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/8f86cdf63e59c71e&quot; width=&quot;125&quot; height=&quot;119&quot; alt=&quot;TN seven swans a swimming JPG&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;TN seven swans a swimming JPG&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.artshole.co.uk/arts/artists/anna%20charity/TN_seven-swans-a-swimming.JPG&quot;&gt;http://www.artshole.co.uk/arts/artists/anna%20charity/TN_seven-swans-a-swimming.JPG&lt;/a&gt;&lt;br /&gt;    
+Summary: seven swans a swimming
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/617e022ccb45376e&quot; width=&quot;135&quot; height=&quot;96&quot; alt=&quot;X7 Seven swans a swimming l GIF&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;X7 Seven swans a swimming l GIF&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.papersharks.com/lrgxmasImages/X7%20Seven%20swans%20a%20swimming%20l.GIF&quot;&gt;http://www.papersharks.com/lrgxmasImages/X7%20Seven%20swans%20a%20swimming%20l.GIF&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Eight maids a-milking&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/bd44484d4ba198ec&quot; width=&quot;135&quot; height=&quot;135&quot; alt=&quot;Eight Maids a Milking jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;Eight Maids a Milking jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.artshole.co.uk/arts/artists/April%2006/Jay%20Taylor/Eight-Maids-a-Milking.jpg&quot;&gt;http://www.artshole.co.uk/arts/artists/April%2006/Jay%20Taylor/Eight-Maids-a-Milking.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Eight Maids a Milking
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/b6994a8d69ef573c&quot; width=&quot;125&quot; height=&quot;125&quot; alt=&quot;TN Eight Maids a Milking JPG&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;TN Eight Maids a Milking JPG&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.artshole.co.uk/arts/artists/April%2006/Jay%20Taylor/TN_Eight-Maids-a-Milking.JPG&quot;&gt;http://www.artshole.co.uk/arts/artists/April%2006/Jay%20Taylor/TN_Eight-Maids-a-Milking.JPG&lt;/a&gt;&lt;br /&gt;    
+Summary: Eight Maids a Milking
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/ce9243c27b735b96&quot; width=&quot;136&quot; height=&quot;150&quot; alt=&quot;8 maids a milking jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;8 maids a milking jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.deanperry.co.uk/images/seasonalextras/12days/8-maids-a-milking.jpg&quot;&gt;http://www.deanperry.co.uk/images/seasonalextras/12days/8-maids-a-milking.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: and previously    Nine Ladies Dancing Eight Maids A Milking Seven Swans A Swimming
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Nine ladies dancing&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/820c4622187f25c6&quot; width=&quot;145&quot; height=&quot;24&quot; alt=&quot;9ladies jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;9ladies jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.fashion-era.com/images/xmas/xmas_traditions/9ladies.jpg&quot;&gt;http://www.fashion-era.com/images/xmas/xmas_traditions/9ladies.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: On the ninth day of Christmas  my true love gave to me Nine Ladies Dancing   eight maids a milking  seven swans a swimming  six geese a laying  Five golden rings  Four calling birds  three French hens  two
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/f0f6fff6df74ef12&quot; width=&quot;136&quot; height=&quot;150&quot; alt=&quot;9 ladies dancing jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;9 ladies dancing jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.deanperry.co.uk/images/seasonalextras/12days/9-ladies-dancing.jpg&quot;&gt;http://www.deanperry.co.uk/images/seasonalextras/12days/9-ladies-dancing.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 10 Lords A Leaping  click for bigger  and previously    Nine Ladies Dancing Eight Maids A Milking
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/544cfea19da74a4a&quot; width=&quot;83&quot; height=&quot;100&quot; alt=&quot;thumb 9ladies small jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;thumb 9ladies small jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.jonquathor.co.uk/albums/userpics/10001/thumb_9ladies-small.jpg&quot;&gt;http://www.jonquathor.co.uk/albums/userpics/10001/thumb_9ladies-small.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Nine Ladies Dancing   72 viewsFiller art for the Twelve Day of Christmas at The Wotch
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Ten lords a-leaping&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/713b7d38304d4d2e&quot; width=&quot;95&quot; height=&quot;125&quot; alt=&quot;Ten Lords A Leaping Thumb jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;Ten Lords A Leaping Thumb jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.coloursdownunder.com.au/shop/images/product_images/Ten-Lords-A-Leaping-Thumb.jpg&quot;&gt;http://www.coloursdownunder.com.au/shop/images/product_images/Ten-Lords-A-Leaping-Thumb.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: 
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/a4a4f191a78b3ba4&quot; width=&quot;128&quot; height=&quot;130&quot; alt=&quot;1993 Ten Lords A Leaping JPG&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;1993 Ten Lords A Leaping JPG&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.thepartyshop.com/Commerce/images/1993%20Ten%20Lords%20A-Leaping.JPG&quot;&gt;http://www.thepartyshop.com/Commerce/images/1993%20Ten%20Lords%20A-Leaping.JPG&lt;/a&gt;&lt;br /&gt;    
+Summary: 1993 Springtime Bonn  &gt; 27 Apr 2005 21 40 57K 1993 TURTLE jpg 14 Jul 2005 08 37 33K 1993 Ten Lords A Lea  &gt; 26 May 2005 14 53 28K 1993 Time for Easter  &gt; 27 Apr 2005 21 54 100K
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/781699d6537ca35e&quot; width=&quot;110&quot; height=&quot;135&quot; alt=&quot;36976 reg jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;36976 reg jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.giftcorral.com/giftcorral/images/items/36976_reg.jpg&quot;&gt;http://www.giftcorral.com/giftcorral/images/items/36976_reg.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Our Price  $5 25  Big Sky Carvers Ten Lords A Leaping Ornament
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Eleven pipers piping&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/80770d65f9669e52&quot; width=&quot;108&quot; height=&quot;135&quot; alt=&quot;xmas11 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;xmas11 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://streamers.com/ideas/xmas11.jpg&quot;&gt;http://streamers.com/ideas/xmas11.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Eleven Pipers piping
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/4e82408b1e9bbe60&quot; width=&quot;136&quot; height=&quot;150&quot; alt=&quot;11 pipers piping jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;11 pipers piping jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.deanperry.co.uk/images/seasonalextras/12days/11-pipers-piping.jpg&quot;&gt;http://www.deanperry.co.uk/images/seasonalextras/12days/11-pipers-piping.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: It s the Penultimate Day of Christmas  Woohoo  so here s    Eleven Pipers Piping   click on the image for a full size version  The Eleven Pipers represent the eleven Faithful Apostles  1  Simon Peter  2  Andrew  3  James  4  John  5  Philip  6  Bartholomew  7  Matthew  8  Thomas  9  James bar Alphaeus  10  Simon
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/de35c9b1f0920300&quot; width=&quot;119&quot; height=&quot;170&quot; alt=&quot;pipers piping 12 days jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;pipers piping 12 days jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.msgr.ca/msgr-2/pipers%20piping%2012%20days.jpg&quot;&gt;http://www.msgr.ca/msgr-2/pipers%20piping%2012%20days.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: My true love gave to me
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;h2&gt;Image search for Twelve drummers drumming&lt;/h2&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/d51a2d60927342e0&quot; width=&quot;130&quot; height=&quot;94&quot; alt=&quot;Twelve Drummers Drumming300 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;Twelve Drummers Drumming300 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://www.creativedisplays.com/siteresources/modules/webstore/ProdImages/Twelve%20Drummers%20Drumming300.jpg&quot;&gt;http://www.creativedisplays.com/siteresources/modules/webstore/ProdImages/Twelve%20Drummers%20Drumming300.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: Twelve Drummers Drumming  Six Feet Tall  TDD6  Twelve Drummers Drumming   Six Feet Tall  animated   Large Drums
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/c724b6c7cf2ff946&quot; width=&quot;135&quot; height=&quot;86&quot; alt=&quot;find the twelve days of christmas 10 jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;find the twelve days of christmas 10 jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://static.howstuffworks.com/gif/find-the-twelve-days-of-christmas-10.jpg&quot;&gt;http://static.howstuffworks.com/gif/find-the-twelve-days-of-christmas-10.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: View Enlarged Image Find twelve drummers drumming and lots more in this Christmas game
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt; 
+
+&lt;p&gt; 
+&lt;hr&gt; 
+&lt;/p&gt; 
+
+&lt;img src=&quot;http://thm-a01.yimg.com/image/b2e30b934a546b74&quot; width=&quot;150&quot; height=&quot;112&quot; alt=&quot;12 drummers drumming jpg&quot; style=&quot;align:left&quot;&gt; 
+
+&lt;h3&gt;12 drummers drumming jpg&lt;/h3&gt; 
+URL: &lt;a href=&quot;http://christiannewwave.files.wordpress.com/2007/04/12-drummers-drumming.jpg&quot;&gt;http://christiannewwave.files.wordpress.com/2007/04/12-drummers-drumming.jpg&lt;/a&gt;&lt;br /&gt;    
+Summary: German band Twelve Drummers Drumming started in the autumn of 1983  Seizing their name from an English Christmas carol  The 12 Days OF Christmas   The line up consisted of Rudi Edgar
+&lt;br clear=&quot;both&quot; style=&quot;clear:both&quot;&gt;</code></pre>
+}

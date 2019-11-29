@@ -1,0 +1,134 @@
+<h1>Post</h1>
+
+<p>I've covered this topic a few times before, in various ways, but a reader wrote in today with a related question so I thought I'd write a quick &quot;guide&quot; to this topic. Basically - given any ColdFusion query - how would you loop over the data dynamically? Here is how I do it.</p>
+<!--more-->
+<p>
+<p>First, let's start with a basic query:</p>
+<p>
+<code>
+&lt;cfquery name="getart" datasource="cfartgallery" maxrows="10"&gt;
+select	artname, description, price, issold, artid
+from	art	
+&lt;/cfquery&gt;
+</code>
+<p>
+<p>To begin, I want to loop over every row. I can do that either with cfloop or cfoutput. cfoutput is the easiest way to do it as it automatically handles going from one to the total number of rows.</p>
+<p>
+<code>
+&lt;cfoutput query="getart"&gt;
+stuff
+&lt;/cfoutput&gt;
+</code>
+<p>
+<p>That gives us one iteration per query. So how do I get the data? Remember that queries can be accessed using struct notation. That syntax is:</p>
+<p>
+<p>queryname[columnname][rownumber]</p>
+<p>
+<p>So given a query called getart, a column called artid, and row 5, I can output it like so:</p>
+<p>
+<code>
+#getart["artid"][5]#
+</code>
+<p>
+<p>That works if you know the columns, but in this case, we are doing it dynamically. ColdFusion gives us easy access to the columns though. Every query contains a value called &quot;columnlist&quot;. As you can imagine, it is a list of columns. We can loop over that list like so:</p>
+<p>
+<code>
+&lt;cfoutput query="getart"&gt;
+	#currentrow#) 
+	&lt;cfloop index="col" list="#columnlist#"&gt;
+			#col#=#getart[col][currentRow]#
+	&lt;/cfloop&gt;
+	&lt;p/&gt;
+&lt;/cfoutput&gt;
+</code>
+<p>
+<p>Where did currentRow come from? It's another built in variable. So what happens when we run this?</p>
+<p>
+<code>
+1) ARTID=1 ARTNAME=charles10b DESCRIPTION=2Pastels/Charcoal ISSOLD=1 PRICE=13002
+2) ARTID=2 ARTNAME=Michael DESCRIPTION=Pastels/Charcoal ISSOLD=0 PRICE=13900
+<ol start="3">
+<li>
+<p>ARTID=3 ARTNAME=Freddy DESCRIPTION=Pastels/Charcoal ISSOLD=1 PRICE=12500</p>
+</li>
+<li>
+<p>ARTID=4 ARTNAME=Paulo DESCRIPTION=Pastels/Charcoal ISSOLD=1 PRICE=11100</p>
+</li>
+<li>
+<p>ARTID=5 ARTNAME=Mary DESCRIPTION=Pastels/Charcoal ISSOLD=1 PRICE=13550</p>
+</li>
+<li>
+<p>ARTID=6 ARTNAME=Space DESCRIPTION=Mixed Media ISSOLD=1 PRICE=9800</p>
+</li>
+<li>
+<p>ARTID=7 ARTNAME=Leaning House DESCRIPTION=Mixed Media ISSOLD=1 PRICE=7800</p>
+</li>
+<li>
+<p>ARTID=8 ARTNAME=Dude DESCRIPTION=Mixed Media ISSOLD=1 PRICE=5600</p>
+</li>
+<li>
+<p>ARTID=9 ARTNAME=Hang Ten DESCRIPTION=Mixed Media ISSOLD=0 PRICE=8900</p>
+</li>
+<li>
+<p>ARTID=10 ARTNAME=Life is a Horse DESCRIPTION=Mixed Media ISSOLD=0 PRICE=10500
+</code></p>
+</li>
+</ol>
+<p>
+<p>Notice anything? The columns are not in the same order as the SQL. Now typically the order of columns in your SQL query shouldn't matter, but if you did want to use the same order you have yet another option: getMetaData. When called on the query like so:</p>
+<p>
+<code>
+&lt;cfset cols = getMetadata(getart)&gt;
+</code>
+<p>
+<p>You get an array of structs containing data about the columns:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip47.png" />
+<p>
+<p>I can use this array to make a new list that respects the order from my query:</p>
+<p>
+<code>
+&lt;cfset colList = ""&gt;
+&lt;cfloop from="1" to="#arrayLen(cols)#" index="x"&gt;
+	&lt;cfset colList = listAppend(colList, cols[x].name)&gt;
+&lt;/cfloop&gt;
+</code>
+<p>
+<p>Once I have that, I simply modify the code I used before to use colList instead of columnlist:</p>
+<p>
+<code>
+&lt;cfoutput query="getart"&gt;
+	#currentrow#) 
+	&lt;cfloop index="col" list="#collist#"&gt;
+			#col#=#getart[col][currentRow]#
+	&lt;/cfloop&gt;
+	&lt;p/&gt;
+&lt;/cfoutput&gt;
+</code>
+<p>And that's it. I've pasted the entire test below if you want to play around with it.</p>
+<code>
+&lt;cfquery name="getart" datasource="cfartgallery" maxrows="10"&gt;
+select	artname, description, price, issold, artid
+from	art	
+&lt;/cfquery&gt;
+<p>&lt;cfoutput query=&quot;getart&quot;&gt;
+#currentrow#)
+&lt;cfloop index=&quot;col&quot; list=&quot;#columnlist#&quot;&gt;
+#col#=#getart[col][currentRow]#
+&lt;/cfloop&gt;
+&lt;p/&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfset cols = getMetadata(getart)&gt;
+&lt;cfset colList = &quot;&quot;&gt;
+&lt;cfloop from=&quot;1&quot; to=&quot;#arrayLen(cols)#&quot; index=&quot;x&quot;&gt;
+&lt;cfset colList = listAppend(colList, cols[x].name)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfoutput query=&quot;getart&quot;&gt;
+#currentrow#)
+&lt;cfloop index=&quot;col&quot; list=&quot;#collist#&quot;&gt;
+#col#=#getart[col][currentRow]#
+&lt;/cfloop&gt;
+&lt;p/&gt;
+&lt;/cfoutput&gt;
+</code></p>
+}

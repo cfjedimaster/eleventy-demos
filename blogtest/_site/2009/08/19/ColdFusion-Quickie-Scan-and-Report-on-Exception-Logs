@@ -1,0 +1,110 @@
+<h1>Post</h1>
+
+<p>A client sent me a set of exception logs and asked me to make fixes where I could. I have a limited set of hours so I needed to focus on the errors that occurred most often. I wrote up a quick ColdFusion script that would parse the exception logs and keep count of unique errors. Here is the code I came up with along with some explanation as to how it works.</p>
+<!--more-->
+<p>First, I specified a list of files. This could be a cfdirectory call too I suppose:</p>
+<code>
+&lt;!--- list of logs to parse ---&gt;
+&lt;cfset logs = "/Users/ray/Desktop/fwfeedsubmission/examples-sjc1-3_exception.log,/Users/ray/Desktop/fwfeedsubmission/examples-sjc1-4_exception.log"&gt;
+</code>
+<p>I then created a structure to store unique errors:</p>
+<code>
+&lt;cfset errors = {}&gt;
+</code>
+<p>Next, I looped over each file and each line in the file:</p>
+<code>
+&lt;cfloop index="logfile" list="#logs#"&gt;
+    &lt;cfloop index="line" file="#logFile#"&gt;
+</code>
+<p>Exception logs have 'blocks' of errors where one line looks like a standard CFML log and is then followed by more details and a stack track. So for example:</p>
+<blockquote>
+"Error","jrpp-541","06/21/09","20:24:31",,"Context validation error for the cfmail tag.The start tag must have a matching end tag.  An explicit end tag can be provided by adding </cfmail>.  If the body of the tag is empty, you can use the shortcut <cfmail .../>. The specific sequence of files included or processed is: /Library/WebServer/Documents/test3.cfm, line: 3 "<br/>
+coldfusion.compiler.UnmatchedStartTagException: Context validation error for the cfmail tag.<br/>
+	at coldfusion.compiler.cfml40.start(cfml40.java:2769)<br/>
+	at coldfusion.compiler.NeoTranslator.parsePage(NeoTranslator.java:503)
+</blockquote>
+<p>So my code simply says - look for &quot;Error&quot;, in front, and if so, get the item:</p>
+<code>
+        &lt;!--- only use if line begins with "Error", ---&gt;
+		&lt;cfif find("""Error"",", line)&gt;
+		  &lt;!--- convert to array, keeping nulls ---&gt;
+		  &lt;cfset arr = listToArray(line, "," , true)&gt;
+		  &lt;!--- remove 1-5 ---&gt;
+		  &lt;cfloop index="x" from="1" to="5"&gt;
+    		  &lt;cfset arrayDeleteAt(arr, 1)&gt;
+		  &lt;/cfloop&gt;
+<pre><code>	  &amp;lt;cfset errorLog = arrayToList(arr, &quot; &quot;)&amp;gt;
+	  &amp;lt;cfif not structKeyExists(errors, errorLog)&amp;gt;
+	      &amp;lt;cfset errors[errorLog] = 0&amp;gt;
+	  &amp;lt;/cfif&amp;gt;
+	  &amp;lt;cfset errors[errorLog]++&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+</code></pre>
+</code>
+<p>What's with the funky listToArray/arrayToList? Well some of the error detail messages includes commas, but the first 5 items never do. So I convert the line to an array and tell it to include empty items. I then delete the first 5. I'm not left with N items, where N is dependent on how many commas were in the message. I convert it back to a list with a space delimiter and I'm good to go.</p>
+<p>Next I wrap the loops:</p>
+<code>
+    &lt;/cfloop&gt;
+&lt;/cfloop&gt;
+</code>
+<p>Reporting is as simple as doing a structSort and displaying an ugly table:</p>
+<code>
+&lt;cfset sorted = structSort(errors,"numeric","desc")&gt;
+&lt;table border="1"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Error&lt;/th&gt;
+        &lt;th&gt;Count&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;cfloop index="k" array="#sorted#"&gt;
+	&lt;cfoutput&gt;
+	   &lt;tr&gt;
+	       &lt;td&gt;#k#&lt;/td&gt;
+		   &lt;td&gt;#numberFormat(errors[k])#&lt;/td&gt;
+	   &lt;/tr&gt;
+	&lt;/cfoutput&gt;
+    &lt;/cfloop&gt;
+&lt;/table&gt;
+</code>
+<p>Here is some sample output from my local exception.log:</p>
+<img src="https://static.raymondcamden.com/images/Picture 336.png" />
+<p>Enjoy. The complete script may be found here:</p>
+<code>
+&lt;!--- list of logs to parse ---&gt;
+&lt;cfset logs = "/Users/ray/Desktop/fwfeedsubmission/examples-sjc1-3_exception.log,/Users/ray/Desktop/fwfeedsubmission/examples-sjc1-4_exception.log,/Users/ray/Desktop/fwfeedsubmission/examples-sjc1-5_exception.log,/Users/ray/Desktop/fwfeedsubmission/examples-sjc1-6_exception.log"&gt;
+<p>&lt;cfset errors = {}&gt;
+&lt;cfloop index=&quot;logfile&quot; list=&quot;#logs#&quot;&gt;
+&lt;cfloop index=&quot;line&quot; file=&quot;#logFile#&quot;&gt;
+&lt;!--- only use if line begins with &quot;Error&quot;, ---&gt;
+&lt;cfif find(&quot;&quot;&quot;Error&quot;&quot;,&quot;, line)&gt;
+&lt;!--- convert to array, keeping nulls ---&gt;
+&lt;cfset arr = listToArray(line, &quot;,&quot; , true)&gt;
+&lt;!--- remove 1-5 ---&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;5&quot;&gt;
+&lt;cfset arrayDeleteAt(arr, 1)&gt;
+&lt;/cfloop&gt;</p>
+<pre><code>	  &amp;lt;cfset errorLog = arrayToList(arr, &quot; &quot;)&amp;gt;
+	  &amp;lt;cfif not structKeyExists(errors, errorLog)&amp;gt;
+	      &amp;lt;cfset errors[errorLog] = 0&amp;gt;
+	  &amp;lt;/cfif&amp;gt;
+	  &amp;lt;cfset errors[errorLog]++&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;cfset sorted = structSort(errors,&quot;numeric&quot;,&quot;desc&quot;)&gt;
+&lt;table border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Error&lt;/th&gt;
+&lt;th&gt;Count&lt;/th&gt;
+&lt;/tr&gt;
+&lt;cfloop index=&quot;k&quot; array=&quot;#sorted#&quot;&gt;
+&lt;cfoutput&gt;
+&lt;tr&gt;
+&lt;td&gt;#k#&lt;/td&gt;
+&lt;td&gt;#numberFormat(errors[k])#&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+&lt;/table&gt;
+</code></p>
+}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I knew this - but forgot and instead of spinning my wheels when I make the same mistake in a month, I figured I'd quickly blog it to help me remember.</p>
+<p>Don't forget when you cfdump the CGI scope,  you are getting what is basically a &quot;known&quot; set of CGI variables. There may be additional CGI values available that will not show up.</p>
+<p>A good example of this is CGI.redirect_url. When using Apache URL rewriting, that value will contain the original request URL. So if you rewrite foo.cfm to goo.cfm, you can use cgi.redirect_url to return foo.cfm.</p>
+}

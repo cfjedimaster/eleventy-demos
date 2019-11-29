@@ -1,0 +1,54 @@
+<h1>Post</h1>
+
+<p>For a while now my go to service for hosting static sites &quot;for fun&quot; has been <a href="https://surge.sh/">Surge</a>. While I host my blog on
+<a href="https://www.netlify.com/">Netlify</a> and absolutely consider it the &quot;gold standard&quot; for static sites, I try to reserve my usage
+there for &quot;real&quot; sites, i.e. not things I'm playing around with or temporary examples. I had heard of <a href="https://zeit.co/">Zeit</a> of course and knew of their cool command line deployment, but outside of a few Node.js demos, I hadn't really thought of it.</p>
+<p>Over the past few weeks I've had a chance to dig deeper and have to say I'm incredibly impressed by Zeit, specifically their new zero config and serverless features. I've pretty much decided it will be my new default place for quick ad hoc demos. Let me expand on that and why I'm excited about the service.</p>
+<h3>What is Zero Config?</h3>
+<p>Zero Config (at least in terms of Zeit) simply means you can upload your code in a commonly known format and Zeit knows how to handle it. Want an example? Imagine I scaffold a new Vue application: <code>vue create zeroconfig1</code></p>
+<img src="https://static.raymondcamden.com/images/2019/09/z1.png" alt="CLI output" class="imgborder imgcenter">
+<p>And then <code>cd</code> into the directory and type <code>now</code>:</p>
+<img src="https://static.raymondcamden.com/images/2019/09/z2.png" alt="now upload" class="imgborder imgcenter">
+<p>And... that's it. Zeit's platform knew how to handle the Vue application, both in terms of how to build it and then how to serve the final result. I did nothing. No config. No special JSON file. Nothing. Obviously this isn't just for Vue but supports, according to them, &quot; any framework or tool you can think of.&quot;</p>
+<p>And yes, the URL in the screen shot above is up and live at <a href="https://zeroconfig1.raymondcamden.now.sh/">https://zeroconfig1.raymondcamden.now.sh/</a>. It isn't that exciting but it took longer to scaffold the application then deploy it. <strong>That's freaking cool.</strong></p>
+<h3>How about that Serverless?</h3>
+<p>Serverless is also zero config too. You add an <code>api</code> folder and then drop in either a TypeScript file, JavaScript file, Go, or Python, and that's it. Given <code>/api/cats.js</code>, you can hit it via the url <code>/api/cats</code>. If you need to install NPM modules, the platform auto parses your <code>package-lock.json</code> file and will install what it needs to. It all works <em>incredibly</em> easy. Consider the simplest example of building a proxy to an API that doesn't support CORS.</p>
+<pre><code class="language-js">const fetch = require('node-fetch');
+
+module.exports = async (req, res) =&gt; {
+
+    const app_id = 'xxxx';
+    const app_code = 'yyyy';
+
+    let response = await fetch(`https://weather.api.here.com//weather/1.0/report.json?app_id=${app_id}&amp;app_code=${app_code}&amp;product=observation&amp;name=Lafayette,LA`)
+    let data = await response.json();
+    res.json(data.observations);
+
+}
+</code></pre>
+<p>I'm making use of HERE's <a href="https://developer.here.com/documentation/weather/topics/overview.html">Weather API</a> to make a hard coded request to the forecast for Lafayette, LA. (You don't need to look at the results. It's hot. It's always hot.)</p>
+<p>To test, I can use the command line to run a local server: <code>now dev</code>. This fires up a local server and I can then hit my API at <code>http://localhost:3000/api/weather</code>. I can then edit, debug, etc, all locally and quickly fine tune the serverless function. I can then deploy with <code>now</code> and... again. I'm done.</p>
+<p>You can see this API here: <a href="https://zeroconfig1.raymondcamden.now.sh/api/weather">https://zeroconfig1.raymondcamden.now.sh/api/weather</a> I hope you can see how great this would be for a Vue (or other frontend framework) app that needs a few back end APIs to support it.</p>
+<p>All in all it's rather painless. I did have a bit of trouble working with secrets. Zeit does support, and document, working with <a href="https://zeit.co/docs/v2/serverless-functions/env-and-secrets/">secrets</a>. You can specify secrets via the CLI with a simple call: <code>now secrets add somename somevalue</code>. However, that isn't enough, and the zero config thing breaks down a bit here.</p>
+<p>In order for your serverless function to get access to secrets, or other environment values, you must create a <code>now.json</code> file that looks like this:</p>
+<pre><code class="language-js">{
+  &quot;env&quot;: {
+    &quot;VARIABLE_NAME&quot;: &quot;@variable-name&quot;
+  }
+}
+</code></pre>
+<p>In this example, <code>VARIABLE_NAME</code> is the name your code will use, not as a global, but for example, <code>process.env.VARIABLE_NAME</code>. The <code>@variable-name</code> is the name of the secret or environment variable.</p>
+<p>Now - stick with me a bit because this tripped me up. I used uppercase secret values in a test and found that my secrets weren't working. Why? The CLI lowercases secret names. I don't know why, and I feel like it's a bug, but if you make a secret named FOO it will be called foo. So my <code>now.json</code> file looks like this:</p>
+<pre><code class="language-js">{
+  &quot;env&quot;: {
+    &quot;FOO&quot;: &quot;@foo&quot;
+  }
+}
+</code></pre>
+<p>Honestly this is my only real complaint. I can't imagine why I'd define a secret I <em>wouldn't</em> want to use and it would be nice if you could skip <code>now.json</code> if you were fine with all the secrets just being available. But it's a minor nit I can live with.</p>
+<p>If you remember, a few weeks ago I <a href="https://www.raymondcamden.com/2019/07/01/random-pictures-of-beauty">blogged</a> about a Twitter bot I wrote to post pictures from the National Park Service. I built this on Azure Functions, and while I like their service, they do not have a 100% free tier. I got my first bill this month (a bit over a dollar) and used this as an excuse to migrate from Azure to Zeit. Ignoring the issue I ran into with case above, the &quot;process&quot; was about five minutes. Zeit doesn't support scheduled tasks so I just made use of <a href="https://www.easycron.com/user">EasyCron</a>, a free service that can hit URLs on schedules.</p>
+<h3>Price Details</h3>
+<p>For folks curious, you can checkout the <a href="https://zeit.co/account/plan">pricing information</a> for what's supported at what tier. Currently they only have Free and Unlimited. For serverless, you're limited to 5000 a day which seems to be more than enough for testing, demos, and the such. The paid plan starts at $0.99 so if you do need to start shelling out money, you're starting at a pretty good place.</p>
+<p>As always, if you're using this, drop me a comment below. I love to hear about real world uses.</p>
+<p><i>Header photo by <a href="https://unsplash.com/@cbarbalis?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Chris Barbalis</a> on Unsplash</i></p>
+}

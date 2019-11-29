@@ -1,0 +1,103 @@
+<h1>Post</h1>
+
+<p>I've avoided <a href="https://www.pinterest.com/">Pinterest</a> like the plague because I absolutely hated the way they made you sign up just to view basic content. But a good friendly recently got me interested in and I decided to sign up myself. I'm not doing anything terribly interesting with it but I've decided to give it a shot. The friend recently reached out to me to ask if I knew of any way to create a slide show from a Pinterest board.</p>
+<p>For those who don't use Pinterest, &quot;boards&quot; are simply collections of items. Pictures, text, etc. I did some quick Googling and I couldn't find anything recent that was helpful. This friend was pretty smart, but also not technical, so I thought it might be cool to build something from scratch using Vue.js. All public Pinterest boards have a RSS feed, so all I needed to do was parse the RSS and then show one item at a time. If you just want to play with the tool and don't care about the code, go here:</p>
+<p><a href="https://codepen.io/cfjedimaster/full/yRVYJa/">https://codepen.io/cfjedimaster/full/yRVYJa/</a></p>
+<p>There isn't great error handling yet so - um - don't screw up? Ok, so how did I build this? I began with a simple Vue app that had an initial screen to prompt for your username and board name:</p>
+<img src="https://static.raymondcamden.com/images/2018/10/pint1.jpg" class="imgborder imgcenter" alt="Screenshot of demo showing input fields">
+<p>After entering this information, the code parses the RSS found at:</p>
+<p>https://www.pinterest.com/USER/BOARD.rss/</p>
+<p>For my RSS parsing, I used <a href="https://toolkit.sekando.com/docs/en/feednami">Feednami</a>, a service I first <a href="https://www.raymondcamden.com/2015/12/08/parsing-rss-feeds-in-javascript-options">reviewed</a> way back in 2015. It still works well and was pretty much a no-brainer.</p>
+<p>Once loaded, I then inject the HTML of each item in the view, wait six seconds, and then go to the next one.</p>
+<img src="https://static.raymondcamden.com/images/2018/10/pint2.jpg" class="imgborder imgcenter" alt="Screenshot of Pinterest item">
+<p>I could have added a bit of CSS, but I kept it simple. Let's begin by taking a quick look at the HTML.</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  &lt;div v-if=&quot;inputMode&quot;&gt;
+    &lt;h2&gt;Pinterest Board to Slide Show&lt;/h2&gt;
+    
+    &lt;p&gt;
+      Enter the name of a Pinterest user and board in the fields below to create a slide show.
+    &lt;/p&gt;
+    
+    &lt;p&gt;
+      &lt;label for=&quot;user&quot;&gt;Pinterest User&lt;/label&gt;
+      &lt;input id=&quot;user&quot; v-model=&quot;user&quot;&gt;
+    &lt;/p&gt;
+    &lt;p&gt;
+      &lt;label for=&quot;board&quot;&gt;Pinterest Board&lt;/label&gt;
+      &lt;input id=&quot;board&quot; v-model=&quot;board&quot;&gt;
+    &lt;/p&gt;
+    &lt;p&gt;
+      &lt;button @click=&quot;loadSlideShow&quot; :disabled=&quot;loadDisabled&quot;&gt;Load Slide Show&lt;/button&gt;
+    &lt;/p&gt;
+  &lt;/div&gt;&lt;div v-else&gt;
+  
+    &lt;div v-if=&quot;loading&quot;&gt;&lt;i&gt;Loading content...&lt;/i&gt;&lt;/div&gt;
+    &lt;transition name=&quot;fade&quot; mode=&quot;out-in&quot;&gt;
+    &lt;div v-if=&quot;curItem&quot; v-html=&quot;curItem&quot; :key=&quot;curItem&quot;&gt;
+    &lt;/div&gt;
+    &lt;/transition&gt;
+  &lt;/div&gt;
+  
+&lt;/div&gt;
+</code></pre>
+<p>I assume there isn't much here interesting, but I can say the <code>transition</code> bit was difficult for me to get right. No matter how many times I use transitions in Vue I still struggle with it.</p>
+<p>The JavaScript is rather short too:</p>
+<pre><code class="language-js">const SLIDE_DURATION = 6000;
+
+const app = new Vue({
+  el:'#app',
+  data:{
+    inputMode:true,
+    user:'theraymondcamden',
+    board:'star trek',
+    loading:true,
+    items:[],
+    selected:null,
+    curItem:null
+  },
+  methods:{
+    loadSlideShow() {
+      this.inputMode = false;
+      let board = this.board.replace(/ /g, &quot;-&quot;);
+      let url = `https://www.pinterest.com/${encodeURIComponent(this.user)}/${encodeURIComponent(board)}.rss/`;
+      console.log('url to load is '+url);
+      feednami.load(url)
+      .then(feed =&gt; {
+        console.log('total en', feed.entries.length);
+        //console.log(feed.entries[0]);
+        for(let entry of feed.entries) {
+          // add the entries to results, but remove link from desc
+          let newItem = entry.description;
+          newItem = newItem.replace(/&lt;a.*?&gt;/,'');
+          newItem = newItem.replace(/&lt;\/a&gt;/,'');
+          this.items.push(newItem);
+          //console.log(newItem);
+          this.loading = false;
+        }
+        this.selected = 0;
+        this.curItem = this.items[this.selected];
+        setInterval(() =&gt; {
+          this.newItem();
+        }, SLIDE_DURATION);
+      });
+      
+    },
+    newItem() {
+      console.log('newItem running, current selected ', this.selected);
+      this.selected++;
+      if(this.selected === this.items.length) this.selected = 0;
+      this.curItem = this.items[this.selected];
+    }
+  },
+  computed:{
+    loadDisabled() {
+      return this.user == '' || this.board == '';
+    }
+  }
+})
+</code></pre>
+<p>Only real cool part (in my opinion) is the feednami integration, and it's interesting mainly due to how simple it is. Simple is good! You can find the complete CodePen below for your enjoyment. From what I know this was something my friend wanted for her kids so to me - it was time well spent!</p>
+<p data-height="265" data-theme-id="0" data-slug-hash="yRVYJa" data-default-tab="js,result" data-user="cfjedimaster" data-pen-title="Pinterest to Slide Show with Vue" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/yRVYJa/">Pinterest to Slide Show with Vue</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>}

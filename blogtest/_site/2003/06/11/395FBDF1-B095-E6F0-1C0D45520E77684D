@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I was working on some migration scripts the past few days and was outputing a set of large structs. It occured to me that it would be nice if I could tell the dump tag to only show a few keys of the entire structure. From this desire came <a href="http://www.camdenfamily.com/morpheus/downloads/dumpf.zip">DumpF</a>.</p>
+<p>DumpF allows you to filter output by:</p>
+<p>The top N rows of a query or array or the first N keys of a structure.</p>
+<p>Only show a list of columns or struct keys.</p>
+<p>Hide a list of columns or struct keys.</p>
+}

@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I'm working on a new Chrome extension now (mainly as an excuse to avoid writing this article I'm supposed to turn in), and ran into an interesting problem. I was making use of console.log to debug the extension and noticed it didn't show up in the main console. I figured that made some sense. A user may have a bunch of extensions and you wouldn't want them adding noise to your console. However, I saw examples of extensions that made use of the console so I figured they had to show up somewhere.</p>
+<p>This <a href="http://code.google.com/chrome/extensions/tut_debugging.html">tutorial</a> on the Chrome Extensions site mentioned right clicking on your extension icon and selecting &quot;Inspect popup&quot;. But my extension didn't have an UI and that option wasn't available. I then noticed something on the Extensions page:</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip95.png" />
+<p>See the link by &quot;Inspect views&quot;? Clicking that fires up a Developer Tools window just for your extension. It's like Chrome was smart enough to recognize that there wasn't a real background page and generated one for you.</p>
+<p>Sweet.</p>
+}

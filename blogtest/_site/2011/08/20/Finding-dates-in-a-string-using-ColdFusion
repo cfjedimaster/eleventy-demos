@@ -1,0 +1,53 @@
+<h1>Post</h1>
+
+<p>A reader of mine had an interesting question. Is it possible to find all the dates in a string? In theory you could parse all the words and attempt to turn each into a date. You would need to check each word and a &quot;reasonable&quot; amount of words after it. Perhaps up to 4. I decided to take an initial stab at a simpler solution - looking just for dates in the form of mm/dd/yyyy. (Note to all of my readers outside of America. The code I'm showing here would actually work fine in your locales as well.)</p>
+<!--more-->
+<p>
+<p>First - let's create a simple string.</p>
+<p>
+<code>
+&lt;cfsavecontent variable="str"&gt;
+This is some text. I plan on taking over the world on 12/1/2011. After I 
+do that, I plan on establishing the Beer Empire on 1/2/2012. But on 3/3/2013
+I'll take a break. But this 13/91/20 is not a valid date.
+&lt;/cfsavecontent&gt;
+</code>
+<p>
+<p>Now let's do a regex based on Number/Number/Number.</p>
+<p>
+<code>
+&lt;cfset possibilities = reMatch("\d+/\d+/\d+", str)&gt;
+</code>
+<p>
+<p>This gives us an array of possible matches that we can loop over:</p>
+<p>
+<code>
+&lt;cfloop index="w" array="#possibilities#"&gt;
+	&lt;cfif isDate(w)&gt;
+		&lt;cfoutput&gt;#w# is a date.&lt;br/&gt;&lt;/cfoutput&gt;
+	&lt;/cfif&gt;
+&lt;/cfloop&gt;
+</code>
+<p>
+<p>Which gives us...</p>
+<p>
+<p>12/1/2011 is a date.<br/>
+1/2/2012 is a date.<br/>
+3/3/2013 is a date.<br/></p>
+<p>
+<p>Any thoughts on this technique? The entire template is below.</p>
+<p>
+<code>
+&lt;cfsavecontent variable="str"&gt;
+This is some text. I plan on taking over the world on 12/1/2011. After I 
+do that, I plan on establishing the Beer Empire on 1/2/2012. But on 3/3/2013
+I'll take a break. But this 13/91/20 is not a valid date.
+&lt;/cfsavecontent&gt;
+<p>&lt;cfset possibilities = reMatch(&quot;\d+/\d+/\d+&quot;, str)&gt;
+&lt;cfloop index=&quot;w&quot; array=&quot;#possibilities#&quot;&gt;
+&lt;cfif isDate(w)&gt;
+&lt;cfoutput&gt;#w# is a date.&lt;br/&gt;&lt;/cfoutput&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;
+</code></p>
+}

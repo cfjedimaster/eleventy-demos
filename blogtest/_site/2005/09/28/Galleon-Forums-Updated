@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I found a small bug in Galleon today. The getForums() call had a hard coded value in the query statement. It is fixed in the download which is available <a href="http://ray.camdenfamily.com/downloads/forums.zip">here</a>.</p>
+}

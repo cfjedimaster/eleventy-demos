@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>Just a quick post to share a few things I learned this morning about PowerShell scripts and Windows Subsystem for Linux. I was trying to find a CLI way to set my screen resolution. I'm going to be recording some videos and wanted a quicker way to enter the right resolution, and then return.</p>
+<p>My Googling turned up this blog post, <a href="https://blogs.technet.microsoft.com/heyscriptingguy/2010/07/07/hey-scripting-guy-how-can-i-change-my-desktop-monitor-resolution-via-windows-powershell/">Hey, Scripting Guy! How Can I Change My Desktop Monitor Resolution via Windows PowerShell?</a>. While most of the post didn't really make sense to me, it led me to this this code listing, <a href="https://gallery.technet.microsoft.com/ScriptCenter/2a631d72-206d-4036-a3f2-2e150f297515/">Set-ScreenResolution</a>. I took the code and saved it as <code>screenres.ps1</code> and tried to run it via PowerShell, but when I did, nothing happened.</p>
+<p>Turns out - the script was incomplete. It's basically (and this is my take on it) a function that is meant to be the <em>top</em> of a script file. The script needs to actually <em>call</em> the function before it will do anything.</p>
+<p>So in other words, after saving his code and opening it up in my editor, I then added this to the bottom:</p>
+<pre><code>Set-ScreenResolution -Width 1360 -Height 768
+</code></pre>
+<p>I saved it as <code>screenrespreso.ps1</code> and was good to go. I then edited the width and height for my normal resolution (3840x2160) and saved that as <code>restorepreso.ps1</code>.</p>
+<p>Probably obvious to anyone who has used PowerShell scripts before, but definitely confusing for me.</p>
+<p>And of course - you can run this from WSL. Just add -File to the command:</p>
+<pre><code>powershell.exe -File &quot;c:\users\ray\Desktop\restorescreenres.ps1&quot;  
+</code></pre>
+<p>Note that you have to include the <code>.exe</code> at the end and the path is the &quot;real&quot; Windows path, not the WSL version of it under <code>/mnt/c</code>. I could make this easier with aliases of course.</p>
+}

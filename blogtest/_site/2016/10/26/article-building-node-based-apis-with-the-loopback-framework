@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Just a quick note to let readers know I've published another article over on the <a href="http://developer.telerik.com">Telerik Developer Network</a> - <a href="http://developer.telerik.com/featured/building-node-based-apis-loopback-framework">&quot;Building Node-based APIs with the LoopBack Framework&quot;</a>. As you can tell by the title, this is just an intro to LoopBack, something I've covered multiple times on this blog, but what you may find interesting is that I built a <a href="https://www.nativescript.org/">NativeScript</a> front-end to the LoopBack back end. It isn't anything necessarily special, and that's due to LoopBack being so simple to use, but you may find it interesting.</p>
+}

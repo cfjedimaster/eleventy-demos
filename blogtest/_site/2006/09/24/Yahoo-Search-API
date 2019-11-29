@@ -1,0 +1,53 @@
+<h1>Post</h1>
+
+<p>This weekend I wanted to play a bit with Yahoo's Search API, so I thought I'd share my results here. Yahoo has a pretty big <a href="http://developer.yahoo.com/">developer network</a>, but unfortunately they have no ColdFusion examples. (Hey, Yahoo, lets fix that!)</p>
+<!--more-->
+<p>I had a bit of trouble finding the actual API however. After a few minutes of searching I found it here: <a href="http://developer.yahoo.com/search/web/V1/webSearch.html">Web Search Documentation</a>. Yahoo uses a simple REST based process. This means you can use CFHTTP and URL parameters instead of a full fledged web service. The result is a nice XML packet you can easily parse.</p>
+<p>The next thing you need to test Yahoo's API is an application ID. You can get one using this form: <a href="http://api.search.yahoo.com/webservices/register_application">http://api.search.yahoo.com/webservices/register_application</a>.</p>
+<p>One last note. Yahoo's FAQ says:</p>
+<blockquote>
+<b>Q: Why does ColdFusion keep giving me a "Connection Failure" message?</b><br>
+It's an encoding issue. You need to add <cfhttpparam type="Header" name="charset" value="utf-8" /> to your cfhttp call and it should work.
+</blockquote>
+<p>This did not work for me. Instead I used the charset attribute of the cfhttp itself. Here is a simple example. I changed the appid value though:</p>
+<code>
+&lt;style&gt;
+li { margin-bottom: 10px; }
+&lt;/style&gt;
+<p>&lt;cfset searchTerm = &quot;coldfusion&quot;&gt;
+&lt;cfset results = &quot;10&quot;&gt;
+&lt;cfset appid = &quot;billgatesisdabomb&quot;&gt;</p>
+<p>&lt;cfhttp url=&quot;http://api.search.yahoo.com/WebSearchService/V1/webSearch?appid=#appid#&amp;query=#urlEncodedFormat(searchTerm)#&amp;results=#results#&quot; result=&quot;result&quot; charset=&quot;utf-8&quot;&gt;
+&lt;/cfhttp&gt;</p>
+<p>&lt;cfif len(result.fileContent) and isXml(result.fileContent)&gt;</p>
+<pre><code>&amp;lt;cfset xmlResult = xmlParse(result.fileContent)&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+Your search for #searchTerm# resulted in #xmlResult.resultSet.xmlAttributes.totalResultsAvailable# matches. You returned #xmlResult.resultSet.xmlAttributes.totalResultsReturned# results.
+
+&amp;lt;ul&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#xmlResult.resultSet.xmlAttributes.totalResultsReturned#&quot;&amp;gt;
+	&amp;lt;cfset node = xmlResult.resultSet.xmlChildren[x]&amp;gt;
+	&amp;lt;cfset title = node.title.xmlText&amp;gt;
+	&amp;lt;cfset summary = node.summary.xmlText&amp;gt;
+	&amp;lt;cfset iUrl = node.url.xmlText&amp;gt;
+	&amp;lt;cfset clickurl = node.clickurl.xmlText&amp;gt;
+	
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;li&amp;gt;&amp;lt;a href=&quot;#clickurl#&quot;&amp;gt;#title#&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;
+	#iURL#&amp;lt;br&amp;gt;
+	#summary#
+	&amp;lt;/cfoutput&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;/ul&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>I'm not sure I even need to explain anything here. The CFHTTP call is pretty standard, again note the charset attribute. Also be sure to check the <a href="http://developer.yahoo.com/search/web/V1/webSearch.html">documentation</a>   for what all the URL parameters mean. The doc also explains the XML result. Honestly I just dumped it and figured it out. The only thing confusing was the &quot;clickURL&quot;. Yahoo wants you to use that url for html links to help them track usage of the API.</p>
+<p>Tomorrow I'll write up a somewhat more useful example of this API.</p>
+}

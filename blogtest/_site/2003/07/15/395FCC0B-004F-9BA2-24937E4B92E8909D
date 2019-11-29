@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I <i>finally</i> got around to posting my presentations from CFUN-03. Sorry for taking so long. Both can be downloaded from the links below, or from my main home page. The first presentation covers the nitty gritty details about CFCs, including upcoming fixes and improvements in Red Sky. This is a slightly newer version of the presentation I gave in Denver. The next presentation is on application security, but the real topic is bulletproof web sites, or web sites that are built to sustain attacks on their integrity (for example, people who mess with URL or From variables). Enjoy. If you have any questions, please feel free to post here or send me an email directly.</p>
+<p><a href="http://www.camdenfamily.com/morpheus/downloads/cfcs_in_practice.zip">CFCs in Practice</a><br>
+<a href="http://www.camdenfamily.com/morpheus/downloads/applicationsecurity.zip">Application Security</a></p>
+}

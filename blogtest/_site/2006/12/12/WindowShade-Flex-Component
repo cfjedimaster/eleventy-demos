@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>A friend asked me a few days ago if there was a &quot;WindowShade&quot; type Flex component. By that she meant a panel or some sort where you can double click to hide the contents of the panel. Stephen Gilson had such a component. As he doesn't have a blog (dude, get <a href="http://www.blogcfc.com">one</a>! ;) I'm posting his code here. It isn't quite what my friend wanted, but is pretty cool.</p>
+<p>I will <i>readily</i> admit I don't quite get how the drawing works - but it is pretty cool how he embedded the icons for the panel into the code itself.</p>
+<p>You can see this in action here:</p>
+<p><a href="http://ray.camdenfamily.com/demos/winshade/playground.html">http://ray.camdenfamily.com/demos/winshade/playground.html</a></p>
+<p>And you can right click to see Stephan's source and download the component.</p>
+<p>Who else thinks it is time for a CFLib for Flex 2 components?</p>
+}

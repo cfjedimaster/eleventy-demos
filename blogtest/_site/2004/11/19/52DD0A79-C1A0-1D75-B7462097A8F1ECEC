@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>Attention BlogCFC users: I have created a simple stats page. You can see it <a href="stats.cfm">here</a>. This stats page was created mainly for my own curiosity, but can be downloaded <a href="stats.zip">here</a> if you want to install it on your blog. To add security, you add this code block to only allow logged in folks to run the file:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfif not isUserInRole(<FONT COLOR=BLUE>"admin"</FONT>)&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfabort&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT></div>
+<p>I've left my stats open since, well, I just don't care. Let me stress that this file is NOT a part of the &quot;real&quot; BlogCFC. The SQL statements in there will only work for SQL Server, and the code was written very quickly, but I wanted to share it with other BlogCFC users.</p>
+}

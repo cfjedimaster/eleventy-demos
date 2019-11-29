@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<img src="https://static.raymondcamden.com/images/cfjedi/12DaysChristmasHallmark.jpg" align="left" style="margin-right: 10px">
+Last year I did a few Christmas style friday challenges, so I'm a bit overdue. This one is rather simple. Given a query that contains an ID, which corresponds to a day, and a gift, print out the famous "12 Days of Christmas" song dynamically. Ie, day 1 you get gift 1. Day 2 you get 1 of gift 1, and 2 of gift 2. And so on.
+<p>Bonus points if you use festive green and red fonts in your display. (Once again, this is why they don't let me design.)</p>
+<p>Double bonus points if you make a cfpresentation out it and record MP3s to go along with it.</p>
+<p>Here is your query that you must use with the code. (Note, it uses CF8 Array shorthand style. If you aren't on CF8, you can rewrite that as a list and use listToArray.)</p>
+<code>
+&lt;cfset song = querynew("id,gift","integer,varchar")&gt;
+<p>&lt;cfset gifts = [&quot;A partridge in a pear tree&quot;,&quot;Two turtle doves&quot;,&quot;Three French hens&quot;,&quot;Four calling birds&quot;,&quot;Five golden rings&quot;,&quot;Six geese a-laying&quot;,
+&quot;Seven swans a-swimming&quot;,&quot;Eight maids a-milking&quot;,&quot;Nine ladies dancing&quot;,&quot;Ten lords a-leaping&quot;,&quot;Eleven pipers piping&quot;,&quot;Twelve drummers drumming&quot;]&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(gifts)#&quot;&gt;
+&lt;cfset queryAddRow(song)&gt;
+&lt;cfset querySetCell(song, &quot;id&quot;, x)&gt;
+&lt;cfset querySetCell(song, &quot;gift&quot;, gifts[x])&gt;
+&lt;/cfloop&gt;
+</code></p>
+}

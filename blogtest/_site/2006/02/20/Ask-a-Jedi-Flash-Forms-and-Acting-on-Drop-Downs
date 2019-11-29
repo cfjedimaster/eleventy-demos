@@ -1,0 +1,30 @@
+<h1>Post</h1>
+
+<p>A reader asks:</p>
+<blockquote>
+Not sure this is quite normal, but I have a CF Form, flash format, that based on options selected, submit to different action pages.
+<p>My Question is, do you know how to access and modify the &quot;action&quot; attribute of a CFForm using ActionsScript from  a function in '&lt;cfformitem type=&quot;script&quot;&gt;' function?</p>
+</blockquote>
+<p>It may very well be possible to change the action of a Flash Form. However, I wasn't sure of how to do that, so I simply used the onsubmit method. Consider the following code block:</p>
+<code>
+&lt;cfform format="flash" width="200" height="200" onsubmit="return goURL()"&gt;
+<pre><code>&amp;lt;cfformitem type=&quot;script&quot;&amp;gt;
+function goURL() {
+	var url = destination.value.toString();
+	getURL(url);
+	return false;
+}
+&amp;lt;/cfformitem&amp;gt;
+
+&amp;lt;cfselect name=&quot;destination&quot;&amp;gt;
+&amp;lt;option value=&quot;http://www.cflib.org&quot;&amp;gt;CFLib&amp;lt;/option&amp;gt;
+&amp;lt;option value=&quot;http://www.coldfusioncookbook.com&quot;&amp;gt;ColdFusion Cookbook&amp;lt;/option&amp;gt;
+&amp;lt;option value=&quot;http://ray.camdenfamily.com&quot;&amp;gt;My Blog&amp;lt;/option&amp;gt;
+&amp;lt;/cfselect&amp;gt;
+
+&amp;lt;cfinput type=&quot;submit&quot; value=&quot;Go There!&quot; name=&quot;submit&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/cfform&gt;
+</code></p>
+<p>This relatively simple block of code does a few things. First, it specifies an action to take on form submission. Notice I used &quot;return goURL()&quot; instead of just &quot;goURL()&quot;, this was because I wanted the default form submission to not fire. My goURL() function is contained with a script form item block. This is only allowed in ColdFusion 7.0.1. The ActionScript code simply grabs the value of the form below it (which will be a URL), and then calls getURL() to load it.</p>
+}

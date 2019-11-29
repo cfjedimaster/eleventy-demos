@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>I just ran across this today. There is a bug with required checkboxes in CFMX7. Basically they don't work. However, you can get around this by simply writing your own validation using onSubmit. This is a known issue so no need to bug MACR about it. This code block demonstrates the bug:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfform format=<FONT COLOR=BLUE>"flash"</FONT>&gt;</FONT><br>
+<br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfinput type=<FONT COLOR=BLUE>"checkbox"</FONT> name=<FONT COLOR=BLUE>"agree"</FONT> label=<FONT COLOR=BLUE>"I Agree"</FONT> required=<FONT COLOR=BLUE>"true"</FONT> value=<FONT COLOR=BLUE>"1"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfinput type=<FONT COLOR=BLUE>"submit"</FONT> name=<FONT COLOR=BLUE>"submit"</FONT> value=<FONT COLOR=BLUE>"Push the button"</FONT>&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;/cfform&gt;</FONT></div>
+<p>And here is a sample of how to fix it:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfform format=<FONT COLOR=BLUE>"flash"</FONT> onSubmit=<FONT COLOR=BLUE>"if(!agree.selected ){ alert('You must agree!'); return false; }"</FONT>&gt;</FONT><br>
+<br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfinput type=<FONT COLOR=BLUE>"checkbox"</FONT> name=<FONT COLOR=BLUE>"agree"</FONT> label=<FONT COLOR=BLUE>"I Agree"</FONT> required=<FONT COLOR=BLUE>"true"</FONT> value=<FONT COLOR=BLUE>"1"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfinput type=<FONT COLOR=BLUE>"submit"</FONT> name=<FONT COLOR=BLUE>"submit"</FONT> value=<FONT COLOR=BLUE>"Push the button"</FONT>&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;/cfform&gt;</FONT></div>}

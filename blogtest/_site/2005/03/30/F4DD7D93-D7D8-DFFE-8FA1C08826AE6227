@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Technically this isn't my first CFMX7 site as CFLib, this blog, and my other web sites are CFMX7, but none of them are using CFMX7 features (yet). My first <i>real</i> CFMX7 site would be <a href="http://www.celebritiesforcharity.org">Celebrities for Charity</a>. I'm not using many CFMX7 features, but I did replace two multi-step forms with a nicer CFFORM version. I love how the accordions allowed me to simplify the process quite a bit.</p>
+<p>To be honest, this isn't a stellar site, but it used to be JSP and is now a <i>heck</i> of a lot easier to work with.</p>
+<p><b>Edited:</b> I should point out - I also use cfdocument to handle the receipts. Which is a small thing - but nice.</p>
+}

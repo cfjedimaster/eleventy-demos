@@ -1,0 +1,148 @@
+<h1>Post</h1>
+
+<p>A few days ago I <a href="http://www.raymondcamden.com/index.cfm/2011/2/1/Using-jQuery-to-search-against-different-types-of-content">blogged</a> an example of &quot;search as you type&quot; implemented with jQuery and multiple types of data. ColdFusion was used to serve up data based on searches against two types of data. The front end client was rather simple. Because ColdFusion returned an array of results for one data type and another array for the second, it wasn't too difficult to render that out. I wanted to build upon that demo and work with data that was a bit more complex. In this example I'll show how you can work with data that comes back in one main &quot;chunk&quot; but contains different types of results.</p>
+<!--more-->
+<p>
+<p>To begin, let me talk about the data. I created a quick template to index blog entries and comments for coldfusionjedi.com. While not exactly relevant to this blog entry, here is the code I used. Do note I had to 'massage' the data a bit to make things work within ColdFusion's limit of 4 custom fields. Solr itself does not have that restriction.</p>
+<p>
+<code>
+<p>&lt;cfset col = &quot;blogcontent&quot;&gt;
+&lt;cfset dsn = &quot;blogdev&quot;&gt;</p>
+<p>&lt;cfcollection action=&quot;list&quot; engine=&quot;solr&quot; name=&quot;collections&quot;&gt;
+&lt;cfif not listFindNoCase(valueList(collections.name), col)&gt;
+&lt;cfoutput&gt;&lt;i&gt;creating #col# collection&lt;/i&gt;&lt;p&gt;&lt;/cfoutput&gt;
+&lt;cfcollection action=&quot;create&quot; collection=&quot;#col#&quot; path=&quot;#server.coldfusion.rootdir#\collections&quot; engine=&quot;solr&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;!--- remove existing ---&gt;
+&lt;cfindex action=&quot;purge&quot; collection=&quot;#col#&quot;&gt;</p>
+<p>&lt;cfquery name=&quot;getentries&quot; datasource=&quot;#dsn#&quot;&gt;
+select	id, title, body, morebody, posted, &quot;entry&quot; as type
+from	tblblogentries
+&lt;/cfquery&gt;</p>
+<p>&lt;cfoutput&gt;Adding #getentries.recordcount# blog entries to index.&lt;p&gt;&lt;/cfoutput&gt;
+&lt;cfflush&gt;</p>
+<p>&lt;cfindex action=&quot;update&quot; collection=&quot;#col#&quot; key=&quot;id&quot; title=&quot;title&quot; body=&quot;body,morebody&quot; custom1=&quot;posted&quot; custom2=&quot;type&quot; query=&quot;getentries&quot;&gt;</p>
+<p>&lt;cfoutput&gt;Done with entries.&lt;p&gt;&lt;/cfoutput&gt;
+&lt;cfflush&gt;</p>
+<p>&lt;cfquery name=&quot;getcomments&quot; datasource=&quot;#dsn#&quot;&gt;
+select	c.id, c.entryidfk, concat(c.name,&quot; &quot;,c.email) as nameemail, c.comment, c.posted, &quot;comment&quot; as type, e.title as entrytitle
+from	tblblogcomments c
+left join tblblogentries e on c.entryidfk = e.id
+&lt;/cfquery&gt;</p>
+<p>&lt;cfoutput&gt;Adding #getcomments.recordcount# comments to index.&lt;p&gt;&lt;/cfoutput&gt;
+&lt;cfflush&gt;</p>
+<p>&lt;cfindex action=&quot;update&quot; collection=&quot;#col#&quot; key=&quot;id&quot; title=&quot;entrytitle&quot; body=&quot;comment&quot; custom1=&quot;posted&quot; custom2=&quot;type&quot; custom3=&quot;nameemail&quot; custom4=&quot;entryidfk&quot; query=&quot;getcomments&quot;&gt;</p>
+<p>&lt;cfoutput&gt;Done with entries.&lt;p&gt;&lt;/cfoutput&gt;
+&lt;cfflush&gt;
+</code></p>
+<p>
+<p>I'm not going to cover every line of this code, but the important thing to note is that it indexes my blog entries and blog comments, along with the commenter's name and email address. I also create a 'fake' column called type that will be a static value. Altogether this leaves me with a Solr collection containing one index that covers two types of data. Now let's go to the service component that's going to be used by the front end.</p>
+<p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<pre><code>&amp;lt;cffunction name=&quot;search&quot; access=&quot;remote&quot; returnType=&quot;query&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;string&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	
+	&amp;lt;cfset var initialResults = &quot;&quot;&amp;gt;
+	&amp;lt;cfset var results = queryNew(&quot;key,type,title,summary,posted,author,gravatar&quot;)&amp;gt;
+	&amp;lt;cfsearch collection=&quot;blogcontent&quot; criteria=&quot;#arguments.string#&quot; name=&quot;initialResults&quot; maxrows=&quot;20&quot;&amp;gt;
+
+	&amp;lt;cfloop query=&quot;initialResults&quot;&amp;gt;
+		&amp;lt;cfset queryAddRow(results)&amp;gt;
+		&amp;lt;cfset querySetCell(results, &quot;key&quot;, key)&amp;gt;
+		&amp;lt;cfset querySetCell(results, &quot;type&quot;, custom2)&amp;gt;
+		&amp;lt;cfset querySetCell(results, &quot;title&quot;, title)&amp;gt;
+		&amp;lt;cfset querySetCell(results, &quot;posted&quot;, dateFormat(custom1) &amp; &quot; &quot; &amp; timeFormat(custom1))&amp;gt;
+		&amp;lt;cfif custom2 is &quot;comment&quot;&amp;gt;
+			&amp;lt;cfset querySetCell(results, &quot;summary&quot;, summary)&amp;gt;
+			&amp;lt;cfset var spacemarker = len(custom3)-find(&quot; &quot;,reverse(custom3))&amp;gt;
+			&amp;lt;cfset querySetCell(results, &quot;author&quot;, left(custom3, spacemarker))&amp;gt;
+			&amp;lt;cfset var email = right(custom3, len(custom3)-spacemarker-1)&amp;gt;
+			&amp;lt;cfset querySetCell(results, &quot;gravatar&quot;, &quot;http://www.gravatar.com/avatar/#lcase(hash(email))#?s=64&quot;)&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;cfset querySetCell(results, &quot;summary&quot;, htmlEditFormat(summary))&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;cfreturn results&amp;gt;
+
+&amp;lt;/cffunction&amp;gt;
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>
+<p>Ok - so I've got something interesting going on here. The beginning of the method is simple. Take in the search string and run the cfsearch tag. Solr takes over - does it's voodoo - and returns the result. But before I send this back out I want to manipulate the data a bit. I want jQuery to have a simpler time working with the results. I created a new query called results. I copy some things - for example I copy the custom2 column which stores whether or not the result is a blog entry or a blog comment.</p>
+<p>
+<p>For comments - I take the personalized data, the name and email, and break it out of the custom column I used. Note too I remove the email address and just return a Gravatar url. I could have done that client side. But that would mean people searching on my site would be able to get other people's email address. <b>Always assume people are looking at your data sent over Ajax calls.</b> Whether I actually printed out the email address or not wouldn't matter. If I send it over the wire, someone is going to see it. Now let's take a look at the front end.</p>
+<p>
+<code>
+<p>&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>//http://stackoverflow.com/questions/217957/how-to-print-debug-messages-in-the-google-chrome-javascript-console/2757552#2757552
+if (!window.console) console = {};
+console.log = console.log || function(){};
+console.dir = console.dir || function(){};
+
+
+//listen for keyup on the field
+$(&quot;#searchField&quot;).keyup(function() {
+	//get and trim the value
+	var field = $(this).val();
+	field = $.trim(field)
+
+	//if blank, nuke results and leave early
+	if(field == &quot;&quot;) {
+		$(&quot;#results&quot;).html(&quot;&quot;);
+		return;
+	}
+	
+	console.log(&quot;searching for &quot;+field);
+	$.getJSON(&quot;search.cfc?returnformat=json&amp;method=search&amp;queryformat=column&quot;, {&quot;string&quot;:field}, function(res,code) {
+		var s = &quot;&quot;;
+		s += &quot;&amp;lt;h2&amp;gt;Results&amp;lt;/h2&amp;gt;&quot;;
+		for(var i=0; i &amp;lt; res.ROWCOUNT; i++) {
+			//display a blog entry
+			if(res.DATA.TYPE[i] == &quot;entry&quot;) {
+				s += &quot;&amp;lt;p&amp;gt;&amp;lt;img src=\&quot;blog.png\&quot; align=\&quot;left\&quot;&amp;gt;&quot;;
+				s += &quot;&amp;lt;b&amp;gt;Blog Entry: &amp;lt;a href=\&quot;\&quot;&amp;gt;&quot; + res.DATA.TITLE[i] + &quot;&amp;lt;/a&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;&quot;;
+				s += res.DATA.SUMMARY[i];
+				s += &quot;&amp;lt;br clear=\&quot;left\&quot;&amp;gt;&amp;lt;/p&amp;gt;&quot;;
+			//display a blog comment
+			} else {
+				s += &quot;&amp;lt;p&amp;gt;&amp;lt;img src=\&quot;&quot; + res.DATA.GRAVATAR[i] + &quot;\&quot; align=\&quot;left\&quot;&amp;gt;&quot;;
+				s += &quot;&amp;lt;b&amp;gt;Comment by &quot; + res.DATA.AUTHOR[i] + &quot;&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;&quot;;
+				s += &quot;&amp;lt;b&amp;gt;Blog Entry: &amp;lt;a href=\&quot;\&quot;&amp;gt;&quot; + res.DATA.TITLE[i] + &quot;&amp;lt;/a&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;br/&amp;gt;&quot;;
+				s += res.DATA.SUMMARY[i];
+				s += &quot;&amp;lt;br clear=\&quot;left\&quot;&amp;gt;&amp;lt;/p&amp;gt;&quot;;
+			}
+		}
+		console.dir(res);
+		$(&quot;#results&quot;).html(s);
+	});
+});
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;style&gt;
+#results p {
+border-style:solid;
+border-width:thin;
+padding: 10px;
+}
+&lt;/style&gt;</p>
+<p>&lt;form&gt;
+Search: &lt;input type=&quot;text&quot; name=&quot;search&quot; id=&quot;searchField&quot;&gt;
+&lt;/form&gt;</p>
+<p>&lt;div id=&quot;results&quot;&gt;&lt;/div&gt;
+</code></p>
+<p>
+<p>I'm going to focus specifically on what's changed based on the last entry. The main change begins with the loop in the callback handler of the getJSON call. I've got one array of results in a DATA object. Because my back end flagged comments and blog entries I can use a simple IF clause to branch between them. For blog entries notice I render a static image. (Also note the URLs are intentionally blank. I do store enough information to render links but I wanted to keep it a bit simple.)</p>
+<p>
+<p>For blog comments we get a bit fancier. Since I've got the gravatar URL I used that for each comment. This allows me to put a face to the comment. So how well does it work?</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/feb32011/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<p>In my testing various search strings seemed to work well, but play with it and you will see (hopefully) how the results go back and forth between blog entries and blog comments. Any questions or comments on this approach?</p>
+<p>
+<p>p.s. Those of you familiar with ColdFusion and Solr may note how I 'hacked' up email and name into the collection within one custom field. Looking back at my code I could have used the category attribute to store 'comment', 'entry' instead of &quot;wasting&quot; one of my 4 custom fields.</p>
+}

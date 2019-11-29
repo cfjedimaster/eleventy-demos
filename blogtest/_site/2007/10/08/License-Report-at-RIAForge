@@ -1,0 +1,71 @@
+<h1>Post</h1>
+
+<p>I just got an IM from Neil M asking what the most popular OS licenses were at <a href="http://www.riaforge.org">RIAForge</a>. I had never really thought to even care about that before - but it was definitely an interesting question. I wrote up a quick SQL script in Aqua Data Studio and was happy to discover they allow you to export results into HTML. Here are the results:</p>
+<TABLE CELLSPACING=1 CELLPADDING=2 BORDER=1>
+			<TR>
+				<TD><FONT COLOR=#000000>"189"</FONT></TD>
+<pre><code>			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Apache License, Version 2&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;38&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;GPL (GNU General Public License)&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;22&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;MIT&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;17&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;BSD&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;12&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;LGPL (GNU Lesser General Public License)&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;10&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Mozilla Public License&quot;&lt;/FONT&gt;&lt;/TD&gt;
+
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;10&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;GPL (GNU General Public License), Version 2&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;9&quot;&lt;/FONT&gt;&lt;/TD&gt;
+
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Creative Commons (Attribution Share Alike)&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;8&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Common Public License&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;6&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Creative Commons (Attribution Non-commercial Share Alike)&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;5&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Creative Commons (Attribution)&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;2&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Creative Commons (Attribution Non-commercial)&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;1&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Creative Commons (Attribution Non-commercial No Derivatives)&quot;&lt;/FONT&gt;&lt;/TD&gt;
+
+		&lt;/TR&gt;
+		&lt;TR&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;1&quot;&lt;/FONT&gt;&lt;/TD&gt;
+			&lt;TD&gt;&lt;FONT COLOR=#000000&gt;&quot;Common Development and Distribution License (CDDL) Version 1.0&quot;&lt;/FONT&gt;&lt;/TD&gt;
+		&lt;/TR&gt;
+	&lt;/TABLE&gt;
+</code></pre>
+<p>And wow - that is some ugly HTML, I mean it even uses the FONT tag. Still though - darn handy feature to have! (I should add a 'Export to HTML' feature to my <a href="http://cfdbexplorer.riaforge.org/">database explorer</a>.)</p>
+}

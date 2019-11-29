@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>The newest DRK has some pretty cool CF components, including my new personal favorite toy - CFUnit. This is a set of CFCs that allow for quickly creating unit tests for CFCs. If you don't know what a unit test is, it's simply a way to ensure that your software is acting as it should be. For example, if a CFC should return 1 for a certain method, you could quickly write a test to call that method and check the result. CFUnit allows you to quickly gather up a bunch of tests and run them at once. It then displays a nice table showing the result of each test.</p>
+<p>One more reason to purchase the DRK! (And no, I don't get a kickback. ;)</p>
+<p>I think I may include a unit test (but not the base CFC of course, I can't redistribute that) with the next release of the Blog CFC.</p>
+}

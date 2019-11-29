@@ -1,0 +1,43 @@
+<h1>Post</h1>
+
+<p>(Thanks to Mike for help with these.)</p>
+<p><b>Laying out two drop downs on the right hand side:</b><br>
+So, most simple Flash Forms will use a set of cfinput tags with labels. Out of the box, CFMX7 will nicely lay these out for you with the labels on the left and the form items on the right. But what if you want to put two items in the right hand column? For example, the expiration of a credit card should allow the user to pick a month and a year. By simply using &lt;cfformgroup type=&quot;horizontal&quot;&gt; with a label, you can achive this. Here is a code sample:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfformgroup type=<FONT COLOR=BLUE>"horizontal"</FONT> label=<FONT COLOR=BLUE>"Credit Card Expiration"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfselect name=<FONT COLOR=BLUE>"ccmonth"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;option value=<FONT COLOR=BLUE>"01"</FONT>&gt;</FONT></FONT>January<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;/option&gt;</FONT></FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;option value=<FONT COLOR=BLUE>"02"</FONT>&gt;</FONT></FONT>February<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;/option&gt;</FONT></FONT><br>
+&nbsp;&nbsp;&nbsp;... deletia ...<br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;option value=<FONT COLOR=BLUE>"12"</FONT>&gt;</FONT></FONT>December<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;/option&gt;</FONT></FONT> <br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cfselect&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfselect name=<FONT COLOR=BLUE>"ccyear"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfloop index=<FONT COLOR=BLUE>"x"</FONT> from=<FONT COLOR=BLUE>"0"</FONT> to=<FONT COLOR=BLUE>"10"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfoutput&gt;</FONT><FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;option value=<FONT COLOR=BLUE>"#year(now())+x#"</FONT>&gt;</FONT></FONT>#year(now())+x#<FONT COLOR=NAVY><FONT COLOR=FF8000>&lt;/option&gt;</FONT></FONT><FONT COLOR=MAROON>&lt;/cfoutput&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cfloop&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cfselect&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfformgroup&gt;</FONT></div> 
+<p><b>Mask plus Required == Minor Bug</b><br>
+Unfortunately, if you use mask plus required, when the form loads, the field will automatically be marked red. For now, I'm just not using it for required items.</p>
+<p><b>Complex, Conditional Binds</b><br>
+So I'm working on a form that has a confirmation step. The confirmation tab simply redisplays the data from the other two tabs. However - I ran into a problem. When I first started, I tried using cfformitem, type=html, bind=... This worked, but the layout was wierd. There was too much vertical spacing between each item. Plus, it didn't allow me to do things like, hide some text when it was blank. So for example, an address may have a second line for the street. I didn't want a blank line just sitting there. Mike pointed out I could use this type of code in my bind:</p>
+<p>{addr2.text.length&gt;0?'<br>'+addr2.text:''}</p>
+<p>What this means is - if the value of addr2 has a length greather than zero, print it with a br in front, if not print nothing.</p>
+<p>So this worked fine - but because of the vertical spacing, I needed to put ALL of my bind in one big string. To make this easier, I simply used cfsavecontent:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfsavecontent variable=<FONT COLOR=BLUE>"bind"</FONT>&gt;</FONT><br>
+{'<FONT COLOR=NAVY>&lt;b&gt;</FONT>Donation Information<FONT COLOR=NAVY>&lt;/b&gt;</FONT><FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{firstname.text} {mi.text} {lastname.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+{company.text.length&gt;0?company.text+'<FONT COLOR=NAVY>&lt;br&gt;</FONT>':''}{addr1.text} {addrx.text} {addr2.text.length&gt;0?'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'+addr2.text:''}<br>
+{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{city.text}, {state.text} {zip.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{country.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{'Phone: '+phone.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{'Email: '+email.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{'Donation Amount: '+donation.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{'Credit Card: '+creditcard.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{'Card Number: '+ccnumber.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+{'Expire Date: '+ccmonth.text+'/'+ccyear.text}{'<FONT COLOR=NAVY>&lt;br&gt;</FONT>'}<br>
+<FONT COLOR=MAROON>&lt;/cfsavecontent&gt;</FONT></div>
+<p>This worked well, but the spacing was still off because of the new lines and tabs in the code. So I simply added this:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfset bind = replaceList(bind,<FONT COLOR=BLUE>"#chr(<FONT COLOR=BLUE>10</FONT>)#,#chr(<FONT COLOR=BLUE>13</FONT>)#,#chr(<FONT COLOR=BLUE>9</FONT>)#"</FONT>,<FONT COLOR=BLUE>",,"</FONT>)&gt;</FONT></div>
+<p>and finally I passed bind into my cfform item.</p>
+}

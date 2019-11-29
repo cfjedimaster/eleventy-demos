@@ -1,0 +1,189 @@
+<h1>Post</h1>
+
+<p>A while back I wrote a ColdFusion Sample that dealt with <a href="http://www.raymondcamden.com/index.cfm/2011/6/5/ColdFusion-Sample--Reading-a-RSS-Feed">reading RSS feeds</a>. In today's sample, I'm going to expand on that a bit and create an application that reads a RSS feed and searches for keywords. This also ties nicely in with my ColdFusion sample on <a href="http://www.coldfusionjedi.com/index.cfm/2011/6/12/ColdFusion-Sample--Building-a-daily-scheduled-report">scheduled tasks</a>. The code I show here is meant to be used as a scheduled task that can run nightly, or hourly depending on how active the RSS feed is.</p>
+<!--more-->
+<p/>
+<p>Let's begin our sample with few simple variables:</p>
+<p/>
+<code>
+&lt;!--- Feed to scan ---&gt;
+&lt;cfset rssUrl = "http://rss.cnn.com/rss/cnn_topstories.rss"&gt;
+&lt;!--- Keywords ---&gt;
+&lt;cfset keywords = "obama,debt"&gt;
+&lt;!--- Person who gets the email ---&gt;
+&lt;cfset receiver = "raymondcamden@gmail.com"&gt;
+</code>
+<p/>
+<p>I assume these variables are self-explanatory, but note that keywords would most likely be dynamic. I could see them being hard coded though if you are building something simple for a client. By the way, if you download this code, please change receiver. I get enough email. :) Moving on....</p>
+<p/>
+<code>
+&lt;cffeed action="read" source="#rssUrl#" query="entries"&gt;
+&lt;cfoutput&gt;
+The feed has #entries.recordcount# entries.&lt;br/&gt;
+&lt;/cfoutput&gt;
+</code>
+<p/>
+<p>This code grabs the RSS feed and turns it into a query. I mentioned earlier that this script would most likely be a scheduled task. That being said, there's no reason why I can't include some text in the output. Don't forget ColdFusion allows you to save the result of a scheduled task so you can look at it later. Ok, now for the fun part - the actual processing...</p>
+<p/>
+<code>
+&lt;cfloop index="keyword" list="#keywords#"&gt;
+<pre><code>&amp;lt;cfquery name=&quot;getMatches&quot; dbtype=&quot;query&quot;&amp;gt;
+select	title, rsslink, publisheddate
+from	entries
+where	upper(title) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#ucase(keyword)#%&quot;&amp;gt;
+or		upper(content) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#ucase(keyword)#%&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+The keyword #keyword# matched #getMatches.recordCount# entries.&amp;lt;br/&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfif getMatches.recordCount&amp;gt;
+	&amp;lt;cfmail to=&quot;#receiver#&quot; from=&quot;#receiver#&quot; subject=&quot;Keyword match in RSS Feed.&quot; type=&quot;html&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;h2&amp;gt;RSS Matches Found: #keyword#&amp;lt;/h2&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	Matches in the RSS feed for the keyword &quot;#keyword#&quot; have been found:
+	&amp;lt;/p&amp;gt;
+	
+	&amp;lt;ul&amp;gt;
+	&amp;lt;cfloop query=&quot;getMatches&quot;&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;#rsslink#&quot;&amp;gt;#title#&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;/ul&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfmail&amp;gt;	
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>We begin by looping over each keyword. For my report, I want one result per keyword. You could create one result instead. I just thought it would be nicer to have a separate set of results. I make use of Query of Queries to scan for my keyword. <b>Notice the upper!</b> LIKE matches in QoQ are case sensitive. By using upper in the SQL and uCase in CFML I can ensure a case-insensitive match. If we find a match, then I simply fire off an email. That's it. I ended my template with a quick &quot;I'm done&quot; message. Here is the entire template.</p>
+<p/>
+<code>
+<p>&lt;!--- Feed to scan ---&gt;
+&lt;cfset rssUrl = &quot;http://rss.cnn.com/rss/cnn_topstories.rss&quot;&gt;
+&lt;!--- Keywords ---&gt;
+&lt;cfset keywords = &quot;obama,debt&quot;&gt;
+&lt;!--- Person who gets the email ---&gt;
+&lt;cfset receiver = &quot;raymondcamden@gmail.com&quot;&gt;</p>
+<p>&lt;cffeed action=&quot;read&quot; source=&quot;#rssUrl#&quot; query=&quot;entries&quot;&gt;
+&lt;cfoutput&gt;
+The feed has #entries.recordcount# entries.&lt;br/&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfloop index=&quot;keyword&quot; list=&quot;#keywords#&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;getMatches&quot; dbtype=&quot;query&quot;&amp;gt;
+select	title, rsslink, publisheddate
+from	entries
+where	upper(title) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#ucase(keyword)#%&quot;&amp;gt;
+or		upper(content) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#ucase(keyword)#%&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+The keyword #keyword# matched #getMatches.recordCount# entries.&amp;lt;br/&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfif getMatches.recordCount&amp;gt;
+	&amp;lt;cfmail to=&quot;#receiver#&quot; from=&quot;#receiver#&quot; subject=&quot;Keyword match in RSS Feed.&quot; type=&quot;html&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;h2&amp;gt;RSS Matches Found: #keyword#&amp;lt;/h2&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	Matches in the RSS feed for the keyword &quot;#keyword#&quot; have been found:
+	&amp;lt;/p&amp;gt;
+	
+	&amp;lt;ul&amp;gt;
+	&amp;lt;cfloop query=&quot;getMatches&quot;&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;#rsslink#&quot;&amp;gt;#title#&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;/ul&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfmail&amp;gt;	
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;cfoutput&gt;
+Done processing.&lt;br/&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p/>
+<p>And here is a sample email:</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip146.png" />
+<p/>
+<p>Nice and simple, right? My goal for these &quot;ColdFusion Sample&quot; blog entries are to keep it that way. I want to provide samples in ColdFusion for common problems. That being said, you should stop reading now. What follows is superfluous, unnecessary, and just plain silly.</p>
+<h2>Here be dragons...</h2>
+<p>Folks know I have something of a geek crush on <a href="http://www.openamplify.com">OpenAmplify</a>. What if we were to use OpenAmplify to tell us what <i>type</i> of match was found, specifically, if it was a positive or negative match. Consider this modified version:</p>
+<p/>
+<code>
+&lt;!--- Feed to scan ---&gt;
+&lt;cfset rssUrl = "http://rss.cnn.com/rss/cnn_topstories.rss"&gt;
+&lt;!--- Keywords ---&gt;
+&lt;cfset keywords = "obama,debt"&gt;
+&lt;!--- Person who gets the email ---&gt;
+&lt;cfset receiver = "raymondcamden@gmail.com"&gt;
+&lt;!--- OpenAmplify CFC ---&gt;
+&lt;cfset openAmp = new openamplify("my key is better than yours, like my milkshake")&gt;
+<p>&lt;cffeed action=&quot;read&quot; source=&quot;#rssUrl#&quot; query=&quot;entries&quot;&gt;
+&lt;cfoutput&gt;
+The feed has #entries.recordcount# entries.&lt;br/&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfloop index=&quot;keyword&quot; list=&quot;#keywords#&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;getMatches&quot; dbtype=&quot;query&quot;&amp;gt;
+select	title, rsslink, publisheddate, content
+from	entries
+where	upper(title) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#ucase(keyword)#%&quot;&amp;gt;
+or		upper(content) like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#ucase(keyword)#%&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+The keyword #keyword# matched #getMatches.recordCount# entries.&amp;lt;br/&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfif getMatches.recordCount&amp;gt;
+
+	&amp;lt;!--- get OA values ---&amp;gt;
+	&amp;lt;cfset queryAddColumn(getMatches,&quot;mood&quot;,&quot;cf_sql_varchar&quot;,[])&amp;gt;
+	&amp;lt;cfset queryAddColumn(getMatches,&quot;moodval&quot;,&quot;cf_sql_varchar&quot;,[])&amp;gt;
+	&amp;lt;cfloop query=&quot;getMatches&quot;&amp;gt;
+		&amp;lt;cfset oaResult = openAmp.parse(text=content,analysis=&quot;Styles&quot;)&amp;gt;
+		&amp;lt;cfset moodLabel = oaResult.Styles.Polarity.Mean.Name&amp;gt;
+		&amp;lt;cfset moodValue = oaResult.Styles.Polarity.Mean.Value&amp;gt;
+		&amp;lt;cfset querySetCell(getMatches, &quot;mood&quot;, moodlabel, currentRow)&amp;gt;			
+		&amp;lt;cfset querySetCell(getMatches, &quot;moodval&quot;, moodValue, currentRow)&amp;gt;			
+	&amp;lt;/cfloop&amp;gt;
+
+	&amp;lt;cfmail to=&quot;#receiver#&quot; from=&quot;#receiver#&quot; subject=&quot;Keyword match in RSS Feed.&quot; type=&quot;html&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;h2&amp;gt;RSS Matches Found: #keyword#&amp;lt;/h2&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	Matches in the RSS feed for the keyword &quot;#keyword#&quot; have been found:
+	&amp;lt;/p&amp;gt;
+	
+	&amp;lt;ul&amp;gt;
+	&amp;lt;cfloop query=&quot;getMatches&quot;&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;#rsslink#&quot;&amp;gt;#title#&amp;lt;/a&amp;gt; 
+			&amp;lt;cfif moodVal lt 0&amp;gt;&amp;lt;font color=&quot;red&quot;&amp;gt;&amp;lt;cfelseif moodVal gt 0&amp;gt;&amp;lt;font color=&quot;green&quot;&amp;gt;&amp;lt;cfelse&amp;gt;&amp;lt;font&amp;gt;&amp;lt;/cfif&amp;gt;
+			#mood#
+			&amp;lt;/font&amp;gt;
+		&amp;lt;/li&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;/ul&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfmail&amp;gt;	
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;cfoutput&gt;
+Done processing.&lt;br/&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>I'll point out the differences here. First - note I make use of the OpenAmplify CFC. (Which has been updated - please grab the download zip!) Later on, if we have matches in the RSS feed, I do a &quot;Styles&quot; analysis of the content from the feed. This will most likely not be very deep. It depends on how much text was in the RSS feed. You could actually tell OpenAmplify to parse the URL. Their API supports that as well. Once I have the result I grab the mean label and numerical value and simply add it to the query of results. Now look in the email. I can check those values and dynamically color based on the mood. Negative? Red. Positive? Green. Forgive me for using the font tag but it works. Here's an example of the updated email.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip147.png" />
+<p/>
+<p>I've included both test templates and the new version of openamplify.cfc to the end of this blog entry.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Ftempforblog%2Erar'>Download attached file.</a></p></p>
+}

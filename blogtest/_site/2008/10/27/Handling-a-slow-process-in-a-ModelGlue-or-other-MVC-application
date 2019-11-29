@@ -1,0 +1,92 @@
+<h1>Post</h1>
+
+<p>This weekend I exchanged a few emails with a reader about how you can handle very slow processes in a Model-Glue application. Typically folks will handle slow processes using one of these methods:</p>
+<ul>
+<li>cfflush: Print out a 'Please Wait' type message, use cfflush to flush out the content, and then start the slow process
+<li>cfthread: You can use cfthread to either run a bunch of parallel slow processes at once, or 'fire and forget' a slow process
+<li>scheduler: Use the ColdFusion scheduler to run the slow process completely outside the view of the site visitor. 
+</ul>
+<p>Of course the <b>best</b> way to handle a slow process is to ensure you've done everything possible to speed it up. As an example, I was convinced that a particular process on <a href="http://www.coldfusionboggers.org">coldfusionbloggers.org</a> was slow because it had to be. Turned out it was a stupid SQL mistake on my part. So before any attempt is made to mitigate or hide a slow process, you need to do everything possible to ensure you haven't missed something obvious.</p>
+<!--more-->
+<p>Once you've done that, what next? If you ever tried to use cfflush within a Model-Glue view, you know what happens:</p>
+<blockquote>
+<p>
+<b>Message</b> Unable to perform cfflush.<br/>
+<b>Detail</b> You have called cfflush in an invalid location, such as inside a cfquery or cfthread or between a CFML custom tag start and end tag.
+</p>
+</blockquote>
+<p>Because your view file ends up being run as a custom tag (behind the scenes) you can't use the cfflush tag. So what about cfthread?</p>
+<p>I created a simple demo application (available as a zip to this blog entry) using Model-Glue 3. I began by creating a new event, page.slow, that would represent my slow process:</p>
+<code>
+&lt;event-handler name="page.slow"&gt;
+	&lt;broadcasts&gt;
+		&lt;message name="doItSlow" /&gt;
+	&lt;/broadcasts&gt;
+	&lt;results&gt;
+		&lt;result do="template.main" /&gt;
+	&lt;/results&gt;
+	&lt;views&gt;
+		&lt;include name="body" template="pages/slow.cfm" /&gt;
+	&lt;/views&gt;
+&lt;/event-handler&gt;
+</code>
+<p>The doItSlow controller method is where I put my slow process:</p>
+<code>
+&lt;cffunction name="doItSlow" access="public" output="false"&gt;
+	&lt;cfargument name="event" type="any" required="true"&gt;
+<pre><code>&amp;lt;!--- First, am I running the slow process? ---&amp;gt;
+&amp;lt;cfif structKeyExists(application, &quot;slowprocess&quot;)&amp;gt;
+	&amp;lt;cfset arguments.event.setValue(&quot;status&quot;, &quot;ongoing&quot;)&amp;gt;
+	&amp;lt;cfset arguments.event.setValue(&quot;progress&quot;, application.slowprocess)&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfset arguments.event.setValue(&quot;status&quot;, &quot;began&quot;)&amp;gt;
+	&amp;lt;cfthread name=&quot;slowprocess&quot; priority=&quot;low&quot;&amp;gt;
+		&amp;lt;cfset application.slowprocess = 0&amp;gt;
+		&amp;lt;!--- run 10 processes that take 1 minute each. ---&amp;gt;
+		&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;10&quot;&amp;gt;
+			&amp;lt;cfset application.slowprocess++&amp;gt;
+			&amp;lt;cfset sleep(15000)&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;cfset structDelete(application, &quot;slowprocess&quot;)&amp;gt;
+	&amp;lt;/cfthread&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>There are two main things happening in this method. If I see that a particular application variable doesn't exist, I begin the process within a cfthread block. I use an application variable, slowprocess, to both signify that I've begun the process and to record how far along I am. If the application variable does exist, note how I use the event object to record what's going on and how far along we are.</p>
+<p>Now I don't think you would normally be running the slow process from the controller. This would typically be in the model with the controller simply firing it off and asking a service object (for example) for an update on what's going on. I only used the controller here for everything since I wanted a quick demo.</p>
+<p>The view is interesting. I'm going to display the current status and do an automatic reload:</p>
+<code>
+&lt;cfset status = event.getValue("status")&gt;
+&lt;cfset progress = event.getValue("progress")&gt;
+&lt;cfset event.setValue("usemeta",true)&gt;
+<p>&lt;cfoutput&gt;
+&lt;b&gt;status=&lt;/b&gt;#status#&lt;br/&gt;
+&lt;b&gt;progress=&lt;/b&gt;#progress#
+&lt;/cfoutput&gt;
+</code></p>
+<p>The usemeta is simply a flag to my template view:</p>
+<code>
+&lt;cfset usemeta = event.getValue("usemeta", false)&gt;
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;css/stylesheet.css&quot;&gt;&lt;/link&gt;
+&lt;cfif isBoolean(usemeta) and usemeta&gt;
+&lt;meta http-equiv=&quot;refresh&quot; content=&quot;10&quot;&gt;
+&lt;/cfif&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;div id=&quot;banner&quot;&gt;Demo&lt;/div&gt;</p>
+<pre><code>&amp;lt;!--- Display the view named &quot;body&quot; ---&amp;gt;
+&amp;lt;cfoutput&amp;gt;#viewCollection.getView(&quot;body&quot;)#&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;</p>
+<p>&lt;/html&gt;
+</code></p>
+<p>So the end result is - the person starts the process and can just sit back and watch as the page gives an updated status on the process.</p>
+<p>Again - this is just a quick demo. It isn't best practice or anything. (In fact, it will continuously reload the process.)</p>
+<p>So I was going to stop there. But why stop when you can try something cool? Many moons ago I <a href="http://www.raymondcamden.com/index.cfm/2008/1/4/Another-charting-option-XMLSWF-Charts">blogged</a> about <a href="http://www.maani.us/xml_charts/index.php">XML/SWF Charts</a>, a cheap, and very sexy, charting engine. One of the coolest feature is it's ability to point to an XML file to both configure the chart and create an auto-reload data set for the chart. What follows is video of a modified version (also in the zip) where the chart engine itself runs the request for the status. The resulting data is output in the XML format required for the chart.</p>
+<p><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="468" height="361"> <param name="movie" value="http://content.screencast.com/users/jedimaster/folders/Jing/media/c84991a4-ef49-4085-a351-2f4e43ab0f11/bootstrap.swf"></param> <param name="quality" value="high"></param> <param name="bgcolor" value="#FFFFFF"></param> <param name="flashVars" value="thumb=http://content.screencast.com/users/jedimaster/folders/Jing/media/c84991a4-ef49-4085-a351-2f4e43ab0f11/FirstFrame.jpg&content=http://content.screencast.com/users/jedimaster/folders/Jing/media/c84991a4-ef49-4085-a351-2f4e43ab0f11/00000002.swf&width=468&height=361"></param> <param name="allowFullScreen" value="true"></param> <param name="scale" value="showall"></param> <param name="allowScriptAccess" value="always"></param> <embed src="http://content.screencast.com/users/jedimaster/folders/Jing/media/c84991a4-ef49-4085-a351-2f4e43ab0f11/bootstrap.swf" quality="high" bgcolor="#FFFFFF" width="468" height="361" type="application/x-shockwave-flash" allowScriptAccess="always" flashVars="thumb=http://content.screencast.com/users/jedimaster/folders/Jing/media/c84991a4-ef49-4085-a351-2f4e43ab0f11/FirstFrame.jpg&content=http://content.screencast.com/users/jedimaster/folders/Jing/media/c84991a4-ef49-4085-a351-2f4e43ab0f11/00000002.swf&width=468&height=361" allowFullScreen="true" scale="showall"></embed> </object></p>
+<p>I'm really impressed by this charting engine. It may not be as easy as cfchart, but it is certainly as pretty, and the auto-update for data is worth the price in itself.</p>
+<p>So outside of the pretty charts - have folks done anything like the above code? (Again, ignoring the fact I used the controller.)<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fmgdemos%2Ezip'>Download attached file.</a></p></p>
+}

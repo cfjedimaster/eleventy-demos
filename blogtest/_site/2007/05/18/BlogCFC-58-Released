@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>It has been a while since the last release so I decided to try to clean up some bugs in <a href="http://blogcfc.riaforge.org">BlogCFC</a>. Along with a bunch of blog fixes, BlogCFC now allows for what I'm calling &quot;Blended&quot; RSS and front page views. All this means is that you can manually create RSS/views for multiple categories. As an example, I could take all the movie/music/politics/etc type junk from this blog and create one RSS feed for it. I could also do the same for all the technology related categories. I can't show demos here as my blog is still at some ancient version.</p>
+}

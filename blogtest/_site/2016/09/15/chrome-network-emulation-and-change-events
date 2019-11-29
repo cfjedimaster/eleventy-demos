@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>So this is more a FYI then anything else, but a while ago, Chrome released support to emulate different network conditions in dev tools. (Oddly, it doesn't seem to be documented in the <a href="https://developers.google.com/web/tools/chrome-devtools/profile/network-performance/resource-loading?utm_source=dcc&amp;utm_medium=redirect&amp;utm_campaign=2016q3">Chrome DevTools Network</a> help page.) Basically you can select from different speeds and even quickly toggle offline/online. If you've never seen it - here is what it looks like:</p>
+<!--more-->
+<p><img src="https://static.raymondcamden.com/images/2016/09/chromenetwork1.png" alt="Network Tools"></p>
+<p>Clicking the dropdown reveals the following options:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/09/chromenetwork2.png" alt="Network Tools"></p>
+<p>So this worked well, except in one pretty important aspect. If you had JavaScript code that listened for network changes or simply checked for the connection (see documentation here: <a href="https://developer.mozilla.org/en-US/docs/Online_and_offline_events">&quot;Online and offline events&quot;</a>) it would not pick up on changes done via Dev Tools.</p>
+<p>So for those of us trying to write code to properly handle a web page going offline, that meant you had to test the old fashion way - turn your wifi off. (Which killed everything, including your super important Twitter feed.)</p>
+<p>I filed a bug report for this nearly two years ago: <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=422956&amp;can=2&amp;start=0&amp;num=100&amp;q=&amp;colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified&amp;groupby=&amp;sort=">Issue 422956</a></p>
+<p>Yesterday I was doing some testing and discovered that it <em>appears</em> to be fixed. I tested using the simple Gist in my bug report and <code>navigator.onLine</code> correctly responded. Also, my <code>online</code> and <code>offline</code> event handlers ran fine too.</p>
+<p>Now it worries me that the bug hasn't been updated. It's possible that it hasn't been QAed. But for now, it certainly seems a bit safe to use.</p>
+}

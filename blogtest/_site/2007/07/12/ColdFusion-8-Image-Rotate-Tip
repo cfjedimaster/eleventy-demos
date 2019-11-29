@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>I was playing with image rotation last night (I know, call me Mr. Excitement), and I found an interesting issue. Consider this code:</p>
+<!--more-->
+<code>
+&lt;cfset textImage=ImageNew("",200,200,"rgb","white")&gt;
+<p>&lt;cfset ImageSetDrawingColor(textImage,&quot;black&quot;)&gt;</p>
+<p>&lt;cfset attr=StructNew()&gt;
+&lt;cfset attr.size=30&gt;
+&lt;cfset attr.style=&quot;bold&quot;&gt;
+&lt;cfset attr.font=&quot;ArialMT&quot;&gt;</p>
+<p>&lt;cfset ImageSetAntialiasing(textImage, &quot;on&quot;)&gt;
+&lt;cfset ImageDrawText(textImage,&quot;Paris&quot;,50,75,attr)&gt;</p>
+<p>&lt;cfset ImageRotate(textImage,30,2,2)&gt;</p>
+<p>&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#textImage#&quot;&gt;
+</code></p>
+<p>I create a new blank image and then draw some black text and then rotate. I end up with this:</p>
+<img src="https://static.raymondcamden.com/images/brorate1.png">
+<p>Notice the black background? I tried to fix it by using this for my image:</p>
+<code>
+&lt;cfset textImage=ImageNew("",200,200,"rgb","white")&gt;
+</code>
+<p>But it had no impact. Luckily I got some help from Adobe (thank you Hemant!) and he mentioned that if I switch my image type to ARGB instead of RGB, it will work. With that, I got this:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/brotate2.PNG">
+<p>Not bad - but a bit ugly. The imageRotate function takes a 5th argument: interpolation. This basically sets the quality of the rotation. Adobe defaulted to the quickest method, &quot;nearest.&quot; Switching to the highest, &quot;bicubic&quot;, makes a real pretty rotation, but the leaves some &quot;crud&quot; on the sides:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/brotate3.png">
+<p>Of course, I could crop that easily enough, but, still, a bit of a problem. The middle ground interpolation, bilinear, also leaves the same.</p>
+}

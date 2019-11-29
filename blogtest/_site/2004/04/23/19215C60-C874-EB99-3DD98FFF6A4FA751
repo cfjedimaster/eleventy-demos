@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Deanna Schneider on cf-talk pointed out something I forgot to mention in my documentation for Lighthouse. When you update the main ini file, you need to make sure you refresh the Application scoped variables that Lighthouse uses. This can be done by simplying hitting the application with reinit=true in the URL.</p>
+}

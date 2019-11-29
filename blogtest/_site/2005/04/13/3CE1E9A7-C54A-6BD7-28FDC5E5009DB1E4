@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>I just got this error message:</p>
+<p>17 &gt;= 17</p>
+<p>I'm not kidding. That was the message. When I find out more, I'll post the details.</p>
+<p><b>Edited 2 Minutes Later:</b> I turned on Robust Exception Info, and the error went away, so it must have been a fluke... but still - it was pretty funny.</p>
+<p><b>Edited 1 Minute Later:</b> It's back now. This time I see more information. It is happening inside a query. Here is part of the stack trace:</p>
+<p>java.lang.ArrayIndexOutOfBoundsException: 17 &gt;= 17<br>
+at java.util.Vector.elementAt(Unknown Source)<br>
+at macromedia.jdbc.sqlserver.tds.TDSRequest.getColumn(Unknown Source)<br></p>
+<p><b>Last Edit:</b> I think I figured it out. The query in question was a select * from foo where id  = X, where X used a query param. The use of queryparam caused CF to store the ... I think &quot;prepared statement&quot; is the right word. The table in question was modified though. I went to the CF Admin, selected the DSN, and set the Max Pooled Statements to 0, which fixed the problem. Although normally you wouldn't do that on a production server.</p>
+}

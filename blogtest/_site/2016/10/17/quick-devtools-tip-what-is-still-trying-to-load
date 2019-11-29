@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>Have you ever loaded a web page, seen that main content render, and then notice that the loading widget seems to rotate (pulsate, etc, every browser is different) for eternity? Obviously there is some network request that is pending, but how do you figure out what that is, especially with a large set of requests to dig through?</p>
+<!--more-->
+<p>In Chrome, there is a quick way to see this. In your devtools, first ensure the filter field is visible:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/10/cd1.png" alt="Enable the Filter!"></p>
+<p>Then type <code>is:running</code> in the form field. Here is an example from GMail:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/10/cd2.png" alt="An example"></p>
+<p>In case you didn't know it, that filter field supports both name matches as well as property-type searches like the example above. The field will nicely offer suggestions for these properties as you type, but you can find a complete list here:</p>
+<p><a href="https://developers.google.com/web/tools/chrome-devtools/network-performance/resource-loading#filter_requests">Filter requests</a></p>
+<p>You should scan that page a bit as I found two interesting tidbits. On Mac/Unix (not sure why not Windows), you can add multiple filters. Also, you can filter by requests larger than a set value. That's a great way to check for fat requests.</p>
+<p>I looked for something similar in Firefox, Edge, and Safari, but didn't see anything that would support the same result.</p>
+}

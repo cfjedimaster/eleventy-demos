@@ -1,0 +1,161 @@
+<h1>Post</h1>
+
+<p>This weekend I was on the road and had some time to build (yet another) application with Vue.js. I don't think this one necessarily does anything terribly cool. At minimum it was more &quot;exercise&quot; for my Vue muscles and provides another demo I can share with folks. As always though, if you have any suggestions or feedback in general, just let me know. If posts like these <em>aren't</em> helpful, also free free to share!</p>
+<p>Let me start by giving a high level overview of what I built. I'll start with a few screen shots. The initial page shows a list of all fifty states.</p>
+<img src="https://static.raymondcamden.com/images/2019/09/nps1.png" alt="List of 50 States" class="imgborder imgcenter">
+<p>Selecting a state will then make a call out to the <a href="https://www.nps.gov/subjects/digital/nps-data-api.htm">National Park Systems API</a> to ask for all the parks within that state. I then render them out:</p>
+<img src="https://static.raymondcamden.com/images/2019/09/nps2.png" alt="List of parks" class="imgborder imgcenter">
+<p>Behind the scenes I'm using the following technologies:</p>
+<ul>
+<li><a href="https://vuejs.org/">Vue.js</a> of course. :)</li>
+<li><a href="https://router.vuejs.org/">Vue Router</a></li>
+<li><a href="https://vuex.vuejs.org/">Vuex</a> to handle calling my API and caching (this is somewhat interesting I think).</li>
+<li><a href="https://vuetifyjs.com/en/">Vuetify</a> for the UI.</li>
+<li><a href="https://zeit.co/">Zeit</a> for my serverless function.</li>
+</ul>
+<p>Before I dig into the code more, you can find the complete repository here: <a href="https://github.com/cfjedimaster/vue-demos/tree/master/nps_gallery">https://github.com/cfjedimaster/vue-demos/tree/master/nps_gallery</a>. You can run the demo here: <a href="https://npsgallery.raymondcamden.now.sh/">https://npsgallery.raymondcamden.now.sh/</a></p>
+<p>Alright, so I'm not going to share anything about the first view of this page. I've got a hard coded list of the 50 states (and abbreviations) I store in my Vuex store and I simply fetch them to render. The only part that was interesting here is that I discovered the <code>&lt;router-link&gt;</code> will correctly handle URL encoding values:</p>
+<pre><code class="language-html">&lt;v-btn color=&quot;teal&quot; width=&quot;100%&quot; :to=&quot;`/state/${state}/${abbr}`&quot;&gt;
+{{state}}
+&lt;/v-btn&gt;
+</code></pre>
+<p>In the link above, note that I can safely use the <code>state</code> value without worry. I should have expected this, but I was happy to see it worked well.</p>
+<p>It's the state view where things get interesting. First, the main view component, which is pretty simple since my complexity lies elsewhere.</p>
+<pre><code class="language-html">&lt;template&gt;
+
+  &lt;v-container&gt;
+      &lt;h3&gt;National Parks for {{state}}&lt;/h3&gt;
+
+      &lt;i v-if=&quot;loading&quot;&gt;Please stand by - loading data.&lt;/i&gt;
+
+      &lt;v-row&gt;
+        &lt;v-col cols=&quot;4&quot; v-for=&quot;(park,idx) in parks&quot; :key=&quot;idx&quot;&gt;
+          &lt;Park :park=&quot;park&quot; /&gt;
+        &lt;/v-col&gt;
+      &lt;/v-row&gt;
+  &lt;/v-container&gt;
+
+&lt;/template&gt;
+
+&lt;script&gt;
+import Park from '../components/Park';
+
+export default {
+  components: { Park },
+  data() {
+    return {
+      state:'',
+      abbr:''
+    }
+  },
+  computed: {
+    loading() {
+      return !this.parks.length;
+    },
+    parks() {
+      return this.$store.state.selectedParks;
+    }
+  },
+  async created() {
+    // clear selecion
+    this.$store.commit('clearSelection');
+
+    this.state = this.$route.params.state;
+    this.abbr = this.$route.params.abbr;
+    this.$store.dispatch('loadParks', this.abbr);
+  }
+}
+&lt;/script&gt;
+</code></pre>
+<p>You can see I'm rendering values by binding to a <code>parks</code> variable that comes from my store. You'll notice I'm calling two things in my <code>created</code> related to the store. I first call <code>clearSelection</code> and then <code>loadParks</code>. <code>clearSelection</code> removes any previously loaded parks from the view and <code>loadParks</code> obviously fires off the request to load parks. Let's look at the store now because here is where things get a bit deep.</p>
+<pre><code class="language-js">import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+import api from './api/nps';
+
+export default new Vuex.Store({
+  state: {
+    states:{
+      &quot;AL&quot;: &quot;Alabama&quot;,
+	  // stuff removed here
+      &quot;WY&quot;: &quot;Wyoming&quot;
+    }, 
+    parks:{
+
+    },
+    selectedParks:[]
+  },
+  mutations: {
+    cache(state, args) {
+      console.log('storing cache for '+args.abbr+ ' and '+args.parks.length + ' parks');
+      state.parks[args.abbr] = args.parks;
+    },
+    clearSelection(state) {
+      state.selectedParks = [];
+    },
+    select(state, parks) {
+      state.selectedParks = parks
+    }
+  },
+  actions: {
+    async loadParks(context, abbr) {
+      // check the cache
+      if(context.state.parks[abbr]) {
+        console.log('woot a cache exists');
+        context.commit('select', context.state.parks[abbr]);
+      } else {
+        console.log('no cache, sad face');
+        let results = await api.getParks(abbr);
+        context.commit('cache', {abbr:abbr, parks:results});
+        context.commit('select', context.state.parks[abbr]);
+      }
+    }
+  }
+})
+</code></pre>
+<p>So the biggest thing I want to point here is that I'm using the store to wrap calls to my API and as a simple cache. Anytime you ask for parks for state X, I first see if it's cached and if so - return it immediately. Otherwise I make a call out to the API. It's a pretty simple system but I love how it came out, and performance wise it works really.</p>
+<p>The API part is actually two fold. You can see I load in <code>'./api/nps'</code>, which is yet another wrapper:</p>
+<pre><code class="language-js">const NPS_API = '/api/npswrapper';
+
+
+export default {
+
+    async getParks(state) {
+        return new Promise(async (resolve, reject) =&gt;{
+          let results = await fetch(NPS_API+`?state=${state}`);
+          let parks = await results.json();
+          /*
+            API returns park.images[], we want to change this to park.image to simplify it
+          */
+          let parkData = parks.data.map(p =&gt; {
+            if(p.images &amp;&amp; p.images.length &gt; 0) {
+                p.image = p.images[0].url;
+            }
+            return p;
+          });
+          resolve(parkData);  
+        });
+    }
+
+}
+</code></pre>
+<p>All this does is call my serverless function. The NPS API doesn't support CORS so I need that to handle that aspect. I also do a bit of filtering to ensure we get images back. (Although this doesn't seem to work perfectly - I think some parks have images that 404.) The final bit is the serverless function:</p>
+<pre><code class="language-js">const fetch = require('node-fetch');
+
+const NPS_KEY = process.env.NPS_KEY;
+
+module.exports = async (req, res) =&gt; {
+
+    let state = req.query.state;
+    let httpResult = await fetch(`https://developer.nps.gov/api/v1/parks?stateCode=${state}&amp;limit=100&amp;fields=images&amp;api_key=${NPS_KEY}`);
+    let results = await httpResult.json();
+    res.json(results);
+
+};
+</code></pre>
+<p>If you want to know more about serverless and Zeit, check out the <a href="https://www.raymondcamden.com/2019/09/06/a-look-at-zeits-zero-config-and-serverless-platform">article</a> I wrote a few days on it.</p>
+<p>Anyway, that's it! As I always say, I'd love some feedback, so leave me a comment below.</p>
+<p><i>Header photo by <a href="https://unsplash.com/@sebastian_unrau?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Sebastian Unrau</a> on Unsplash</i></p>
+}

@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>So one of the first things I asked Sean about was how to report bugs in Fusebox. Turns out there is a public bug tracker so you can not only report bugs but check for existing bugs as well. You may find the Fusebox bug tracker here:</p>
+<p><a href="http://trac.fuseboxframework.org/fusebox/report">http://trac.fuseboxframework.org/fusebox/report</a></p>
+<p>Model-Glue uses the same system (Trac) and it's bug tracker may be found here:</p>
+<p><a href="http://trac.model-glue.com/model-glue/report">http://trac.model-glue.com/model-glue/report</a></p>
+}

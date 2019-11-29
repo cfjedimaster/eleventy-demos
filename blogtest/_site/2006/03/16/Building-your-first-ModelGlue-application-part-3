@@ -1,0 +1,207 @@
+<h1>Post</h1>
+
+<p>In my <a href="http://ray.camdenfamily.com/index.cfm/2006/3/15/Building-your-first-ModelGlue-application-part-2">last entry</a>, I walked us through the basic security setup for the application. We modified the Home event so that it broadcasted an event. This event checked to see if we were logged in, and if not, set a result back to our Home event that would force us to a Logon event. However, I hard coded this so that it always thought we needed to logon. Today we will start building the user system so that you can really logon. You may ask - don't we need the registration system first? Yes - but I find the logon to be simpler so I typically start with that. At the end of this process (in tomorrow's entry) I'll place some temporary data in the database so we can test.</p>
+<!--more-->
+<p>Let's start by designing our Users table. The following table lists out the fields and types:</p>
+<table border="1">
+<tr>
+<td>username</td>
+<td>String (required/50 char max/primary key)</td>
+</tr>
+<tr>
+<td>password</td>
+<td>String (required/50 char max)</td>
+</tr>
+<tr>
+<td>name</td>
+<td>String (required/50 char max)</td>
+</tr>
+</table>
+<p>These columns and settings should be pretty obvious. A real user table would probably have more information than just the name, but again, we want to keep it simple. I'm going to create this table in a SQL Server database, but you should be able to create it in any type of database. Once you have set up your table (and you can use the install.sql file in the zip file attached to this entry), we then need to create a DSN. For this application, the dsn name will be PhotoGallery. If you remember, we added this setting in the last entry. Now you simply need to hook it up in the ColdFusion Administrator.</p>
+<p>So far so good.  Now we finally get to work on the Model. We've worked in the Controller already. We added the getAuthenticated method, but never tied it to our Model. We've worked with the View layer as well. When we added the new Logon event, we had to write a view file to render that event. Now we need to work on the User portion of the Model.</p>
+<p>I'm not going to spend a lot of time talking about how I set up the User model, since that could be a series to itself. I will talk a bit about it at a high level so that hopefully you get what I'm doing, and you can dig a bit deeper later on. The way I design my CFCs now are such that every data type (user, product, etc) has 3 CFCs. The first CFC is the Bean. I tend to think of the Bean as a simple instance of the data. It has methods to set and get properties. It has a simple validation method. But that's it. No logic for inserting into the database or reading all users. It basically just handles one instance. The CFC is below:</p>
+<code>
+&lt;cfcomponent output="false" displayName="User Bean"&gt;
+<p>&lt;cfset variables.instance = structNew() /&gt;
+&lt;cfset variables.instance.username = &quot;&quot; /&gt;
+&lt;cfset variables.instance.password = &quot;&quot; /&gt;
+&lt;cfset variables.instance.name = &quot;&quot; /&gt;</p>
+<p>&lt;cffunction name=&quot;setUsername&quot; returnType=&quot;void&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;username&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset variables.instance.username = arguments.username&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getUsername&quot; returnType=&quot;string&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfreturn variables.instance.username&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;setPassword&quot; returnType=&quot;void&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;password&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset variables.instance.password = arguments.password&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getPassword&quot; returnType=&quot;string&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfreturn variables.instance.password&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;setName&quot; returnType=&quot;void&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;name&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset variables.instance.name = arguments.name&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getName&quot; returnType=&quot;string&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfreturn variables.instance.name&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;validate&quot; returnType=&quot;array&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfset var errors = arrayNew(1)&gt;</p>
+<pre><code>&amp;lt;cfif not len(trim(getUsername())) or not isValid(&quot;email&quot;, getUsername())&amp;gt;
+	&amp;lt;cfset arrayAppend(errors,&quot;Username cannot be blank and must be a valid email address.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif not len(trim(getPassword()))&amp;gt;
+	&amp;lt;cfset arrayAppend(errors,&quot;Password cannot be blank.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif not len(trim(getName()))&amp;gt;
+	&amp;lt;cfset arrayAppend(errors,&quot;Name cannot be blank.&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn errors&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getInstance&quot; returnType=&quot;struct&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfreturn duplicate(variables.instance)&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;	
+</code></p>
+<p>As I said, I don't want to spend a lot of time on the particulars of the CFC, but basically the core of the CFC are methods to set and read the three properties we discussed above.</p>
+<p>The next CFC I create is the DAO, or Data Access Object. The purpose of this CFC is to handle persistence. It will create, read, update, and delete users. (Also known as CRUD methods.) This CFC is below, and again, as it is mostly just simple SQL, I'm not going to spend a lot of time on it.</p>
+<code>
+&lt;cfcomponent output="false" displayName="User DAO"&gt;
+<p>&lt;cfset variables.dsn = &quot;&quot;&gt;
+&lt;cfset variables.LOCK = &quot;photogallery_user&quot;&gt;</p>
+<p>&lt;cffunction name=&quot;init&quot; access=&quot;public&quot; returnType=&quot;UserDAO&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;dsn&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfset variables.dsn = arguments.dsn&amp;gt;
+
+&amp;lt;cfreturn this&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;create&quot; access=&quot;public&quot; returnType=&quot;userBean&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;bean&quot; type=&quot;userBean&quot; required=&quot;true&quot;&gt;
+&lt;cfset var insRec = &quot;&quot;&gt;
+&lt;cfset var checkUsername = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cflock name=&quot;#variables.LOCK#&quot; type=&quot;exclusive&quot; timeout=&quot;30&quot;&amp;gt;
+
+	&amp;lt;cfquery name=&quot;checkUsername&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+		select	username
+		from	users
+		where	username = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.bean.getUsername()#&quot; maxlength=&quot;50&quot;&amp;gt;
+	&amp;lt;/cfquery&amp;gt;
+
+	&amp;lt;cfif checkUsername.recordCount&amp;gt;
+		&amp;lt;cfthrow message=&quot;Username already exists.&quot;&amp;gt;
+	&amp;lt;cfelse&amp;gt;	
+		&amp;lt;cfquery name=&quot;insRec&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+		insert into users(username, password, name)
+		values(
+			&amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.bean.getUsername()#&quot; maxlength=&quot;50&quot;&amp;gt;,
+			&amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.bean.getPassword()#&quot; maxlength=&quot;50&quot;&amp;gt;,
+			&amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.bean.getName()#&quot; maxlength=&quot;50&quot;&amp;gt;
+			)
+		&amp;lt;/cfquery&amp;gt;
+					
+		&amp;lt;cfreturn bean&amp;gt;
+	&amp;lt;/cfif&amp;gt;	
+&amp;lt;/cflock&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;delete&quot; access=&quot;public&quot; returnType=&quot;void&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;id&quot; type=&quot;numeric&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery datasource=&quot;#dsn#&quot;&amp;gt;
+delete from users
+where id = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.id#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;read&quot; access=&quot;public&quot; returnType=&quot;userBean&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;username&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset var bean = createObject(&quot;component&quot;,&quot;userBean&quot;)&gt;
+&lt;cfset var getit = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;getit&quot; datasource=&quot;#dsn#&quot;&amp;gt;
+	select 	username, password, name
+	from	users
+	where	username = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.username#&quot; maxlength=&quot;50&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfif getit.recordCount&amp;gt;
+	&amp;lt;cfloop index=&quot;col&quot; list=&quot;#getit.columnlist#&quot;&amp;gt;
+		&amp;lt;cfinvoke component=&quot;#bean#&quot; method=&quot;set#col#&quot;&amp;gt;
+			&amp;lt;cfinvokeargument name=&quot;#col#&quot; value=&quot;#getit[col][1]#&quot;&amp;gt;
+		&amp;lt;/cfinvoke&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn bean&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;update&quot; returnType=&quot;userBean&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;bean&quot; type=&quot;userBean&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery datasource=&quot;#dsn#&quot;&amp;gt;
+update	users
+set username = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.bean.getUsername()#&quot; maxlength=&quot;50&quot;&amp;gt;,
+    password = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.bean.getPassword()#&quot; maxlength=&quot;50&quot;&amp;gt;,
+    name = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.bean.getName()#&quot; maxlength=&quot;50&quot;&amp;gt;
+where 	id = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_int&quot; value=&quot;#arguments.bean.getID()#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn arguments.bean&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>There are only a few &quot;interesting&quot; things going on here, and they don't have anything to do with Model-Glue. First off - notice that I use a lock when creating users. This will handle checking to see that a duplicate user isn't accidentally created. (I don't do the same check on Update, but my View will prevent it. That's something I need to return to later.) Next - notice my read method. I like how I use cfinvoke and the query columns to dynamically set the bean values. This is handy for larger beans, but a bit of overkill here. Again - this isn't Model-Glue stuff, just the way I do things.</p>
+<p>Our final CFC is the Gateway. Now the previous two CFCs (the bean and the DAO) are things that I've seen other, smarter, folks do. I've learned this setup from Joe Reinhart (creator of Model-Glue) and Sean Corfield. I credit them both because I'm not sure which of them I saw use code like this. I'm not saying they do the exact thing I've done here, but I want to be sure folks don't think I &quot;invented&quot; this stuff out of the blue. As it stands, I'm still learning how best to set up my CFCs, as I bet most of my readers are. You will see that I don't use this format for all my open source applications, only my most recent ones. The Gateway CFC typically will do one thing for me - return a query of all users. I also use the Gateway for &quot;misc&quot; type methods. So for example, if my stats page needs to tell me the last 10 users logged on, I'll use the Gateway CFC to build a method for that. If my application has a search page, I'll build a search method in the Gateway CFC. In our application, the authenticate method will reside in the Gateway. Here is our code:</p>
+<code>
+&lt;cfcomponent&gt;
+<p>&lt;cfset variables.dsn = &quot;&quot;&gt;</p>
+<p>&lt;cffunction name=&quot;init&quot; access=&quot;public&quot; returnType=&quot;userGateway&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;dsn&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfset variables.dsn = arguments.dsn&amp;gt;
+
+&amp;lt;cfreturn this&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;authenticate&quot; access=&quot;public&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;username&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;password&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset var q = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+select	username
+from	users
+where	username = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; maxlength=&quot;50&quot; value=&quot;#arguments.username#&quot;&amp;gt;
+and		password = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; maxlength=&quot;50&quot; value=&quot;#arguments.password#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn q.recordCount is 1&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getUsers&quot; access=&quot;public&quot; returnType=&quot;query&quot; output=&quot;false&quot;&gt;
+&lt;cfset var q = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+select		username, password, name
+from		users
+order by 	name asc
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn q&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>Again, nothing terribly surprising here so I won't spend a lot of time on it. The important thing to remember is - <b>nothing I talked about above has anything to do with Model-Glue</b>. What do I mean by that? Model-Glue handles the communication between the Controller, the View, and the Model. But the Model can be anything. You do <b>not</b> need to set your CFCs that way I have. The awesome thing about Model-Glue is - you could create one CFC, for example, to handle all user interaction, hook it up to the Controller, and then change the Model later on. At most you will need to modify your Controller and how it talks to the Model, but your View need not change at all.</p>
+<p>So we just spent a lot of time on this model, and now we need to actually hook it up to Model-Glue so we can actually logon. Since this entry is pretty darn long already though I hope you don't mind if I make you wait to the next entry. (I actually began the process of modifying the Controller, so you will see that in the zip, but I'll not be talking about it till tomorrow.)</p>
+<p><b>Summary</b></p>
+<p>What did we do here?</p>
+<ul>
+<li>This entry focused on the Model, specifically, the code to handle User data.
+<li>We started by building the database table in the back end.
+<li>We then created three CFCs to manage our Model.
+</ul>
+<p>I've included an updated zip attached to this entry. Since there was zero change to the front end, I didn't update the online example.<p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fwwwroot2%2Ezip'>Download attached file.</a></p></p>
+}

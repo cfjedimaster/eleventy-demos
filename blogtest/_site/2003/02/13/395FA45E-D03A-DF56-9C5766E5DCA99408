@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>The source code behind the CFC (well, the meat of it), can now be downloaded here: <a href="blog.zip">blog.zip</a></p>
+<p>This zip includes just the CFC, not the admin or the display here - however most of the work is done in the CFC.</p>
+<p>If you have any suggestions, comments, or find any bugs, please drop me a line.</p>
+}

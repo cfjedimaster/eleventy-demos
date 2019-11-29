@@ -1,0 +1,127 @@
+<h1>Post</h1>
+
+<p>Last night I read over Rich Tretola's excellent <a href="http://blog.everythingflex.com/2010/07/22/air-on-android-geolocation/">Geolocation for AIR/Mobile</a> example. He demonstrates how to a) check and see if Geolocation is available (it may not be) and how to handle the response from the GPS system on the device. I thought it might be interesting to tie that to a change I made to the <a href="http://groups.adobe.com">Adobe Groups</a> remote API last night. I added a method that would return user groups based sorted by distance based on a longitude and latitude. For my testing I had done typed in values (everyone knows their longitude and latitude, right?) but I figured it would be even easier with AIR.</p>
+<!--more-->
+<p>
+<p>Let's take a look at the application I built. All in all it is pretty unrealistic since it has a grand total of one page, but I wanted something I could write in a few minutes.</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; xmlns:mx=&quot;library://ns.adobe.com/flex/mx&quot;
+title=&quot;UG Locator&quot; viewActivate=&quot;init()&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Declarations&amp;gt;
+	&amp;lt;mx:HTTPService id=&quot;groupsHTTPService&quot; url=&quot;http://groups.adobe.com/api/group.cfc&quot; method=&quot;get&quot; result=&quot;handleResult(event)&quot; fault=&quot;handleFault(event)&quot; /&amp;gt;
+&amp;lt;/fx:Declarations&amp;gt;
+
+&amp;lt;fx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import com.adobe.serialization.json.*;
+		
+		import flash.events.GeolocationEvent;
+		import flash.sensors.Geolocation;
+		
+		import mx.collections.ArrayCollection;
+		import mx.collections.ArrayList;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		
+		private var geoLocation:Geolocation;
+		
+		[Bindable] private var groups:ArrayCollection;
+		
+		private function init():void {
+			groups = new ArrayCollection();
+			
+			locate();	
+			/* used for testing... */
+			/*
+			var evt:GeolocationEvent = new GeolocationEvent(GeolocationEvent.UPDATE,false,false,30.2009,-92.0572);
+			handleLocationRequest(evt);
+			*/
+		}
+		
+		public function handleFault(evt:FaultEvent):void {
+			//bug.text = evt.toString();
+			geoLocation.removeEventListener(GeolocationEvent.UPDATE, handleLocationRequest);
+		}
+		
+		public function handleResult(evt:ResultEvent):void {
+			var data:Object = JSON.decode(evt.result as String);
+			groups.source = data as Array;
+			geoStatus.text = &quot;There were &quot;+data.length + &quot; groups within 200 miles of your location.&quot;;
+		}
+		
+		private function locate():void  {
+			if(Geolocation.isSupported==true){
+				geoLocation = new Geolocation();
+				geoLocation.addEventListener(GeolocationEvent.UPDATE, handleLocationRequest);
+			} else {
+				geoStatus.text = &quot;Geolocation feature not supported&quot;; 
+			}
+		}
+		
+		private function handleLocationRequest(event:GeolocationEvent):void { 
+			geoLocation.removeEventListener(GeolocationEvent.UPDATE, handleLocationRequest);
+			geoStatus.text=&quot;Finding groups near your location... &quot;;
+			var lat:Number = event.latitude;
+			var lon:Number = event.longitude;
+			var req:Object = new Object();
+			req.method=&quot;getgroupswithindistance&quot;;
+			req.longitude = lon;
+			req.latitude = lat;
+			req.range = 200;
+			groupsHTTPService.request = req;
+			groupsHTTPService.send();
+		}
+		
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:VGroup width=&quot;100%&quot; height=&quot;100%&quot; paddingLeft=&quot;5&quot; paddingRight=&quot;5&quot; paddingTop=&quot;5&quot;&amp;gt;		
+	
+	&amp;lt;s:Label id=&quot;geoStatus&quot; width=&quot;100%&quot;/&amp;gt;
+	
+	&amp;lt;s:List id=&quot;groupList&quot; dataProvider=&quot;{groups}&quot; width=&quot;100%&quot; height=&quot;100%&quot;&amp;gt;
+		&amp;lt;s:itemRenderer&amp;gt;
+			&amp;lt;fx:Component&amp;gt;
+				&amp;lt;s:MobileIconItemRenderer labelFunction=&quot;displayGroup&quot;  messageFunction=&quot;displayMessage&quot; iconField=&quot;AVATAR&quot;&amp;gt;
+					&amp;lt;fx:Declarations&amp;gt;
+						&amp;lt;mx:NumberFormatter id=&quot;myNumFormat&quot; precision=&quot;0&quot; /&amp;gt;					
+					&amp;lt;/fx:Declarations&amp;gt;
+					&amp;lt;fx:Script&amp;gt;
+						&amp;lt;![CDATA[
+							private function displayGroup(ob:Object):String {
+								return ob.NAME;
+							}
+							private function displayMessage(ob:Object):String {
+								return myNumFormat.format(ob.DISTANCE) + &quot; miles away.&quot;;
+							}
+							
+						]]&amp;gt;
+					&amp;lt;/fx:Script&amp;gt;
+				&amp;lt;/s:MobileIconItemRenderer&amp;gt;
+			&amp;lt;/fx:Component&amp;gt;
+		&amp;lt;/s:itemRenderer&amp;gt;
+		
+	&amp;lt;/s:List&amp;gt;
+&amp;lt;/s:VGroup&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>The application begins by running a call to my locate method. The code here is a complete copy of Rich's code but essentially it just does the hardware check. As soon as you create a Geolocation object you can then begin listening for the result. I do that in handleLocationRequest. Once I've got your location I stop listening. (I assume you are standing still, motionless, like I am most of the day unfortunately.) Once I've got that I then just fire off a HTTP request to the API. Unfortunately my API for Groups is JSON only (for now), but it's easy enough to work with JSON if you use <a href="https://github.com/mikechambers/as3corelib">as3corelib</a>. Once I push my data to my list - it gets rendered. I'm still learning Flex 4 but I love how I was able to have a mini &quot;component&quot; right within the page itself. Very convenient! And the result?</p>
+<p>
+<img src="https://static.raymondcamden.com/images/screen40.png" />
+<p>
+<p>I've added APK as a mime type to IIS so hopefully the download link will work. I'd include the full source but outside of the XML that's it. Don't forget that in AIR for Mobile apps you have to be cognizant of the additional permissions your application may require. Within my android manifest block I added:</p>
+<p>
+<code>
+&lt;uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/&gt;
+</code>
+<p>
+<p>Enjoy! Oh - two quick notes.</p>
+<p>
+<p>While pushing out my code to the phone I noticed, for the first time, that it seemed to 'latch' on to the application. I had to manually delete the application one time. I didn't see that again so maybe it was just a fluke. But keep that in mind if you don't see your application refreshing when running on the hardware.</p>
+<p>Lastly - I still need to share the source code for the Death Clock application I blogged about before MAX. Will do so soon.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FGroupsGeo2%2Eapk'>Download attached file.</a></p></p>
+}

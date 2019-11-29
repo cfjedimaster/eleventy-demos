@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Today a user found an issue when BlogCFC was used with Access and BlueDragon. The problem was that I was using the wrong queryparam. This run ok on CFMX but did not with BD. I have updated the code but am not ready to release the new zip yet as I want to get a few more small fixes in there.</p>
+<p>If you are using BlogCFC under BD, please edit blog.cfc and change 189 from:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfif instance.blogDBType is <FONT COLOR=BLUE>"MSSQL"</FONT>&gt;</FONT></div>
+<p>to</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfif instance.blogDBType is <FONT COLOR=BLUE>"MSSQL"</FONT> or instance.blogDBType is <FONT COLOR=BLUE>"MSACCESS"</FONT>&gt;</FONT></div>
+<p>As always, don't forget you need to add ?reinit=1 to the URL to refresh the BlogCFC cache.</p>
+}

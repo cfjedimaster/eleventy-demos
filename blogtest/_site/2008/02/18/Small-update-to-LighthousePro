@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>Just a quick note to say I released a minor update to <a href="http://lighthousepro.riaforge.org">Lighthouse Pro</a>. This last update has a few changes, but the main one is that if you are editing an issue and let your session timeout, after you login your changes are preserved. So if you had entered some lengthy notes, timed out, hit Save, when you login, you changes to the issue are preserved and stored.</p>
+<p>There are a few ways you can do this, but here is how I did it. Also note I was only only concerned about people timing out in an issue edit. First off, in login.cfm, I look for a form post from the issue editor:</p>
+<code>
+&lt;cfif structKeyExists(form, "issuetypeidfk")&gt;
+	&lt;cfset session.issueform = duplicate(form)&gt;
+&lt;/cfif&gt;
+</code>
+<p>Then back in view.cfm, the file that handles editing issues, I simply added:</p>
+<code>
+&lt;cfif structKeyExists(session, "issueform")&gt;
+	&lt;cfset structAppend(form, session.issueform)&gt;
+	&lt;cfset structDelete(session, "issueform")&gt;
+&lt;/cfif&gt;
+</code>
+<p>Note that I clear out the session data. This is important so as to not keep restoring the edits for future editing.</p>
+}

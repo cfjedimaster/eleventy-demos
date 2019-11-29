@@ -1,0 +1,108 @@
+<h1>Post</h1>
+
+<p>That's it. I'm officially boycotting Yahoo. They are an evil corporation and must be stopped. Why do I say that? Today I decided to look at their <a href="http://developer.yahoo.com/traffic/">Traffic API</a>, and while it was <i>dang</i> cool - they angered me by not supporting the sprawling metropolis known as <a href="http://en.wikipedia.org/wiki/Lafayette%2C_la">Lafayette, LA</a>. So that's it. No more examples. Well, ok, maybe just one more. (And you know, the Map API look pretty darn cool too.)</p>
+<!--more-->
+<p>So I spent a few minutes looking at the <a href="http://developer.yahoo.com/traffic/rest/V1/index.html">Traffic REST API</a> last night after my presentation. This was after Teddy Payne and I spent a good hour fighting the darn Google Calendar API service. What a good feeling it was to spend an hour getting nowhere with one API and have success in - oh - five minutes - with another.</p>
+<p>At a basic level - Yahoo Traffic can provide reports on addresses down to the street level, city, state, or zip code. You can also provide an address in a free form text mode using the <b>location</b> attribute. The most interesting attribute though is the severity value. Yahoo rates every traffic &quot;issue&quot; on a 1 to 5 scale, with 1 being the least severe and 5 being... well, you don't want to go there. This lets you filter out traffic problems that don't really concern you.</p>
+<p>I can think of some great real world uses for this. An organization could create a traffic report for it's location and send it out to it's employees every morning. An event management site could send out an alert to an organizer so they know about traffic issues going on before an event. I think you get the idea.</p>
+<p>So once again I have an example. As before, I'm not going to explain it as all I did was pick apart the XML result. As before, I didn't use everything from the request/result API. I'd suggest checking the <a href="http://developer.yahoo.com/traffic/rest/V1/index.html">documentation</a> for a full list of what you can do.</p>
+<p>Oh - one note. The datetime stamps returned from this service are in a UNIX epoch form. Basically the number of seconds from 1970. Luckily Chris Mellon wrote a nice little UDF to convert those values. I use this within my code below.</p>
+<code>
+&lt;cfscript&gt;
+/**
+ * Converts a UNIX epoch time to a ColdFusion date object.
+ * 
+ * @param epoch 	 Epoch time, in seconds. (Required)
+ * @return Returns a date object. 
+ * @author Chris Mellon (mellon@mnr.org) 
+ * @version 1, June 21, 2002 
+ */
+function EpochTimeToDate(epoch) {
+    return DateAdd("s", epoch, "January 1 1970 00:00:00");
+}
+&lt;/cfscript&gt;
+<p>&lt;!--- Main URL ---&gt;
+&lt;cfset reqURL = &quot;http://api.local.yahoo.com/MapsService/V1/trafficData&quot;&gt;
+&lt;!--- AppID ---&gt;
+&lt;cfset appID = &quot;doesanyonereadtheseposts&quot;&gt;
+&lt;!--- where? ---&gt;
+&lt;cfset location = &quot;CA&quot;&gt;
+&lt;!--- get a map image ---&gt;
+&lt;cfset include_map = 1&gt;</p>
+<p>&lt;cfhttp url=&quot;#reqURL#?appid=#appID#&amp;location=#urlEncodedFormat(location)#&amp;include_map=#include_map#&quot; charset=&quot;utf-8&quot;&gt;</p>
+<p>&lt;cfset result = cfhttp.fileContent&gt;
+&lt;cfset xmlResult = xmlParse(result)&gt;</p>
+<p>&lt;cfif structKeyExists(xmlResult, &quot;Error&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset error = xmlResult.error.message.xmlText&amp;gt;
+&amp;lt;cfoutput&amp;gt;
+The following error was returned: #error#
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;cfelse&gt;</p>
+<pre><code>&amp;lt;cfset lastUpdated = xmlResult.resultSet.lastUpdateDate.xmlText&amp;gt;
+&amp;lt;!--- convert to a normal date ---&amp;gt;
+&amp;lt;cfset lastUpdated = epochTimeToDate(lastUpdated)&amp;gt;
+
+&amp;lt;!--- get alerts ---&amp;gt;
+&amp;lt;cfset alerts = arrayNew(1)&amp;gt;
+
+&amp;lt;cfif structKeyExists(xmlResult.resultSet, &quot;result&quot;)&amp;gt;
+	&amp;lt;cfset numAlerts = arrayLen(xmlResult.resultSet.result)&amp;gt;
+	
+	&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#numAlerts#&quot;&amp;gt;
+		
+		&amp;lt;cfset thisAlert = xmlResult.resultSet.result[x]&amp;gt;
+		&amp;lt;cfset alert = structNew()&amp;gt;
+		&amp;lt;cfset alert.type = thisAlert.xmlAttributes.type&amp;gt;
+		&amp;lt;cfset alert.title = thisAlert.title.xmlText&amp;gt;
+		&amp;lt;cfset alert.description = thisAlert.description.xmlText&amp;gt;
+		&amp;lt;cfset alert.direction = thisAlert.direction.xmlText&amp;gt;
+		&amp;lt;cfset alert.severity = thisAlert.severity.xmlText&amp;gt;
+		&amp;lt;cfset alert.reportdate = epochTimeToDate(thisAlert.reportdate.xmlText)&amp;gt;
+		&amp;lt;cfset alert.updatedate = epochTimeToDate(thisAlert.updatedate.xmlText)&amp;gt;
+		&amp;lt;cfset alert.enddate = epochTimeToDate(thisAlert.enddate.xmlText)&amp;gt;
+		&amp;lt;cfif structKeyExists(thisAlert, &quot;imageURL&quot;)&amp;gt;
+			&amp;lt;cfset alert.imageurl = thisAlert.imageurl.xmlText&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;cfset alert.imageurl = &quot;&quot;&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+		&amp;lt;cfset arrayAppend(alerts, alert)&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;h2&amp;gt;Traffic Report&amp;lt;/h2&amp;gt;
+
+&amp;lt;p&amp;gt;
+Last Updated: #dateFormat(lastUpdated)# #timeFormat(lastUpdated)#&amp;lt;br /&amp;gt;
+There are #arrayLen(alerts)# alert(s).
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(alerts)#&quot;&amp;gt;
+	&amp;lt;p&amp;gt;
+	&amp;lt;hr /&amp;gt;
+	&amp;lt;p&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	Type: #alerts[x].type#&amp;lt;br /&amp;gt;
+	Title: #alerts[x].title#&amp;lt;br /&amp;gt;
+	Description: #alerts[x].description#&amp;lt;br /&amp;gt;
+	Traffic Direction: #alerts[x].direction#&amp;lt;br /&amp;gt;
+	Severity (1 is best, 5 is worst): #alerts[x].severity#&amp;lt;br /&amp;gt;
+	Reported: #dateFormat(alerts[x].reportdate)# #timeFormat(alerts[x].reportdate)#&amp;lt;br /&amp;gt;
+	Last Updated: #dateFormat(alerts[x].updatedate)# #timeFormat(alerts[x].updatedate)#&amp;lt;br /&amp;gt;
+	Scheduled End Date: #dateFormat(alerts[x].enddate)# #timeFormat(alerts[x].enddate)#&amp;lt;br /&amp;gt;
+	&amp;lt;cfif len(alerts[x].imageurl)&amp;gt;
+	Picture: &amp;lt;br /&amp;gt;
+	&amp;lt;img src=&quot;#alerts[x].imageurl#&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/p&amp;gt;
+	
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+}

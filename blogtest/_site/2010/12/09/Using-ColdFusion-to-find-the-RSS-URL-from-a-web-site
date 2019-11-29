@@ -1,0 +1,60 @@
+<h1>Post</h1>
+
+<p>Many web sites now include a simple way to autodiscover the RSS feed for the site. This is done via a simple LINK tag and is supported by all the modern browsers. You should see - for example - a RSS icon in the address bar at this blog because I have the following HTML in my HEAD block:</p>
+<p>
+<code>
+&lt;link rel="alternate" type="application/rss+xml" title="RSS" href="http://feedproxy.google.com/RaymondCamdensColdfusionBlog" /&gt;
+</code>
+<p>
+<p>I was talking to <a href="http://www.cfsilence.com/blog/client">Todd Sharp</a> today about how ColdFusion could look for this URL and I came up with the following snippet.</p>
+<!--more-->
+<p>
+<code>
+<p>&lt;cfset urls = [&quot;http://www.raymondcamden.com&quot;, &quot;http://www.coldfusionbloggers.org&quot;, &quot;http://www.androidgator.com&quot;, &quot;http://www.cfsilence.com/blog/client&quot;]&gt;</p>
+<p>&lt;cfloop index=&quot;u&quot; array=&quot;#urls#&quot;&gt;
+&lt;cfoutput&gt;Checking #u#&lt;br/&gt;&lt;/cfoutput&gt;</p>
+<pre><code>&amp;lt;cfhttp url=&quot;#u#&quot;&amp;gt;
+&amp;lt;cfset body = cfhttp.fileContent&amp;gt;
+&amp;lt;cfset linkTags = reMatch(&quot;&amp;lt;link[^&amp;gt;]+type=&quot;&quot;application/rss\+xml&quot;&quot;.*?&amp;gt;&quot;,body)&amp;gt;
+&amp;lt;cfif arrayLen(linkTags)&amp;gt;
+    &amp;lt;cfset rssLinks = []&amp;gt;
+    &amp;lt;cfloop index=&quot;ru&quot; array=&quot;#linkTags#&quot;&amp;gt;
+        &amp;lt;cfif findNoCase(&quot;href=&quot;, ru)&amp;gt;
+            &amp;lt;cfset arrayAppend(rsslinks, rereplaceNoCase(ru,&quot;.*href=&quot;&quot;(.*?)&quot;&quot;.*&quot;, &quot;\1&quot;))&amp;gt;
+        &amp;lt;/cfif&amp;gt;
+    &amp;lt;/cfloop&amp;gt;
+	&amp;lt;cfdump var=&quot;#rsslinks#&quot; label=&quot;RSS Links&quot;&amp;gt;
+&amp;lt;cfelse&amp;gt;
+    None found.
+&amp;lt;/cfif&amp;gt;
+&amp;lt;p/&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>The snippet begins with a few sample URLs I used for testing. We then loop over each and perform a HTTP get. From this we can then use some regex to find link tags. You can have more than one so I create an array for my results and append to it the URLs I find within them. Nice and simple, right? You could also turn this into a simple UDF:</p>
+<p>
+<code>
+&lt;cfscript&gt;
+function getRSSUrl(u) {
+    var h = new com.adobe.coldfusion.http();
+    h.setURL(arguments.u);
+    h.setMethod("get");
+    h.setResolveURL(true);
+    var result = h.send().getPrefix().fileContent;
+	var rssLinks = [];
+	var linkTags = reMatch("&lt;link[^&gt;]+type=""application/rss\+xml"".*?&gt;",result);
+<pre><code>if(arrayLen(linkTags)) {
+    var rssLinks = [];
+    for(var ru in linkTags) {
+        if(findNoCase(&quot;href=&quot;, ru)) arrayAppend(rsslinks, rereplaceNoCase(ru,&quot;.*href=&quot;&quot;(.*?)&quot;&quot;.*&quot;, &quot;\1&quot;));
+    }
+}
+return rssLinks;    
+</code></pre>
+<p>}
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p>Not sure how useful this is - but enjoy!</p>
+}

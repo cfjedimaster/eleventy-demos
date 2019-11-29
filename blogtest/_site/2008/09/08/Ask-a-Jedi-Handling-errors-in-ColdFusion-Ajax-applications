@@ -1,0 +1,46 @@
+<h1>Post</h1>
+
+<p>Shirzad (cool name!) asks:</p>
+<blockquote>
+<p>
+How do you prevent the Coldfusion Ajax alert message "error retrieving markup..."? Sometimes errors are inevitable.  I want to prevent users on our public site from seeing the javascript alert that pops up whenever there's an error in a coldfusion ajax container (or at the very least change the message so it isn't asking people to add cfdebug to the parameters). Is there any way to do this? 
+</p>
+</blockquote>
+<!--more-->
+There are a couple ways of handling errors with ColdFusion 8's Ajax features. Here is a quick overview of some of them in regards to the cfdiv tag. First, let's make an error. I'll take a simple cfdiv:
+<code>
+&lt;cfdiv id="testdiv" bind="url:test2.cfm"/&gt;
+</code>
+<p>And here is test2.cfm:</p>
+<code>
+&lt;cfthrow&gt;
+</code>
+<p>As you can guess, this will immediately throw an error when loaded by the div. The cfdiv tag supports an onBindError attribute. It lets you specify a JavaScript function to run when an error occurs (big surprise there). Here is a modified version of our original script:</p>
+<code>
+&lt;script&gt;
+function handleError(c,m) {
+	console.log('error '+c+' '+m);
+}
+&lt;/script&gt;
+<p>&lt;cfdiv id=&quot;testdiv&quot; bind=&quot;url:test2.cfm&quot; onBindError=&quot;handleError&quot;/&gt;
+</code></p>
+<p>The docs specify that the error handler should take two arguments - a status code and message. When I ran this, I correctly saw the error log, but I also saw the 'naked' CF error in the div. I thought perhaps that the onBindHandler would automatically hide the error but it doesn't. I then tried this:</p>
+<code>
+document.getElementById("testdiv").innerHTML = "Error!";
+</code>
+<p>But for some reason, it wouldn't work. I was able to get this to work:</p>
+<code>
+ColdFusion.navigate('/user.cfm','testdiv');
+</code>
+<p>The file user.cfm was just another random file on my server. You would normally point it to a file that had some kind of 'Error' message.</p>
+<p>Another option is to specify a global error handler. This is done with the setGlobalErrorHandler:</p>
+<code>
+function handleGError(s) {
+	console.log('global error called '+s);
+}	
+<p>ColdFusion.setGlobalErrorHandler(handleGError);
+</code></p>
+<p>Notice though that this function only takes one argument, a message. I don't know why - but it seems to me as if it should work the same as the error error. Anyway, if you use this, and remove the onBindError, the global error handler will fire.</p>
+<p>As yet another example of how you can handle errors, the cfajaxproxy tag has an onError attribute. You can also set a specific error handler for an instance of an AjaxProxy object.</p>
+<p>Check the docs for other tags and how they can provide support for this as well. (Consider this my &quot;This your homework&quot; part.) CFGRID for example supports onError which works the same as the onBindError for cfdiv.</p>
+}

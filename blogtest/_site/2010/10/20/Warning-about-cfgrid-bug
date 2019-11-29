@@ -1,0 +1,37 @@
+<h1>Post</h1>
+
+<p>This week I was working on a cfgrid example for a reader. He needed some help understanding the FORM data on the server side when you've done multiple edits to a grid (and if folks want me to pass along what I told him, just say). It's a bit complex so I wrote up a quick demo and explained how the form data related to what was done on the client side.</p>
+<!--more-->
+<p/>
+<p>During this work I discovered an unfortunate bug with cfgrid and editable grids. If your grid supports deletes along with edits (by using delete=&quot;true&quot; in the cfgrid tag), you can run into an issue where <i>one</i> of your edits will not be passed to the server. What I noticed was that if I edited rows A and B, and then deleted some row C, my form data included the edits for A and the delete for C, but completely lost the edit for B.</p>
+<p/>
+<p>I was able to reproduce this in two browsers, and Adam Tuttle was able to reproduce it as well. I've file a <a href="http://cfbugs.adobe.com/cfbugreport/flexbugui/cfbugtracker/main.html#bugId=84683">bug report</a> for it and if you want to quickly test this yourself, just try the code below.</p>
+<p/>
+<p>Unfortunately there isn't really a workaround for this. For now I simply do not recommend using an editable grid that supports delete as well.</p>
+<p/>
+<code>
+&lt;cfquery name="art" datasource="cfartgallery" maxrows="10"&gt;
+select *
+from art
+&lt;/cfquery&gt;
+&lt;cfform name="gridform1"&gt;
+<p>&lt;cfgrid name =&quot;test_data&quot;
+format=&quot;html&quot;
+font=&quot;Tahoma&quot;
+fontsize=&quot;12&quot;
+query = &quot;art&quot;
+selectmode=&quot;edit&quot;
+striperows=&quot;yes&quot;
+delete=&quot;true&quot;
+&gt;
+&lt;cfgridcolumn name=&quot;artid&quot; display=&quot;false&quot; /&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;artname&quot; display=&quot;true&quot; header=&quot;Art&quot; select=&quot;no&quot; /&gt;
+&lt;cfgridcolumn name=&quot;price&quot; display=&quot;true&quot; header=&quot;price&quot; select=&quot;yes&quot; /&gt;
+&lt;cfgridcolumn name=&quot;issold&quot; display=&quot;true&quot; header=&quot;Sold&quot; select=&quot;no&quot; /&gt;
+&lt;cfgridcolumn name=&quot;largeimage&quot; display=&quot;true&quot; header=&quot;largeimage&quot; select=&quot;yes&quot; /&gt;</p>
+<p>&lt;/cfgrid&gt;</p>
+<p>&lt;cfinput name=&quot;submit&quot; type=&quot;Submit&quot; value=&quot;Submit&quot;&gt;</p>
+<p>&lt;/cfform&gt;</p>
+<p>&lt;cfdump var=&quot;#form#&quot;&gt;
+</code></p>
+}

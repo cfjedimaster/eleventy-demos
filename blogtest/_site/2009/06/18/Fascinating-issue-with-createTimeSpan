@@ -1,0 +1,86 @@
+<h1>Post</h1>
+
+<p>A reader sent in an interesting issue. He was using createTimeSpan to list out 5 minute intervals between two hours. Here is what he used:</p>
+<!--more-->
+<code>
+&lt;cfset dtHour = CreateTimeSpan(
+ 0, &lt;!--- Days. ---&gt;
+ 0, &lt;!---
+Hours. ---&gt;
+ 5, &lt;!--- Minutes. ---&gt;
+ 0 &lt;!--- Seconds. ---&gt;
+ ) /&gt;
+<p>&lt;cfset thecount = 0&gt;
+&lt;cfloop from=&quot;9:00 AM&quot; to=&quot;10:00 AM&quot; step=&quot;#dtHour#&quot; index=&quot;i&quot;&gt;
+&lt;cfset thecount+=1&gt;
+&lt;cfoutput&gt;#timeformat(i,&quot;short&quot;)#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfoutput&gt;
+#thecount#
+&lt;/cfoutput&gt;
+</code></p>
+<p>In the code above he creates a 5 minute time span and then loops from 9 AM to 10 AM. I <i>rarely</i> use createTimeSpan, and when I have used it, I only used it with query caching. This worked... until he added another loop:</p>
+<code>
+&lt;cfset thecount2 = 0&gt;
+&lt;cfloop from="10:00 AM" to="11:00 AM" step="#dtHour#" index="i"&gt;
+       &lt;cfset thecount2+=1&gt;
+   &lt;cfoutput&gt;#timeformat(i,"short")# #i#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+&lt;cfoutput&gt;
+#thecount2#
+&lt;/cfoutput&gt;
+</code>
+<p>This should show the same results, just a different hour, right? Check out the results:</p>
+<img src="https://static.raymondcamden.com/images//Picture 330.png">
+<p>What the heck? (Actually when I ran this I said something a bit strong.) There are 13 counts in the first loop and 12 in the second. Also note the second stops at 10:55, not 11.</p>
+<p>I was a bit lost at first, but then I remembered something. The interval value is actually a number. On a whim I modified the code to output the interval and the index within the loop:</p>
+<code>
+&lt;cfset dtHour = CreateTimeSpan(
+ 0, &lt;!--- Days. ---&gt;
+ 0, &lt;!---
+Hours. ---&gt;
+ 5, &lt;!--- Minutes. ---&gt;
+ 0 &lt;!--- Seconds. ---&gt;
+ ) /&gt;
+&lt;cfoutput&gt;#dtHour#&lt;p&gt;&lt;/cfoutput&gt;
+&lt;cfset thecount = 0&gt;
+&lt;cfloop from="9:00 AM" to="10:00 AM" step="#dtHour#" index="i"&gt;
+&lt;cfset thecount+=1&gt;
+   &lt;cfoutput&gt;#timeformat(i,"short")# #i#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+<p>&lt;cfoutput&gt;
+#thecount#
+&lt;/cfoutput&gt;
+&lt;br /&gt;&lt;br /&gt;
+&lt;cfset thecount2 = 0&gt;
+&lt;cfloop from=&quot;10:00 AM&quot; to=&quot;11:00 AM&quot; step=&quot;#dtHour#&quot; index=&quot;i&quot;&gt;
+&lt;cfset thecount2+=1&gt;
+&lt;cfoutput&gt;#timeformat(i,&quot;short&quot;)# #i#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+&lt;cfoutput&gt;
+#thecount2#
+&lt;/cfoutput&gt;
+</code></p>
+<p>Check out the result:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 414.png">
+<p>Ah, floating point numbers. I think you can see here where the issue is coming up - rounding errors. Notice how even the values for 10AM (at the end of the first loop and the first entry of the second loop) don't match.</p>
+<p>Nice, so now we know why, how can we rewrite this? Here is a slightly modified version using a conditional loop:</p>
+<code>
+&lt;!--- number of minutes ---&gt;
+&lt;cfset step = 5&gt;
+<p>&lt;cfset theTime = &quot;9:00 AM&quot;&gt;
+&lt;cfset toTime = &quot;10:00 AM&quot;&gt;</p>
+<p>&lt;cfloop condition=&quot;dateCompare(theTime,toTime) lt 1&quot;&gt;
+&lt;cfoutput&gt;thetime=#timeFormat(thetime)#&lt;br&gt;&lt;/cfoutput&gt;
+&lt;cfset theTime = dateAdd(&quot;n&quot;, step, theTime)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;p/&gt;</p>
+<p>&lt;cfset theTime = &quot;10:00 AM&quot;&gt;
+&lt;cfset toTime = &quot;11:00 AM&quot;&gt;</p>
+<p>&lt;cfloop condition=&quot;dateCompare(theTime,toTime) lt 1&quot;&gt;
+&lt;cfoutput&gt;thetime=#timeFormat(thetime)#&lt;br&gt;&lt;/cfoutput&gt;
+&lt;cfset theTime = dateAdd(&quot;n&quot;, step, theTime)&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>This uses a simple numeric value for the number and passes it to the dateAdd function. What's kind of cool about this code is that you could also do non-even steps as well. (Sorry, not even as an even/odd, but a step value that won't fit evenly into the interval.)</p>
+}

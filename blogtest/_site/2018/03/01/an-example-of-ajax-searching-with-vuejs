@@ -1,0 +1,125 @@
+<h1>Post</h1>
+
+<p>Last week I gave my very first <a href="https://www.raymondcamden.com/2018/02/23/slide-and-assets-from-my-vuejs-talk/">presentation on Vue.js</a>. In that talk I used the heck out of <a href="https://codepen.io/">CodePen</a> for my demos. I love how simple it is, I love that folks can edit and run my code. All in all, it is a just a great platform that works really well with Vue. But - for my presentation I really wanted a few demos that were entirely standalone. I really like CodePen, but I worry that it is a bit too &quot;abstract&quot; at times, or by itself. I'm not sure if that makes sense, but in the end, I just wanted to have a few demos that were file based, 100% complete, and so forth.</p>
+<p>I really liked one of the demos I built, so I thought it would be nice to share it individually as a post. It isn't anything that I haven't covered before per se, but like I said, I liked it. :) The demo covers a pretty common use case: Providing a search interface that uses a remote API and return the results.</p>
+<p>For my demo, I used the <a href="https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/">iTunes API</a>, which is surprisingly simple to use and doesn't require a key. Thank you, Apple. All the demo will do is provide a search interface and then render the results. Let's begin by looking at the front end:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;meta charset=&quot;utf-8&quot;&gt;
+		&lt;title&gt;&lt;/title&gt;
+		&lt;meta name=&quot;description&quot; content=&quot;&quot;&gt;
+		&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+		&lt;style&gt;
+		[v-cloak] {display: none}
+		&lt;/style&gt;
+		&lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+
+		&lt;div id=&quot;app&quot; v-cloak&gt;
+			&lt;input v-model=&quot;term&quot; type=&quot;search&quot;&gt;
+			&lt;button @click=&quot;search&quot;&gt;Search&lt;/button&gt;
+			&lt;p/&gt;
+
+			&lt;div v-for=&quot;result in results&quot; class=&quot;result&quot;&gt;
+				&lt;img :src=&quot;result.artworkUrl100&quot;&gt;
+				&lt;b&gt;Artist:&lt;/b&gt; {{result.artistName}}&lt;br/&gt;
+				&lt;b&gt;Track:&lt;/b&gt; {{result.trackName}}&lt;br/&gt;
+				&lt;b&gt;Released:&lt;/b&gt; {{result.releaseDate |{% endraw %} formatDate}}
+				&lt;br clear=&quot;left&quot;&gt;
+			&lt;/div&gt;
+
+			&lt;div v-if=&quot;noResults&quot;&gt;
+				Sorry, but no results were found. I blame Apple.
+			&lt;/div&gt;
+
+			&lt;div v-if=&quot;searching&quot;&gt;
+				&lt;i&gt;Searching...&lt;/i&gt;
+			&lt;/div&gt;
+
+		&lt;/div&gt;
+
+		&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+		&lt;script src=&quot;app.js&quot;&gt;&lt;/script&gt;
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>I'll focus on the Vue-specific parts in the template above. First, note the <code>v-cloak</code> declaration. Vue will automatically remove this style from the DOM after it has loaded. By adding a simple <code>display:none</code> definition for the style, we have a handy way of handling FOUC (Flash of Unstyled Content).</p>
+<p>Next I've set up a text field and button for my search. I could make this more complex per the specs of the API, but this is nice and simple. The text field is tied to a value called <code>term</code> and my button fires a click event to run a method <code>search</code>.</p>
+<p>Beneath that I've got a div that loops over the result. The only thing probably interesting here is the use of a simple filter for the date. You'll see how that is defined in a bit.</p>
+<p>Finally - look at the last two divs. These both are set to show up based on various flags. One for no results and one for the searching event.</p>
+<p>Alright - now let's look at the JavaScript:</p>
+<pre><code class="language-js">Vue.filter('formatDate', function(d) {
+	if(!window.Intl) return d;
+	return new Intl.DateTimeFormat('en-US').format(new Date(d));
+}); 
+
+const app = new Vue({
+	el:'#app',
+	data:{
+		term:'',
+		results:[],
+		noResults:false,
+		searching:false
+	},
+	methods:{
+		search:function() {
+			this.searching = true;
+			fetch(`https://itunes.apple.com/search?term=${% raw %}{encodeURIComponent(this.term)}&amp;limit=10&amp;media=music`)
+			.then(res =&gt; res.json())
+			.then(res =&gt; {
+				this.searching = false;
+				this.results = res.results;
+				this.noResults = this.results.length === 0;
+			});
+		}
+	}
+});
+</code></pre>
+<p>I begin by defining the filter, <code>formatDate</code> which just makes use of the Intl API. I've got an article on this idea coming out next week. My main app is relatively simple. I've got 4 pieces of data of which two are just flags. My real data is just the term and results. I've got one method, <code>search</code>, that hits the iTunes API and then renders the result.</p>
+<p>You can test this version yourself here: https://cfjedimaster.github.io/webdemos/ajax-search/index.html. The full source code can be found here: https://github.com/cfjedimaster/webdemos/tree/master/ajax-search</p>
+<p>Ok, not exactly rocket science, but hopefully a bit useful. For the heck of it, I wrote a second version. This version adds audio playback. First, I added this to the front end:</p>
+<pre><code class="language-html">&lt;button @click=&quot;play(result.previewUrl)&quot;&gt;&amp;#9658; Play Sample&lt;/button&gt;
+</code></pre>
+<p>Then I updated the JavaScript:</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data:{
+		term:'',
+		results:[],
+		noResults:false,
+		searching:false,
+		audio:null
+	},
+	methods:{
+		search:function() {
+			if(this.audio) {
+				this.audio.pause();
+				this.audio.currentTime = 0;
+			}
+			this.searching = true;
+			fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&amp;limit=10&amp;media=music`)
+			.then(res =&gt; res.json())
+			.then(res =&gt; {
+				this.searching = false;
+				this.results = res.results;
+				this.noResults = this.results.length === 0;
+			});
+		},
+		play:function(s) {
+			if(this.audio) {
+				this.audio.pause();
+				this.audio.currentTime = 0;
+			}
+			this.audio = new Audio(s);
+			this.audio.play();
+		}
+	}
+});
+</code></pre>
+<p>I added an <code>audio</code> variable meant to represent the current piece of audio being played. Then my <code>play</code> method simply makes use of the Audio API to play it. Note that I have code to stop it on a new search or when selecting a new sample. Before I had this though it was kind of fun to click like crazy and hear all the samples playing at once.</p>
+<p>You can try this version here: https://cfjedimaster.github.io/webdemos/ajax-search-2/. And the code may be found here: https://github.com/cfjedimaster/webdemos/tree/master/ajax-search-2.</p>
+<p>As always, if you have any questions about this, let me know by leaving me a comment below.</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/EXCeGbyolPY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Annie Theby</a> on Unsplash</i></p>
+}

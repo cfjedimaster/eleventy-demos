@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>Today I ran across an interesting little issue with Flash Remoting. Our client's site was up and running smoothly when all of a sudden, all FR requests simply stopped working. I thought at first it was an issue with the database, but the rest of the site was running fine.</p>
+<p>I opened up flash.log from the cfusionmx/logs folder and found this line:</p>
+<p>Request received was not Flash-based (not of the binary AMF protocol)</p>
+<p>This was a new one on me. I googled but didn't find anything interesting.</p>
+<p>I looked around a bit more and discovered something. Our code was passing the gateway server address to the flash piece. The URL for the gateway was using the IP, not the name, of the server. I pasted this URL into my browser and got a simple white page, which normally means everything is working fine. What I didn't notice, however, was that the server redirected me to the <i>named</i> version of the URL, ie, from x.x.x.x to www.x.com.</p>
+<p>Turns out - the client had added code to auto-forward any requests for the IP to the named version of the site. It seems as if this auto-forward was messing up the FR request.</p>
+<p>Once the URL was corrected, everything worked fine. As always, I share my little problems in case you ever run into them yourself. :)</p>
+}

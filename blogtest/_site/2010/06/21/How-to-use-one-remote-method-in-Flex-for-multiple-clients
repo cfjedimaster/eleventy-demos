@@ -1,0 +1,213 @@
+<h1>Post</h1>
+
+<p>Jon asked me an interesting Flex based question. Now before I show any code, I'll remind folks - I'm still very much the Flex Padawan. Whatever I show here I expect could be done much better (in fact, be sure to read the final code sample as it was created by a true Flex Jedi). That being said, I'm proud to have at least had an idea of the ballpark of the solution! Ok, enough jibber jabber - let's get to the question. Jon was using Flash Remoting to talk to a ColdFusion component. His code made use of RemoteObject and method, a bit like so:</p>
+<!--more-->
+<p/>
+<code>
+&lt;mx:RemoteObject destination="ColdFusion" source="flextest" id="doubleService"&gt;
+	&lt;mx:method name="double" result="handleResult(event)" fault="handleFault(event)" /&gt;
+&lt;/mx:RemoteObject&gt;
+</code>
+<p/>
+<p>In this code block I've created a connection to a CFC, &quot;flextest&quot;, and given the remote object an id of doubleService. I've defined a method called double (can you guess what it does?) and a result handler. Now I can take a field and set it up so that when you enter a value, it runs this method and sets the result. Something like so:</p>
+<p/>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;mx:Application xmlns:mx=&quot;http://www.adobe.com/2006/mxml&quot; layout=&quot;absolute&quot; minWidth=&quot;955&quot; minHeight=&quot;600&quot;&gt;</p>
+<pre><code>&amp;lt;mx:RemoteObject destination=&quot;ColdFusion&quot; source=&quot;flextest&quot; id=&quot;doubleService&quot;&amp;gt;
+	&amp;lt;mx:method name=&quot;double&quot; result=&quot;handleResult(event)&quot; fault=&quot;handleFault(event)&quot; /&amp;gt;
+&amp;lt;/mx:RemoteObject&amp;gt;
+
+&amp;lt;mx:Script&amp;gt;
+	&amp;lt;![CDATA[
+	import mx.rpc.events.FaultEvent;
+	import mx.rpc.events.ResultEvent;
+		
+	public function handleFault(evt:FaultEvent):void {
+		mx.controls.Alert.show(evt.toString())
+	}
+		
+	public function handleResult(evt:ResultEvent):void {
+		resultone.text = evt.result.toString()
+	}
+		
+	]]&amp;gt;
+&amp;lt;/mx:Script&amp;gt;
+
+&amp;lt;mx:VBox&amp;gt;
+	
+	&amp;lt;mx:HBox&amp;gt;
+		&amp;lt;mx:Text text=&quot;Field One&quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;fieldone&quot; change=&quot;doubleService.double(fieldone.text)&quot; /&amp;gt;
+		&amp;lt;mx:Text text=&quot; doubled is &quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;resultone&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+	
+&amp;lt;/mx:VBox&amp;gt;
+</code></pre>
+<p>&lt;/mx:Application&gt;
+</code></p>
+<p/>
+<p>I've got a simple set of fields here - one being the input - one for the output. When you enter a value, I fire off a request to the CFC to get the value. My result handler simply takes the result and puts it in the field. Simple, right? Well what happens when you add 2 more fields?</p>
+<p/>
+<code>
+&lt;mx:HBox&gt;
+	&lt;mx:Text text="Field One" /&gt;
+	&lt;mx:TextInput id="fieldone" change="doubleService.double(fieldone.text)" /&gt;
+	&lt;mx:Text text=" doubled is " /&gt;
+	&lt;mx:TextInput id="resultone" /&gt;
+&lt;/mx:HBox&gt;
+<p>&lt;mx:HBox&gt;
+&lt;mx:Text text=&quot;Field Two&quot; /&gt;
+&lt;mx:TextInput id=&quot;fieldtwo&quot; change=&quot;doubleService.double(fieldtwo.text)&quot; /&gt;
+&lt;mx:Text text=&quot; doubled is &quot; /&gt;
+&lt;mx:TextInput id=&quot;resulttwo&quot; /&gt;
+&lt;/mx:HBox&gt;</p>
+<p>&lt;mx:HBox&gt;
+&lt;mx:Text text=&quot;Field Three&quot; /&gt;
+&lt;mx:TextInput id=&quot;fieldthree&quot; change=&quot;doubleService.double(fieldthree.text)&quot; /&gt;
+&lt;mx:Text text=&quot; doubled is &quot; /&gt;
+&lt;mx:TextInput id=&quot;resultthree&quot; /&gt;
+&lt;/mx:HBox&gt;
+</code></p>
+<p/>
+<p>While this won't generate any errors, the the result handler is hard coded to update resultone. Hence the problem. So here is where a little knowledge can be a dangerous thing. I knew that Flex supported something called an AsyncToken. This is a little magical fairy that creates state for your asynchronous call. Magical may not be exactly right - but I had worked with them a bit in the past so I had a basic idea of how they could work. I whipped up a quick demo that was very jQuery related. Hopefully you will see how:</p>
+<p/>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" minWidth="955" minHeight="600"&gt;
+<pre><code>&amp;lt;mx:RemoteObject destination=&quot;ColdFusion&quot; source=&quot;flextest&quot; id=&quot;doubleService&quot;&amp;gt;
+	&amp;lt;mx:method name=&quot;double&quot; /&amp;gt;
+&amp;lt;/mx:RemoteObject&amp;gt;
+
+&amp;lt;mx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import mx.rpc.AsyncToken;
+		import mx.rpc.Responder;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		
+		public function handleFault(evt:FaultEvent):void {
+			mx.controls.Alert.show(evt.toString())
+		}
+		
+		public function handleResult(evt:ResultEvent):void {
+			resultthree.text = evt.result.toString()
+		}
+
+		public function getDouble(name:String):void {
+			var field:mx.controls.TextInput = this[&quot;field&quot;+name]
+			var resfield:mx.controls.TextInput = this[&quot;result&quot;+name]
+			var val:String = field.text
+			var token:AsyncToken = doubleService.double(val)
+			token.addResponder(new mx.rpc.Responder(function(evt:ResultEvent):void { resfield.text = evt.result.toString()}, handleFault))
+		}
+
+	]]&amp;gt;
+&amp;lt;/mx:Script&amp;gt;
+
+&amp;lt;mx:VBox&amp;gt;
+	
+	&amp;lt;mx:HBox&amp;gt;
+		&amp;lt;mx:Text text=&quot;Field One&quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;fieldone&quot; change=&quot;getDouble('one')&quot; /&amp;gt;
+		&amp;lt;mx:Text text=&quot; doubled is &quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;resultone&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+	
+	&amp;lt;mx:HBox&amp;gt;
+		&amp;lt;mx:Text text=&quot;Field Two&quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;fieldtwo&quot; change=&quot;getDouble('two')&quot; /&amp;gt;
+		&amp;lt;mx:Text text=&quot; doubled is &quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;resulttwo&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+	
+	&amp;lt;mx:HBox&amp;gt;
+		&amp;lt;mx:Text text=&quot;Field Three&quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;fieldthree&quot; change=&quot;getDouble('three')&quot; /&amp;gt;
+		&amp;lt;mx:Text text=&quot; doubled is &quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;resultthree&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+	
+&amp;lt;/mx:VBox&amp;gt;
+</code></pre>
+<p>&lt;/mx:Application&gt;
+</code></p>
+<p/>
+<p>Ok, a lot going on here. Let's tackle it bit by bit. First, I've simplified my mx:method tag to just contain a name. Right now I guess it's pretty useless. I've written a new function, getDouble, that my fields call. Notice that each field passes a name (&quot;one&quot;, &quot;two&quot;, &quot;three&quot;). Within getDouble I use this name to get the field I want to work with. I then get the result field as well. Both of these lines....</p>
+<p/>
+<code>
+var field:mx.controls.TextInput = this["field"+name]
+var resfield:mx.controls.TextInput = this["result"+name]
+</code>
+<p/>
+<p>reminded me of $(&quot;#..&quot;) calls in jQuery. Or at least a document.getElementById call. I create an AsyncToken and then create an anonymous function to create a dynamic handler for the result. You can see how I passed in the result field to the handler. This then lets any of my three fields run the call and get the result in the right place.</p>
+<p/>
+<p>So it &quot;works&quot; - but here is where someone with a little bit more knowledge than I (ok, a lot more) comes along and makes things much more simpler. I ran my code by <a href="http://blog.simb.net/">Simeon Bateman</a> and he pointed out that you can assign <i>any</i> custom data to the token itself. What does that mean? Check out this version:</p>
+<p/>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" minWidth="955" minHeight="600"&gt;
+<pre><code>&amp;lt;mx:RemoteObject destination=&quot;ColdFusion&quot; source=&quot;flextest&quot; id=&quot;doubleService&quot;&amp;gt;
+	&amp;lt;mx:method name=&quot;double&quot; result=&quot;handleResult(event)&quot; fault=&quot;handleFault(event)&quot; /&amp;gt;
+&amp;lt;/mx:RemoteObject&amp;gt;
+
+&amp;lt;mx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import mx.rpc.AsyncToken;
+		import mx.rpc.Responder;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		
+		public function handleFault(evt:FaultEvent):void {
+			mx.controls.Alert.show(evt.toString())
+		}
+		
+		public function handleResult(evt:ResultEvent):void {
+			trace(evt.token.fieldName)
+			var resfield:mx.controls.TextInput = this[&quot;result&quot;+evt.token.fieldName]
+			resfield.text = evt.result.toString()					
+		}
+		
+		public function getDouble(name:String):void {
+			var field:mx.controls.TextInput = this[&quot;field&quot;+name]
+			var val:String = field.text
+			var token:AsyncToken = doubleService.double(val)
+				token.fieldName = name
+		}
+		
+	]]&amp;gt;
+&amp;lt;/mx:Script&amp;gt;
+
+&amp;lt;mx:VBox&amp;gt;
+	
+	&amp;lt;mx:HBox&amp;gt;
+		&amp;lt;mx:Text text=&quot;Field One&quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;fieldone&quot; change=&quot;getDouble('one')&quot; /&amp;gt;
+		&amp;lt;mx:Text text=&quot; doubled is &quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;resultone&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+	
+	&amp;lt;mx:HBox&amp;gt;
+		&amp;lt;mx:Text text=&quot;Field Two&quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;fieldtwo&quot; change=&quot;getDouble('two')&quot; /&amp;gt;
+		&amp;lt;mx:Text text=&quot; doubled is &quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;resulttwo&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+	
+	&amp;lt;mx:HBox&amp;gt;
+		&amp;lt;mx:Text text=&quot;Field Three&quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;fieldthree&quot; change=&quot;getDouble('three')&quot; /&amp;gt;
+		&amp;lt;mx:Text text=&quot; doubled is &quot; /&amp;gt;
+		&amp;lt;mx:TextInput id=&quot;resultthree&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+	
+&amp;lt;/mx:VBox&amp;gt;
+</code></pre>
+<p>&lt;/mx:Application&gt;
+</code></p>
+<p/>
+<p>I've restored the result/fault handlers back to my method tag. Now when I run getDouble, I just assign the name to the token itself. What's cool then is that in the handler, it's set into a token value of the event object. It just. Plain. Works.</p>
+<p/>
+<p>Hopefully this is helpful to others (and if not, I sure as heck learned something).</p>
+}

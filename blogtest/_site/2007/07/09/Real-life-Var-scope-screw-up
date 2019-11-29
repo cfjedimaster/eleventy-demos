@@ -1,0 +1,55 @@
+<h1>Post</h1>
+
+<p>I'm a big fan of sharing mistakes as I figure any mistake I make I'm sure others have as well. If you read my blog or have attended any presentation I do on ColdFusion Components, you know I get pretty anal about var scoping. One of the things I mention is how if you <i>don't</i> var scope - some day - some where - a bug is going to bite you in the rear and it may takes days to track it down. Well guess what? It happened to me.</p>
+<!--more-->
+<p>For about two months now I've gotten daily bug emails from <a href="http://www.riaforge.org">RIAForge</a>. The bug always looked a bit like this:</p>
+<blockquote>
+The NAME parameter to the setNAME function is required but was not passed in.
+</blockquote>
+<p>I was never able to reproduce the bug, and as far as I knew, it wasn't a bug that <i>could</i> exist. Here is the code in question:</p>
+<code>
+&lt;cfquery name="getit" datasource="#dsn#"&gt;
+	select 	stuff,changed,here
+	from	users
+	where	id = &lt;cfqueryparam cfsqltype="cf_sql_integer" value="#arguments.id#"&gt;
+&lt;/cfquery&gt;
+<p>&lt;cfif getit.recordCount&gt;
+&lt;cfloop index=&quot;col&quot; list=&quot;#getit.columnlist#&quot;&gt;
+&lt;cfinvoke component=&quot;#bean#&quot; method=&quot;set#col#&quot;&gt;
+&lt;cfinvokeargument name=&quot;#col#&quot; value=&quot;#getit[col][1]#&quot;&gt;
+&lt;/cfinvoke&gt;
+&lt;/cfloop&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>This code is in my DAO CFC in the read method. I use the fact that my database columns has the same names as my bean. This lets me easily set all the values in the bean by just looping over the column list from the query.</p>
+<p>Looking at this code, it seems impossible for me to run setX and not pass X. As you can plainly see, the method name and argument share the exact same value.</p>
+<p>The only thing I figured was that maybe the value in the query was null, and ColdFusion was saying, &quot;Yea, you passed me X, but it was null, so you didn't really pass X.&quot;</p>
+<p>Turns out - I had forgotten a simple var scope on &quot;col&quot;. Under load, it was possible for the col values not to match up and then throw my error.</p>
+<p>So - just consider this a warning!</p>
+<p><b>Edit:</b> I've had a number of people get confused by the code block above. The code block above was merely meant to show the area throwing the bug. The fix (adding a var scope line) was shown because it was just a var scope. But to make it more clear, I've added the entire function below. Again, the <b>only</b> change was to add the var scope line.</p>
+<p>p.s. For folks wanting to see the entire RIAForge site, I promise, soon.</p>
+<code>
+&lt;cffunction name="read" access="public" returnType="UserBean" output="false"&gt;
+	&lt;cfargument name="id" type="numeric" required="true"&gt;
+	&lt;cfset var bean = createObject("component","UserBean")&gt;
+	&lt;cfset var getit = ""&gt;
+	&lt;cfset var col = ""&gt;
+<pre><code>&amp;lt;cfquery name=&quot;getit&quot; datasource=&quot;#dsn#&quot;&amp;gt;
+	select 	cols,changed,for,security,reasons
+	from	users
+	where	id = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.id#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfif getit.recordCount&amp;gt;
+	&amp;lt;cfloop index=&quot;col&quot; list=&quot;#getit.columnlist#&quot;&amp;gt;
+		&amp;lt;cfinvoke component=&quot;#bean#&quot; method=&quot;set#col#&quot;&amp;gt;
+			&amp;lt;cfinvokeargument name=&quot;#col#&quot; value=&quot;#getit[col][1]#&quot;&amp;gt;
+		&amp;lt;/cfinvoke&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn bean&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+}

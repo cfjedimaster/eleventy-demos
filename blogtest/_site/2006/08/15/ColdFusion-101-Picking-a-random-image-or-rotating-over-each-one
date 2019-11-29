@@ -1,0 +1,59 @@
+<h1>Post</h1>
+
+<p>A reader asked me how he could show a random image to visitors. This is simple enough, so I thought I'd show an example of that along with an example of how you could rotate over a set of images and ensure the user sees each one.</p>
+<p>First, here is an example of how to display a random image from a directory.</p>
+<!--more-->
+<code>
+&lt;!--- Get full path to images. ---&gt;
+&lt;cfset imageDirectory = expandPath(".")&gt;
+<p>&lt;!--- Get directory ---&gt;
+&lt;cfdirectory action=&quot;list&quot; directory=&quot;#imageDirectory#&quot; name=&quot;images&quot; filter=&quot;*.jpg&quot;&gt;</p>
+<p>&lt;!--- Do we have any images? ---&gt;
+&lt;cfif images.recordCount gt 0&gt;</p>
+<pre><code>&amp;lt;!--- How many images? ---&amp;gt;
+&amp;lt;cfset totalImages = images.recordCount&amp;gt;
+
+&amp;lt;!--- Pick one ---&amp;gt;
+&amp;lt;cfset pickedIndex = randRange(1, totalImages)&amp;gt;
+
+&amp;lt;!--- get the file ---&amp;gt;
+&amp;lt;cfset image = images.name[pickedIndex]&amp;gt;
+
+&amp;lt;!--- display it ---&amp;gt;
+&amp;lt;cfoutput&amp;gt;&amp;lt;img src=&quot;#image#&quot;&amp;gt;&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>In this example, I get a directory of images using the cfdirectory tag. You could also use a database of images. Since both return a ColdFusion query object, the only thing you would need to change is the first two lines. Outside of that though the rest of the code is trivial. Check to see we have any images, and then use the randRange() function to select a random row. Simple, right? Now look at a slightly different version.</p>
+<code>
+&lt;cfapplication name="img" sessionManagement="true"&gt;
+<p>&lt;!--- Get full path to images. ---&gt;
+&lt;cfset imageDirectory = expandPath(&quot;.&quot;)&gt;</p>
+<p>&lt;!--- Get directory ---&gt;
+&lt;cfdirectory action=&quot;list&quot; directory=&quot;#imageDirectory#&quot; name=&quot;images&quot; filter=&quot;*.jpg&quot;&gt;</p>
+<p>&lt;!--- Do we have any images? ---&gt;
+&lt;cfif images.recordCount gt 0&gt;</p>
+<pre><code>&amp;lt;!--- How many images? ---&amp;gt;
+&amp;lt;cfset totalImages = images.recordCount&amp;gt;
+
+&amp;lt;!--- param a session var ---&amp;gt;
+&amp;lt;cfparam name=&quot;session.pickedIndex&quot; default=&quot;0&quot;&amp;gt;
+
+&amp;lt;!--- Add one to the index ---&amp;gt;
+&amp;lt;cfset session.pickedIndex = session.pickedIndex + 1&amp;gt;
+
+&amp;lt;!--- if past end, restart ---&amp;gt;
+&amp;lt;cfif session.pickedIndex gt images.recordCount&amp;gt;
+	&amp;lt;cfset session.pickedIndex = 1&amp;gt;
+&amp;lt;/cfif&amp;gt;	
+	
+&amp;lt;!--- get the file ---&amp;gt;
+&amp;lt;cfset image = images.name[session.pickedIndex]&amp;gt;
+
+&amp;lt;!--- display it ---&amp;gt;
+&amp;lt;cfoutput&amp;gt;&amp;lt;img src=&quot;#image#&quot;&amp;gt;&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>In this example, we don't select a random image. Instead, we use a session variable named pickedIndex. We increment the value on every hit, and if the value is higher than the number of images in the query, we reset it to 1. This means that as the user visits the page, they will see each image in order.</p>
+}

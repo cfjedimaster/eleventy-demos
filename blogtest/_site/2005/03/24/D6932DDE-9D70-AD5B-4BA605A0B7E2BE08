@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>So, I've been trying to get Norton to deal with Thunderbird for a while now. Every week it would scan my Thunderbird email and quarantine the entire inbox. This meant I needed to restore the inbox.</p>
+<p>The instructions at Symantec said to simply excluse the mail folders - which I did - to no avail. Today I finally found the answer. You see, even though you may tell the system to exclude X, you have to configure the exclusion in your scheduled scan as well.</p>
+<p>Probably obvious to most folks, but it wasn't for me.</p>
+}

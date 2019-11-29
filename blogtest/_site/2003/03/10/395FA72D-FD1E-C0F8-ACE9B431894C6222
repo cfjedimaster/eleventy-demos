@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>As you know, returnType may be added to a CFC method (or tag based UDF) to enforce validity of the data returned by the method. If you specify a returnType of array, for example, and return a structure, you will get an error. This is a handy way to make sure your CFCs are working as they should be. However, if you specify struct as the returnType, and return an instance of a CFC, you will not get an error. I'm guessing this is related to the fact that isStruct()  returns true for CFC instances. Most likely, this is a case of specifics - a poodle is a dog, but a dog may not be a poodle.</p>
+<p>Thanks go to Brendan O'Hara for pointing this out.</p>
+}

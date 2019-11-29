@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>Ben Forta <a href="http://www.forta.com/blog/index.cfm?mode=e&entry=1130">blogged</a> today about an extension to Dreamweaver that allows you to start/stop ColdFusion via the editor and not the Services tool. This of course spurred me to post about how you can do it via HS+/CFStudio.</p>
+<ol>
+<li>Simply right click on your tool bar and select Customize.
+<li>Select Add Custom Button.
+<li>Select Launch an external application.
+<li>For Filename, use c:\windows\system32\net.exe (your Windows directory may be different).
+<li>For Command Line, use stop "ColdFusion MX Application Server"
+<li>Lastly, for Button Hint use "Stop ColdFusion"
+</ol>
+<p>Repeat and switch stop for start in both the command line and button hint. If you want one button instead of two, I believe the only option is to write a simple .bat file and call that. While you can execute multiple commands at one time via the command line (x &amp; y), I couldn't get HS+ to accept this sytle for one button.</p>
+}

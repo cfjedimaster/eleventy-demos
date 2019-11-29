@@ -1,0 +1,37 @@
+<h1>Post</h1>
+
+<p>Ugh. That's all I can say. I spent a few hours the last few nights trying to get GoogleCal able to add events. I was finally able to do so with some help from Teddy Payne and a nice fellow on Google Groups. But wow. What an experience after working with the Yahoo services. How bad was it? This is how you add an event in Google's Calendar API.</p>
+<ol>
+<li>
+<p>First you make a request passing in your username and password. This returns an authentication string.</p>
+</li>
+<li>
+<p>Then you make a <i>second</i> request where you pass in your event data. The funny thing is here that Google says they may or may not return a redirect. In all my tests, it did return a redirect and you need to grab another authentication string called a gsessionid.</p>
+</li>
+<li>
+<p>Guess what? Now you make a <b>third</b> HTTP request passing the <b>same</b> event data again.</p>
+</li>
+</ol>
+<p>That's right - it takes three HTTP requests to add an event. Now I was able to cache the first one at least, but wow. What a royal pain in the rear. I mean - seriously - could they make it harder? Maybe I'm just not &quot;Google Smart&quot;.</p>
+<p>Anyway - enough complaining. I've attached a zip of the new GoogleCal.cfc. I have not updated the core zip. I'd like folks to give it a quick test if they can (code snippet below). I don't think it is very stable yet, but give it a try.</p>
+<code>
+&lt;cfset title = "Test Event 2"&gt;
+&lt;cfset description = "This is a test event."&gt;
+&lt;cfset authorName = "Raymond Camden"&gt;
+&lt;cfset authorEmail = "rcamden@gmail.com"&gt;
+&lt;cfset where = "Mars"&gt;
+&lt;cfset startTime = createDateTime(2006, 9, 30, 3, 0, 0)&gt;
+&lt;cfset endTime = createDateTime(2006, 9, 30, 3, 30, 0)&gt;
+<p>&lt;cfinvoke component=&quot;#application.gcal#&quot; method=&quot;addEvent&quot; returnVariable=&quot;result&quot;&gt;
+&lt;cfinvokeargument name=&quot;username&quot; value=&quot;rcamden@gmail.com&quot;&gt;
+&lt;cfinvokeargument name=&quot;password&quot; value=&quot;imnottelling&quot;&gt;
+&lt;cfinvokeargument name=&quot;title&quot; value=&quot;#title#&quot;&gt;
+&lt;cfinvokeargument name=&quot;description&quot; value=&quot;#description#&quot;&gt;
+&lt;cfinvokeargument name=&quot;authorname&quot; value=&quot;#authorname#&quot;&gt;
+&lt;cfinvokeargument name=&quot;authormemail&quot; value=&quot;#authoremail#&quot;&gt;
+&lt;cfinvokeargument name=&quot;where&quot; value=&quot;#where#&quot;&gt;
+&lt;cfinvokeargument name=&quot;start&quot; value=&quot;#starttime#&quot;&gt;
+&lt;cfinvokeargument name=&quot;end&quot; value=&quot;#endtime#&quot;&gt;
+&lt;/cfinvoke&gt;
+</code><p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2FGoogleCalendar%2Ezip'>Download attached file.</a></p></p>
+}

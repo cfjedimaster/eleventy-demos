@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I thought those of you following this thread may like to see how it turned out. While I have yet to get an official confirmation from MACR on the issue, I did post to the Flex forums and in general the engineers there are very good at getting back to folks.</p>
+<p>On both machines I can now safely use the WS as long as I a) add an alias to jrun-web.xml and b) use the alias when I call my WS.</p>
+<p>While I'd still like to know more about why this error occurs (especially since host/foo.cfc is ok but host/foo.cfc?WSDL is not), at least now I have a consistent URL and my Flex app (can I say - I love Flex) is running ok.</p>
+}

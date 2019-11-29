@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>First off - thanks to a user for pointing out a IE bug. I didn't really &quot;fix it&quot; per se - but the bug involved a long entry title with no spaces in it (well, only a space towards the end). So I just edited the entry.</p>
+<p>Of course - I had to spend 2 hours trying to fix a bug that didn't let me edit any content on my blog. It wasn't a bug in other instances of my blog, just my live blog. For the life of me, I couldn't figure out what was going wrong.</p>
+<p>Then I found it - my blog uses a JavaScript function (that you won't see - it is hidden if you aren't authenticated) to launch a new window for editing content. It kept giving me an &quot;undefined&quot; error in the window text. I then realized that SimpleContentEditor uses a JavaScript function with the <b>exact</b> same name! So, I changed my blog JS function - although it would have been easier to just change the SCE tag.</p>
+<p>Either way - a warning for folks out there who may be using both.</p>
+}

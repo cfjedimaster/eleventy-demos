@@ -1,0 +1,141 @@
+<h1>Post</h1>
+
+<p>A couple days ago I wrote up a look at serverless functions at Netlify (<a href="https://www.raymondcamden.com/2019/01/08/adding-serverless-functions-to-your-netlify-static-site">&quot;Adding Serverless Functions to Your Netlify Static Site&quot;</a>) and today I want to look at a particular aspect of that feature - connecting functions to <a href="https://www.netlify.com/docs/functions/#event-triggered-functions">Netlify events</a>.</p>
+<p>Per the docs, you can write customized logic for the following Netlify events:</p>
+<ul>
+<li>When a deploy is begins to build, succeeds in building, fails to build, is locked, or unlocked</li>
+<li>When a split test is activated, deactivated, or modified</li>
+<li>When a user signs up or tries to log in</li>
+<li>And of course, when a Netlify-controlled form is submitted</li>
+</ul>
+<p>So to be clear, Netlify doesn't care about the forms on your site unless you specifically tell it to. This is covered in the <a href="https://www.netlify.com/docs/form-handling/">form docs</a>, but basically, you either add <code>netlify</code> or <code>data-netlify=&quot;true&quot;</code> to your form tag as a way to signal to Netlify that you want them to handle the submission. Out of the box you get things like spam protection, captcha, and redirects on submission as well as the ability to integrate with third party utilities via Zapier. You should first play around to see if you even need customization via a serverless function as your needs may already be met.</p>
+<p>Given that your pretty sure you <em>do</em> want to write some customized logic, let's take a look at how that's done. First, here is a simple form I built for testing:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot;&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+	&lt;title&gt;Contact Form&lt;/title&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+	&lt;form action=&quot;/thankyou.html&quot; method=&quot;post&quot; name=&quot;Contact Form&quot; data-netlify=&quot;true&quot;&gt;
+	&lt;p&gt;
+		&lt;label for=&quot;name&quot;&gt;Name&lt;/label&gt;	
+		&lt;input id=&quot;name&quot; name=&quot;name&quot; value=&quot;Raymond Testing&quot;&gt;
+	&lt;/p&gt;
+	&lt;p&gt;
+		&lt;label for=&quot;email&quot;&gt;Email&lt;/label&gt;
+		&lt;input type=&quot;email&quot; id=&quot;email&quot; name=&quot;email&quot; value=&quot;raymondcamden@gmail.com&quot;&gt;
+	&lt;/p&gt;
+	&lt;p&gt;
+		&lt;label for=&quot;comments&quot;&gt;Comments&lt;/label&gt;&lt;br/&gt;
+		&lt;textarea id=&quot;comments&quot; name=&quot;comments&quot;&gt;Default value&lt;/textarea&gt;
+	&lt;/p&gt;
+	&lt;p&gt;
+		&lt;input type=&quot;submit&quot; value=&quot;Send Comments&quot;&gt;
+	&lt;/p&gt;
+	&lt;/form&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>If you want, you can see this at <a href="https://codabreaker.netlify.com/contact.html">https://codabreaker.netlify.com/contact.html</a>. I only supplied default values in order to make my testing a bit easier. It's nothing related to Netlify support or anything like that.</p>
+<p>Ok - so the first thing you need to is create a function with the name, <code>submission-created.js</code>. You can only have one handler per Netlify site and event, but as your function is passed information about the event, you could definitely add support for multiple sources. From what I see of the supported list of events, forms are probably the only time where you would probably care.</p>
+<p>Like other Netlify serverless functions, your basic function signature looks like this:</p>
+<pre><code class="language-js">
+exports.handler = (event, context, callback) =&gt; {
+	//logic
+};
+</code></pre>
+<p>Although you can skip the <code>callback</code> argument. In my testing, calling the callback, both with and without an error, had no impact on the form submission or anything else.</p>
+<p>Accessing the form data can be done via <code>event.body</code>, which is a JSON string, and within there you would access the <code>payload</code> value. So for example:</p>
+<pre><code class="language-js">let payload = JSON.parse(event.body).payload;
+</code></pre>
+<p>What does payload look like? Here's an example:</p>
+<pre><code class="language-js">{
+  &quot;number&quot;: 24,
+  &quot;title&quot;: &quot;Raymond Testing&quot;,
+  &quot;email&quot;: &quot;raymondcamden@gmail.com&quot;,
+  &quot;name&quot;: &quot;Raymond Testing&quot;,
+  &quot;first_name&quot;: &quot;Raymond&quot;,
+  &quot;last_name&quot;: &quot;Testing&quot;,
+  &quot;company&quot;: null,
+  &quot;summary&quot;: &quot;&lt;strong&gt;Raymond Testing&lt;/strong&gt; Default value&quot;,
+  &quot;body&quot;: &quot;Default value&quot;,
+  &quot;data&quot;: {
+    &quot;name&quot;: &quot;Raymond Testing&quot;,
+    &quot;email&quot;: &quot;raymondcamden@gmail.com&quot;,
+    &quot;comments&quot;: &quot;Default value&quot;,
+    &quot;ip&quot;: &quot;76.72.11.11&quot;
+  },
+  &quot;created_at&quot;: &quot;2019-01-15T22:00:51.691Z&quot;,
+  &quot;human_fields&quot;: {
+    &quot;Name&quot;: &quot;Raymond Testing&quot;,
+    &quot;Email&quot;: &quot;raymondcamden@gmail.com&quot;,
+    &quot;Comments&quot;: &quot;Default value&quot;
+  },
+  &quot;ordered_human_fields&quot;: [
+    { &quot;title&quot;: &quot;Name&quot;, &quot;name&quot;: &quot;name&quot;, &quot;value&quot;: &quot;Raymond Testing&quot; },
+    { &quot;title&quot;: &quot;Email&quot;, &quot;name&quot;: &quot;email&quot;, &quot;value&quot;: &quot;raymondcamden@gmail.com&quot; },
+    { &quot;title&quot;: &quot;Comments&quot;, &quot;name&quot;: &quot;comments&quot;, &quot;value&quot;: &quot;Default value&quot; }
+  ],
+  &quot;id&quot;: &quot;5c3e5813f203baba9782ba13&quot;,
+  &quot;form_id&quot;: &quot;5c3a051bdbfb660008114ddb&quot;,
+  &quot;site_url&quot;: &quot;http://codabreaker.netlify.com&quot;,
+  &quot;form_name&quot;: &quot;Contact Form&quot;
+}
+</code></pre>
+<p>Yes, that's a heck of a lot of data. You can see some interesting things going on here. First off, if all you care about is your form data, then you can find it within the <code>data</code> block. Notice that an <code>ip</code> value was added automatically.</p>
+<p>Secondly, it appears as if Netlify is trying to do some basic parsing of the form. Notice how it picked up a first and last name by simply splitting my input. It made note of the email address. It also provided &quot;human&quot; versions of the form fields which I'm guessing is probably going to do basic parsing as well. I renamed <code>email</code> to <code>email_address</code>, and Netlify still called the human form <code>email</code>. I guess if you have large, ugly forms with poor naming, this could be useful.</p>
+<p>Finally, note that it recognizes the name of the form, the site, and that this is the 24th submission. All things you could use in your logic.</p>
+<p>Here's a complete example that makes use of both SendGrid and code I had built for OpenWhisk in the past:</p>
+<pre><code class="language-js">const SG_KEY = process.env.SENDGRID;
+
+const helper = require('sendgrid').mail;
+
+
+exports.handler = (event, context, callback) =&gt; {
+	console.log('submission created error testing');
+	
+	let payload = JSON.parse(event.body).payload;
+
+	// note - no validation - booooo
+	let from_email = new helper.Email(payload.data.email);
+	let to_email = new helper.Email('raymondcamden@gmail.com');
+	let subject = 'Contact Form Submission';
+
+	let date = new Date();
+	let content = `
+Form Submitted at ${date}
+--------------------------------
+`;
+
+	for(let key in payload.data) {
+		content += `
+${key}:			${payload.data[key]}
+`;
+	}
+
+	let mailContent = new helper.Content('text/plain', content);
+	let mail = new helper.Mail(from_email, subject, to_email, mailContent);
+	let sg = require('sendgrid')(SG_KEY);
+
+	let request = sg.emptyRequest({
+		method: 'POST',
+		path: '/v3/mail/send',
+		body: mail.toJSON()
+	});
+		
+	sg.API(request, function(error, response) {
+		if(error) {
+			console.log(error.response.body);
+		}
+	});
+
+};
+</code></pre>
+<p>Note that I dynamically build the content based on the form submission which would work nice with Netlify and multiple forms, but you could also hard code a set of key-value pairs here.</p>
+<p>That's basically it. I've got an interesting idea for how to take this a bit further, but I'm waiting for IBM to unlock my dang developer account before I try it. If you've got any questions, let me know by leaving a comment below!</p>
+}

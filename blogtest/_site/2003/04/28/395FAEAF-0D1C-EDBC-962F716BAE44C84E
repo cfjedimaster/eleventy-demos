@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>If you define a CFC argument as being required=&quot;false&quot;, and then do not pass it in, it will, of course, return false if you do isDefined(&quot;foo&quot;) or isDefined(&quot;arguments.foo&quot;). <i>However</i>, if you cfdump the arguments scope, you can clearly see foo (or whatever the name of your argument was) in the structure. The value is &quot;[undefined struct value]&quot;, which to mean smells like null, but CF has no real support null.</p>
+}

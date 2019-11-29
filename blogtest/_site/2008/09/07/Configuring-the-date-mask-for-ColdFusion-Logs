@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Just a quick link to a good blog article by Jochem van Dieten:</p>
+<p><a href="http://jochem.vandieten.net/2008/09/07/tuning-your-coldfusion-logging/">Tuning your ColdFusion logging</a></p>
+<p>He details how you can configure the date mask for the ColdFusion logs. I never really noticed this before, but obviously for folks outside American locales, the use of mm/dd/yy can be a bit vague.</p>
+}

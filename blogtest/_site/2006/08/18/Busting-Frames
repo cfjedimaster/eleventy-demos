@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I discovered today that my site was being aggregated by Amsay.com. This is ok, but I notice s/he was framing my web pages and showing ads in the left frame. That I don't feel so good about. I quickly added this to my body tag, and I will be adding it to the core blogcfc code.</p>
+<code>
+&lt;body onload="if(top != self) top.location.href=self.location.href"&gt;
+</code>}

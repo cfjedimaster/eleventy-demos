@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>This morning when testing an Ionic project, I got an error trying to emulate iOS. I tested it again in the Cordova CLI and got the same error:</p>
+<!--more-->
+<pre><code>simctl was not found.
+Check that you have Xcode 6.x installed:</code></pre>
+<p>My first thought was that it was an XCode 7 issue, but I had run builds earlier in the week. On a whim though I fired up XCode and...</p>
+<p>Bam. I had to OK a license agreement change. Because... reasons. So if you ever run into an issue like this before, open up XCode and see if you've got a prompt waiting for you. Apparently you can script your way around this too, but just running XCode was faster.</p>
+}

@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Sean Corfield has a <a href="http://corfield.org/blog/index.cfm/do/blog.entry/entry/onError_onRequest_and_cfabort">good blog post</a> on the oddness folks have seen in the past with the onError method and cfabort. The basic summary is: The cfabort tag will run your onError method if you have an onRequest method in your Application.cfc file. Read Sean's <a href="http://corfield.org/blog/index.cfm/do/blog.entry/entry/onError_onRequest_and_cfabort">post</a> for a more in-depth explanation of why.</p>
+<p>p.s. I realized too late that - the mere fact I added &quot;The Final Answer&quot; to this blog entry means that it will, of course, change in the future.</p>
+}

@@ -1,0 +1,47 @@
+<h1>Post</h1>
+
+<p>Mike asks:</p>
+<blockquote>
+I'm working on a suggestion list for a search box, is it possible to query more than one column and return that from the binding CFC?
+</blockquote>
+<p>Absolutely. Remember, ColdFusion's autosuggest control doesn't care how you create the result, it just cares that you return an array of strings. How you create the array is up to you. When I first wrote back to Mike, I recommended simply running two queries. Then I remember that a union would work fine as well. Here is the example I created.</p>
+<!--more-->
+<p>Ok, let's start on the front end:</p>
+<code>
+&lt;cfform name="doesntmatter"&gt;
+<p>&lt;cfinput name=&quot;chosen&quot; autoSuggest=&quot;cfc:test.getSuggest({cfautosuggestvalue})&quot;&gt;</p>
+<p>&lt;/cfform&gt;
+</code></p>
+<p>It's truly unfortunate that ColdFusion doesn't make AJAX easier. Look at all the code above. All the messy JavaScript. I really wish ColdFusion did more to make this easier for me. It took me at least 35 seconds to write that code. Maybe even 40. I'm sure PHP does a better job here, so why can't ColdFusion? -sigh-</p>
+<p>All kidding aside, you got to love the binding support in ColdFusion. Let's now take a look at the CFC's getSuggest method:</p>
+<code>
+&lt;cffunction name="getSuggest" access="remote"&gt;
+	&lt;cfargument name="suggest" type="string" required="true"&gt;
+	&lt;cfset var search = ""&gt;
+<pre><code>&amp;lt;cfquery name=&quot;search&quot; datasource=&quot;cfartgallery&quot;&amp;gt;
+select art.artname as s
+from art
+where art.artname like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.suggest#%&quot;&amp;gt;
+union
+select artists.lastname as s
+from artists
+where artists.lastname like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.suggest#%&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn listToArray(valueList(search.s))&amp;gt;	
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>As you can see, I search against two columns in two different tables. The result is a query with a column called S that contains the matches. <b>Note:</b> ColdFusion's autosuggest only allows you to do 'frontal' matches. So if you want &quot;der&quot; to match &quot;Vader&quot;, you are out luck. That's why my search only uses a % at the end. I can return other matches but they won't show up.</p>
+<p><b>Wait!</b> I double checked the docs (always good to do so when you are absolutely sure you are right!) and turns out I was wrong. The cfinput tag has a &quot;matchContains&quot; attribute. It defaults to false. If true, then the autosuggest can match anywhere in the result.</p>
+<p>So I changed the front end input to:</p>
+<code>
+&lt;cfinput name="chosen" autoSuggest="cfc:test.getSuggest({cfautosuggestvalue})" matchcontains="true"&gt;
+</code>
+<p>and changed my cfqueryparam (both of them) to:</p>
+<code>
+&lt;cfqueryparam cfsqltype="cf_sql_varchar" value="%#arguments.suggest#%"&gt;
+</code>
+<p>and it worked like a charm. I'm <i>very</i> happy to be wrong about that. Anyway, hopefully you see that the autosuggest can be built up anyway you want. I could even mix a cfdirectory query with a database query. Whatever your needs are - just ensure you've got an array at the end and your good to go.</p>
+<p><b>Edit:</b> Ok, so apparently, matchcontains is ColdFusion 9 only. I checked the ColdFusion 8 docs and it isn't there. Unfortunately, Adobe forgot to list this in the tag history, so I mistakenly assumed it was there in 8 and I missed it. I've blogged before about the updates and how you had to dig a bit to find the changes. Apparently this is one of those things didn't get added to the history/tag changed docs. So obviously the <b>core</b> request here - autosuggest against N columns - is possible in ColdFusion 8. The only thing my matchcontains does is allow you to match anywhere in the result. For ColdFusion 8, simply leave that attribute off, and ensure your query uses X%, not %X%.</p>
+}

@@ -1,0 +1,52 @@
+<h1>Post</h1>
+
+<p>Jim asks:</p>
+<blockquote>
+Ray, I'm just playing and can't figure this out.<br/><br/>
+<p>Given:<br/>
+&lt;cffunction name=&quot;makeRandomNum&quot; returntype=&quot;numeric&quot; output=&quot;false&quot;&gt;<br/>
+&lt;cfset var result = RandRange(0,10)&gt;<br/>
+&lt;cfreturn result&gt;<br/>
+&lt;/cffunction&gt;<br/>
+&lt;cfset num1 = makeRandomNum()&gt;<br/>
+&lt;cfset num2 = makeRandomNum()&gt;<br/>
+&lt;cfset Oper = mid(&quot;+-*&quot;, randRange(1,3),1)&gt;<br/>
+<br/>
+&lt;cfset ans = num1 Oper num2&gt;<br/>
+<br/>
+How can I get var Oper reconized as mathical operator?</p>
+</blockquote>
+<p>
+This is one of the few times where the evaluate function is necessary. In order to get ans to represent the right value, we can easily switch it to:
+<p>
+<code>
+&lt;cfset ans = evaluate("num1 #oper# num2")&gt;
+</code>
+<p>
+Of course, this isn't the only way. Since the number of mathematical operands are limited, you could always write a UDF that takes all 3 values (the two numeric value and the operand) and simply uses a switch case to determine which one to run. But that would be overkill and a complete waste of time, so only an idiot would do it.
+<p>
+<code>
+&lt;cffunction name="makeRandomNum" returntype="numeric" output="false"&gt;
+       &lt;cfset var result = RandRange(0,10)&gt;
+       &lt;cfreturn result&gt;
+&lt;/cffunction&gt;
+&lt;cfset num1 = makeRandomNum()&gt;
+&lt;cfset num2 = makeRandomNum()&gt;
+&lt;cfset Oper = mid("+-*", randRange(1,3),1)&gt;
+<p>&lt;cfoutput&gt;oper=#oper# num1=#num1# num2=#num2#, #evaluate(&quot;num1 #oper# num2&quot;)#&lt;br&gt;&lt;/cfoutput&gt;</p>
+<p>&lt;cfscript&gt;
+function wasteOfTime(num1,num2,oper) {
+switch(oper) {
+case &quot;+&quot;: return num1+num2;
+case &quot;-&quot;: return num1-num2;
+case &quot;<em>&quot;: return num1</em>num2;
+case &quot;/&quot;: return num1/num2;
+}
+return &quot;NAN&quot;;
+}
+&lt;/cfscript&gt;
+&lt;p&gt;
+&lt;cfoutput&gt;#wasteOfTime(num1,num2,oper)#&lt;/cfoutput&gt;
+</code></p>
+<p>Enjoy.</p>
+}

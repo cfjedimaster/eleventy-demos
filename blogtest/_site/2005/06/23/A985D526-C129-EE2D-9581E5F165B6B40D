@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>One of our CFMX7 servers at work stopped responding a few days ago. All requests would come back with a 500 null error. Looking the logs I found:</p>
+<p>coldfusion.license.Decoder.decodeSerialNumber(Decoder.java:71)</p>
+<p>I did a quick google search and found this <a href="http://www.talkingtree.com/blog/index.cfm?mode=entry&entry=25AA92AB-45A6-2844-7601E027E2E3AD77">post</a> over at Steven Erat's blog. It mentioned a zero length license file, which is exactly what I had. The only thing is that his post mentions CFMX 6.1, and this was a CFMX7 server. Either way, I replaced the log file and all is better now.</p>
+}

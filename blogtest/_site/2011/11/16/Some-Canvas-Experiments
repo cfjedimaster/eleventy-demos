@@ -1,0 +1,633 @@
+<h1>Post</h1>
+
+<p>I spent some time yesterday reading an excellent article on a simple Canvas-based version of the old Snake game: <a href="http://www.netmagazine.com/tutorials/create-mobile-version-snake-html5-canvas-and-javascript">Create a mobile version of Snake with HTML5 canvas and JavaScript</a>. This article, by Eoin McGrath, does a great job explaining how he used Canvas to animate the game. (If you've never played Snake before, think Tron light cycles, single player, and not as cool.) I've been meaning to work on some simple games with Canvas, and while there are some very cool frameworks out there (<a href="http://easeljs.com/">EaselJS</a> and <a href="http://impactjs.com/">Impact</a> for example), I wanted to play around a bit with the raw code before I started punting some of the grunt work to other libraries. What follows is a series of experiments based on McGrath's core code set. Be gentle - this is my first time.</p>
+<p/>
+<!--more-->
+I began by creating a ball that would bounce around. I know - not rocket science. McGrath's original code animated the snake and had it die as soon as it hit a wall. For my logic I needed to simply make the ball bounce. Here's the code for version 1:
+<p>
+<code>
+&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+	&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+	&amp;lt;script&amp;gt;
+	$(document).ready(function() {
+
+		var canvas = $(&quot;#gamearea&quot;)[0];
+		canvas.width = 400;
+		canvas.height = 400;
+		var ctx = canvas.getContext(&quot;2d&quot;);
+
+
+	    var draw = {
+	        clear: function () {
+	            ctx.clearRect(0, 0, canvas.width, canvas.height);
+	        },    
+	 
+	        rect: function (x, y, w, h, col) {
+	            ctx.fillStyle = col;
+	            ctx.fillRect(x, y, w, h);
+	        },
+	       
+	      circle: function (x, y, radius, col) {
+	          ctx.fillStyle = col;
+	          ctx.beginPath();
+	          ctx.arc(x, y, radius, 0, Math.PI*2, true);
+	          ctx.closePath();
+	          ctx.fill();
+	      },
+	 
+	        text: function (str, x, y, size, col) {
+	            ctx.font = 'bold ' + size + 'px monospace';
+	            ctx.fillStyle = col;
+	            ctx.fillText(str, x, y);
+	        }
+	    };
+
+		var ballOb = function() {
+
+			this.init = function() {
+				this.speed = 8;
+				this.x = 19;
+				this.y = 89;
+				this.w = this.h = 10;
+				this.col = &quot;darkgreen&quot;;
+				this.xdir = this.ydir = 1;
+			}
+
+			this.move = function() {
+
+				if ((this.x-this.w) &amp;lt; 0 || this.x &amp;gt; (canvas.width - this.w)) this.xdir*=-1;
+				if ((this.y-this.w) &amp;lt; 0 || this.y &amp;gt; (canvas.height - this.h)) this.ydir*=-1;
+				
+				this.x += (this.xdir * this.speed);
+			    this.y += (this.ydir * this.speed);
+		
+			}
+
+			this.draw = function () {
+				draw.circle(this.x, this.y, this.w, this.col);
+			}
+			
+
+		}
+
+		var ball = new ballOb();
+		ball.init();
+		
+		function loop() {
+			draw.clear();
+			ball.move();
+			ball.draw();
+		}
+	
+		setInterval(loop, 30);
+	})
+	&amp;lt;/script&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+	&amp;lt;canvas id=&quot;gamearea&quot; style=&quot;background-color:red&quot;&amp;gt;&amp;lt;/canvas&amp;gt;
+	
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>You can demo this here: <a href="http://www.raymondcamden.com/demos/2011/nov/15_2/index.html">http://www.coldfusionjedi.com/demos/2011/nov/15_2/index.html</a>. Notice the wall hit isn't exactly perfect. I made it a bit better as I went on. I apologize for the horrible color schemes. I wanted something <i>very</i> clear to see.</p>
+<p>
+<p>In the next iteration, I added a paddle object and added event listeners so I could move the paddle:</p>
+<p>
+<code>
+&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+	&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+	&amp;lt;script&amp;gt;
+	var ball;
+	var paddle;
+
+	$(document).ready(function() {
+
+		
+		var canvas = $(&quot;#gamearea&quot;)[0];
+		canvas.width = 400;
+		canvas.height = 400;
+		var ctx = canvas.getContext(&quot;2d&quot;);
+		var input = {
+			left: false,
+			right: false
+		};
+
+		$(window).keydown(function(e) {
+	       switch (e.keyCode) {
+	            case 37: input.left = true; break;                            
+	            case 39: input.right = true; break;                            
+	       } 
+		});
+
+		$(window).keyup(function(e) {
+	       switch (e.keyCode) {
+	            case 37: input.left = false; break;                            
+	            case 39: input.right = false; break;                            
+	       } 
+		});
+
+
+	    var draw = {
+	        clear: function () {
+	            ctx.clearRect(0, 0, canvas.width, canvas.height);
+	        },    
+	 
+	        rect: function (x, y, w, h, col) {
+	            ctx.fillStyle = col;
+	            ctx.fillRect(x, y, w, h);
+	        },
+	       
+	      circle: function (x, y, radius, col) {
+	          ctx.fillStyle = col;
+	          ctx.beginPath();
+	          ctx.arc(x, y, radius, 0, Math.PI*2, true);
+	          ctx.closePath();
+	          ctx.fill();
+	      },
+	 
+	        text: function (str, x, y, size, col) {
+	            ctx.font = 'bold ' + size + 'px monospace';
+	            ctx.fillStyle = col;
+	            ctx.fillText(str, x, y);
+	        }
+	    };
+
+		var ballOb = function() {
+
+			this.init = function() {
+				this.speed = 8;
+				this.x = 19;
+				this.y = 89;
+				this.w = this.h = 10;
+				this.col = &quot;darkgreen&quot;;
+				this.xdir = this.ydir = 1;
+			}
+
+			this.move = function() {
+
+				if (this.x &amp;lt; 0 || this.x &amp;gt; (canvas.width-this.w)) this.xdir*=-1;
+				if (this.y &amp;lt; 0 || this.y &amp;gt; (canvas.height-this.h)) this.ydir*=-1;
+				
+				this.x += (this.xdir * this.speed);
+			    this.y += (this.ydir * this.speed);
+				
+				//handle hitting the edge
+				if(this.x-this.w &amp;lt; 0) { this.x = 0+this.w; this.xdir=1 }
+				if(this.x+this.w &amp;gt; canvas.width) { this.x = canvas.width-this.w; this.xdir= -1 }
+				if(this.y-this.w &amp;lt; 0) { this.y = 0+this.w; this.ydir=1 }					
+				if(this.y+this.w &amp;gt; canvas.height) { this.y = canvas.height-this.w; this.ydir=-1 }			
+			}
+
+			this.draw = function () {
+				draw.circle(this.x, this.y, this.w, this.col);
+			}
+			
+
+		}
+
+		var paddleOb = function() {
+
+			this.init = function() {
+				this.speed = 8;
+				this.w = 0.25 * canvas.width;
+				this.h = 20;
+				this.x = 10;
+				this.y = canvas.height - this.h - 10;
+				this.col = &quot;white&quot;;
+				//this.xdir = this.ydir = 1;
+			}
+
+			this.move = function() {
+				if(input.left) {
+					this.x -= this.speed;
+					if(this.x &amp;lt; 0) this.x=0;
+				}
+				if(input.right) {
+					this.x += this.speed;
+					if((this.x+this.w) &amp;gt; canvas.width) this.x=canvas.width-this.w;
+				}
+			}
+
+			this.draw = function () {
+				draw.rect(this.x, this.y, this.w, this.h,this.col);
+			}
+			
+
+		}
+		
+		ball = new ballOb();
+		ball.init();
+		
+		paddle = new paddleOb();
+		paddle.init();
+		
+		function loop() {
+			draw.clear();
+			ball.move();
+			ball.draw();
+			paddle.draw();
+			paddle.move();
+		}
+	
+		setInterval(loop, 30);
+	})
+	&amp;lt;/script&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+	&amp;lt;canvas id=&quot;gamearea&quot; style=&quot;background-color:red&quot;&amp;gt;&amp;lt;/canvas&amp;gt;
+	
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>And here is the demo: <a href="http://www.coldfusionjedi.com/demos/2011/nov/15_2/index2.html">http://www.coldfusionjedi.com/demos/2011/nov/15_2/index2.html</a>. Note that this version has better detection for hitting the walls.</p>
+<p>
+<p>So next I added support for noticing when I hit the paddle and keeping score. Nothing too crazy - just a call to the collides method McGrath created for this own game.</p>
+<p>
+<code>
+&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+	&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+	&amp;lt;script&amp;gt;
+	var ball;
+	var paddle;
+
+	$(document).ready(function() {
+
+		
+		var canvas = $(&quot;#gamearea&quot;)[0];
+		canvas.width = 400;
+		canvas.height = 400;
+		var score = 0;
+		
+		var ctx = canvas.getContext(&quot;2d&quot;);
+		var input = {
+			left: false,
+			right: false
+		};
+
+		$(window).keydown(function(e) {
+	       switch (e.keyCode) {
+	            case 37: input.left = true; break;                            
+	            case 39: input.right = true; break;                            
+	       } 
+		});
+
+		$(window).keyup(function(e) {
+	       switch (e.keyCode) {
+	            case 37: input.left = false; break;                            
+	            case 39: input.right = false; break;                            
+	       } 
+		});
+
+
+	    var draw = {
+	        clear: function () {
+	            ctx.clearRect(0, 0, canvas.width, canvas.height);
+	        },    
+	 
+	        rect: function (x, y, w, h, col) {
+	            ctx.fillStyle = col;
+	            ctx.fillRect(x, y, w, h);
+	        },
+	       
+	      circle: function (x, y, radius, col) {
+	          ctx.fillStyle = col;
+	          ctx.beginPath();
+	          ctx.arc(x, y, radius, 0, Math.PI*2, true);
+	          ctx.closePath();
+	          ctx.fill();
+	      },
+	 
+	        text: function (str, x, y, size, col) {
+	            ctx.font = 'bold ' + size + 'px monospace';
+	            ctx.fillStyle = col;
+	            ctx.fillText(str, x, y);
+	        }
+	    };
+
+		var ballOb = function() {
+
+			this.init = function() {
+				this.speed = 8;
+				this.x = 19;
+				this.y = 89;
+				this.w = this.h = 10;
+				this.col = &quot;darkgreen&quot;;
+				this.xdir = this.ydir = 1;
+			}
+
+			this.move = function() {
+
+				if (this.x &amp;lt; 0 || this.x &amp;gt; (canvas.width-this.w)) this.xdir*=-1;
+				if (this.y &amp;lt; 0 || this.y &amp;gt; (canvas.height-this.h)) this.ydir*=-1;
+				
+				this.x += (this.xdir * this.speed);
+			    this.y += (this.ydir * this.speed);
+				
+				//handle hitting the edge
+				if(this.x-this.w &amp;lt; 0) { this.x = 0+this.w; this.xdir=1 }
+				if(this.x+this.w &amp;gt; canvas.width) { this.x = canvas.width-this.w; this.xdir= -1 }
+				if(this.y-this.w &amp;lt; 0) { this.y = 0+this.w; this.ydir=1 }					
+				if(this.y+this.w &amp;gt; canvas.height) { this.y = canvas.height-this.w; this.ydir=-1; score++ }	
+				
+				//handle hitting paddle
+				if(this.collides(paddle)) this.ydir = -1;		
+			}
+
+			this.draw = function () {
+				draw.circle(this.x, this.y, this.w, this.col);
+			}
+
+			this.collides = function(obj) {
+			
+				// this sprite's rectangle
+				this.left = this.x;
+				this.right = this.x + this.w;
+				this.top = this.y;
+				this.bottom = this.y + this.h;
+				
+				// other object's rectangle
+				// note: we assume that obj has w, h, w &amp; y properties
+				obj.left = obj.x;
+				obj.right = obj.x + obj.w;
+				obj.top = obj.y;
+				obj.bottom = obj.y + obj.h;
+				
+				// determine if not intersecting
+				if (this.bottom &amp;lt; obj.top) { return false; }
+				if (this.top &amp;gt; obj.bottom) { return false; }
+				
+				if (this.right &amp;lt; obj.left) { return false; }
+				if (this.left &amp;gt; obj.right) { return false; }
+				
+				// otherwise, it's a hit
+				return true;
+			};
+					
+
+		}
+
+		var paddleOb = function() {
+
+			this.init = function() {
+				this.speed = 8;
+				this.w = 0.25 * canvas.width;
+				this.h = 20;
+				this.x = 10;
+				this.y = canvas.height - this.h - 10;
+				this.col = &quot;white&quot;;
+				//this.xdir = this.ydir = 1;
+			}
+
+			this.move = function() {
+				if(input.left) {
+					this.x -= this.speed;
+					if(this.x &amp;lt; 0) this.x=0;
+				}
+				if(input.right) {
+					this.x += this.speed;
+					if((this.x+this.w) &amp;gt; canvas.width) this.x=canvas.width-this.w;
+				}
+			}
+
+			this.draw = function () {
+				draw.rect(this.x, this.y, this.w, this.h,this.col);
+			}
+			
+
+		}
+		
+		ball = new ballOb();
+		ball.init();
+		
+		paddle = new paddleOb();
+		paddle.init();
+		
+		function loop() {
+			draw.clear();
+			ball.move();
+			ball.draw();
+			paddle.draw();
+			paddle.move();
+			draw.text(&quot;Score: &quot;+score, 10, 20, 20);
+		}
+	
+		setInterval(loop, 30);
+	})
+	&amp;lt;/script&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+	&amp;lt;canvas id=&quot;gamearea&quot; style=&quot;background-color:red&quot;&amp;gt;&amp;lt;/canvas&amp;gt;
+	
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>And this demo may be found here: <a href="http://www.coldfusionjedi.com/demos/2011/nov/15_2/index3.html">http://www.coldfusionjedi.com/demos/2011/nov/15_2/index3.html</a></p>
+<p>
+<p>I then got mean and built this one: <a href="http://www.coldfusionjedi.com/demos/2011/nov/15_2/index4.html">http://www.coldfusionjedi.com/demos/2011/nov/15_2/index4.html</a> Don't click. Seriously. I warned you.</p>
+<p>
+<p>Finally I went the extra step of doing a Google search and making the graphics not quite so ugly.</p>
+<p>
+<code>
+&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+	&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+	&amp;lt;script&amp;gt;
+	var ball;
+	var paddle;
+
+	$(document).ready(function() {
+
+		
+		var canvas = $(&quot;#gamearea&quot;)[0];
+		canvas.width = 400;
+		canvas.height = 400;
+		var score = 0;
+		
+		var ctx = canvas.getContext(&quot;2d&quot;);
+		var input = {
+			left: false,
+			right: false
+		};
+
+		$(window).keydown(function(e) {
+	       switch (e.keyCode) {
+	            case 37: input.left = true; break;                            
+	            case 39: input.right = true; break;                            
+	       } 
+		});
+
+		$(window).keyup(function(e) {
+	       switch (e.keyCode) {
+	            case 37: input.left = false; break;                            
+	            case 39: input.right = false; break;                            
+	       } 
+		});
+
+
+	    var draw = {
+	        clear: function () {
+	            ctx.clearRect(0, 0, canvas.width, canvas.height);
+	        },    
+	 
+	        rect: function (x, y, w, h, col) {
+	            ctx.fillStyle = col;
+	            ctx.fillRect(x, y, w, h);
+	        },
+	       
+	      circle: function (x, y, radius, col) {
+	          ctx.fillStyle = col;
+	          ctx.beginPath();
+	          ctx.arc(x, y, radius, 0, Math.PI*2, true);
+	          ctx.closePath();
+	          ctx.fill();
+	      },
+	 
+	        text: function (str, x, y, size, col) {
+	            ctx.font = 'bold ' + size + 'px monospace';
+	            ctx.fillStyle = col;
+	            ctx.fillText(str, x, y);
+	        }
+	    };
+
+		var ballOb = function() {
+
+			this.init = function() {
+				this.speed = 10;
+				this.x = 19;
+				this.y = 89;
+				this.w = this.h = 10;
+				this.col = &quot;green&quot;;
+				this.xdir = this.ydir = 1;
+			}
+
+			this.move = function() {
+
+				if (this.x &amp;lt; 0 || this.x &amp;gt; (canvas.width-this.w)) this.xdir*=-1;
+				if (this.y &amp;lt; 0 || this.y &amp;gt; (canvas.height-this.h)) this.ydir*=-1;
+				
+				this.x += (this.xdir * this.speed);
+			    this.y += (this.ydir * this.speed);
+				
+				//handle hitting the edge
+				if(this.x-this.w &amp;lt; 0) { this.x = 0+this.w; this.xdir=1 }
+				if(this.x+this.w &amp;gt; canvas.width) { this.x = canvas.width-this.w; this.xdir= -1 }
+				if(this.y-this.w &amp;lt; 0) { this.y = 0+this.w; this.ydir=1 }					
+				if(this.y+this.w &amp;gt; canvas.height) { this.y = canvas.height-this.w; this.ydir=-1; score++ }	
+				
+				//handle hitting paddle
+				if(this.collides(paddle)) this.ydir = -1;		
+			}
+
+			this.draw = function () {
+				draw.circle(this.x, this.y, this.w, this.col);
+			}
+
+			this.collides = function(obj) {
+			
+				// this sprite's rectangle
+				this.left = this.x;
+				this.right = this.x + this.w;
+				this.top = this.y;
+				this.bottom = this.y + this.h;
+				
+				// other object's rectangle
+				// note: we assume that obj has w, h, w &amp; y properties
+				obj.left = obj.x;
+				obj.right = obj.x + obj.w;
+				obj.top = obj.y;
+				obj.bottom = obj.y + obj.h;
+				
+				// determine if not intersecting
+				if (this.bottom &amp;lt; obj.top) { return false; }
+				if (this.top &amp;gt; obj.bottom) { return false; }
+				
+				if (this.right &amp;lt; obj.left) { return false; }
+				if (this.left &amp;gt; obj.right) { return false; }
+				
+				// otherwise, it's a hit
+				return true;
+			};
+					
+
+		}
+
+		var paddleOb = function() {
+
+			this.init = function() {
+				this.speed = 8;
+				this.w = 0.25 * canvas.width;
+				this.h = 20;
+				this.x = 10;
+				this.y = canvas.height - this.h - 10;
+				this.col = &quot;white&quot;;
+				//this.xdir = this.ydir = 1;
+			}
+
+			this.move = function() {
+				if(input.left) {
+					this.x -= this.speed;
+					if(this.x &amp;lt; 0) this.x=0;
+				}
+				if(input.right) {
+					this.x += this.speed;
+					if((this.x+this.w) &amp;gt; canvas.width) this.x=canvas.width-this.w;
+				}
+			}
+
+			this.draw = function () {
+				draw.rect(this.x, this.y, this.w, this.h,this.col);
+			}
+			
+
+		}
+		
+		ball = new ballOb();
+		ball.init();
+		
+		paddle = new paddleOb();
+		paddle.init();
+		
+		function loop() {
+			draw.clear();
+			ball.move();
+			ball.draw();
+			paddle.draw();
+			paddle.move();
+			draw.text(&quot;Score: &quot;+score, 10, 20, 20);
+		}
+	
+		setInterval(loop, 30);
+	})
+	&amp;lt;/script&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+	&amp;lt;canvas id=&quot;gamearea&quot; style=&quot;background:url(brick.jpg)&quot;&amp;gt;&amp;lt;/canvas&amp;gt;
+	&amp;lt;p&amp;gt;
+	Brick wall picture credit: &amp;lt;a href=&quot;http://www.flickr.com/photos/richard_wasserman/5510266273/&quot;&amp;gt;Nutch Bicer&amp;lt;/a&amp;gt;
+	&amp;lt;/p&amp;gt;
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>You can find this final demo here: <a href="http://www.coldfusionjedi.com/demos/2011/nov/15_2/index5.html">http://www.coldfusionjedi.com/demos/2011/nov/15_2/index5.html</a>.</p>
+<p>
+<p>Enjoy. I've got an idea for a simple zombie game name. Yes - I love my job. I <i>really</i> love my job.</p>
+}

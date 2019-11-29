@@ -1,0 +1,578 @@
+<h1>Post</h1>
+
+<p>As a young kid, I spent a <em>hell</em> of a lot of time on my Apple 2. I played many different games, but one of my favorite was <a href="https://en.wikipedia.org/wiki/Taipan!">Taipan!</a>.</p>
+<figure>
+<img src="https://static.raymondcamden.com/images/2019/08/TaipanGameTitle.png" alt="title screen for Taipain!" class="imgborder imgcenter">
+<figcaption>By Source, Fair use, https://en.wikipedia.org/w/index.php?curid=8888638</figcaption>
+</figure>
+<p>Taipan was a basic trade simulator based in the far east. You had a ship with storage capacity and would buy and sell goods across multiple ports. The game had basic combat, a money lender, and other details to make things interesting, but for me, my enjoyment came from pure grinding. I'd play it for a few hours at night just to see how much money I could make. (Of course, once I found the money lender bug it became trivial to get rich.)</p>
+<p>As part of my basic &quot;get more experience with Vue apps&quot; goal this year, I decided to rebuild the game (to the best of my ability) using, of course, Vue.js. I didn't want an exact rebuild though and in my version I made a few changes.</p>
+<ul>
+<li>First, I got rid of combat. I <em>hated</em> the combat aspect of the game as it felt incredible slow. I liked the fact that it added risk to the game, but didn't like how it killed the pace. In my version, you can be attacked by pirates but they simply do damage and steal some goods.</li>
+<li>I got rid of the money lender. It's an interesting aspect, but it also slowed down the pace of the game when arriving at port.</li>
+<li>I got rid of the 'shake down' aspect via Li Yuen. I liked this aspect too and may eventually bring it back.</li>
+<li>I got rid of the warehouse. To me this always felt like a distraction.</li>
+<li>I also skipped making one of my goods illegal.</li>
+</ul>
+<p>That's pretty much it but there's a few other smaller mods as well. My game feels quite a bit more snappy and quick compared to the original which feeds into how I enjoyed playing it.</p>
+<p>I also tried to make use of the keyboard as much as possible. You can read about my work in that area here: <a href="https://www.raymondcamden.com/2019/08/12/working-with-the-keyboard-in-your-vue-app">Working with the Keyboard in your Vue App</a>. I didn't make <em>everything</em> keyboard accessible, but navigation from port to port can be done entirely by keyboard and while playing it felt like a really good setup. So before I get into the code, if you want to give it a try, you can play here:</p>
+<p><a href="https://taipan.raymondcamden.now.sh/">https://taipan.raymondcamden.now.sh/</a></p>
+<p>And you can view the source code here:</p>
+<p><a href="https://github.com/cfjedimaster/vue-demos/tree/master/taipan/">https://github.com/cfjedimaster/vue-demos/tree/master/taipan/</a></p>
+<p>Alright, so let's take a look at the code a bit. I'm not going to go over every single line, but rather talk about the more interesting bits (to me) at a high level.</p>
+<p>Taipan makes use of both Vue Router and Vuex. My router use wasn't anything special. There's an home route which introduces you to the game. A &quot;setup&quot; route which just asks for your name. Then the game route were most of the work is done. Next is a &quot;travel&quot; route which handles going from one port to another. Finally there's a end of game route which shows your final stats.</p>
+<p>My Vuex usage was interesting. As with my <a href="https://www.raymondcamden.com/2019/08/01/playing-with-vue-and-vuex-lemonade-stand">Lemonade Stand</a> game, I spent a good amount of time thinking about what should go in my views versus what should go into the store. I definitely think I have a few things in views that should not be there. I think this particular aspect of Vue development is something that will change over the iteration of an application.</p>
+<p>Let's look at how gameplay happens. Each turn consists of the following logic.</p>
+<ul>
+<li>First, I ask Vuex to consider random events. This was - truly - the most difficult aspect of the entire game. The core &quot;turn to turn, buy, sell&quot; etc logic wasn't too hard. But handling &quot;special events&quot; was definitely problematic.</li>
+<li>My view prompts for input. This can be one of - buying goods, selling goods, repairing damage, upgrading the ship, or moving to another port.</li>
+</ul>
+<p>That &quot;prompts for input&quot; aspect is related to the keyboard. My solution involved showing a menu based on the current 'state' of what you are doing. So initially the state is - show the menu. But if you want to buy something, I switch to another menu prompting you for an amount and good. You can see this in play in the layout for Game.vue.</p>
+<pre><code class="language-html">&lt;template&gt;
+	&lt;div&gt;
+		&lt;p&gt;
+			The date is {{ date }}, Captain {{captain}}. You are currently docked at {{ port }}.
+		&lt;/p&gt;
+
+		&lt;div class=&quot;container&quot;&gt;
+			&lt;Stats /&gt;
+			&lt;Hold /&gt;
+			&lt;Prices /&gt;
+		&lt;/div&gt;
+
+		&lt;p v-if=&quot;canUpgrade&quot;&gt;
+			&lt;strong&gt;Good News!&lt;/strong&gt; You can upgrade your ship for {{ upgradeCost }}.
+			&lt;span v-if=&quot;money &lt; upgradeCost&quot;&gt;Unfortunately you do not have the funds.&lt;/span&gt;
+			&lt;span v-else&gt;&lt;button @click=&quot;doUpgrade&quot;&gt;Purchase Upgrade&lt;/button&gt;&lt;/span&gt;
+		&lt;/p&gt;
+
+		&lt;p v-if=&quot;!keyState&quot;&gt;
+			&lt;b&gt;Menu:&lt;/b&gt; Type &lt;code&gt;B&lt;/code&gt; to buy, &lt;code&gt;S&lt;/code&gt; to sell, 
+			&lt;span v-if=&quot;damage&quot;&gt;&lt;code&gt;R&lt;/code&gt; to repair, &lt;/span&gt;
+			&lt;code&gt;M&lt;/code&gt; to go to another port or &lt;code&gt;Q&lt;/code&gt; to quit.
+		&lt;/p&gt;
+
+		&lt;p v-if=&quot;keyState == 'Move'&quot;&gt;
+			Move to 
+				&lt;span v-for=&quot;(p, i) in ports&quot; :key=&quot;i&quot;&gt;{{ i+1 }}) {{ p }} &lt;/span&gt;
+			&lt;br/&gt;
+			Or &lt;code&gt;C&lt;/code&gt; to cancel.
+		&lt;/p&gt;
+
+		&lt;p v-if=&quot;keyState == 'Buy'&quot;&gt;
+
+			Buy 
+				&lt;input v-model.number=&quot;toBuyQty&quot; type=&quot;number&quot; min=&quot;0&quot;&gt; units of 
+				&lt;select v-model=&quot;toBuy&quot;&gt;
+				&lt;option v-for=&quot;(s, i) in prices&quot; :value=&quot;s&quot; :key=&quot;i&quot;&gt;{{ s.name }}&lt;/option&gt;
+				&lt;/select&gt; 
+				for {{ purchasePrice | num }}.
+				&lt;button :disabled=&quot;cantBuy&quot; @click=&quot;buyGoods&quot;&gt;Purchase&lt;/button&gt;
+			&lt;br/&gt;
+			Or &lt;code&gt;C&lt;/code&gt; to cancel.
+		&lt;/p&gt;
+
+		&lt;p v-if=&quot;keyState == 'Sell'&quot;&gt;
+
+			Sell 
+				&lt;input v-model.number=&quot;toSellQty&quot; type=&quot;number&quot; min=&quot;0&quot;&gt; units of 
+				&lt;select v-model=&quot;toSell&quot;&gt;
+				&lt;option v-for=&quot;(s, i) in prices&quot; :value=&quot;s&quot; :key=&quot;i&quot;&gt;{{ s.name }}&lt;/option&gt;
+				&lt;/select&gt; 
+				for {{ sellPrice | num }}.
+				&lt;button :disabled=&quot;cantSell&quot; @click=&quot;sellGoods&quot;&gt;Sell&lt;/button&gt;
+			&lt;br/&gt;
+			Or &lt;code&gt;C&lt;/code&gt; to cancel.
+		&lt;/p&gt;
+
+		&lt;p v-if=&quot;keyState == 'Repair'&quot;&gt;
+
+			Spend 
+				&lt;input v-model.number=&quot;toRepairQty&quot; type=&quot;number&quot; min=&quot;0&quot;&gt; on repairs. 
+				&lt;button :disabled=&quot;cantRepair&quot; @click=&quot;doRepair&quot;&gt;Repair&lt;/button&gt;
+			&lt;br/&gt;
+			Or &lt;code&gt;C&lt;/code&gt; to cancel.
+		&lt;/p&gt;
+
+	&lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+<p>I moved my a lot of my display stuff into components which lets the layout of this page mainly focus on responding to your inputs. The <code>keyState</code> value is how I handle dynamically changing the current menu. Here's the JavaScript:</p>
+<pre><code class="language-js">import Hold from '@/components/Hold.vue'
+import Prices from '@/components/Prices.vue'
+import Stats from '@/components/Stats.vue'
+
+export default {
+	data() {
+		return {
+			keyState:null,
+			ray:null,
+			toBuy:null,
+			toBuyQty:0,
+			toSell:null,
+			toSellQty:0,
+			toRepairQty:0
+		}
+	},
+	components:{
+		Hold, Prices, Stats
+	},
+	created() {
+		this.$store.commit('newTurn');
+		window.addEventListener('keypress', this.doCommand);
+	},
+	destroyed() {
+		window.removeEventListener('keypress', this.doCommand);
+	},
+	computed: {
+		cantBuy() {
+			return (
+				this.toBuy === null
+				||
+				(this.toBuy.price * this.toBuyQty) &gt; this.money
+				||
+				this.toBuyQty + this.shipUsedSpace &gt; this.holdSize
+			)
+		},
+		cantRepair() {
+			return this.toRepairQty &gt; this.money;
+		},
+		cantSell() {
+			if(this.toSell === null) return true;
+			let avail = 0;
+			for(let i=0;i&lt;this.hold.length;i++) {
+				if(this.hold[i].name === this.toSell.name) {
+					avail = this.hold[i].quantity;
+				}
+			}
+			console.log('avail is '+avail);
+			return (
+				this.toSellQty &gt; avail
+			)
+		},
+		canUpgrade() {
+			return this.$store.state.offerUpgrade;
+		},
+		captain() {
+			return this.$store.state.name;
+		},
+		damage() {
+			return this.$store.state.damage;
+		},
+		date() {
+			return this.$store.getters.gameDate;
+		},
+		hold() {
+			return this.$store.state.hold;
+		},
+		holdSize() {
+			return this.$store.state.holdSize;
+		},
+		money() {
+			return this.$store.state.money;
+		},
+		port() {
+			return this.$store.state.port.name;
+		},
+		ports() {
+			return this.$store.getters.ports;
+		},
+		prices() {
+			return this.$store.state.prices;
+		},
+		purchasePrice() {
+			if(!this.toBuy) return 0;
+			/* disabled due to warning about unexpected side effect, which makes sense
+			if(this.toBuyQty &lt; 0) this.toBuyQty = 0;
+			*/
+			return this.toBuy.price * this.toBuyQty;
+		},
+		repairCost() {
+			return this.$store.getters.repairCost;
+		},
+		sellPrice() {
+			if(!this.toSell) return 0;
+			return this.toSell.price * this.toSellQty;
+		},
+		shipUsedSpace() {
+			return this.$store.getters.shipUsedSpace
+		},
+		upgradeCost() {
+			return this.$store.getters.upgradeCost;
+		}
+	},
+	methods: {
+		buyGoods() {
+			//in theory not needed due to other checks
+			if(!this.toBuy) return;
+			if(this.toBuyQty &lt;= 0) return;
+
+			this.$store.commit('purchase', { good: this.toBuy, qty: this.toBuyQty });
+			this.keyState = null;
+		},
+		doUpgrade() {
+			this.$store.commit('upgrade', { cost: this.upgradeCost });
+		},
+		sellGoods() {
+			if(!this.toSell) return;
+			if(this.toSellQty &lt;= 0) return;
+
+			this.$store.commit('sale', { good: this.toSell, qty: this.toSellQty });
+			this.keyState = null;
+		},
+		doCommand(e) {
+			let cmd = String.fromCharCode(e.keyCode).toLowerCase();
+
+			/*
+			How we respond depends on our state. If keyState is null, 
+			it meand we aren't doing anything, so BSM are valid.
+			*/
+			if(!this.keyState) {
+
+				if(cmd === 'b') {
+					console.log('Buy');
+					this.toBuy = null;
+					this.toBuyQty = 0;
+					this.keyState = 'Buy';
+				}
+
+				if(cmd === 's') {
+					console.log('Sell');
+					this.toSell = null;
+					this.toSellQty = 0;
+					this.keyState = 'Sell';
+				}
+
+				if(cmd === 'm') {
+					console.log('Move');
+					this.keyState = 'Move';
+				}
+
+				if(cmd === 'r') {
+					console.log('Repair');
+					this.keyState = 'Repair';
+				}
+
+				if(cmd === 'q') {
+					this.$router.replace('/end');
+				}
+				return;
+			}
+
+			//keystate for move
+			if(this.keyState === 'Move') {
+
+				if(cmd === 'c') {
+					this.keyState = null;
+					return;
+				}
+
+				cmd = parseInt(cmd, 10);
+				for(let i=0;i&lt;this.ports.length;i++) {
+					if(cmd-1 === i) {
+						console.log('going to move to '+this.ports[i]);
+						this.$router.replace({ name:'travel', 
+						params: { 
+							destination: this.ports[i],
+							destinationIndex: i
+						} });
+					}
+				}
+			}
+
+			//keystate for buy
+			if(this.keyState === 'Buy' || this.keyState === 'Sell') {
+
+				if(cmd === 'c') {
+					this.keyState = null;
+					return;
+				}
+
+			}
+
+		},
+		doRepair() {
+			// in theory not needed
+			if(this.toRepairQty &gt;= this.money) return;
+			if(this.toRepairQty &gt;= this.repairCost) this.toRepairQty = this.repairCost;
+
+			this.$store.commit('repair', { total: this.toRepairQty, repairCost: this.repairCost });
+			this.keyState = null;
+		}
+
+		
+	}
+}
+</code></pre>
+<p>That's quite a bit and I apologize. Probably the most interesting aspect is <code>doCommand</code>, where I respond to keyboard events and based on the current state I handle the input. I feel like this could be done better, but for a first draft, I'm happy with it.</p>
+<p>One part I'm not happy with is all of the items in <code>computed</code> that simply reach out to the Vuex state and their getters. I know I could use <a href="https://vuex.vuejs.org/guide/state.html#the-mapstate-helper">mapState</a> to make it a bit cleaner but I decided to hold off on that for now. (I'm going to force myself to use it in myh next demo.)</p>
+<p>Outside of that though most of the code here just handles input and interacts with the store. Here's a quick screen shot of my awesome design.</p>
+<img src="https://static.raymondcamden.com/images/2019/08/taipan1.png" alt="Game screen" class="imgborder imgcenter">
+<p>Let's take a look at <code>Travel.vue</code>. This is an temporary screen you see while moving between ports.</p>
+<pre><code class="language-html">&lt;template&gt;
+	&lt;div&gt;
+		&lt;h1&gt;On the sea...&lt;/h1&gt;
+		&lt;p&gt;
+			You are on the way to {{ destination }}.
+		&lt;/p&gt;
+		&lt;p v-if=&quot;randomEvent&quot;&gt;
+			{{ randomMessage }}
+		&lt;/p&gt;
+
+		&lt;p v-if=&quot;damage &gt;= 100&quot;&gt;
+			&lt;strong&gt;Your ship is completely destroyed!&lt;/strong&gt;
+		&lt;/p&gt;
+	&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+	computed: {
+		damage() {
+			return this.$store.state.damage;
+		},
+		destination() {
+			return this.$route.params.destination;
+		},
+		randomEvent() {
+			return this.randomMessage !== '';
+		},
+		randomMessage() {
+			return this.$store.state.randomMessage;
+		}
+	},
+	created() {
+		// check for random event
+		this.$store.commit('generateRandomEvent', {destination: this.$route.params.destination});
+
+		// this feels icky
+		let destinationIndex = this.$route.params.destinationIndex;
+		if(this.$store.state.newPortIndex) {
+			destinationIndex = this.$store.state.newPortIndex;
+		}
+
+		let timeToWait = 1000;
+		// if there was a special event, we need more time to read, and possibly end the game
+		if(this.randomEvent) {
+			timeToWait += 2000;
+		}
+
+		setTimeout(() =&gt; {
+			console.log('done waiting');
+			if(this.damage &gt;= 100) {
+				this.$router.replace('/end');
+			} else {
+				this.$store.commit('setPort', destinationIndex);
+				this.$router.replace('/game');
+			}
+		}, timeToWait);
+	}
+}
+&lt;/script&gt;
+</code></pre>
+<p>The most interesting aspect of this is the <code>setTimeout</code> in <code>created</code>. The idea is that you enter this view but then move out automatically. Normally this is done in one second, but if a random event happens I delay it to three seconds total so you have time to read what happened. And since a random event could actually end the game for you, I've got some logic in there to move to the end view.</p>
+<p>Finally, let's take a look at the store. I'm going to break this up a bit instead of just pasting the entire thing.</p>
+<pre><code class="language-js">/*
+starting year for the game
+*/
+const BASE_YEAR = 1900;
+
+const MONTHS = [&quot;January&quot;, &quot;February&quot;, &quot;March&quot;, &quot;April&quot;, &quot;May&quot;, &quot;June&quot;,
+             &quot;July&quot;, &quot;August&quot;, &quot;September&quot;, &quot;October&quot;, &quot;November&quot;, &quot;December&quot;];
+
+/*
+Ports. For now ports just have names but I may add boosts later, like port
+X for good Y is good.
+*/
+const PORTS = [
+  {
+    name:'Bespin'
+  },
+  {
+    name:'Dagobah'
+  },
+  {
+    name:'Naboo'
+  },
+  {
+    name:'Coruscant'
+  },
+  {
+    name:'New Boston'
+  }
+];
+
+/*
+Goods have a value range representing, generally, what they will sell for.
+illegal=true means there is a chance it will be stolen
+*/
+const GOODS = [
+  {
+    name:'General',
+    salesRange: [5, 20],
+    illegal:false
+  },
+  {
+    name:'Arms',
+    salesRange: [60, 120],
+    illegal:false
+  },
+  {
+    name:'Silk',
+    salesRange: [200, 500],
+    illegal:false
+  },
+  {
+    name:'Spice',
+    salesRange: [3000, 6000],
+    illegal:true
+  }
+
+];
+
+//how much each upgrade adds
+const HOLD_UPGRADE = 10;
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+</code></pre>
+<p>My store starts off with various constants that impact game play. You can see the ports (yes, I diverted a bit from the old game), goods, and more. Ports are just names for now, but my intent was to allow for ports to 'favor' certain goods. Goods support a range in which their prices will fall and you can see I marked <code>Spice</code> as illegal, but haven't yet implemented it yet. Finally I've got a random utility function in there, <code>getRandomInt</code>.</p>
+<p>Here's my store state:</p>
+<pre><code class="language-js">state: {
+	name:'',
+	port:null,
+	money:100000,
+	turn:0,
+	holdSize:100,
+	hold:[],
+	prices: [],
+	damage:0,
+	randomMessage:'',
+	newPortIndex:null
+},
+</code></pre>
+<p>Most of this is self explanatory, but note that the last two items, <code>randomMessage</code> and <code>newPortIndex</code>, are only used for the special events that happen when you travel.</p>
+<p>Now let's look at the various mutations. First up is <code>bootstrap</code>, which simply sets up things for a new game.</p>
+<pre><code class="language-js">bootstrap(state) {
+	state.port = PORTS[0];
+	GOODS.forEach(g =&gt; {
+	state.hold.push({name:g.name, quantity: 0});
+	});
+},
+</code></pre>
+<p>Next is my special event handling:</p>
+<pre><code class="language-js">/*
+A random event is one of the following:
+	Nothing (ie nothing happened, no event
+	Storm sends you to X port
+	Storm damages you Y percentage points
+	Pirates attack - steal items + Y damage
+
+Also note we skip random events for the first ten turns or so
+
+*/
+generateRandomEvent(state, info) {
+	state.randomMessage = '';
+	state.offerUpgrade = false;
+
+	if(state.turn &lt; 10) return;
+
+	let rand = getRandomInt(0, 100);
+
+	//nothing
+	if(rand &lt; 60) return;
+
+	if(rand &gt;= 60 &amp;&amp; rand &lt; 70) {
+		console.log('storm redirection');
+		let newPort = null;
+
+		while(!newPort || newPort.name === info.destination.name) {
+			state.newPortIndex = getRandomInt(0, PORTS.length);
+			newPort = PORTS[state.newPortIndex];
+		}
+		state.randomMessage = 'A storm has blown you off course to ' + newPort.name;
+		console.log(state.randomMessage);
+	}
+
+	if(rand &gt;= 70 &amp;&amp; rand &lt; 80) {
+		let damage = getRandomInt(1, 12);
+		console.log('Storm damages you for '+damage);
+		state.randomMessage = 'A violent storm damages your ship!';
+		state.damage += damage;
+	}
+
+	if(rand &gt;= 80 &amp;&amp; rand &lt; 90) {
+		//note, if your hold is empty, we ignore everything;
+		//now get the hold and filter to items with stuff
+		let heldItems = state.hold.filter(h =&gt; {
+			return h.quantity &gt; 0;
+		});
+		if(heldItems.length === 0) return;
+
+		console.log('pirates attack and damage and steal shit');
+		//first, do damange, bit less than storm to be nice
+		let damage = getRandomInt(1, 7);
+		console.log('Storm damages you for ' + damage);
+
+		console.log('state.hold with items',JSON.stringify(heldItems));
+		//select the index to steal
+		let stealIndex = getRandomInt(0, heldItems.length);
+		console.log('going to steal from '+JSON.stringify(heldItems[stealIndex]));
+		let stealAmt = getRandomInt(1, heldItems[stealIndex].quantity + 1);
+		console.log('stealing '+stealAmt);
+		let target = -1;
+		for(let i=0;i&lt;state.hold.length;i++) {
+			if(heldItems[stealIndex].name === state.hold[i].name) target = i;
+		}
+
+		state.randomMessage = 'Pirates attack your ship and steal some cargo!';
+		state.damage += damage;
+		state.hold[target].quantity -= stealAmt;
+	}
+
+	if(rand &gt;= 90) {
+		state.offerUpgrade = true;
+	}
+	
+},
+</code></pre>
+<p>As you can see, I basically just pick a random number and based on the result, a few different things can happen. One of them (<code>offerUpgrade</code>) will actually trigger when you arrive at the port, not &quot;in transit&quot;.</p>
+<p>The rest of the mutations are that interesting as the mainly apply goods changes and do repairs or upgrades. In the <code>getters</code> section, I thought these parts were neat.</p>
+<pre><code class="language-js">gameDate(state) {
+	let years = Math.floor((state.turn-1)/12);
+	let month = (state.turn-1) % 12;
+	return `${MONTHS[month]} ${BASE_YEAR + years}`;
+},
+</code></pre>
+<p>The <code>gameDate</code> getter is how I handle showing a date that advances month to month and year to year.</p>
+<pre><code class="language-js">rank(state) {
+	// your final score is just based on money, cuz life
+	if(state.money &lt; 10000) return 'Deck Hand';
+	if(state.money &lt; 50000) return 'Ensign';
+	if (state.money &lt; 100000) return 'Lieutenant';
+	if (state.money &lt; 1000000) return 'Commander';
+	//below is 10 million, just fyi ;)
+	if (state.money &lt; 10000000) return 'Captain';
+	//below is 100 million, just fyi ;)
+	if (state.money &lt; 100000000) return 'Admiral';
+	return 'Grand Admiral';
+},
+</code></pre>
+<p>The <code>rank</code> getter simply returns a label based on the money you earned. Note that I used comments there to help me read the large numbers. There's an ES proposal for <a href="https://2ality.com/2018/02/numeric-separators.html">numeric separators</a> that aims to make this easier. So for example, imagine if that last condition was:</p>
+<pre><code>if (state.money &lt; 100_000_000) return 'Admiral';
+</code></pre>
+<p>Unfortunately this is not supported very well yet. The latest Chrome has it, but not Firefox.</p>
+<p>The last interesting bit was handling the cost of ship upgrades:</p>
+<pre><code class="language-js">upgradeCost(state) {
+	// the cost to upgrade is based on the size of your ship;
+	let cost = state.holdSize * 200 * (1 + getRandomInt(5,10)/10);
+	return Math.floor(cost);
+}
+</code></pre>
+<p>My goal here was to make it expensive, and progressively so, as you got bigger and bigger. This is something I'd tweak as folks play and provide feedback.</p>
+<p>Anyway, I hope this demo is interesting to folks, and as always, I'm very much open to feedback and critiques of my design decisions! Let me know what you think by leaving me a comment below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/@jcotten?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Joshua J. Cotten</a> on Unsplash</i></p>
+}

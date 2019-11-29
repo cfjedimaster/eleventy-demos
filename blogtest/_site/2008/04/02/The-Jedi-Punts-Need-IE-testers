@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>I've been working with a <a href="http://lighthousepro.riaforge.org">Lighthouse Pro</a> user today who has discovered a very odd issue. When generating reports (the flash charts version), he got a null pointer error from ColdFusion at the end of the first chart.</p>
+<p>I opened up Firefox, gave it a whirl, and couldn't reproduce the error.</p>
+<p>We then found that the error only occurred in IE (I tried 7, not 6).</p>
+<p>So this is what bugs me. It's a CF error - not a client side error. I debugged the FORM scope after posting from the page where you select what to chart and it was the exact same. I debugged the Data variable which all the charts use and it was the exact same in both browsers (as expected), yet somehow only IE is throwing the server side issue.</p>
+<p>It seems impossible - but we are both seeing the same thing. Soooo.... consider this my official call for help. If anyone out there wants to try to duplicate this, and actually can duplicate it, post here. FYI - the database the user was running was SQL Server, not that I think it should matter, but there ya go.</p>
+<p>I hope we can figure this out - because it certainly is interesting (and frustrating).</p>
+}

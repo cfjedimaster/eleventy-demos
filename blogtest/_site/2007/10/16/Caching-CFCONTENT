@@ -1,0 +1,30 @@
+<h1>Post</h1>
+
+<p>A few days ago I blogged about a <a href="http://www.raymondcamden.com/index.cfm/2007/10/11/ColdFusion-and-Verity-Tip--Getting-results-found-when-paging">code review</a> I was doing for another client. Yesterday I found another interesting bug in their code. (It is always easier to find bugs in other people's code.)</p>
+<!--more-->
+<p>The code in question was an API tester for their web site. The page had a nice set of links to let you test all of their XML based responses for their site. I noticed something odd in one test. The first time I ran the test, I got a nicely formatted XML result in the browser. The second time however I got an odd jumble of text.</p>
+<p>Viewing the source revealed that the XML was there ok. I took a look at the code and spotted the problem right away. See if you can as well:</p>
+<code>
+&lt;cf_ScopeCache
+      cachename="foo_#somevar#"
+      scope="server"
+      timeout="1800"&gt;
+<p>&lt;cfset myXML = application.myGateway.getMyXML(args)/&gt;</p>
+<p>&lt;CFCONTENT TYPE=&quot;text/xml&quot; RESET=&quot;Yes&quot;&gt;
+&lt;CFOUTPUT&gt;#ToString(myXML)#&lt;/CFOUTPUT&gt;
+&lt;/cf_scopecache&gt;
+</code></p>
+<p>If you don't recognize cf_scopecache, it is just a caching custom tag. It takes the text result of the stuff inside it and stores it.</p>
+<p>And that's where our problem is. Our caching tag caches the text. But the CFCONTENT tag is a Request specific tag. By that I mean it changes the current request. The first time the page is hit, it will execute, as will all the code inside the scopeCache custom tag. The second time though only the text is returned. CFCONTENT isn't run. The fix was simple - move the CFCONTENT:</p>
+<code>
+&lt;CFCONTENT TYPE="text/xml" RESET="Yes"&gt;
+&lt;cf_ScopeCache
+      cachename="foo_#somevar#"
+      scope="server"
+      timeout="1800"&gt;
+<p>&lt;cfset myXML = application.myGateway.getMyXML(args)/&gt;</p>
+<p>&lt;CFOUTPUT&gt;#ToString(myXML)#&lt;/CFOUTPUT&gt;
+&lt;/cf_scopecache&gt;
+</code></p>
+<p>The same issue would exist if you used CFCACHE on top of the page.</p>
+}

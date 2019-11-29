@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>I've got a weird Flex Builder question I hope my readers can help me with. I'm working with an open source Flex project (<a href="http://www.sharefirereader.com/">ShareFire</a>) and need to build the code myself. I created a new project in FB and then manually copied the files over from ShareFire's SVN drop.</p>
+<p>When I did a debug build, I noticed that the non-code files (one SQL xml file and a CSS file) were not copied to bin-debug. Not thinking much of it, I just copied the files manually to bin-debug.</p>
+<p>But this wasn't a real solution and it's now biting me on the rear. When I go to export a release build, the AIR File Contents screen refuses to list the other files:</p>
+<img src="https://static.raymondcamden.com/images//Picture 144.png">
+<p>I thought perhaps I had messed something up by manually dragging files into the project, yet when I made a new file from within FB (readme.txt), it wasn't noticed either.</p>
+<p>Any ideas folks?</p>
+<p>p.s. Sorry for the lack of posts this week. Been fighting the flu the last few days and the flu is winning.</p>
+}

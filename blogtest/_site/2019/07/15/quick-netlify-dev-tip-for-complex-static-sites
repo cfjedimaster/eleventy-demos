@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<p>Hey everyone, this tip will probably have a <em>very</em> limited audience, but it was a huge deal for me so I wanted to share it with others in case they run into the same issue. In case you don't know it, <a href="https://www.netlify.com/products/dev/">Netlify Dev</a> is a way to run the Netlify Platform locally. Which means features like redirects, functions, and more will work locally.</p>
+<p>As a practical example, I use the redirects feature quite a bit as my site has gone through different engines and domains over the years. Being able to quickly test that support locally is awesome.</p>
+<p>However, I ran into an interesting issue with my site. This blog has over six thousand entries. A complete build takes a bit over ten minutes. So when I work locally, I use a different config file that modifies the <code>exclude</code> parameter:</p>
+<pre><code>exclude: [_posts/2003,_posts/2004,_posts/2005,_posts/2006,_posts/2007,_posts/2008,_posts/2009,_posts/2010,_posts/2011,_posts/2012,_posts/2013,_posts/2014,_posts/2015,_posts/2016,_posts/2017,_posts/2018/01,_posts/2018/02,_posts/2018/03,_posts/2018/04,node_modules]
+</code></pre>
+<p>I also wrote a quick shell script called <code>start.sh</code> to make using this config easier:</p>
+<pre><code class="language-bash">#!/bin/bash
+bundle exec jekyll serve --config _config.dev.yml 
+</code></pre>
+<p>As a quick aside, the <code>jekyll</code> CLI does support a &quot;only render last N posts&quot; option, but I discovered that <em>after</em> I had used the <code>exclude</code> feature. Like with most things there's more than one way to solve the problem.</p>
+<p>This different configuration takes my typical build time down to about five seconds which is more than quick enough.</p>
+<p>Sweet!</p>
+<img src="https://static.raymondcamden.com/images/2019/07/happycat.jpg" alt="Smiling Cat" class="imgborder imgcenter">
+<p>Unfortunately, when I started using Netlify Dev, I noticed immediately that my builds were taking the usual, very long, time. I was ok with it a bit as it let me do testing of my redirects but it was definitely less than ideal.</p>
+<p>So of course I went over to the forum and <a href="https://community.netlify.com/t/configure-jekyll-config-with-netlify-dev/2038/4">posted</a> a question about this.</p>
+<p>And since I posted a question, I, of course, discovered how to do it about a minute later.</p>
+<p>Turns out the CLI supports a way to bypass the normal startup command that Dev uses. It's as simple as passing <code>-c</code> and the command you need. This is what I use for my blog:</p>
+<pre><code class="language-bash">netlify dev -c &quot;bundle exec jekyll serve --config _config.dev.yml&quot;
+</code></pre>
+<p>I modified my <code>start.sh</code> to use that and I'm good to go. Running both Jekyll locally and Netlify Dev.</p>
+<img src="https://static.raymondcamden.com/images/2019/07/nd1.jpg" alt="Console output showing the netlify dev version running" class="imgborder imgcenter">
+<p><i>Header photo by <a href="https://unsplash.com/@sam_truong?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Sam Truong Dan</a> on Unsplash</i></p>
+}

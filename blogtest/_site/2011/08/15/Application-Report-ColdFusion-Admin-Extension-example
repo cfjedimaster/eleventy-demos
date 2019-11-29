@@ -1,0 +1,64 @@
+<h1>Post</h1>
+
+<p>I was having a discussion on a private list when David McGuigan came up with a very interesting idea. What he proposed is <i>very</i> cool and much more than what I'm going to demo here, but I thought a simple proof of concept might be of interest. The core of his idea involved a ColdFusion Administrator tool that would give a live report of running applications. This tool would provide a wealth of data and features, but I thought I'd quickly write up a proof of concept for something a bit simpler. In this example I'll demonstrate how to make use of the Admin API, and specifically the Server Monitor API, to create such a report.</p>
+<p/>
+<!--more-->
+I wrote my proof of concept within the CF Admin folder which allows me to run all API commands without needing to login. So for example:
+<p/>
+<code>
+&lt;cfset sm = createObject("component", "CFIDE.adminapi.servermonitoring")&gt;
+<p>&lt;!---
+Figure out what we have enabled.
+---&gt;
+&lt;cfset settings = sm.getMonitorSettings()&gt;</p>
+<p>&lt;!---
+Get all the active apps as keys, the func below also returns the ram use if we've enabled it.
+---&gt;
+&lt;cfset appScopeMemory = sm.getAllApplicationScopesMemoryUsed()&gt;
+</code></p>
+<p>
+<p>The variable appScopeMemory returned a structure of active applications, including an empty one, so I create a list after removing the blank key.</p>
+<p>
+<code>
+&lt;!--- we have a blank scope to remove ---&gt;
+&lt;cfset structDelete(appScopeMemory, "")&gt;
+&lt;cfset activeApps = listSort(structKeyList(appScopeMemory), "textnocase")&gt;
+</code>
+<p>
+<p>Once I have the list of applications, I loop through it and run a few calls. For this simple proof of concept I just focus on the application and session scope usage.</p>
+<p>
+<code>
+&lt;cfloop index="app" list="#activeApps#"&gt;
+	&lt;cfset sessions = sm.getActiveSessions(app)&gt;
+	&lt;cfset appvars = sm.getApplicationScopeMemoryUsed(app)&gt;
+<pre><code>&amp;lt;cfoutput&amp;gt;
+&amp;lt;div class=&quot;appBlock&quot;&amp;gt;
+&amp;lt;h2&amp;gt;#app#&amp;lt;/h2&amp;gt;
+
+&amp;lt;cfif settings.memoryMonitoringEnabled&amp;gt;
+Application scope usage: #numberFormat(getTotalAppMemoryUsage(appvars))#&amp;lt;br/&amp;gt;
+&amp;lt;/cfif&amp;gt;
+Application Variables:
+&amp;lt;cfdump var=&quot;#appvars#&quot; expand=&quot;false&quot; label=&quot;Application Vars&quot;&amp;gt;
+&amp;lt;cfif settings.memoryMonitoringEnabled&amp;gt;
+Session scope usage: #numberFormat(getTotalSessionMemoryUsageForApp(sessions))#&amp;lt;br/&amp;gt;
+&amp;lt;/cfif&amp;gt;
+Active Session Count: #sm.getActiveSessionCount(app)#&amp;lt;br/&amp;gt;
+&amp;lt;cfdump var=&quot;#sessions#&quot; expand=&quot;false&quot; label=&quot;Sessions&quot;&amp;gt;
+
+&amp;lt;/div&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>Here's an example of the result:</p>
+<p>
+<p><a href="http://www.raymondcamden.com/images/ScreenClip154.png"><img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip_small.png" /></a></p>
+<p>
+<p>I was going to spend more time to properly format the dumps... but meh. It's a proof of concept and it serves the purpose. You can click to expand and see all the application variables and active sessions.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip155.png" />
+<p>
+<p>If you want to play with this code yourself, grab the download below. If you haven't played yet with ColdFusion Admin extensions, take a look at my <a href="http://www.coldfusionjedi.com/page.cfm/Guide-to-ColdFusion-Administrator-Extensions">guide</a>.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fapps%2Ezip'>Download attached file.</a></p></p>
+}

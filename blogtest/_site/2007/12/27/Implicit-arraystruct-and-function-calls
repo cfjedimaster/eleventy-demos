@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>I'm thinking this is something folks have blogged about before, but I just ran into it today. When using array and struct implicit creation, you cannot use the syntax directly in a udf/method call. Let me explain. Consider this example:</p>
+<code>
+&lt;cfset z = {name='r',age=34}&gt;
+&lt;cfset somefunc(data=z)&gt;
+</code>
+<p>In this example I use shorthand notation to creation a structure. I then pass it to somefunc as an argument named data. This works just fine. But this version, which should be the same, will give you a syntax error:</p>
+<code>
+&lt;cfset somefunc(data={name='r',age=34})&gt;
+</code>
+<p>I also tried the simpler form:</p>
+<code>
+&lt;cfset somefunc({name='r',age=34})&gt;
+</code>
+<p>Which also failed. It looks like you can only use the implicit creation in cfset statements. (Which is certainly ok, I'm just happy we have this shortcut!)</p>
+}

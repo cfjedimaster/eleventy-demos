@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I had an issue this morning selecting data from an Oracle DB with MX 6.1. It looks like there are some known issues with the latest drivers. I found a <a href="http://webforums.macromedia.com/coldfusion/messageview.cfm?catid=6&threadid=680610&highlight_key=y&keyword1=select&keyword2=oracle">post</a> and spoke with an support engineer (thanks Stephen!) and after a roll back of the drivers, it all worked well. Hopefully we will see a real fix soon. I don't use Oracle often, so the Forums were a real help. If you don't use Macromedia's <a href="http://webforums.macromedia.com/coldfusion/">Support Forums</a>, you are really missing out on a valuable resource. It's one of the best places to ask for, and search for help. I'd probably recommend it as the number two resource after cf-talk.</p>
+}

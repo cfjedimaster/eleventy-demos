@@ -1,0 +1,130 @@
+<h1>Post</h1>
+
+<p>This is a follow to an <a href="http://www.raymondcamden.com/index.cfm/2009/11/18/jQuery-Quickie-Highlighting-a-table-row-after-selecting-a-checkbox">earlier post</a> that discussed how to use jQuery and checkboxes to highlight a row. A user wrote in with two requests that were fairly sensible so I thought I'd share them here.</p>
+<p>The first thing the user asked about was how to handle pre-selected rows. Another reader had asked that as well and I said I didn't support that because I was following a &quot;GMail&quot; style model where, normally, nothing is checked when the page loads. It's a fairly simple enough modification though. Consider the following.</p>
+<!--more-->
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot;
+src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>   $(&quot;#artTable input:checkbox&quot;).click(function() {
+           $(this).parent().parent().toggleClass(&quot;highlight&quot;)
+   })
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;style&gt;
+.highlight {
+background-color:pink;
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfquery name=&quot;art&quot; datasource=&quot;cfartgallery&quot; maxrows=&quot;15&quot;&gt;
+select  *
+from    art
+&lt;/cfquery&gt;</p>
+<p>&lt;table id=&quot;artTable&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;td&gt; &lt;/td&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Price&lt;/th&gt;
+&lt;/tr&gt;
+&lt;cfoutput query=&quot;art&quot;&gt;
+&lt;tr &lt;cfif isSold&gt;class=&quot;highlight&quot;&lt;/cfif&gt;&gt;
+&lt;td&gt;&lt;input type=&quot;checkbox&quot; name=&quot;select&quot; value=&quot;#artid#&quot; &lt;cfif
+isSold&gt;checked&lt;/cfif&gt;&gt;&lt;/td&gt;
+&lt;td&gt;#artname#&lt;/td&gt;
+&lt;td&gt;#dollarFormat(price)#&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/table&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>I've added code so that when a piece of art is sold, it's automatically marked with the highlight class. And, um, that's it. The magic of the jQuery toggle() function means it <b>just plain works</b> which is part of the reason I love jQuery. So whether it has the class or not, the toggle() will handle it.</p>
+<p>The second request was a bit odder. He actually wanted to use two tables to display his data. The table on top had just the name of the art and the second table had the description. He wanted to make it so that on clicking the checkbox in the first table, the corresponding record in the second table would be updated.</p>
+<p>I began by adding the second table:</p>
+<code>
+&lt;table id="artTable1" border="1"&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Description&lt;/th&gt;
+<p>&lt;/tr&gt;
+&lt;cfoutput query=&quot;art&quot;&gt;
+&lt;tr class=&quot;&lt;cfif isSold&gt;highlight&lt;/cfif&gt; id#artid#&quot;&gt;
+&lt;td&gt;
+#description#</p>
+<p>&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/table&gt;
+</code></p>
+<p>As you can see, it duplicates the logic of adding the highlight class when the art is sold. But I've also added a new class, id#artid#. I'm using this as a marker. It just occurred to me that I could have tried an ID on the TR tag as well. Anyway - back to our jQuery code. The checkboxes already had a value that was the ID, so I added:</p>
+<code>
+var myid = $(this).val()
+</code>
+<p>and then:</p>
+<code>
+$("#artTable1 tr.id"+myid).toggleClass("highlight")
+</code>
+<p>The complete code listing is below, and I've set up a demo of this <a href="http://www.coldfusionjedi.com/demos/jan52010/test.cfm">here</a>.</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot;
+src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>   $(&quot;#artTable input:checkbox&quot;).click(function() {
+			var myid = $(this).val()
+           $(this).parent().parent().toggleClass(&quot;highlight&quot;)
+		   $(&quot;#artTable1 tr.id&quot;+myid).toggleClass(&quot;highlight&quot;)
+   })
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;style&gt;
+.highlight {
+background-color:pink;
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfquery name=&quot;art&quot; datasource=&quot;cfartgallery&quot; maxrows=&quot;15&quot;&gt;
+select  *
+from    art
+&lt;/cfquery&gt;</p>
+<p>&lt;table id=&quot;artTable&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;td&gt; &lt;/td&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Price&lt;/th&gt;
+&lt;/tr&gt;
+&lt;cfoutput query=&quot;art&quot;&gt;
+&lt;tr &lt;cfif isSold&gt;class=&quot;highlight&quot;&lt;/cfif&gt;&gt;
+&lt;td&gt;&lt;input type=&quot;checkbox&quot; name=&quot;select&quot; value=&quot;#artid#&quot; &lt;cfif
+isSold&gt;checked&lt;/cfif&gt;&gt;&lt;/td&gt;
+&lt;td&gt;#artname#&lt;/td&gt;
+&lt;td&gt;#dollarFormat(price)#&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/table&gt;</p>
+<p>&lt;table id=&quot;artTable1&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Description&lt;/th&gt;</p>
+<p>&lt;/tr&gt;
+&lt;cfoutput query=&quot;art&quot;&gt;
+&lt;tr class=&quot;&lt;cfif isSold&gt;highlight&lt;/cfif&gt; id#artid#&quot;&gt;
+&lt;td&gt;
+#description#
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/table&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

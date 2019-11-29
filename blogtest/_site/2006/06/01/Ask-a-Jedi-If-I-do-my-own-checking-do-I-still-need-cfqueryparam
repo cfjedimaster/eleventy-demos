@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>Justin asks:</p>
+<blockquote>
+In a CFC file using &lt;cffunction&gt; with &lt;cfargument type=&quot;blah&quot;&gt; should any
+queries inside the function (which is in the cfc) be using &lt;cfqueryparam&gt;? Or is the data already validated by the &lt;cfargument&gt; tag?
+<p>I want to make sure I'm
+protecting my users, but don't know if theres a such thing as
+&quot;overkill&quot; here.</p>
+</blockquote>
+<p>Repeat after me - there is no overkill when it comes to security. Another example would if you do validation on the argument before sending it to the CFC. Does it make sense to validate again in the CFC. Yes. As it stands, cfargument can validate data types, but can't validate things like &quot;Greater than zero&quot; or &quot;Whole numbers only.&quot;</p>
+<p>Also - you are forgetting the cfqueryparam is <i>more</i> than just a security thing. It also speeds up the query execution (for databases that support it).</p>
+}

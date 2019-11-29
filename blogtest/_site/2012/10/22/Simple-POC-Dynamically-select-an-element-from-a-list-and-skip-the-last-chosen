@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>Pardon the super-long title up there. This is based on a simple StackOverflow question from today (<a href="http://stackoverflow.com/questions/13015128/select-random-list-item-and-add-class">Select random list item and add class</a>) based on a simple premise: Given a set of tags, how would you remove a class from one of them and dynamically re-apply it to another one chosen by random?</p>
+<!--more-->
+<p>I chimed in, as did others, but I thought it might be interesting to share my solution here. I updated my code to make use of SessionStorage to remember the last item selected. As you know, I'm a <strong>big</strong> fan of LocalStorage and other &quot;practical&quot; HTML5 features, and I thought this was a nice, if simple, example of where you could use the API. Here's the code:</p>
+<script src="https://gist.github.com/3934580.js?file=gistfile1.js"></script>
+<p>And you can run it on JSBin here: <a href="http://jsbin.com/axudey/1/">http://jsbin.com/axudey/1/</a></p>
+<p>There really isn't much to say about this. If anyone needs something explained, just ask. Again - I'm mainly sharing it as a practical example of LocalStorage.</p>
+<p>P.S. As explained on StackOverflow, I intentionally made the code more verbose then it needed to be to help explain it to the user. Since we are still talking just 20 lines of code here, I don't think that's a big deal. ;)</p>
+}

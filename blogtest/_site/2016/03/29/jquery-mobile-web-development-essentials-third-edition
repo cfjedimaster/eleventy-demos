@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Yesterday the third edition of my jQuery Mobile book, <a href="https://www.packtpub.com/application-development/jquery-mobile-web-development-essentials-third-edition">jQuery Mobile Web Development Essentials</a>, was released by Packt. I don't talk a lot about <a href="http://jquerymobile.com">jQuery Mobile</a> anymore now that I'm an <a href="http://ionicframework.com">Ionic fanboy</a>, but I've got a lot of respect for the framework and I find it one of the simplest mobile frameworks around. In fact, I used it in my <a href="https://www.manning.com/books/apache-cordova-in-action">Apache Cordova</a> book because I felt it was the simplest way to introduce a mobile-friendly UI/UX for folks learning Cordova.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/jqm3.jpg">
+<p>This update covers jQuery Mobile 1.4.5. 1.5 is &quot;on the way&quot; and that may mean another update to the book in the future, but for now, the book covers the most recent version of jQuery Mobile. And just look at that cover. It's beautiful - you just have to buy it, right?</p>
+}

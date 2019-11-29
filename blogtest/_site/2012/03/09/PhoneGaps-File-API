@@ -1,0 +1,283 @@
+<h1>Post</h1>
+
+<p><strong>Be sure to read the notes at the end of this blog entry!</strong></p>
+<p>This week I had the opportunity to record a few videos on <a href="http://www.phonegap.com">PhoneGap</a> for Adobe TV. One of the videos covered the <a href="http://docs.phonegap.com/en/1.5.0/phonegap_file_file.md.html#File">File API</a> and since it was a bit difficult I figured I'd share my findings, and sample code, with others.</p>
+<!--more-->
+<p>
+<p>My main struggle with the File API was trying to wrap my head around how it worked. The docs weren't entirely clear to me and were a bit confusing. Turns out there's a good reason for that. (Although I'm working to improve the docs.) PhoneGap's File API is really an implementation of the <a href="http://www.w3.org/TR/FileAPI/">W3 File API</a>. The PhoneGap docs mention something similar in the <a href="http://docs.phonegap.com/en/1.5.0/phonegap_storage_storage.md.html#Storage">database area</a> so it makes sense for the File docs to be updated as well. (And as I said - I'm working on that. I did my first pull request to add just such a mention.)</p>
+<p>
+<p>After I figured that out, I then found an incredibly useful article on the File API over at HTML5 Rocks: <a href="http://www.html5rocks.com/en/tutorials/file/filesystem/">Exploring the Filesystem APIs</a>. I encourage everyone to read over Eric Bidelman's article. He's got examples for pretty much every part of the API.</p>
+<p>
+<p>At a high level, working with the File API comes down to a few basic concepts:</p>
+<p>
+<ul>
+<li>First, you request a file system. You can ask for either a persistent or temporary file system. On the desktop, these both point to a sandboxed folder. On PhoneGap, your access is a bit broader, essentially the entire storage system. 
+<li>The API supports basic "CRUD" operations for both files and folders. 
+<li>The API supports reading and writing to files, both binary and plain text.
+<li>Probably the most difficult aspect (well, not difficult, just a bit unwieldy), is that each and every operation is asynchronous. So to get and read a file involves about 3 or 4 levels of callbacks. 
+</ul>
+<p>
+<p>For my Adobe TV video, I built a simple application that demonstrates some of these principles.  I began with a few simple buttons that would let me test basic file operations:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip35.png" />
+<p>
+<p>In order to do anything, I need access to the file system, and this needs to be done after PhoneGap fires the deviceready event:</p>
+<p>
+<code>
+function onDeviceReady() {
+<pre><code>//request the persistent file system
+window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, onError);
+</code></pre>
+<p>}</p>
+<p>function init() {
+document.addEventListener(&quot;deviceready&quot;, onDeviceReady, true);
+}<br>
+</code></p>
+<p>
+<p>If the file system is loaded, onFSSuccess will handle storing a pointer to it while also setting up my event handlers:</p>
+<p>
+<code>
+<p>function onFSSuccess(fs) {
+fileSystem = fs;</p>
+<pre><code>getById(&quot;#dirListingButton&quot;).addEventListener(&quot;touchstart&quot;,doDirectoryListing);			
+getById(&quot;#addFileButton&quot;).addEventListener(&quot;touchstart&quot;,doAppendFile);			
+getById(&quot;#readFileButton&quot;).addEventListener(&quot;touchstart&quot;,doReadFile);			
+getById(&quot;#metadataFileButton&quot;).addEventListener(&quot;touchstart&quot;,doMetadataFile);			
+getById(&quot;#deleteFileButton&quot;).addEventListener(&quot;touchstart&quot;,doDeleteFile);			
+
+logit( &quot;Got the file system: &quot;+fileSystem.name +&quot;&amp;lt;br/&amp;gt;&quot; +
+								&quot;root entry name is &quot;+fileSystem.root.name + &quot;&amp;lt;p/&amp;gt;&quot;)	
+
+doDirectoryListing();
+</code></pre>
+<p>}<br>
+</code></p>
+<p>
+<p>As a quick aside, getById is simply a wrapper for document.getElementById. (Trying to reduce my dependency on jQuery.) Our fileSystem object has a few properties we can display, like the name for example. It also has a root property which is a pointer to the root directory. (Duh.) The logit function is simply appending to a DIV on the HTML page as a quick debugging technique.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip37.png" />
+<p>
+<p>This event handler then fires off doDirectoryListing. This is normally run by the &quot;Show Directory Contents&quot; button but I automatically run it after the file system is opened.</p>
+<p>
+<code>
+function gotFiles(entries) {
+	var s = "";
+	for(var i=0,len=entries.length; i&lt;len; i++) {
+		//entry objects include: isFile, isDirectory, name, fullPath
+		s+= entries[i].fullPath;
+		if (entries[i].isFile) {
+			s += " [F]";
+		}
+		else {
+			s += " [D]";
+		}
+		s += "&lt;br/&gt;";
+<pre><code>}
+s+=&quot;&amp;lt;p/&amp;gt;&quot;;
+logit(s);
+</code></pre>
+<p>}</p>
+<p>function doDirectoryListing(e) {
+//get a directory reader from our FS
+var dirReader = fileSystem.root.createReader();</p>
+<pre><code>dirReader.readEntries(gotFiles,onError);		
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Reading bottom to top, the event handler starts off by creating a reader object off the root property of the file system object. To get the files, you simple call readEntries, and use a callback to handle the result. The entries (which can be files or directories) are a simple array of objects. Here's an example of the output:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip36.png" />
+<p>
+<p>So what about file reading and writing? Opening a file is simple. You can simply run getFile(name) and the API can (if you want) also create the file if it doesn't exist. This simplifies things a bit. Here's the event handler and call back for clicking &quot;Creating/Append to Test File&quot;.</p>
+<p>
+<code>
+function appendFile(f) {
+<pre><code>f.createWriter(function(writerOb) {
+	writerOb.onwrite=function() {
+		logit(&quot;Done writing to file.&amp;lt;p/&amp;gt;&quot;);
+	}
+	//go to the end of the file...
+	writerOb.seek(writerOb.length);
+	writerOb.write(&quot;Test at &quot;+new Date().toString() + &quot;\n&quot;);
+})
+</code></pre>
+<p>}</p>
+<p>function doAppendFile(e) {
+fileSystem.root.getFile(&quot;test.txt&quot;, {create:true}, appendFile, onError);
+}
+</code></p>
+<p>
+<p>Again - please read up from bottom to top. You can see the use of getFile here along with the options after it to ensure an error won't be thrown if it doesn't exist. Appending to a file is done by creating a writer object. Do note - and I screwed this up myself - if you don't seek to the end of the file you'll actually overwrite data as opposed to appending. Now let's look at reading:</p>
+<p>
+<code>
+function readFile(f) {
+	reader = new FileReader();
+	reader.onloadend = function(e) {
+		console.log("go to end");
+		logit("&lt;pre&gt;" + e.target.result + "&lt;/pre&gt;&lt;p/&gt;");
+	}
+	reader.readAsText(f);
+}
+<p>function doReadFile(e) {
+fileSystem.root.getFile(&quot;test.txt&quot;, {create:true}, readFile, onError);
+}
+</code></p>
+<p>
+<p>As before, we begin by opening the file, and in the success callback, create a FileReader object. You can read text or binary data depending on your needs. In this example our content is all text so we readAsText and in <i>that</i> callback append it to our div.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip38.png" />
+<p>
+<p>Now let's look at metadata. This method doesn't return a lot of data - just the modification date of the file/directory.</p>
+<p>
+<code>
+function metadataFile(m) {
+	logit("File was last modified "+m.modificationTime+"&lt;p/&gt;");	
+}
+<p>function doMetadataFile(e) {
+fileSystem.root.getFile(&quot;test.txt&quot;, {create:true}, function(f) {
+f.getMetadata(metadataFile,onError);
+}, onError);
+}
+</code></p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip39.png" />
+<p>
+<p>Finally - let's look at the delete operation:</p>
+<p>
+<code>
+function doDeleteFile(e) {
+	fileSystem.root.getFile("test.txt", {create:true}, function(f) {
+		f.remove(function() {
+			logit("File removed&lt;p/&gt;"); 
+		});
+	}, onError);
+}
+</code>
+<p>
+<p>I hope these examples make sense. If it isn't obvious, I slightly tweaked my style as I built each of the sections. Sometimes I wrote the callbacks within the API calls and sometimes I did it separately. I've included the full code below as well as an APK for those of you who want to test on Android.</p>
+<p>
+<code>
+<p>&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=320; user-scalable=no&quot; /&gt;
+&lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+&lt;title&gt;Minimal AppLaud App&lt;/title&gt;</p>
+<p>&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;phonegap-1.4.1.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;
+var fileSystem;</p>
+<p>//generic getById
+function getById(id) {
+return document.querySelector(id);
+}
+//generic content logger
+function logit(s) {
+getById(&quot;#content&quot;).innerHTML += s;
+}</p>
+<p>//generic error handler
+function onError(e) {
+getById(&quot;#content&quot;).innerHTML = &quot;&lt;h2&gt;Error&lt;/h2&gt;&quot;+e.toString();
+}</p>
+<p>function doDeleteFile(e) {
+fileSystem.root.getFile(&quot;test.txt&quot;, {create:true}, function(f) {
+f.remove(function() {
+logit(&quot;File removed&lt;p/&gt;&quot;);
+});
+}, onError);
+}</p>
+<p>function metadataFile(m) {
+logit(&quot;File was last modified &quot;+m.modificationTime+&quot;&lt;p/&gt;&quot;);	
+}</p>
+<p>function doMetadataFile(e) {
+fileSystem.root.getFile(&quot;test.txt&quot;, {create:true}, function(f) {
+f.getMetadata(metadataFile,onError);
+}, onError);
+}</p>
+<p>function readFile(f) {
+reader = new FileReader();
+reader.onloadend = function(e) {
+console.log(&quot;go to end&quot;);
+logit(&quot;&lt;pre&gt;&quot; + e.target.result + &quot;&lt;/pre&gt;&lt;p/&gt;&quot;);
+}
+reader.readAsText(f);
+}</p>
+<p>function doReadFile(e) {
+fileSystem.root.getFile(&quot;test.txt&quot;, {create:true}, readFile, onError);
+}</p>
+<p>function appendFile(f) {</p>
+<pre><code>f.createWriter(function(writerOb) {
+	writerOb.onwrite=function() {
+		logit(&quot;Done writing to file.&amp;lt;p/&amp;gt;&quot;);
+	}
+	//go to the end of the file...
+	writerOb.seek(writerOb.length);
+	writerOb.write(&quot;Test at &quot;+new Date().toString() + &quot;\n&quot;);
+})
+</code></pre>
+<p>}</p>
+<p>function doAppendFile(e) {
+fileSystem.root.getFile(&quot;test.txt&quot;, {create:true}, appendFile, onError);
+}</p>
+<p>function gotFiles(entries) {
+var s = &quot;&quot;;
+for(var i=0,len=entries.length; i&lt;len; i++) {
+//entry objects include: isFile, isDirectory, name, fullPath
+s+= entries[i].fullPath;
+if (entries[i].isFile) {
+s += &quot; [F]&quot;;
+}
+else {
+s += &quot; [D]&quot;;
+}
+s += &quot;&lt;br/&gt;&quot;;</p>
+<pre><code>}
+s+=&quot;&amp;lt;p/&amp;gt;&quot;;
+logit(s);
+</code></pre>
+<p>}</p>
+<p>function doDirectoryListing(e) {
+//get a directory reader from our FS
+var dirReader = fileSystem.root.createReader();</p>
+<pre><code>dirReader.readEntries(gotFiles,onError);		
+</code></pre>
+<p>}</p>
+<p>function onFSSuccess(fs) {
+fileSystem = fs;</p>
+<pre><code>getById(&quot;#dirListingButton&quot;).addEventListener(&quot;touchstart&quot;,doDirectoryListing);			
+getById(&quot;#addFileButton&quot;).addEventListener(&quot;touchstart&quot;,doAppendFile);			
+getById(&quot;#readFileButton&quot;).addEventListener(&quot;touchstart&quot;,doReadFile);			
+getById(&quot;#metadataFileButton&quot;).addEventListener(&quot;touchstart&quot;,doMetadataFile);			
+getById(&quot;#deleteFileButton&quot;).addEventListener(&quot;touchstart&quot;,doDeleteFile);			
+
+logit( &quot;Got the file system: &quot;+fileSystem.name +&quot;&amp;lt;br/&amp;gt;&quot; +
+								&quot;root entry name is &quot;+fileSystem.root.name + &quot;&amp;lt;p/&amp;gt;&quot;)	
+
+doDirectoryListing();
+</code></pre>
+<p>}</p>
+<p>function onDeviceReady() {</p>
+<pre><code>//request the persistent file system
+window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, onError);
+</code></pre>
+<p>}</p>
+<p>function init() {
+document.addEventListener(&quot;deviceready&quot;, onDeviceReady, true);
+}<br>
+&lt;/script&gt;</p>
+<p>&lt;style&gt;
+button { width: 100%; padding: 5px; }
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body onload=&quot;init();&quot; id=&quot;stage&quot; class=&quot;theme&quot;&gt;</p>
+<p>&lt;button id=&quot;addFileButton&quot;&gt;Create/Append to Test File&lt;/button&gt;
+&lt;button id=&quot;readFileButton&quot;&gt;Read Test File&lt;/button&gt;
+&lt;button id=&quot;metadataFileButton&quot;&gt;Get Test File Metadata&lt;/button&gt;
+&lt;button id=&quot;deleteFileButton&quot;&gt;Delete Test File&lt;/button&gt;
+&lt;button id=&quot;dirListingButton&quot;&gt;Show Directory Contents&lt;/button&gt;</p>
+<p>&lt;div id=&quot;content&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p><strong>Edited August 27, 2013:</strong> Just as an FYI, the File API has been updated a few times since I wrote this blog post. You will note the version link in the text above is for PhoneGap 1.5. PhoneGap is now version 3. One of the big places it changed was in the readAsText area. In my code, I call getFile from the file system object and then pass that into the reader object via the readAsText method. That does not work now. The object passed to getFile is a FileEntry object. You can think of it as a higher-level container for file data. That object has a file() method that returns the file. That thing can then be used in readAsText. You can see an example of this modification in this PhoneGap Google Group posting: <a href="https://groups.google.com/forum/#!topic/phonegap/GKoTOSqD2kc">Post</a><p><a href='enclosures/C%3A%5Chosts%5C2012%2Eraymondcamden%2Ecom%5Cenclosures%2FFileBrowser%2Eapk'>Download attached file.</a></p></p>
+}

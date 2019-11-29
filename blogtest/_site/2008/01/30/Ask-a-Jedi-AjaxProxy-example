@@ -1,0 +1,124 @@
+<h1>Post</h1>
+
+<p>Mike asks:</p>
+<blockquote>
+<p>
+I'm trying to do someting i think may be simple, but its method is eluding me. I want to get to grips with using the cfajaxproxy tag to allow me to have a cfselect that when selecting values will auto populate some information into
+other fields, having pulled the info from the db.
+</p>
+</blockquote>
+<p>I've blogged about cfajaxproxy before and it's truly one of the most amazing tags ever added to the language. I quickly built up an example of what I think Mike was talking about. I first started with related selects that spoke to the cfartgallery demo datasource. I started with this since Forta had already written the code. ;)</p>
+<!--more-->
+<p>Here is what I began with:</p>
+<code>
+&lt;cfform name="main"&gt;
+	&lt;b&gt;Media:&lt;/b&gt; &lt;cfselect bind="cfc:art.getMedia()" bindonload="true" value="mediaid" display="mediatype" name="media"  /&gt;
+	&lt;b&gt;Art:&lt;/b&gt; &lt;cfselect bind="cfc:art.getArt({media})" bindonload="true" value="artid" display="artname" name="art"  /&gt;
+</code>
+<p>Nothing too complex here. You select media and you get art populated in the second drop down. Now this is where I want to demonstrate the use of cfajaxproxy. I added a few form fields and other content:</p>
+<code>
+	&lt;p&gt;
+	&lt;b&gt;Description:&lt;/b&gt; &lt;cftextarea name="desc" id="desc" /&gt;&lt;br&gt;
+	&lt;b&gt;Price:&lt;/b&gt; &lt;cfinput name="price" id="price" /&gt;&lt;br&gt;
+	&lt;span id="img"&gt;&lt;/span&gt;
+&lt;/cfform&gt;
+</code>
+<p>I have 3 areas now. The first two, description and price, I want to populate with the description and price of the art. The span, img, will be populated with the art image.</p>
+<p>The first thing I want to do is bind to the art drop down. This will let me say, &quot;When the art drop down changes, do something.&quot;</p>
+<code>
+&lt;cfajaxproxy bind="cfc:art.getArtDetail({art.value})" onSuccess="showDetail"&gt;
+</code>
+<p>In this example, I've bound to the Art drop down, and I've called a CFC (the same CFC as before) to get more information about the art piece. I've then told the tag to run showDetail when done. That JavaScript function is rather trivial:</p>
+<code>
+&lt;script&gt;
+function showDetail(r) {
+	document.getElementById("desc").value = r.DESCRIPTION;
+	document.getElementById("price").value = r.PRICE;	
+	var newbod = "&lt;img src='http://localhost/cfdocs/images/artgallery/" + r.LARGEIMAGE + "'&gt;";
+	document.getElementById("img").innerHTML = newbod;
+}
+&lt;/script&gt;
+</code>
+<p>Since my CFC method returns a struct, I can treat it in JavaScript pretty much the same way I treat it in ColdFusion.</p>
+<p>Here is the complete CFC code:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<p>&lt;cfset variables.dsn=&quot;cfartgallery&quot;&gt;</p>
+<p>&lt;!--- Get array of media types ---&gt;
+&lt;cffunction name=&quot;getMedia&quot; access=&quot;remote&quot; returnType=&quot;query&quot;&gt;
+&lt;!--- Define variables ---&gt;
+&lt;cfset var data=&quot;&quot;&gt;</p>
+<pre><code> &amp;lt;!--- Get data ---&amp;gt;
+ &amp;lt;cfquery name=&quot;data&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+ SELECT mediaid, mediatype
+ FROM media
+ ORDER BY mediatype
+ &amp;lt;/cfquery&amp;gt;
+
+ &amp;lt;!--- And return it ---&amp;gt;
+ &amp;lt;cfreturn data&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;!--- Get art by media type ---&gt;
+&lt;cffunction name=&quot;getArt&quot; access=&quot;remote&quot; returnType=&quot;query&quot;&gt;
+&lt;cfargument name=&quot;mediaid&quot; type=&quot;numeric&quot; required=&quot;true&quot;&gt;</p>
+<pre><code> &amp;lt;!--- Define variables ---&amp;gt;
+ &amp;lt;cfset var data=&quot;&quot;&amp;gt;
+
+ &amp;lt;!--- Get data ---&amp;gt;
+ &amp;lt;cfquery name=&quot;data&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+ SELECT artid, artname
+ FROM art
+ WHERE mediaid = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.mediaid#&quot;&amp;gt;
+ ORDER BY artname
+ &amp;lt;/cfquery&amp;gt;
+
+ &amp;lt;!--- And return it ---&amp;gt;
+ &amp;lt;cfreturn data&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getArtDetail&quot; access=&quot;remote&quot; returnType=&quot;struct&quot;&gt;
+&lt;cfargument name=&quot;artid&quot; type=&quot;numeric&quot; required=&quot;true&quot;&gt;
+&lt;cfset var data=&quot;&quot;&gt;
+&lt;cfset var c = &quot;&quot;&gt;
+&lt;cfset var s = structNew()&gt;</p>
+<pre><code> &amp;lt;!--- Get data ---&amp;gt;
+ &amp;lt;cfquery name=&quot;data&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+ SELECT *
+ FROM art
+ WHERE artid = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.artid#&quot;&amp;gt;
+ &amp;lt;/cfquery&amp;gt;
+
+ &amp;lt;cfloop list=&quot;#data.columnlist#&quot; index=&quot;c&quot;&amp;gt;
+	 &amp;lt;cfset s[c] = data[c][1]&amp;gt;
+ &amp;lt;/cfloop&amp;gt;
+ 
+ &amp;lt;!--- And return it ---&amp;gt;
+ &amp;lt;cfreturn s&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>There isn't anything really complex here. Now here is the complete test document I used:</p>
+<code>
+&lt;cfajaxproxy bind="cfc:art.getArtDetail({art.value})" onSuccess="showDetail"&gt;
+<p>&lt;script&gt;
+function showDetail(r) {
+document.getElementById(&quot;desc&quot;).value = r.DESCRIPTION;
+document.getElementById(&quot;price&quot;).value = r.PRICE;	
+var newbod = &quot;&lt;img src='http://localhost/cfdocs/images/artgallery/&quot; + r.LARGEIMAGE + &quot;'&gt;&quot;;
+document.getElementById(&quot;img&quot;).innerHTML = newbod;
+}
+&lt;/script&gt;</p>
+<p>&lt;cfform name=&quot;main&quot;&gt;
+&lt;b&gt;Media:&lt;/b&gt; &lt;cfselect bind=&quot;cfc:art.getMedia()&quot; bindonload=&quot;true&quot; value=&quot;mediaid&quot; display=&quot;mediatype&quot; name=&quot;media&quot;  /&gt;
+&lt;b&gt;Art:&lt;/b&gt; &lt;cfselect bind=&quot;cfc:art.getArt({media})&quot; bindonload=&quot;true&quot; value=&quot;artid&quot; display=&quot;artname&quot; name=&quot;art&quot;  /&gt;
+&lt;p&gt;
+&lt;b&gt;Description:&lt;/b&gt; &lt;cftextarea name=&quot;desc&quot; id=&quot;desc&quot; /&gt;&lt;br&gt;
+&lt;b&gt;Price:&lt;/b&gt; &lt;cfinput name=&quot;price&quot; id=&quot;price&quot; /&gt;&lt;br&gt;
+&lt;span id=&quot;img&quot;&gt;&lt;/span&gt;</p>
+<p>&lt;/cfform&gt;
+</code></p>
+<p>Pay special attention to how simple the code is here. The only JavaScript isn't really that complex.</p>
+<p>I hope this example helps.</p>
+}

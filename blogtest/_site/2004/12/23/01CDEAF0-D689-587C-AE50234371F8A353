@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<ol>
+<li>
+<p>Ok, this is in the docs but it took me a while to find it. In order to do block indentation, just use the tab key (or shift-tab to reverse indent). So select your text, hit tab, and the block will indent over. Nice.</p>
+</li>
+<li>
+<p>So, I <b>love</b> the method display for a CFC, but found it annoying that it went away when I switched from my CFC to the template actually using it. I then noticed there was a &quot;pin&quot; option that would make the method display stick. Nice (again).</p>
+</li>
+</ol>
+}

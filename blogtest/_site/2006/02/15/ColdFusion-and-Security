@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>This morning I got an email from someone asking about ColdFusion and security. There were looking for a general overview of tips, best practices, and other resources. It occured to me that I couldn't name a resource off the top of my head. I asked on the ever-so-friendly IRC channel and Daniel mentioned this excellent resource:</p>
+<p><a href="http://www.macromedia.com/devnet/coldfusion/security.html">ColdFusion Security Articles</a></p>
+<p>To be honest, I forget sometimes how much information can be found at Adobe's <a href="http://www.macromedia.com/devnet">Developer Center</a>. It is really an excellent resource and even has an RSS feed (http://weblogs.macromedia.com/dev_center/index.rdf), which doesn't seem to be working at the moment though. (Ok, it did eventually load, it just took a  <i>very</i> long time.)</p>
+}

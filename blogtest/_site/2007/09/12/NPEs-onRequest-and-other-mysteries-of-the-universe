@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>A friend wrote to me this morning with an interesting problem. He recently moved his site (hosted at CrystalTech) from ColdFusion 7 to ColdFusion 8. Then he began to get NPEs (Null Pointer Exceptions) in regards to cfquery tags. He would get these about once per 1-2k hits.</p>
+<p>But get this - CystalTech recommended adding a blank onRequest:</p>
+<code>
+<p>&lt;cffunction
+name = &quot;onRequest&quot;
+access = &quot;public&quot;
+returnType = &quot;boolean&quot;
+output=&quot;true&quot;&gt;</p>
+<p>&lt;cfargument
+name = &quot;thePage&quot;
+type = &quot;string&quot;
+required = &quot;true&quot;&gt;</p>
+<p>&lt;cfinclude
+template=&quot;#arguments.thePage#&quot;&gt;</p>
+<p>&lt;cfreturn true /&gt;</p>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>And it worked! He no longer got the NPE error. Now I don't know about you - but I can't imagine any reason why this change would make his error go away. Can anyone else think of a reason why it would help?</p>
+<p>As for the NPE in general - one thing I've asked him if is the cfquery was in a CFC and he possibly forgot to var scope. Not that I think it would make a NPE, but the lack of var scoping is something that could lead to random errors like he observed.</p>
+}

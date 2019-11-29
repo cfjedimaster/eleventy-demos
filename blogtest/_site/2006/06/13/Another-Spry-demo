@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>The more I play with <a href="http://labs.adobe.com/technologies/spry/">Spry</a>, the more I like it. I'd like to show you one more demo...</p>
+<blockquote>
+<a href="http://ray.camdenfamily.com/spry/blog3.cfm">http://ray.camdenfamily.com/spry/blog3.cfm</a>
+</blockquote>
+<p>I've added two cool things here. First is the alt-table row colors. This is done by Spry's support for conditionals. Here is the code behind it:</p>
+<code>
+&lt;tbody spry:repeat="dsEntries"&gt;
+&lt;tr spry:if="({ds_RowNumber} % 2) == 0" class="even" onclick="dsEntries.setCurrentRow('{ds_RowID}');" &gt;
+	&lt;td&gt;{TITLE}&lt;/td&gt;
+	&lt;td&gt;{POSTED}&lt;/td&gt;
+	&lt;td&gt;{COMMENTCOUNT}&nbsp;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr spry:if="({ds_RowNumber} % 2) != 0" class="odd" onclick="dsEntries.setCurrentRow('{ds_RowID}');" &gt;
+	&lt;td&gt;{TITLE}&lt;/td&gt;
+	&lt;td&gt;{POSTED}&lt;/td&gt;
+	&lt;td&gt;{COMMENTCOUNT}&nbsp;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+</code>
+<p>Notice the spry:if check. This handles checking the current row number and using a different CSS class for each row. Nice and simple. The only thing I wasn't sure about was how to use it. The <a href="http://ray.camdenfamily.com/spry/blog3.cfm">last version</a> applied the spry:repeat to the TR tag. Since I needed the condition in the TR, I wasn't sure how they would mix. One of the Spry demos showed the technique above though and it worked like a charm.</p>
+<p>In the zip you can download from Adobe, they have a few additional examples not demonstrated on the Labs site. One is pagination. View source on the demo to see the JavaScript behind it. Just to be clear - I didn't write this. I simply cut and pasted from the example in the zip, but I'm again impressed with how simple this is. Note the use of the filter function in the xml call:</p>
+<code>
+var dsEntries = new Spry.Data.XMLDataSet("blogspry.cfc?method=getentries&category={dsCategories::CATEGORYID}", "entries/entry", { filterFunc: MyPagingFunc });
+</code>
+<p>You can obviously filter by other methods as well. Anyway, check it out, view source, and enjoy. I didn't update the zip, but the only change to the CFC was that I upped the max number of results to 100 so that paging would actually work.</p>
+}

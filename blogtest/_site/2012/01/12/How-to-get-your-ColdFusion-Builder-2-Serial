@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>A few days ago a buddy of mine asked how to get his CFBuilder 2 serial number. Turns out you can't do that from the IDE itself. I reached out to the engineers and Krishna shared the following tips with me:</p>
+<blockquote>
+Option 1) Register the product using Adobe ID (Help->Register Adobe ColdFusion Builder...). After sometime, it will be updated in Adobe license database and can be retrieved from 
+<p>https://www.adobe.com/account.html</p>
+<p>Then click on My products by authenticating with Adobe ID.
+You can see your product serial there. This option is only for Retail serial keys.</p>
+<p>Option 2)
+Contact support.</p>
+</blockquote>
+<p>Probably a good idea to copy down all serials anyway. I use Evernote for stuff like this.</p>
+}

@@ -1,0 +1,109 @@
+<h1>Post</h1>
+
+<p>I'm a huge charting fan. I don't know why - maybe it's my simple mind having an issue time with shiny pictures than raw numbers. For some time now I've been meaning to take a look at <a href="http://code.google.com/p/flot/">flot</a>, a jQuery based chart engine. If you take a look at the <a href="http://people.iola.dk/olau/flot/examples/">examples</a> you can see they look pretty darn professional and even better they are pretty simple to use.</p>
+<!--more-->
+<p>For the simplest chart, you only need two things:</p>
+<ol>
+<li>A div. This is where the chart will be displayed. You must provide a specific height and width for the div or the world will come to an end.</li>
+</ol>
+<p>So for example:</p>
+<code>
+&lt;style&gt;
+#chart {
+      width:300px;
+      height:300px;
+}
+&lt;/style&gt;
+<p>&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;
+</code></p>
+<ol start="2">
+<li>The data. This is where things got a bit confusing for me. The data for flot is an array of series records. Each series representing one line of data. A series can either be a structure (well, that's not a JavaScript term) or an array itself. Finally - each point of data is itself an array as well.</li>
+</ol>
+<p>Here is a very simple example:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;style&gt;
+#chart {
+width:300px;
+height:300px;
+}
+&lt;/style&gt;</p>
+<p>&lt;script src=&quot;/jquery/jquery.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/jquery/jquery.flot.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>$(document).ready(function() {</p>
+<pre><code>$.plot($(&quot;#chart&quot;), [ [[1,3], [5,99],  [20,14.01]] ])
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;h1&gt;Flot Test1&lt;/h1&gt;</p>
+<p>&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>You can see that I include jQuery and the flot library. When the page loads, I run the plot function and pass it the DOM item I want to &quot;chartify&quot; and the data itself. You can view a demo of this <a href="http://www.raymondcamden.com/demos/flot/test.html">here</a>. What's impressive is how nice it looks. The library picks nice default colors and just renders everything well.</p>
+<p>A more complex example uses structs for each series and specifies a label:</p>
+<code>
+    $.plot($("#chart"), [ 
+<pre><code>//series 1
+{
+label:&quot;Beer Consumption&quot;,
+data:[[1,3], [5,99],  [20,14.01]]
+},
+
+//series 2
+{
+label:&quot;Session Ratings&quot;,
+data:[[1,80], [3,21],  [17,53]]
+}
+
+ ])
+</code></pre>
+</code>
+<p>You can view this <a href="http://www.coldfusionjedi.com/demos/flot/test2.html">here</a>. View source for the complete code but the code block above is really all that's changed.</p>
+<p>The plot function also takes a third argument which allows for strong customization of the chart itself. So for example, I can tweak the legend to allow for clicking:</p>
+<code>
+legend: {
+     show:true,
+     labelFormatter:function(label) {
+         return '&lt;a href="' + label + '"&gt;' + label + '&lt;/a&gt;';
+     }
+}
+</code>
+<p>You can view this one <a href="http://www.coldfusionjedi.com/demos/flot/test3.html">here</a>, but don't bother actually clicking the links.</p>
+<p>So what about putting in real data? Remember that jQuery makes it pretty trivial to run AJAX calls, and ColdFusion makes it pretty trivial to search up JSON. So given this method:</p>
+<code>
+&lt;cffunction name="getSalesData" returnType="array" access="remote"&gt;
+    &lt;cfset var q = ""&gt;
+<pre><code>&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;cfartgallery&quot;&amp;gt;
+select count(orderid) as orders, year(orderdate) as yearval
+from orders
+group by year(orderdate)
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfset var result = []&amp;gt;
+&amp;lt;cfloop query=&quot;q&quot;&amp;gt;
+	&amp;lt;cfset var point = [yearval,orders]&amp;gt;
+	&amp;lt;cfset arrayAppend(result, point)&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfreturn result&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>The method runs a query against the cfargallery database. It converts the query into an array of arrays. Now for the jQuery code:</p>
+<code>
+$.getJSON("salesdata.cfc?method=getsalesdata&returnformat=json", {}, function(data) {
+	    $.plot($("#chart"), [ data ], 
+		{
+			lines:{show:true},
+			points:{show:true}
+		})
+})
+</code>
+<p>Pretty simple, right? Hit the CFC and pass the data into flot. On reflection I probably should convert the data client side and leave the CFC as is. You can view the demo <a href="http://www.coldfusionjedi.com/demos/flot/test4.html">here</a>. You can view another version of this <a href="http://www.coldfusionjedi.com/demos/flot/test6.html">here</a>, this one using 2 sets of data from the CFC.</p>
+<p>Anyway - check it out yourself. The <a href="http://people.iola.dk/olau/flot/API.txt">docs</a> cover a lot more than what I did. Two things you should note. The released version does <b>not</b> support IE8. (Cry me a river.) Secondly, this works fine in AIR. So if you are building an HTML-based AIR application this would be a great charting solution I think.</p>
+}

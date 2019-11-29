@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>A few weeks back I <a href="http://www.raymondcamden.com/index.cfm/2013/6/11/Edge-Code-CC-and-Edge-Inspect-Integration">blogged</a> a video demonstration of Edge Code and Edge Inspect integration. Basically you could automatically preview your HTML on mobile devices connected to Edge Inspect as you wrote code in Edge Code. That extension is now available up on GitHub:</p>
+<p><a href="https://github.com/edge-code/edge-inspect-extension">https://github.com/edge-code/edge-inspect-extension</a></p>
+<p>It also means that if you prefer Brackets to Edge Code, it is easier to get the bits and install it.</p>
+}

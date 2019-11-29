@@ -1,0 +1,97 @@
+<h1>Post</h1>
+
+<p>This won't be a terribly long post. I had to build a small demo for a friend demonstrating drag/drop along with uploading so I thought I'd share the code for others. Honestly this is mostly for me so that when I need to build this again in a few months I'll Google and end up back here completely surprised that I had already written it.</p>
+<p>I'll start off by saying I'm not going to cover the mechanics of drag and drop here. The MDN Web Docs have a great article on this (of course they do): <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API">HTML Drag and Drop API</a>. In my case, I'm not concerned with making a DOM item dragable but rather making my code respond to drop events.</p>
+<p>For what I need I have to handle two events, <code>drop</code> and <code>dragover</code>. Handling <code>drop</code> makes sense. I'll be honest and say I'm not quite sure why I need to handle <code>dragover</code>, but the code is incredibly small as you just need to prevent the default behavior.</p>
+<p>Working on this demo also taught me something else about Vue. I'm used to building my Vue apps like so:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+Here is where the awesome happens...
+&lt;/div&gt;
+</code></pre>
+<p>Where my div is then passed to Vue:</p>
+<pre><code class="language-javascript">const app = new Vue({
+	el:'#app',
+	//lots more stuff here
+});
+</code></pre>
+<p>However, what if I wanted to do something with <code>&lt;div id=&quot;app&quot;&gt;</code> app itself? Turns out you can add Vue directives there just fine. I guess that makes sense but I'd never tried that before. I was able to specify that my entire Vue application &quot;area&quot; was covered by drag and drop support.</p>
+<p>Ok with that out of the way, let's look at the code. I'll start off wth HTML.</p>
+<pre><code class="language-html">&lt;html&gt;
+&lt;body&gt;
+&lt;div id=&quot;app&quot; v-cloak @drop.prevent=&quot;addFile&quot; @dragover.prevent&gt;
+  &lt;h2&gt;Files to Upload (Drag them over)&lt;/h2&gt;
+  &lt;ul&gt;
+    &lt;li v-for=&quot;file in files&quot;&gt;
+      {{ file.name }} ({{ file.size | kb }} kb) &lt;button @click=&quot;removeFile(file)&quot; title=&quot;Remove&quot;&gt;X&lt;/button&gt;
+    &lt;/li&gt;
+  &lt;/ul&gt;
+  
+  &lt;button :disabled=&quot;uploadDisabled&quot; @click=&quot;upload&quot;&gt;Upload&lt;/button&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>On top, you can see my two event handlers. As I said, for <code>dragover</code> all we need to do is prevent default behavior which makes that part short and sweet. The <code>drop</code> event, <code>addFile</code>, is where I'll handle generating the list of files.</p>
+<p>Inside the div I keep track of the files you want to upload. For each I output the name, the size (passed through a filter <code>kb</code>), and add a simple button to let you remove the item.</p>
+<p>Finally I've got an button to fire off the upload. For my demo I don't bother using a &quot;Loading&quot; widget of any sort, nor do I clear out the files when done. If anyone wants to see that just ask!</p>
+<p>Alright, now the code.</p>
+<pre><code class="language-javascript">Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+Vue.filter('kb', val =&gt; {
+  return Math.floor(val/1024);  
+});
+
+const app = new Vue({
+  el:'#app', 
+  data: {
+    files:[]
+  },
+  computed: {
+    uploadDisabled() {
+      return this.files.length === 0;
+    }
+  },
+  methods:{
+    addFile(e) {
+      let droppedFiles = e.dataTransfer.files;
+      if(!droppedFiles) return;
+      // this tip, convert FileList to array, credit: https://www.smashingmagazine.com/2018/01/drag-drop-file-uploader-vanilla-js/
+      ([...droppedFiles]).forEach(f =&gt; {
+        this.files.push(f);
+      });
+    },
+    removeFile(file){
+      this.files = this.files.filter(f =&gt; {
+        return f != file;
+      });      
+    },
+    upload() {
+      
+      let formData = new FormData();
+      this.files.forEach((f,x) =&gt; {
+        formData.append('file'+(x+1), f);
+      });
+      
+      fetch('https://httpbin.org/post', {
+        method:'POST',
+        body: formData
+      })
+      .then(res =&gt; res.json())
+      .then(res =&gt; {
+         console.log('done uploading', res);
+      })
+      .catch(e =&gt; {
+        console.error(JSON.stringify(e.message));
+      });
+      
+    }
+  }
+})
+</code></pre>
+<p>On top you can see my simple <code>kb</code> filter to render the file sizes a bit nicer. Inside the Vue app I've got one data item, <code>files</code>, and note how <code>uploadDisabled</code> works as a nice computed property.</p>
+<p>In <code>addFile</code>, I use the Drag/Drop API to access the files (if any) that were dropped. This demo lets you drag over one file, or 100 (don't do that). I then iterate over each and add them to the <code>files</code> value. Remember that when a user intentionally provides a file to a web app you now have read access to it. That's how I'm able to show the file sizes. I could do a lot more here like validate file type, set a max size per file, or even set a total size allowed.</p>
+<p>Finally, my <code>upload</code> method just hits httpbin.org which will echo back what it was sent. I create a <code>FormData</code> object and just append each file. Remember by the user dropping the files on the app we can read from them.</p>
+<p>And that's it. I hope this simple demo helps!</p>
+<p><i>Header photo by <a href="https://unsplash.com/@photohunter?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Jimmy Chang</a> on Unsplash</i></p>
+}

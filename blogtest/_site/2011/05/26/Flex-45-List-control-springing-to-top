@@ -1,0 +1,85 @@
+<h1>Post</h1>
+
+<p>When I first began playing with Flex 4.5 mobile controls, I noticed something odd with the Spark List control. If the amount of data was bigger than the screen, it would &quot;spring&quot; back when your finger left the control. You could scroll down - sure - but the second you let go of the control it scrolled back to the top. I have no idea why this fixes it, but if you simply add height=&quot;100%&quot; to your list, it corrects the issue. It doesn't seem to do anything visually to the output at all, but it corrects it immediately. Here is a simple example. First, my top level file will define a list that two sub views will use:</p>
+<!--more-->
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:TabbedViewNavigatorApplication xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Script&amp;gt;
+&amp;lt;![CDATA[
+import mx.collections.ArrayCollection;
+
+[Bindable]
+public var demo:ArrayCollection = new ArrayCollection([
+	&quot;Apple&quot;,
+	&quot;Banana&quot;,
+	&quot;Beer&quot;,
+	&quot;Garbage&quot;,
+	&quot;Wine&quot;,
+	&quot;Ray&quot;,
+	&quot;Jeanne&quot;,
+	&quot;Zoid&quot;,
+	&quot;CFSilence&quot;,
+	&quot;Adrok&quot;,
+	&quot;dfgrump&quot;,
+	&quot;Rinaldi&quot;,
+	&quot;Greg&quot;,
+	&quot;Phones&quot;,
+	&quot;Are&quot;,
+	&quot;Little&quot;,
+	&quot;Miniature&quot;,
+	&quot;Spy&quot;,
+	&quot;Camera&quot;]);
+	
+]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:ViewNavigator label=&quot;Broken&quot; width=&quot;100%&quot; height=&quot;100%&quot; firstView=&quot;views.BrokenView&quot;/&amp;gt;
+&amp;lt;s:ViewNavigator label=&quot;Fixed&quot; width=&quot;100%&quot; height=&quot;100%&quot; firstView=&quot;views.FixedView&quot;/&amp;gt;
+&amp;lt;fx:Declarations&amp;gt;
+	&amp;lt;!-- Place non-visual elements (e.g., services, value objects) here --&amp;gt;
+&amp;lt;/fx:Declarations&amp;gt;
+</code></pre>
+<p>&lt;/s:TabbedViewNavigatorApplication&gt;
+</code></p>
+<p>
+<p>Here is the broken view - it will exhibit the behavior I described above:</p>
+<p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Broken"&gt;
+<pre><code>&amp;lt;fx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import mx.core.FlexGlobals;
+		
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:List dataProvider=&quot;{FlexGlobals.topLevelApplication.demo}&quot; width=&quot;100%&quot;  /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>And here is the good version. The <i>only</i> difference is the addition of the height.</p>
+<p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Fixed"&gt;
+<pre><code>&amp;lt;fx:Script&amp;gt;
+&amp;lt;![CDATA[
+import mx.core.FlexGlobals;
+
+]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:List dataProvider=&quot;{FlexGlobals.topLevelApplication.demo}&quot; width=&quot;100%&quot; height=&quot;100%&quot;  /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>I've attached the FXP if you want to play with this yourself.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FListSpringIssue%2Efxp'>Download attached file.</a></p></p>
+}

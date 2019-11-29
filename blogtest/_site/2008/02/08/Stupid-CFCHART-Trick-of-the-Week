@@ -1,0 +1,116 @@
+<h1>Post</h1>
+
+<p>Earlier yesterday morning I <a href="http://www.raymondcamden.com/index.cfm/2008/2/7/Ask-a-Jedi-CFCHART-Question">blogged</a> about cfchart and a poster asked an interesting followup question:</p>
+<blockquote>
+<p>
+I have another cfchart question (Maybe I am cheating by tacking it on here). I tried to chart some data based on ranked lists, like a bestseller list. I wanted to chart the position of a "book" on the list over the weeks. On the list, 1 is higher than 2 is higher than 10, so when it charted it came out upside down. I didn't see anything in the cfchart attributes that allowed me to invert this.
+<p>I have to admit, it wasn't a crucial need to chart this so I moved on to other problems, but it has sort of bugged me since then. Was I missing something easy?</p>
+</p>
+</blockquote>
+<!--more-->
+His name was Magnus, and there was no way I could ignore a question from someone with a cool name like that. First let me demonstrate what he is talking about. I created some data that represented books and their ranks over a five week period:
+<code>
+&lt;cfscript&gt;
+function addIt(week,book,position) {
+	queryAddRow(data);
+	querySetCell(data, "week", arguments.week);
+	querySetCell(data, "book", arguments.book);
+	querySetCell(data, "position", arguments.position);
+<p>}
+data = queryNew(&quot;week,book,position&quot;,&quot;integer,varchar,integer&quot;);</p>
+<p>addIt(1,&quot;Alpha&quot;,1);
+addIt(2,&quot;Alpha&quot;,2);
+addIt(3,&quot;Alpha&quot;,1);
+addIt(4,&quot;Alpha&quot;,4);
+addIt(5,&quot;Alpha&quot;,5);</p>
+<p>addIt(1,&quot;Beta&quot;,3);
+addIt(2,&quot;Beta&quot;,1);
+addIt(3,&quot;Beta&quot;,2);
+addIt(4,&quot;Beta&quot;,2);
+addIt(5,&quot;Beta&quot;,1);</p>
+<p>addIt(1,&quot;Gamma&quot;,5);
+addIt(2,&quot;Gamma&quot;,4);
+addIt(3,&quot;Gamma&quot;,3);
+addIt(4,&quot;Gamma&quot;,1);
+addIt(5,&quot;Gamma&quot;,2);
+&lt;/cfscript&gt;
+</code></p>
+<p>The UDF is there simply to save me some typing. I then created the chart:</p>
+<code>
+&lt;cfchart show3d="false" &gt;
+	&lt;cfloop index="book" list="#valueList(data.book)#"&gt;
+		&lt;cfquery name="weekdata" dbtype="query"&gt;
+		select	*
+		from	data
+		where	book = &lt;cfqueryparam cfsqltype="cf_sql_varchar" value="#book#"&gt;
+		order by week
+		&lt;/cfquery&gt;
+		&lt;cfchartseries type="line" query="weekdata" itemcolumn="week" valuecolumn="position" serieslabel="#book#"&gt;
+	&lt;/cfloop&gt;
+&lt;/cfchart&gt;
+</code>
+<p>The result is a bit hard to read in static JPG format, but has nice roll overs in Flash. When I used a legend, it got a bit screwy. I'll come back to that. But as you can see, the grid starts with lower numbers first:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture%2017.png">
+<p>Once again I turned to the handy dandy chart editor. After a bit of clicking I finally found what I wanted under YAxis (duh). Clicking on this setting gives you a lot of options for the YAxis, including a &quot;Is Reversed&quot; tick. The resulting XML gives you:</p>
+<code>
+&lt;frameChart is3D="false"&gt;
+          &lt;yAxis isReversed="true"&gt;
+          &lt;/yAxis&gt;
+		&lt;legend isVisible="false" showColumnLegend="false"&gt;
+               &lt;decoration style="None"/&gt;
+          &lt;/legend&gt;
+&lt;/frameChart&gt;
+</code>
+<p>Note - I did tweak a bit more, like turning off the column legend which was turned back on by the XML. This gives you the result you want - kinda:</p>
+<p><img src = 
+"http://www.coldfusionjedi.com/images/Picture%2025.png"></p>
+<p>As you can see, we still have a range of 1-5. I tried like heck to fix this. There is even a range option in the chart editor, but the data seems to override this. You can supply a gridlines of 5. That does give you the right number of lines, but check out the result:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture%2032.png">
+<p>Not what I'd call optimal, but I'll take a look at this a bit more later to see if I can figure this last step out. Here is the complete code of the latest version:</p>
+<code>
+<p>&lt;cfscript&gt;
+function addIt(week,book,position) {
+queryAddRow(data);
+querySetCell(data, &quot;week&quot;, arguments.week);
+querySetCell(data, &quot;book&quot;, arguments.book);
+querySetCell(data, &quot;position&quot;, arguments.position);</p>
+<p>}
+data = queryNew(&quot;week,book,position&quot;,&quot;integer,varchar,integer&quot;);</p>
+<p>addIt(1,&quot;Alpha&quot;,1);
+addIt(2,&quot;Alpha&quot;,2);
+addIt(3,&quot;Alpha&quot;,1);
+addIt(4,&quot;Alpha&quot;,4);
+addIt(5,&quot;Alpha&quot;,5);</p>
+<p>addIt(1,&quot;Beta&quot;,3);
+addIt(2,&quot;Beta&quot;,1);
+addIt(3,&quot;Beta&quot;,2);
+addIt(4,&quot;Beta&quot;,2);
+addIt(5,&quot;Beta&quot;,1);</p>
+<p>addIt(1,&quot;Gamma&quot;,5);
+addIt(2,&quot;Gamma&quot;,4);
+addIt(3,&quot;Gamma&quot;,3);
+addIt(4,&quot;Gamma&quot;,1);
+addIt(5,&quot;Gamma&quot;,2);
+&lt;/cfscript&gt;</p>
+<p>&lt;cfsavecontent variable=&quot;style&quot;&gt;
+&lt;frameChart is3D=&quot;false&quot;&gt;
+&lt;yAxis isReversed=&quot;true&quot;&gt;
+&lt;/yAxis&gt;
+&lt;legend isVisible=&quot;false&quot; showColumnLegend=&quot;false&quot;&gt;
+&lt;decoration style=&quot;None&quot;/&gt;
+&lt;/legend&gt;
+&lt;/frameChart&gt;
+&lt;/cfsavecontent&gt;</p>
+<p>&lt;cfchart show3d=&quot;false&quot; style=&quot;#style#&quot; gridlines=&quot;5&quot;&gt;
+&lt;cfloop index=&quot;book&quot; list=&quot;#valueList(data.book)#&quot;&gt;
+&lt;cfquery name=&quot;weekdata&quot; dbtype=&quot;query&quot;&gt;
+select	*
+from	data
+where	book = &lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#book#&quot;&gt;
+order by week
+&lt;/cfquery&gt;
+&lt;cfchartseries type=&quot;line&quot; query=&quot;weekdata&quot; itemcolumn=&quot;week&quot; valuecolumn=&quot;position&quot; serieslabel=&quot;#book#&quot;&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;/cfchart&gt;
+</code></p>
+}

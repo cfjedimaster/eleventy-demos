@@ -1,0 +1,42 @@
+<h1>Post</h1>
+
+<p>I really feel like this is something I've blogged before, or someone else, but Google is failing to find the result for me so I figure a quick blog entry is in order. How do you disable sorting for one column using the new HTML-based grids in ColdFusion 8?</p>
+<!--more-->
+<p>The answer involves going into the Ext docs and using their API. Let's start with a simple grid using inline data:</p>
+<code>
+&lt;cfquery name="entries" datasource="blogdev"&gt;
+select   *
+from   tblblogentries
+limit 0,10
+&lt;/cfquery&gt;
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;entries&quot; format=&quot;html&quot; query=&quot;entries&quot; width=&quot;600&quot;&gt;
+&lt;cfgridcolumn name=&quot;id&quot; display=&quot;false&quot;&gt;
+&lt;cfgridcolumn name=&quot;body&quot; display=&quot;false&quot;&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;title&quot; header=&quot;Title&quot;&gt;
+&lt;cfgridcolumn name=&quot;posted&quot; header=&quot;Posted&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>Now let's run some code on startup:</p>
+<code>
+&lt;cfset ajaxonload("fixgrid")&gt;
+</code>
+<p>This code will run JavaScript to handle our modification:</p>
+<code>
+&lt;script&gt;
+function fixgrid() {
+	g = ColdFusion.Grid.getGridObject('entries');
+//	console.dir(g);
+	cols = g.getColumnModel();
+	for(var i=0; i &lt; cols.getColumnCount(); i++) {
+		var thisid = cols.getColumnId(i);
+		var thiscol = cols.getColumnById(thisid);
+		if(thiscol.header == "Title") thiscol.sortable = false;
+	}
+}
+&lt;/script&gt;
+</code>
+<p>All this code does is ask for the Ext Grid object that CF uses behind the scenes. I get the column model (an API to the columns), and then search for the proper column. Ext provides a clean getColumnById API, but since you can't set the IDs yourself, you have to search as I did above. Note that I disabled sorting where the header was Title.</p>
+<p>That's it. Enjoy.</p>
+}

@@ -1,0 +1,60 @@
+<h1>Post</h1>
+
+<p>I'm just loving Apollo. This morning I built a quick regex tester. It only does global style matches, but it is a good first draft. Download it by clicking the Download link below.</p>
+<p>In the next version I'll switch to using highlight on the original text instead of a dump of matches. I'll also let you try out replacements as well.</p>
+<p>Enjoy my lovely design skills. The code is below for those who are curious.</p>
+<!--more-->
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:ApolloApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Regular Expression Tester"&gt;
+<p>&lt;mx:Script&gt;
+&lt;![CDATA[
+private function testRegex():void {
+var regexStr:String = regex.text;
+var bodyStr:String = body.text;</p>
+<pre><code>results.text = '';
+
+if(regexStr == '' || bodyStr == '') {
+	mx.controls.Alert.show(&quot;Please enter a regex and a body.&quot;);
+	return;
+}
+
+var regexOb:RegExp = new RegExp(regexStr,&quot;g&quot;);
+var matches:Array = bodyStr.match(regexOb);
+
+if(matches != null &amp;&amp; matches.length &amp;gt; 0) {
+	for(var i=0; i &amp;lt; matches.length; i++) {
+		results.text += matches[i] + &quot;\n&quot;;
+	}
+}
+</code></pre>
+<p>}		
+]]&gt;
+&lt;/mx:Script&gt;</p>
+<p>&lt;mx:VDividedBox width=&quot;100%&quot; height=&quot;100%&quot;&gt;</p>
+<pre><code>&amp;lt;mx:Panel title=&quot;Regex&quot; width=&quot;100%&quot; height=&quot;70&quot; &amp;gt;
+
+	&amp;lt;mx:HBox width=&quot;100%&quot; height=&quot;100%&quot;&amp;gt;
+		
+		&amp;lt;mx:TextInput id=&quot;regex&quot; width=&quot;100%&quot; height=&quot;100%&quot;/&amp;gt; &amp;lt;mx:Button id=&quot;tstButton&quot; label=&quot;Test Regular Expression&quot; click=&quot;testRegex()&quot; height=&quot;100%&quot; /&amp;gt;
+		
+	&amp;lt;/mx:HBox&amp;gt;
+	
+&amp;lt;/mx:Panel&amp;gt;
+
+&amp;lt;mx:Panel title=&quot;Body&quot; width=&quot;100%&quot;&amp;gt;
+	
+	&amp;lt;mx:TextArea id=&quot;body&quot; width=&quot;100%&quot; height=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;/mx:Panel&amp;gt;
+
+&amp;lt;mx:Panel title=&quot;Matches&quot; width=&quot;100%&quot;&amp;gt;
+	
+	&amp;lt;mx:TextArea id=&quot;results&quot; width=&quot;100%&quot; height=&quot;100%&quot; editable=&quot;false&quot; /&amp;gt;
+
+&amp;lt;/mx:Panel&amp;gt;
+</code></pre>
+<p>&lt;/mx:VDividedBox&gt;</p>
+<p>&lt;/mx:ApolloApplication&gt;
+</code><p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Fregex%2Ezip'>Download attached file.</a></p></p>
+}

@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>Andy asks:</p>
+<blockquote>
+<p>
+If you have an ajax/html form and you submit using a button control which calls a function (like ColdFusion.Ajax.submitForm) is there still a way to easily take
+advantage of the built in cfform validation?  This usually gets called when you use a submit, rather than a button, and I'd love to be able to call it right before I call my function that handles the cfform submission.
+</p>
+</blockquote>
+<p>If I read you right - you want to know if you can use cfform validation as well as using your own logic after the validation. If so, it works pretty easily:</p>
+<code>
+&lt;cfif not structIsEmpty(form)&gt;
+	&lt;cfdump var="#form#" label="Form"&gt;
+&lt;/cfif&gt;
+<p>&lt;script&gt;
+function doSomething() {
+alert('Called');
+return false;
+}
+&lt;/script&gt;</p>
+<p>&lt;cfform name=&quot;test&quot; onSubmit=&quot;return doSomething()&quot;&gt;
+Who is the twelfth cylon? &lt;cfinput name=&quot;name&quot; required=&quot;true&quot;&gt;
+&lt;cfinput name=&quot;submit&quot; type=&quot;submit&quot; value=&quot;Submit&quot;&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>So read this from the bottom up. I've got a super simple form using CFFORM's built in validation for a grand total of one field (I'm easy like Sunday morning). Note the onSubmit. What's cool, and what I wasn't sure would work, is that doSomething won't run if there are any errors. As soon as your form is ok, it runs.</p>
+<p>I'm <i>very</i> much a anti-cfform kind of guy, so I may be missing something obvious, but I hope this answers your question.</p>
+}

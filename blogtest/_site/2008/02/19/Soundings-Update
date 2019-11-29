@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>During lunch I released a quick update to <a href="http://soundings.riaforge.org">Soundings</a>. A user (thanks Emmet!) found a pretty serious bug with CSV export. Turns out I wasn't stripping HTML data from survey data. Wow, that's <i>really</i> dumb. Like I was channeling Paris Hilton while coding dumb.</p>
+<p>I've added code to strip the HTML both in input, and in the Excel output (for those who may have old surveys with bad HTML in it).</p>
+<p>A few other small bugs were corrected as well.</p>
+}

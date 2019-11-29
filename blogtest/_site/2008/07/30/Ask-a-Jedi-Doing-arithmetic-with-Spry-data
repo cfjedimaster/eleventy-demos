@@ -1,0 +1,107 @@
+<h1>Post</h1>
+
+<p>Rey asks:</p>
+<blockquote>
+<p>
+Hi, I'm trying to do some arithmetic with Spry the data is coming from a dataset. Now how can I loop through the dataset and then add to get a total. For example in ColdFusion I can do this:
+<p>&lt;cfset totalA = 0&gt;<br>
+&lt;cfset totalB = 0&gt;<br>
+&lt;cfloop query=&quot;test&quot;&gt;<br>
+&lt;cfset totalA = totalA + amountA&gt;<br>
+&lt;cfset totalB = totalB + amountB&gt;<br>
+&lt;/cfloop&gt;<br></p>
+<p>and this will give me the totals, but in Spry I can't seem to find a way to do this. Any help you can give me will be appreciated. Thanks!</p>
+</p>
+</blockquote>
+<!--more-->
+This can be done by using an observer on the dataset. An observer is basically a way to monitor the life cycle of a dataset. One thing you can monitor is when the data is done loading. Once the data is done, we can then look at it and make our own totals. First let's look at a simple example without the observer:
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;title&gt;Spry Test&lt;/title&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;/spryjs/xpath.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;/spryjs/SpryData.js&quot;&gt;&lt;/script&gt;</p>
+<p>&lt;script type=&quot;text/javascript&quot;&gt;
+var mydata = new Spry.Data.XMLDataSet(&quot;people.cfm&quot;,&quot;/people/person&quot;);
+mydata.setColumnType(&quot;age&quot;,&quot;numeric&quot;);
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div spry:region=&quot;mydata&quot;&gt;</p>
+<pre><code>&amp;lt;p&amp;gt;
+&amp;lt;table width=&quot;500&quot; border=&quot;1&quot;&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('name','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Name&amp;lt;/th&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('age','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Age&amp;lt;/th&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('gender','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Gender&amp;lt;/th&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;tr spry:repeat=&quot;mydata&quot;&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{name}&amp;lt;/td&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{age}&amp;lt;/td&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{gender}&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+&amp;lt;/table&amp;gt;	
+&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>This file loads a simple XML file (which I won't bother showing, it just has a name, gender, and an age value) and displays the result in a table. Now let's add our observer:</p>
+<code>
+var myObserver = new Object;
+myObserver.onPostLoad = function(dataSet, data) {
+	var data = dataSet.getData();
+	var totalAge = 0;
+	for(var i=0; i&lt; data.length;i++) {
+		totalAge += parseInt(data[i].age);
+	}
+	Spry.$("totalDiv").innerHTML = "Total age of my kids: " + totalAge;
+};
+mydata.addObserver(myObserver);
+</code>
+<p>The observer is an object with the particular method (onPostLoad) as a property. Skip over the function code and notice how it is added to my dataset. So basically I've said: &quot;When you are done loading, run this function and pass in the dataset.&quot; The meat of the function is just a simple loop. I get the raw data. Loop over it. (Note the parseInt to treat the age as a number.) Finally I update a div with the result. The complete code is below.</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;title&gt;Spry Test&lt;/title&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;/spryjs/xpath.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;/spryjs/SpryData.js&quot;&gt;&lt;/script&gt;</p>
+<p>&lt;script type=&quot;text/javascript&quot;&gt;
+var mydata = new Spry.Data.XMLDataSet(&quot;people.cfm&quot;,&quot;/people/person&quot;);
+mydata.setColumnType(&quot;age&quot;,&quot;numeric&quot;);</p>
+<p>var myObserver = new Object;
+myObserver.onPostLoad = function(dataSet, data) {
+var data = dataSet.getData();
+var totalAge = 0;
+for(var i=0; i&lt; data.length;i++) {
+totalAge += parseInt(data[i].age);
+}
+Spry.$(&quot;totalDiv&quot;).innerHTML = &quot;Total age of my kids: &quot; + totalAge;
+};
+mydata.addObserver(myObserver);
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div spry:region=&quot;mydata&quot;&gt;</p>
+<pre><code>&amp;lt;p&amp;gt;
+&amp;lt;table width=&quot;500&quot; border=&quot;1&quot;&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('name','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Name&amp;lt;/th&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('age','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Age&amp;lt;/th&amp;gt;
+		&amp;lt;th onclick=&quot;mydata.sort('gender','toggle');&quot; style=&quot;cursor: pointer;&quot;&amp;gt;Gender&amp;lt;/th&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;tr spry:repeat=&quot;mydata&quot;&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{name}&amp;lt;/td&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{age}&amp;lt;/td&amp;gt;
+		&amp;lt;td style=&quot;cursor: pointer;&quot;&amp;gt;{gender}&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+&amp;lt;/table&amp;gt;	
+&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;div id=&quot;totalDiv&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Yesterday at my presentation, someone asked about CFC and recursion. I had mentioned that normally I shy away from it, and I had been told specifically by MACR engineers that it was a bad idea inside UDFs, especially if the recursion got more than 50 levels deep. I made it clear though that I wasn't 100% sure this applied to CFCs.</p>
+<p>Todd Rafferty had to deal with exactly this issue and has two blog entries as well as a code sample. You can check out these entries here:</p>
+<p><a href="http://blog.web-rat.com/archives/000144.cfm#000144">http://blog.web-rat.com/archives/000144.cfm#000144</a>
+<a href="http://blog.web-rat.com/archives/000145.cfm#000145">http://blog.web-rat.com/archives/000145.cfm#000145</a></p>
+}

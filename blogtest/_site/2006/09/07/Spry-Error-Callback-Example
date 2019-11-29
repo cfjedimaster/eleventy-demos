@@ -1,0 +1,19 @@
+<h1>Post</h1>
+
+<p>Today's entry is from a guest blogger. Now before folks get all excited, I don't have a &quot;real&quot; concept of guest blogging here. Rather - he had a good problem with Spry and he shared his solution with me. He doesn't have a blog yet (hmm, someone should consider making a service so it is easy for folks to use BlogCFC w/o needing a real host, hmmm indeed) so I said I'd blog it for him.</p>
+<p>Daniel Budde II (wraith) had this to share about error handling in Spry. I <a href="http://ray.camdenfamily.com/index.cfm/2006/7/14/New-features-in-Spry">blogged</a> about states in Spry before - and there is a simple way to create an error state for Spry, but what if you want a more controlled result for Spry?</p>
+<p>From Daniel:<br/></p>
+<p>I made a post about it on the Adobe Spry forum.  It's not the clearest post, but I just thought I would give it to you to look at if you want.  I'm interested in the responses people will give.</p>
+<p>http://www.adobe.com/cfusion/webforums/forum/messageview.cfm?forumid=72&amp;catid=602&amp;threadid=1190912&amp;enterthread=y</p>
+<p>Ok, I had a problem with it in IE because IE's XMLHttpRequest object has a send() method that will throw an error if the status code from the web server is not &quot;200&quot;.  When it throws the error it prevents the &quot;synchronous&quot; execution of the Spry.Utils.loadURL.callback method.  So, to get around this you need to use &quot;asynchronous&quot; mode which will rely on the &quot;onreadystatechange&quot; method and will then call the callback method which will in turn call a custom error handler if you have one set.</p>
+<p>Here is my example:</p>
+<code>
+var optionsObj = new Object();
+<p>optionsObj.errorCallback = ShowError;</p>
+<p>Spry.Utils.loadURL(&quot;GET&quot;, url, true, ValidateForm, optionsObj);
+</code></p>
+<p>There is a list of available options that you can set in the SpryData.js file and here those are:</p>
+<p>[ &quot;method&quot;, &quot;url&quot;, &quot;async&quot;, &quot;username&quot;, &quot;password&quot;, &quot;postData&quot;, &quot;successCallback&quot;, &quot;errorCallback&quot;, &quot;headers&quot;, &quot;userData&quot;, &quot;xhRequest&quot; ]</p>
+<p>Obviously some of those are used and setup no matter what (method, url, async).</p>
+<p>Ray again: Just in case it wasn't clear, the ShowError variable is a function that is a called when the error occurs.</p>
+}

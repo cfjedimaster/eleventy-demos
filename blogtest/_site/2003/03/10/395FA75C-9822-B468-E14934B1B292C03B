@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Another interesting observation: If a method has a returnType of Beta, and you return Alpha, which is a CFC that extends Beta, will it work? Yes. This is a case where you say, basically, returnType equals a dog. Alpha is a poodle. Since a poodle is a dog, then life works as expected. (Or at least it makes sense to me. :)</p>
+}

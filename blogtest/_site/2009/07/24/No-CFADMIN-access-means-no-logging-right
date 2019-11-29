@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>This week seems to be 'Mr Obvious' week for me, and I apologize for that, but hopefully some of these entries are useful to folks. I was looking over email from a reader who commented that she couldn't use CFLOG because she didn't have admin access. While that is technically true, it certainly does not mean you can't use logging style features.</p>
+<p>As long as you have access to CFFILE, it is trivial to append to a file, and you can even create a simple UDF wrapper for it:</p>
+<!--more-->
+<code>
+&lt;cffunction name="mylog" access="public" returnType="void" output="true"&gt;
+	&lt;cfargument name="file" type="string" required="true"&gt;
+	&lt;cfargument name="message" type="string" required="true"&gt;
+	&lt;cfargument name="type" type="string" required="false" default="information"&gt;
+<pre><code>&amp;lt;!--- change to your path ---&amp;gt;
+&amp;lt;cfset var rootpath = &quot;/Users/ray/Desktop/&quot;&amp;gt;
+
+&amp;lt;cfset var newlog = &quot;[#dateformat(now(), &quot;mm/dd/yy&quot;)# #timeFormat(now(), &quot;h:mm:ss:l tt&quot;)#] [#arguments.type#] #arguments.message#&quot;&amp;gt;
+&amp;lt;cffile action=&quot;append&quot; file=&quot;#rootpath##arguments.file#.log&quot; output=&quot;#newlog#&quot; addnewline=&quot;true&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>This UDF takes in a file, message, and optional type. The file works much like CFLOG, where you specify just the <i>name</i> of the log, not a full path. Notice I've hard coded a root path. That's bad. The OO Police are after me as we speak. So yes, I could write this UDF as a CFC where a root path is passed in during instantiation. I could also make the file argument be a full path, or simply add a new argument. However, I was going for quick and dirty here. Modify it as you see fit.</p>
+<p>Anyway - based on rootpath plus the name of the file you want, the code automatically adds to the log file with a date+time stamp, your type value, and then your string. Calling it then becomes as simple as:</p>
+<code>
+&lt;cfset currentTime = getTickCount()&gt;
+&lt;cfset sleep(randRange(1,1000))&gt;
+&lt;cfset dur = getTickCount() - currentTime&gt;
+<p>&lt;cfset mylog(&quot;slowthing&quot;, &quot;It took #dur# to run my slow process.&quot;)&gt;</p>
+<p>Done...
+</code></p>
+<p>Notice I didn't call it log. Log is a built in ColdFusion function for math geeks. That's why in CF9 the script version is writeLog.</p>
+<p>Lastly - let's say you know you are deploying to a host where you won't have CFLOG access and you make use of this UDF. If you use ColdFusion Builder, doesn't forget the <b>excellent</b> TailView (which is available elsewhere too of course) which can nicely render your log entries. Check out the video...</p>
+<p><a href="http://www.raymondcamden.com/images/videos/cfb.swf"><img src="https://static.raymondcamden.com/images/cfjedi/Picture 57.png" /></a></p>
+}

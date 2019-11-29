@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>So, I'm still kinda new at this Java thing. I'm working on my first real JSP based web site, and ran into a problem that I couldn't fix today. The only change I had made in the past week was to update the  Java SDK from 1.3.x to 1.4.x. What I forgot - though - was that I had many JSP files already compiled by Tomcat. My coworker <a href="http://cephas.net/blog/">AJ</a> pointed out that I should delete the compiled files in my work directory. So - I did that - and restarted - and it worked perfectly. I also remember this suggestion from others in the past.</p>
+<p>So - in the hopes of helping others, I'm passing it on here.</p>
+}

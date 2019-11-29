@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>Gary asks:</p>
+<blockquote>
+<p>
+I have a CFC that has several query functions. Each function returns a query:
+<p>&lt;cfquery name=&quot;getData&quot; dbtype=&quot;query&quot;&gt;<br>
+SELECT  *<br>
+FROM            arguments.adResults<br />
+WHERE           cn='#arguments.netName#'<br/>
+&lt;/cfquery&gt;</p>
+<p>Each has cfquery name=&quot;getData&quot; and cfreturn getData.</p>
+<p>My question is, &quot;Is there a reason not to name each query 'getData' or is this an accepted practice?&quot;</p>
+</p>
+</blockquote>
+<!--more-->
+First, I want you to go into the corner, sit on your knees, and repeat "I will not select *" ten thousand times. Go ahead, I'll wait here. (grin)
+<p>Ok, so this is a simple question. First off, ColdFusion doesn't give two hoots what you name your query, whether it be in a CFC or not. You do want to make sure you var scope the name of course:</p>
+<code>
+&lt;cfset var getData = ""&gt;
+</code>
+<p>But outside of that, I'd name it whatever you want. Now <i>normally</i> I recommend folks name their query based on what it does. So for example, a query to get users would be called getUsers. But in CFCs I don't bother. I figure if the method is named getUsers, the query name isn't that critical, and in fact, I will typically use &quot;q&quot; to make it short and sweet. In more complex CFC methods, where I'm not just doing a quick query and returning data, I definitely try to use more descriptive names, especially if multiple queries are being run.</p>
+}

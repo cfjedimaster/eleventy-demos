@@ -1,0 +1,19 @@
+<h1>Post</h1>
+
+<p>Today I needed to add Subversion as a Windows service. The docs pointed me to the &quot;sc&quot; tool. This seemed like a simple tool but for the life of me I couldn't get it to work. Every time I ran the tool I would get a help message back. Here is an example of what I was trying to run:</p>
+<code>
+sc create svnserve binpath="c:\svnserve\svnserve.exe --service 
+--root c:\repos" displayname="Subversion" depend=tcpip start=auto
+</code>
+<p>I noticed something odd in the help message though:</p>
+<blockquote>
+The option name includes the equal sign.
+</blockquote>
+<p>I looked again at the web site instructions and noticed that after every option there was a space. I was convinced that was just a typo, or formatting used to wrap nicely in a browser. However, on a whim I tried it:</p>
+<code>
+sc create svnserve binpath= "c:\svnserve\svnserve.exe --service 
+--root c:\repos" displayname= "Subversion" depend= tcpip start= auto
+</code>
+<p>Guess what? It worked. For some reason the person who created sc.exe decided to make the syntax: opt1= val1. I was just crazy thinking that this syntax would be fine: opt1=val1.</p>
+<p>Seriously - can someone tell me why this syntax would be used? Would it have been so hard to support a simple opt1=val1 type syntax like, oh, most other command line tools?</p>
+}

@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>Carl asks:</p>
+<blockquote>
+What actually happens when you turn on debugging in the CF(MX) administrator? Are you telling the debugging service to START COLLECTING debugging data? Or is it ALWAYS collecting that data, and "turning on" debugging is just telling the service to start handing the data off to the debugging template  to display, etc?
+<p>In other words, turning debugging on in our environment (Solaris) causes substantial performance degradation. Is this degradation caused by the act of collecting debug info, or rendering it out at the bottom of the page (and, thus, StarFish would go a long way to alleviate said degradation)?</p>
+</blockquote>
+<p>So I was pretty sure I knew the answer, but I double checked with my Adobe contacts. When debugging is turned off at the CF Admin, CF is <b>not</b> collecting data. So turning on debugging does both the collection, and the output.</p>
+<p>Would Starfish be better on your server? I don't know. I don't think it is the rendering that slows ColdFusion though, but rather the data collection. As a side note, Starfish is definitely <b>not</b> performance-friendly right now. I'd use it with caution (it isn't officially even released yet as it is still less then version 1 :).</p>
+}

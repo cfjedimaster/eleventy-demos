@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>I'm working with a database that needs to be populated with time zone data. Turns out that on Unix-based systems, this is rather simple and can be done entirely from the command line. On Windows though (and apparently HP-UX too), you can't use that method. Instead, the MySQL site has downloads here:</p>
+<p><a href="http://dev.mysql.com/downloads/timezones.html">Time zone description tables</a></p>
+<p>I needed this tonight so I grabbed the zip, extracted, and went... wtf...</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip27.png" />
+<p>So maybe I'm dumb, but I expected SQL files I could import via my client or even the command line. I had absolutely no idea what in the heck this was.</p>
+<p>Turns out - these are the actual physical file formats used by MySQL to store data. To restore these files, you literally just find your database directory (you can find the root by looking at your MySQL my.ini file) and just copy them in. That's it.</p>
+<p>I restarted MySQL just... well just because I figured I'd need to, and it the tables (and data) showed up.</p>
+}

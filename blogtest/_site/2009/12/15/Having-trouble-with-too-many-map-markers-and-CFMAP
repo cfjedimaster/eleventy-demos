@@ -1,0 +1,67 @@
+<h1>Post</h1>
+
+<p>About a few months ago a user contacted me with an odd issue with CFMAP. At random times the markers on the map refused to load. Actually they returned the rather odd error that the address didn't exist. Here is an example:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture 510.png" />
+<p>When I tested this myself I saw the same - even when I replaced the test addresses with ones I knew existed (like my own!). Unfortunately I wasn't able to help the user so I wished him luck and forgot about it.</p>
+<p>A few days ago I got another email from someone experiencing the exact same issue. This time I decided to dig a bit deeper. I opened up Firebug and took a look at the requests. I noticed something odd. When the code made a geocoding request (ie, translate address so and so to longitude and latitude x and y), the result was different for addresses that failed to work. The result code was 620. After a quick Google search I found <a href="http://code.google.com/apis/maps/documentation/reference.html#GGeoStatusCode">this list</a> of geocode status results and <b>bam</b> - I found what 620 meant:</p>
+<blockquote>
+The given key has gone over the requests limit in the 24 hour period or has submitted too many requests in too short a period of time. If you're sending multiple requests in parallel or in a tight loop, use a timer or pause in your code to make sure you don't send the requests too quickly. 
+</blockquote>
+<p>If you look at the code ColdFusion generates for the map you can see that all of the geocode requests are run immediately. This then makes sense why the error would occur. You can see this yourself with the following code:</p>
+<code>
+&lt;cfset addresses = [
+"1802 San Pedro Avenue, Victoria BC",
+"1804 San Pedro Avenue, Victoria BC",
+"1810 San Pedro Avenue, Victoria BC",
+"1816 Feltham, Victoria BC",
+"1821 San Pedro Avenue, Victoria BC",
+"1823 San Pedro Avenue, Victoria BC",
+"1826 Feltham, Victoria BC",
+"1835 San Pedro Avenue, Victoria BC",
+"1837 San Pedro Avenue, Victoria BC",
+"1883 San Juan, Victoria BC",
+"1888 Feltham, Victoria BC",
+"1904 San Juan, Victoria BC",
+"1909 San Juan, Victoria BC",
+"1913 San Pedro Avenue, Victoria BC",
+"1921 San Fernando Pl, Victoria BC",
+"1972 San Rafael Cres, Victoria BC",
+"4090 San Capri Terrace, Victoria BC",
+"4098 San Capri Terrace, Victoria BC",
+"4101 San Capri Terrace, Victoria BC",
+"4110 Cortez Place, Victoria BC",
+"4120 Gordon Head Rd, Victoria BC",
+"4123 Cortez Ct, Victoria BC",
+"4151 San Mateo Place, Victoria BC"
+]&gt;
+<p>&lt;cfmap centeraddress=&quot;1802 San Pedro Avenue, Victoria BC&quot; zoomlevel=&quot;15&quot; height=&quot;600&quot; width=&quot;800&quot;&gt;
+&lt;cfloop index=&quot;m&quot; array=&quot;#addresses#&quot;&gt;
+&lt;cfmapitem address=&quot;#m#&quot;&gt;
+&lt;/cfloop&gt;
+&lt;/cfmap&gt;
+</code></p>
+<p>Run this a few times and you will get errors on random addresses. Ok, so now that we know the bug involves geocoding, how can we fix it? Well one way would be to geocode the addresses ourselves in a separate process. I've got a CFC for that (<a href="http://googlegeocode.riaforge.org/">Google Geocode</a>) but it too will return an error if you try to geocode too many addresses at once.</p>
+<p>The following code runs through the addresses and caches the result in the application scope. I'd probably recommend storing the geocodes in a database instead. Also note the use of sleep(). The number there (500 ms) was a pure guess but it seemed to work fine. If you wanted to be 100% rock solid, you could use a scheduled task to geocode addresses in the background. If an address fails one time it will (probably) get geocoded the next time.</p>
+<p>Anyway, I hope this helps and I'm certainly glad I solved this mysery! (Note, in the code sample below I left off the array of addresses. They are the same as the code block above.)</p>
+<code>
+&lt;cfif not structKeyExists(application, "longlat")&gt;
+    &lt;cfset application.longlat = {}&gt;
+&lt;/cfif&gt;
+<p>&lt;cfset geo = createObject(&quot;component&quot;, &quot;googlegeocode&quot;)&gt;
+&lt;cfset key = &quot;your google maps key goes here&quot;&gt;
+&lt;cfloop index=&quot;m&quot; array=&quot;#addresses#&quot;&gt;
+&lt;cfif not structKeyExists(application.longlat, m)&gt;
+&lt;cfset result = geo.geocode(key,trim(m))&gt;
+&lt;cfset sleep(500)&gt;
+&lt;cfset application.longlat[m] = {longitude=result.longitude, latitude=result.latitude}&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfmap centeraddress=&quot;1802 San Pedro Avenue, Victoria BC&quot; zoomlevel=&quot;15&quot; height=&quot;600&quot; width=&quot;800&quot;&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(addresses)#&quot;&gt;
+&lt;cfset m = application.longlat[addresses[x]]&gt;
+&lt;cfmapitem address=&quot;#m#&quot;&gt;
+&lt;cfmapitem latitude=&quot;#m.latitude#&quot; longitude=&quot;#m.longitude#&quot; tip=&quot;#addresses[x]#&quot;&gt;
+&lt;/cfloop&gt;
+&lt;/cfmap&gt;
+</code></p>
+}

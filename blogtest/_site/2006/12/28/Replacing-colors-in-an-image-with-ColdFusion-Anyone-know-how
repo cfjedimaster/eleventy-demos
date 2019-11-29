@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>A reader sent in this request today:</p>
+<blockquote>
+I'm trying to find a way to leverage open source/built-in image manipulation to allow me to replace one color in an image with another determined by a user.  Have you run into this before or do you have any suggestions?
+</blockquote>
+<p>So I was sure Alagad's Image Component would have this as it has a large number of methods, but it did not. (Alagad isn't open source or free but at 70 bucks it is a dang solution.) Rick Root's Image.cfc doesn't seem to have this either.</p>
+<p>So does anyone else know of a solution that will do this?</p>
+}

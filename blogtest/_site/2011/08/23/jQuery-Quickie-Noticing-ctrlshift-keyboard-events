@@ -1,0 +1,62 @@
+<h1>Post</h1>
+
+<p>Andy S. asked me earlier today...</p>
+<p/>
+<blockquote>
+I know how to trap for simple keyboard events using jQuery like so...
+<br/><br/>
+$(document).keydown(function (e){<br/>
+   if (e.which == 13){<br/>
+       doSomething();<br/>
+   }<br/>
+});<br/>
+<br/><br/>
+How can I trap for keyboard combinations like someone pressing the Ctrl + Shift + F2 all at once?
+</blockquote>
+<!--more-->
+<p>
+<p>I did some quick Googling and found this on the <a href="http://api.jquery.com/keydown/#comment-73042279/">keydown() docs</a> at jQuery.com:</p>
+<p>
+<blockquote>
+You would check for event.shiftKey:<br/>
+if ( event.which == 13 && event.shiftKey ) {<br/>
+// do something<br/>
+}<br/>
+</blockquote>
+<p>
+<p>This was posted by Karl Swedberg. I took his idea and built up a simple demo:</p>
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+$(document).ready(function() {</p>
+<pre><code>	$(document).keydown(function (e){
+		var s = '';
+		if (e.ctrlKey) s += &quot;CTRL ON&amp;lt;br/&amp;gt;&quot;;
+		else s += &quot;CTRL OFF&amp;lt;br/&amp;gt;&quot;;
+
+		if (e.shiftKey) s += &quot;SHIFT ON&amp;lt;br/&amp;gt;&quot;;
+		else s += &quot;SHIFT OFF&amp;lt;br/&amp;gt;&quot;;
+
+		s+= &quot;Key : &quot; + e.which;
+		$(&quot;#test&quot;).html(s);		 
+		e.preventDefault();
+	});
+</code></pre>
+<p>});
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>Type on your keyboard...
+&lt;p/&gt;</p>
+<p>&lt;div id=&quot;test&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>As you can see, I look for both the ctrlKey and shiftKey flags in the event object. I create a string that shows what you typed along with whether or not the ctrl or shift (or both) keys were depressed. You can run this yourself using the link below. It worked fine in Chrome, Firefox, and, wait for it, yes, even Internet Explorer 9.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/aug232011/test2.html"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

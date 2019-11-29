@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I've added a new pod to the right of the blog. The pod contains the guides I've created, one for Application.cfc, and one for the CFC Scopes reference. I should probably rename the Application.cfc link. It isn't a reference, but more of a skeleton. The idea being that you can cut and paste this as a &quot;base&quot; Application.cfc template.</p>
+}

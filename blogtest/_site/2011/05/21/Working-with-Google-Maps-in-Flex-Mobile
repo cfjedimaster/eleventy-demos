@@ -1,0 +1,176 @@
+<h1>Post</h1>
+
+<p>So - I wasn't sure if I should post this blog entry. Why? What I'm describing is a bit of a failure. But the more I thought about it the more I figured that the experience I went through could be useful for others. Plus - there's always the chance that I made a simple mistake and someone will point it out. I then get to pretend that it was a test and quickly fix my code! That being said - what I'm about to describe should not be something you should try yourself. At least not in the same way I did. Ok - so enough preamble!</p>
+<!--more-->
+<p/>
+<p>I decided to add one more simple feature to the <a href="http://www.raymondcamden.com/index.cfm/2011/5/14/INeedIt--Simple-Flex-Mobile-example">INeedIt</a> mobile application: driving directions. This is a topic I've <a href="http://www.coldfusionjedi.com/index.cfm/2011/3/9/Adding-driving-directions-to-a-jQuery-Mobile-web-site">covered before</a> with JavaScript and jQuery Mobile, so I was curious as to how it would work in the Flex world. I knew that Google had an <a href="http://code.google.com/apis/maps/documentation/flash/">API for Flash</a> and I'd heard good things about it. I figured I'd replace the static map image I had now while also adding in the driving directions.</p>
+<p>
+<p>I spent maybe 15 minutes looking over the docs. For the most part, it's incredibly easy. You download a SWC and add it to your project. (Total time - 60 seconds.)</p>
+<p>
+<p>You then drop a map tag into your Flex code. (Total time - 60 seconds.)</p>
+<p>
+<code>
+&lt;maps:Map xmlns:maps="com.google.maps.*" id="map" mapevent_mapready="onMapReady(event)" width="100%" height="100%" key="ABQIAAAANa2eDzLCrHnNGWxQ6nsUqBT0kcRajLdLCyGsAW6MRHnr7QX6dBTzuJkY4CKmc-3TB-8A2-9DEW3IXQ" sensor="false" url="http://coldfusionjedi.com" /&gt;
+</code>
+<p>
+<p>You then write an event handler to listen for the map ready event. Now - for me - this was the most tricky part. I use the map on a view that fires off a call to get detailed information about a Google Place data item. I basically have 2 network calls then. One for my Place data and one for the map to prepare itself. This is probably not the best way to do it - but I used variable flags to handle checking to see if the &quot;other guy&quot; was done. Here are the two functions:</p>
+<p>
+<code>
+private function placeResult(event:ResultEvent):void {
+	var resultData:Object = JSON.decode(event.result.toString());
+	addressLabel.text = resultData.result.formatted_address;
+	phoneLabel.text = resultData.result.formatted_phone_number;
+<pre><code>//Store long/lat for use for driving directions
+long = resultData.result.geometry.location.lng;
+lat = resultData.result.geometry.location.lat;
+//technically this could finish before mapReady - need to think
+if(mapReady) drawMap();
+trace(&quot;done &quot;);	
+</code></pre>
+<p>}</p>
+<p>protected function onMapReady(event:MapEvent):void {
+if(lat) drawMap();
+mapReady = true;
+}
+</code></p>
+<p>
+<p>Basically, when placeResult is done it checks to see if the map is done. If so, it calls drapMap. onMapReady checks for the existence of lat, the latitude of the place result. If that exists, then it runs drawMap. This was the only real complex part to my code. (Total time: 5 minutes.)</p>
+<p>
+<p>Actually drawing the map then was pretty trivial. I used one simple function to center it on my Place result and added a marker as well. (Total time: 5 minutes.)</p>
+<p>
+<code>
+protected function drawMap():void {
+	map.setCenter(new LatLng(lat,long), 16, MapType.NORMAL_MAP_TYPE);
+	var markerA:Marker = new Marker(new LatLng(lat, long),
+		new MarkerOptions({
+			strokeStyle: new StrokeStyle({color: 0x987654}),
+			fillStyle: new FillStyle({color: 0x223344, alpha: 0.8}),
+			radius: 12,
+			hasShadow: true
+		}));
+	map.addOverlay(markerA);
+}
+</code>
+<p>
+<p>Woot! Pretty simple, right? Check out the result:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/device1.png" />
+<p>
+<p>Unfortunately, this is where we hit a brick wall. On the simulator I noticed an odd pause when the place view was loaded. I figured it was a gremlin and didn't pay attention. When I tried it on my mobile device however - whoa buddy. Hitting the link to load a Place result now took about 15-30 seconds to load! Turns out Google Maps delays the loading of it's libraries. No wonder. If it takes that long to load I can see why. Unfortunately this pretty much kills the usability of the application. It seems like maybe there should be a way for everything else to happen <i>except</i> for the map loading until the view is there, but even if I didn't run drawMap, the mere existence of the Map tag caused the incredible slow down.</p>
+<p>
+<p>Failure.</p>
+<p>
+<p>That sucks... but I decided to move on. Mainly because I wanted to see the driving directions anyway. Much like my jQuery Mobile example, I went for a text page approach. But unlike my old example that showed one step at a time, I figured I'd simply list out the results. I made some modifications to my code so that I could pass to my new view both the user's location and the place result location. Here's what I came up with:</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;Driving Directions&quot; viewActivate=&quot;init(event)&quot;&gt;
+&lt;fx:Script&gt;
+&lt;![CDATA[
+import com.google.maps.LatLng;
+import com.google.maps.services.Directions;
+import com.google.maps.services.DirectionsEvent;
+import com.google.maps.services.Route;
+import com.google.maps.services.Step;</p>
+<pre><code>		import spark.events.ViewNavigatorEvent;
+
+		private function goBack(event:MouseEvent):void {
+			navigator.popView();
+			//hollyschinsky@gmail.com
+		}
+
+		protected function init(event:ViewNavigatorEvent):void {
+
+			trace(data.long+&quot;,&quot;+data.lat);
+			var dir:Directions = new Directions();
+			dir.addEventListener(DirectionsEvent.DIRECTIONS_SUCCESS, onDirLoad);
+			dir.addEventListener(DirectionsEvent.DIRECTIONS_FAILURE, onDirFail);
+			
+			var waypoints:Array = [new LatLng(data.mylat,data.mylong),
+										   new LatLng(data.lat,data.long)
+											];
+			dir.loadFromWaypoints(waypoints);
+			statusLabel.text = &quot;Loading directions...&quot;;
+		}
+		
+		protected function onDirLoad(event:DirectionsEvent):void
+		{
+			currentState=&quot;ready&quot;;
+			trace('got stuff back');
+			var directions:String = &quot;&quot;;
+			var directionData:Directions = Directions(event.directions);
+		
+			//As before, use route 1
+			if(directionData.numRoutes &amp;gt;= 1) {
+				var route:Route = directionData.getRoute(0);
+				for(var i:int=0; i&amp;lt;route.numSteps; i++) {
+					var step:Step = route.getStep(i);
+					var html:String = step.descriptionHtml;
+					html = html.replace(/&amp;lt;div class=&quot;google_note&quot;&amp;gt;/g,&quot;\n\n&quot;);
+					directions += html.replace(/&amp;lt;.*?&amp;gt;/g,&quot;&quot;) + &quot;\n\n&quot;;
+				}
+				trace(directions);
+				dirBox.text = directions;
+				
+			} else {
+				//A lie, but close enough
+				currentState=&quot;error&quot;;
+				statusLabel.text = &quot;Sorry, unable to get directions.&quot;;
+				
+			}
+			
+		}
+		
+		protected function onDirFail(event:Event):void
+		{
+			currentState=&quot;error&quot;;
+			statusLabel.text = &quot;Sorry, unable to get directions.&quot;;
+			trace('dir error');
+			
+		}
+		
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+&amp;lt;fx:Declarations&amp;gt;
+	&amp;lt;!-- Place non-visual elements (e.g., services, value objects) here --&amp;gt;
+&amp;lt;/fx:Declarations&amp;gt;
+
+&amp;lt;s:actionContent&amp;gt;
+	&amp;lt;s:Button label=&quot;Back&quot; click=&quot;goBack(event)&quot; /&amp;gt;		
+&amp;lt;/s:actionContent&amp;gt;
+
+&amp;lt;s:layout&amp;gt;
+	&amp;lt;s:VerticalLayout gap=&quot;5&quot; paddingTop=&quot;5&quot; paddingLeft=&quot;5&quot; paddingRight=&quot;5&quot;/&amp;gt;
+&amp;lt;/s:layout&amp;gt;
+
+&amp;lt;s:states&amp;gt;
+	&amp;lt;s:State name=&quot;loading&quot; /&amp;gt;
+	&amp;lt;s:State name=&quot;error&quot; /&amp;gt;
+	&amp;lt;s:State name=&quot;ready&quot; /&amp;gt;
+&amp;lt;/s:states&amp;gt;
+
+&amp;lt;s:Label id=&quot;statusLabel&quot; includeIn=&quot;error,loading&quot; /&amp;gt;
+&amp;lt;s:Label id=&quot;dirBox&quot; width=&quot;100%&quot; height=&quot;100%&quot; includeIn=&quot;ready&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>I <i>love</i> how easy Google's directions API are. In case it isn't obvious in the code above, this is all you really need:</p>
+<p>
+<code>
+var dir:Directions = new Directions();
+dir.addEventListener(DirectionsEvent.DIRECTIONS_SUCCESS, onDirLoad);
+dir.addEventListener(DirectionsEvent.DIRECTIONS_FAILURE, onDirFail);
+<p>var waypoints:Array = [new LatLng(data.mylat,data.mylong),
+new LatLng(data.lat,data.long)
+];
+dir.loadFromWaypoints(waypoints);
+</code></p>
+<p>
+<p>That's pretty darn simple, right? Once the directions are returned, I can simply loop over them and make a big ole string I then dump out to screen. Like so:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/device2.png" />
+<p>
+<p>So... what to do? There are other mapping packages out there. I could switch. But I don't know if any of them provide directions support. I think I may switch back to the Google Static Map API and simply get rid of the driving directions. Kinda sucks, but, it's still a cool application. Any opinions out there? Remember that you can get all of the code via the <a href="https://github.com/cfjedimaster/ineedit">Github repo</a>. If you want to try the APK yourself, I've attached it to this blog post.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FINeedIt1%2Eapk'>Download attached file.</a></p></p>
+}

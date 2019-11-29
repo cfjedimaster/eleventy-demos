@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>A reader asks:</p>
+<blockquote>
+I have a form and I am generating the dropdowns via a query in a CFC. Is it acceptable to make the functions sort of multi-purpose to generate both the list for the dropdown and single item from the list? I would basically use an if-then statement to add or remove the where clause in the query based on if I needed the full list of query records or just a specific record. To me it seems like a good timesaver from basicly creating identical functions with the only difference being the addition an argument and the where clause in the query but it is very possible that I'm not seeing some obvious or not so obvious pitfalls.
+</blockquote>
+<p>Absolutely! Obviously it will depend on a case by case basis, but in general, yes, it is definitely &quot;ok&quot; to do what you are doing. Many times I will build a generic getAll() method that... well... gets all the data. I will then add a set of optional attributes that act as filters for that method. So for example, I may filter out content that has active=false.</p>
+<p>Again - remember that no one answer will cover every situation. Here is an example - you may want to log searches. Your getAll method probably shouldn't be &quot;cluttered&quot; with logging. In that case, I'd maybe build a search method() which does the logging, and <i>then</i> calls getAll, with the appropriate filters. Here is a simple pseudo-code example:</p>
+<code>
+&lt;cffunction name="getAll" returnType="query" output="false"&gt;
+	&lt;cfargument name="searchterms" type="string" required="false"&gt;
+	&lt;cfset var q = ""&gt;
+<pre><code>&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+select	name, body
+from	content
+&amp;lt;cfif structKeyExists(arguments,&quot;searchterms&quot;) and len(trim(arguments.searchterms))&amp;gt;
+where	body like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.searchterms#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn q&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;search&quot; returnType=&quot;query&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;searchterms&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cflog file=&quot;myapp&quot; text=&quot;Searched for #arguments.searchterms#&quot;&gt;</p>
+<pre><code>&amp;lt;cfreturn getAll(arguments.searchterms)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+}

@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>Can anyone recommend a good program for analyzing web stats? Let me tell you what I'm looking for first:</p>
+<ol>
+<li>
+<p>Simple setup. I just spent 30 minutes trying to get awstats working, and it was a royal pain in the rear. I've used Analog as well - and while Analog actually worked for me, it is still a pain to configure. (If someone can recommend a GUI editor for Analog config files, that would be ok.)</p>
+</li>
+<li>
+<p>Caching. Basically, once it scans the log file for January 1, 2005, it should remember that it cached it.</p>
+</li>
+<li>
+<p>Reverse DNS lookup.</p>
+</li>
+<li>
+<p>Price: I'm looking for free, but I don't mind buying a program if it is worth the money. Although I'm not in the market for an &quot;Enterprise&quot; type solution. I mean something less than a hundred dollars or so.</p>
+</li>
+</ol>
+}

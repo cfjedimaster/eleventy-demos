@@ -1,0 +1,79 @@
+<h1>Post</h1>
+
+<p>This blog post is mainly for my own memory - but a user asked about access CDATA values stored in an XML field via JavaScript. I'm using jQuery to work with XML and wrote up a very quick demo. For the most part, it seems like it &quot;just works&quot;, but I assume there are going to be some edge cases. I'll update the demo to add more examples if folks would like.</p>
+<!--more-->
+<p>
+<p>First, I created an XML sample and named it data.xml:</p>
+<p>
+<code>
+&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;root&gt;
+&lt;name&gt;Raymond&lt;/name&gt;
+&lt;bio&gt;
+&lt;![CDATA[
+Willy nilly stuff with &lt;b&gt;some html&lt;/b&gt; and crap in it.
+]]&gt;
+&lt;/bio&gt;
+&lt;likes&gt;
+    &lt;like&gt;Star Wars&lt;/like&gt;
+    &lt;like&gt;Beer&lt;/like&gt;
+    &lt;like&gt;Cookies&lt;/like&gt;
+&lt;/likes&gt;
+&lt;skillshot range="10"&gt;rifle&lt;/skillshot&gt;
+&lt;/root&gt;
+</code>
+<p>
+<p>Notice I've got a simple value, a value with CDATA, an collection of items, and one item with an attribute too. Here's the jQuery side:</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;&lt;/title&gt;
+	&lt;meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1" /&gt;
+<pre><code>&amp;lt;script type=&quot;text/javascript&quot; src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+
+&amp;lt;script type=&quot;text/javascript&quot;&amp;gt;
+
+
+$(function() {
+
+		$.get(&quot;data.xml&quot;, {}, function(res) {
+
+			var name = $(res).find(&quot;name&quot;);
+			console.log(&quot;name = &quot;+name.text());
+
+			var bio = $(res).find(&quot;bio&quot;);
+			console.log(&quot;bio = &quot;+bio.text());
+
+			//notice I ask for the child like tag, not the parent likes
+			var likes = $(res).find(&quot;like&quot;);
+			$(likes).each(function(idx,item) {
+				console.log(&quot;like # &quot;+idx+&quot; = &quot;+$(item).text());
+			});
+
+			var sshot = $(res).find(&quot;skillshot&quot;);
+			console.log(&quot;skillshot = &quot;+sshot.text());
+			console.log(&quot;skillshot = &quot;+sshot.attr(&quot;range&quot;));
+
+		}, &quot;xml&quot;);
+
+});
+&amp;lt;/script&amp;gt;
+</code></pre>
+<p>&lt;/head&gt;
+&lt;body&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Stepping through this - notice first that I tipped off jQuery to the data type. I probably didn't need this, but i like being explicit. jQuery automatically converts the result text into a proper XML object. Once I have that, then I can use the find function to grab my nodes. At this point, it almost acts like any other regular DOM item. Notice how I can simply use .text on both name and bio. It just works.</p>
+<p>
+<p>The array of items is a bit different. I grab them all and then iterate over it.</p>
+<p>
+<p>And finally - look how I handle the skillshot item. I can still do .text to get the text value, but I can also use .attr (again, like a regular DOM item) to get the attribute.</p>
+<p>
+<p>Hope this is helpful to folks. If you want to run this, hit the demo link below and ensure your console is open.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/2012/feb/16/"><img src="https://static.raymondcamden.com/images/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

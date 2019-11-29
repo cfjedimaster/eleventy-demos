@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>Just got out of the MAX Sneak Peek ... everyone else in the world is blogging this already but I figured I'd share what I saw along with some comments.</p>
+<p>Dreamweaver: They showed new code hinting for ASPX and C#. Basically if you create a C# object, DW will know it and give you code hints for that object's methods.</p>
+<p>That's great... but... um... how about the same integration with CFCs?</p>
+<p>Flex: They mainly focused on Flex development, and what I saw rocked. Eclipse plugins, and the Brady visual environment were nice too. One of the coolest things about Brady is that it allowed you to track all the HTTP requests. That should be a part of the core DW product itself. I can see it being useful for CF development.</p>
+<p>ColdFusion: They showed rewritten cfgrid/form tags using Flash, and it was very nice. You could even use Flex things like tabs and accordian navigation - all from within CF. Last but not least they showed a <i>damn</i> nice example of outputting PDF directly from CF.</p>
+}

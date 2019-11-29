@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>I've blogged quite a bit about the coolness that is <a href="http://labs.adobe.com/technologies/shadow/">Adobe Shadow</a>. One issue that has cropped up from time to time is that Shadow sometimes does not work well in certain Wi-Fi environments. Conferences are a good example, but so is the office I'm currently sitting in. Basically, the network here is blocking my iPad from seeing my Macbook. It isn't a Shadow issue. Safari can't hit my machine at all. I've seen this in the Adobe offices as well.</p>
+<p>On a whim I tried something. On my Macbook I enabled Internet Sharing via Bluetooth.</p>
+<img src="https://static.raymondcamden.com/images/screenshot12.png" />
+<p>Then - on my iPad, I connected my iPad to the MacBook via Bluetooth:</p>
+<img src="https://static.raymondcamden.com/images/screenshot13.png" />
+<p>For good measure, I then turned off Wifi as well. I confirmed my iPad could browse the net and then tried Shadow. It seems to be working well, if maybe a bit slower than before. But the point is - it works.</p>
+<p>I don't work on the Shadow team so please take this advice with a huge grain of salt.</p>
+}

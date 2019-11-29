@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>A while ago I mentioned that I had started a Sourceforge <a href="http://www.camdenfamily.com/morpheus/blog/index.cfm?mode=entry&entry=395FCEBA-CD18-37A0-25593EA40B514D4C">project</a> for this blog. Development has been.... slow to say the least. I've finally got something that should be close to a good 3.0 Alpha release. This site is running it, but you should use it at your own risk. In fact, I'm not changing the download link to the right until 3.0 is really released.</p>
+<p>Follow the More link for information on what has changed or just <a href="http://www.camdenfamily.com/morpheus/downloads/blogalpha.zip">download</a> the bits.</p>
+<!--more-->
+<p>New features include:</p>
+<ul>
+<li>Support for More links, to separate long entries.
+<li>MySQL support
+<li>You can add categories now (don't ask me why I forgot that)
+<li>You can delete comments (thanks spammers!)
+</ul>
+<p>As always, this code is donation-ware. If you like it, send me an old game. If you really like it, send me a new game. If you <i>really</i> enjoy it, then send me one of those 40 gig iPods.</p>
+}

@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Talk about timing. I decided to hit up a few old Ask a Jedi questions and came across this:</p>
+<blockquote>
+I'm working with the CFMX 7 Admin API.  When trying to invoke the 'getJvmProperty()' method, I receive an error stating 'Current user is not authorized to invoke this method.'
+<p>I am instantiating the admin.cfc and the runtime.cfc in the request scope.   I am also using the request.adminObj.login() method to login to the Administrator.  When I invoke the inherited method 'isAdminUser()' from the runtime object, the response is TRUE.</p>
+<p>I am slightly confused here.</p>
+</blockquote>
+<p>Today Macromedia (um, sorry, Adobe) released a tech note that I believe answers this exact question:</p>
+<p><a href="http://www.macromedia.com/cfusion/knowledgebase/index.cfm?id=b46c5e8c&pss=rss_coldfusion_b46c5e8c"> Error &quot;Current user is not authorized to invoke this method&quot; occurs when using the ColdFusion MX 7 Admin API</a></p>
+}

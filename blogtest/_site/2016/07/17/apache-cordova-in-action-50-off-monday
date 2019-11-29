@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<img src="https://static.raymondcamden.com/images/2016/07/cordova.jpg" align="left" style="margin-right: 10px;margin-bottom: 10px"> 
+<p>The title pretty much says it says it all. My &quot;Apache Cordova in Action&quot; book, along with &quot;NativeScript in Action&quot; and &quot;Intuitive UX&quot; are all 50% off on Monday, July 18. Just follow the link below and use the code: dotd071816au</p>
+<!--more-->
+<p>https://www.manning.com/dotd</p>
+<script>
+if(document.location.hostname.indexOf('mr-cordova.blogspot') >= 0) {
+	alert('This site is stealing my content - sending you to the proper blog now...');
+	document.location.href = 'http://www.raymondcamden.com';
+}
+</script>}

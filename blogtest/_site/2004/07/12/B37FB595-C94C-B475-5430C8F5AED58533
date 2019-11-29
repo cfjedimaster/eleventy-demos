@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Forgive the blatant advertising, but another implementation of <a href="http://www.mindseye.com">my company's</a> CMS product, <a href="http://www.mindseyeelement.com">Element</a>, has been released: <a href="http://www.irobot.com">www.irobot.com</a></p>
+<p>These are the guys who sell those cool robots that clean your floors. This is the second implementation of Element that uses mySQL for the backend. We now support SQL Server and mySQL out of the box.</p>
+}

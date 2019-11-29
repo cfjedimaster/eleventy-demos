@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Some big updates to the <a href="http://www.coldfusionportal.org">ColdFusion Portal</a> this morning:</p>
+<ul>
+<li>Refreshed the blog list. It now contains data from MXNA, the Goog, and a custom set of data. I've done this so I don't have to enter data manually (or not do it often). My plan is to refresh this monthly.
+<li>Podcasts added.
+<li>User Groups added. (Thanks Ed and Christine of Adobe!)
+<li>Small layout tweaks here and there.
+</ul>
+<p>Enjoy. I don't know about you, but for me, the best part of the portal are the items in the left column. I love having the direct download and documentation links.</p>
+}

@@ -1,0 +1,158 @@
+<h1>Post</h1>
+
+<p>Here is an interesting thing I played with this Sunday morning. How can I create a dynamic form on the client side and combine it with dynamic processing on the server side? For example - consider a form that lets you send email to your friends. By default we could ask you for 5 sets of names and email addresses. But what if you aren't a programmer and have more than five friends? You could use a form that lets you enter data and includes a button labeled &quot;I have more friends.&quot; The form would post to itself and then simply add more blank fields. That's kind of what <a href="http://soundings.riaforge.org">Soundings</a> does. It <i>works</i>, but we can do better, right?</p>
+<!--more-->
+<p>Let's start with a simple form and a set number of fields.</p>
+<code>
+&lt;!--- Number of default rows to show ---&gt;
+&lt;cfset defaultRows = 5&gt;
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;p&gt;
+Enter the names and email addresses of all your friends so we can spam them.
+&lt;/p&gt;</p>
+<p>&lt;form action=&quot;index.cfm&quot; method=&quot;post&quot; id=&quot;mainform&quot;&gt;
+&lt;table id=&quot;maintable&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Email&lt;/th&gt;
+&lt;/tr&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#defaultRows#&quot;&gt;
+&lt;tr&gt;
+&lt;cfoutput&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;name#x#&quot; class=&quot;name&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;email#x#&quot; class=&quot;email&quot;&gt;&lt;/td&gt;
+&lt;/cfoutput&gt;
+&lt;/tr&gt;
+&lt;/cfloop&gt;
+&lt;/table&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;</p>
+<p>&lt;p&gt;
+Enter a message for them:&lt;br/&gt;	
+&lt;textarea name=&quot;msg&quot; cols=&quot;40&quot; rows=&quot;6&quot;&gt;&lt;/textarea&gt;
+&lt;/p&gt;</p>
+<p>&lt;input type=&quot;submit&quot; value=&quot;Send&quot;&gt;	
+&lt;/form&gt;
+</code></p>
+<p>Nothing too complex here. I've set a CF variable, defaultRows, that indicates I'll have 5 sets of friends. Note then the loop that creates one TR for each set.</p>
+<p>This works well enough, but how can we add another set so we can add more friends? I looked to jQuery to see how easy it would be to add a new table row. I seem to remember that adding content, in general, to the browser is easy, but that tables were a bit more difficult. I figured, though, that jQuery would make this easier.</p>
+<p>A quick Google search turned up a solution by a user named motob (<a href="http://www.mail-archive.com/jquery-en@googlegroups.com/msg20739.html">http://www.mail-archive.com/jquery-en@googlegroups.com/msg20739.html</a>). I've no idea who he is, but thanks to him, I was able to get it working. I began by adding this link below the table:</p>
+<code>
+&lt;a href="" onclick="addrow();return false;"&gt;Add Friend&lt;/a&gt;
+</code>
+<p>And then added the following code:</p>
+<code>
+&lt;script src="/jquery/jquery.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+var totalRows = &lt;cfoutput&gt;#defaultRows#&lt;/cfoutput&gt;;
+<p>function addrow() {
+totalRows++;
+var clonedRow = $(&quot;table#maintable tr:last&quot;).clone(); //this will grab the last table row.
+//get the textfield
+var tfName = $(&quot;input.name&quot;,clonedRow);
+var tfEmail = $(&quot;input.email&quot;,clonedRow);</p>
+<pre><code>//change their names
+tfName.attr(&quot;name&quot;,&quot;name&quot;+totalRows);
+tfEmail.attr(&quot;name&quot;,&quot;email&quot;+totalRows);
+
+$(&quot;table#maintable&quot;).append(clonedRow); //add the row back to the table
+console.log('done')
+</code></pre>
+<p>}
+&lt;/script&gt;
+</code></p>
+<p>I begin by loading in my jQuery library. Kind of hard to use jQuery without it. Next I create a page-wide variable, totalRows, that matches the ColdFusion variable defaultRows. Next up is addrow. This is where the magic is. I use the clone() function as described by motob. This creates a clone of the last table row. Note - when I first tried this code my 'Add Friend' link was in a right-aligned final row. I had to work around that a bit and then decided to just make it simpler and remove the link from the last row.</p>
+<p>Ok, so the clone works just fine, but we need to get the input controls from within. If you look back at, you will notice I set a class for each input field. This doesn't match to any real CSS, but is just used as a marker. (Is there a better way, jQuery gurus?) Once I have a pointer to each input field, it is a simple matter to update their names. Lastly, I append the row back to the table.</p>
+<p>A bit off topic, but what's the deal with console.log() at the end? This will only work in Firebug, so IE users please remove it. I added this in to make it easier to see if the code worked. When you have a link/button/whatever run JS code and the JS code has an error, the page will simply let the link 'continue' and the page will reload. Now Firefox does have a nice error console and I keep it open, but sometimes the reload 'flash' is so quick I miss it. By using that conole.log at the end, I get a quick way to see if everything ran ok, or at least did not throw an error.</p>
+<p>Ok, so that's the client side, on the server side, it isn't that complex. I added this to the top of my page:</p>
+<code>
+&lt;cfif not structIsEmpty(form)&gt;
+	&lt;cfset counter = 1&gt;
+	&lt;cfloop condition="structKeyExists(form,'name#counter#') and structKeyExists(form,'email#counter#')"&gt;
+		&lt;cfset name = form["name#counter#"]&gt;
+		&lt;cfset email = form["email#counter#"]&gt;
+		&lt;cfif len(trim(name)) and isValid("email", email)&gt;
+			&lt;cfmail to="#email#" from="ray@camdenfamily.com" subject="A very special message...."&gt;
+Hi #name#!
+<p>#form.msg#
+&lt;/cfmail&gt;
+&lt;cfoutput&gt;I sent email to #name# (#email#)&lt;br/&gt;&lt;/cfoutput&gt;
+&lt;/cfif&gt;
+&lt;cfset counter++&gt;
+&lt;/cfloop&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>I simply loop with a condition checking to see if nameX and emailX exists. I'll continue onto infinity so for those of you with more than 5 friends, you will be covered. (If I did this during high school I'd have to add a 'Remove Friend' function!)</p>
+<p>For each loop I grab the values, do basic validation, and send email. (I should also add basic validation to form.msg as well.) The complete code is below. Like always, I'll remind people I'm still new to jQuery so most likely it could be done a bit better.</p>
+<code>
+&lt;cfif not structIsEmpty(form)&gt;
+	&lt;cfset counter = 1&gt;
+	&lt;cfloop condition="structKeyExists(form,'name#counter#') and structKeyExists(form,'email#counter#')"&gt;
+		&lt;cfset name = form["name#counter#"]&gt;
+		&lt;cfset email = form["email#counter#"]&gt;
+		&lt;cfif len(trim(name)) and isValid("email", email)&gt;
+			&lt;cfmail to="#email#" from="ray@camdenfamily.com" subject="A very special message...."&gt;
+Hi #name#!
+<p>#form.msg#
+&lt;/cfmail&gt;
+&lt;cfoutput&gt;I sent email to #name# (#email#)&lt;br/&gt;&lt;/cfoutput&gt;
+&lt;/cfif&gt;
+&lt;cfset counter++&gt;
+&lt;/cfloop&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;!--- Number of default rows to show ---&gt;
+&lt;cfset defaultRows = 5&gt;</p>
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script src=&quot;/jquery/jquery.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+var totalRows = &lt;cfoutput&gt;#defaultRows#&lt;/cfoutput&gt;;</p>
+<p>function addrow() {
+totalRows++;
+var clonedRow = $(&quot;table#maintable tr:last&quot;).clone(); //this will grab the last table row.
+//get the textfield
+var tfName = $(&quot;input.name&quot;,clonedRow);
+var tfEmail = $(&quot;input.email&quot;,clonedRow);</p>
+<pre><code>//change their names
+tfName.attr(&quot;name&quot;,&quot;name&quot;+totalRows);
+tfEmail.attr(&quot;name&quot;,&quot;email&quot;+totalRows);
+
+$(&quot;table#maintable&quot;).append(clonedRow); //add the row back to the table
+console.log('done')
+</code></pre>
+<p>}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;p&gt;
+Enter the names and email addresses of all your friends so we can spam them.
+&lt;/p&gt;</p>
+<p>&lt;form action=&quot;index.cfm&quot; method=&quot;post&quot; id=&quot;mainform&quot;&gt;
+&lt;table id=&quot;maintable&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Email&lt;/th&gt;
+&lt;/tr&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#defaultRows#&quot;&gt;
+&lt;tr&gt;
+&lt;cfoutput&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;name#x#&quot; class=&quot;name&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;email#x#&quot; class=&quot;email&quot;&gt;&lt;/td&gt;
+&lt;/cfoutput&gt;
+&lt;/tr&gt;
+&lt;/cfloop&gt;
+&lt;/table&gt;
+&lt;a href=&quot;&quot; onclick=&quot;addrow();return false;&quot;&gt;Add Friend&lt;/a&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;</p>
+<p>&lt;p&gt;
+Enter a message for them:&lt;br/&gt;	
+&lt;textarea name=&quot;msg&quot; cols=&quot;40&quot; rows=&quot;6&quot;&gt;&lt;/textarea&gt;
+&lt;/p&gt;</p>
+<p>&lt;input type=&quot;submit&quot; value=&quot;Send&quot;&gt;	
+&lt;/form&gt;
+</code></p>
+}

@@ -1,0 +1,133 @@
+<h1>Post</h1>
+
+<p>Here is my first experiment in integrating Google Analytics and jQuery Mobile. I've been trying to get this working off and on the last week or so, but I finally figured out my mistake this morning. <i>Please</i> consider this a proof of concept. It seems to be working ok now, but I bet there are about ten different ways to do this better. That being said - let's look at the code.</p>
+<!--more-->
+<p>
+<p>First, here is the page without any analytics code at all.</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt; 
+&lt;html&gt; 
+	&lt;head&gt; 
+	&lt;title&gt;Analytics Demo&lt;/title&gt; 
+&lt;link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a4.1/jquery.mobile-1.0a4.1.min.css" /&gt;
+&lt;script src="http://code.jquery.com/jquery-1.5.2.min.js"&gt;&lt;/script&gt;
+&lt;script src="http://code.jquery.com/mobile/1.0a4.1/jquery.mobile-1.0a4.1.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt; 
+&lt;body&gt; 
+<p>&lt;div data-role=&quot;page&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Home&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;ul data-role=&quot;listview&quot; data-inset=&quot;true&quot;&amp;gt;
+		&amp;lt;li data-role=&quot;list-divider&quot;&amp;gt;Options&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;products.html&quot;&amp;gt;Products&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;members.html&quot;&amp;gt;Members&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;#about&quot;&amp;gt;About&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+	&amp;lt;/ul&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;div data-role=&quot;page&quot; id=&quot;about&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;About&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;p&amp;gt;
+	This is demo content.
+	&amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>It's a simple page with 3 links. As you can see, the About page is included in the same source, and products and members are separate pages. As they are very similar, I'll show one of them:</p>
+<p>
+<code>
+&lt;div data-role="page"&gt;
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Products&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;ul data-role=&quot;listview&quot; data-inset=&quot;true&quot;&amp;gt;    
+    	&amp;lt;li&amp;gt;&amp;lt;a href=&quot;apples.html&quot;&amp;gt;Apples&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;    
+    	&amp;lt;li&amp;gt;&amp;lt;a href=&quot;oranges.html&quot;&amp;gt;Oranges&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;    
+    	&amp;lt;li&amp;gt;&amp;lt;a href=&quot;cherries.html&quot;&amp;gt;Cherries&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;    
+    &amp;lt;/ul&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>This page leads to 3 more - all of which are the same except for their names. Here is apples.html:</p>
+<p>
+<code>
+&lt;div data-role="page"&gt;
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Apples&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+&amp;lt;p&amp;gt;
+This is for apples.
+&amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>Ok - so now to the analytics. I knew I was going to use asynchronous tracking which is described in Google's docs here: <a href="http://code.google.com/apis/analytics/docs/tracking/asyncTracking.html">Tracking Site Activity</a>. This involves placing the core tracking code in the head of your document. So in my initial file I did so:</p>
+<p>
+<code>
+&lt;script type="text/javascript"&gt;
+<p>var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-70863-15']);
+_gaq.push(['_trackPageview']);</p>
+<p>(function() {
+var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();</p>
+<p>&lt;/script&gt;
+</code></p>
+<p>
+<p>Now for the tricky part - and the part I screwed up on. According to the docs, I needed to make use of <a href="http://code.google.com/apis/analytics/docs/gaJS/gaJSApiBasicConfiguration.html#_gat.GA_Tracker_._trackPageview">trackPageview</a>, a function that allows you to asynchronously register a page view event. jQuery Mobile fires an event when pages are loaded. I made use of that event to wrap a call to trackPageview:</p>
+<p>
+<code>
+$("div").live("pagebeforeshow",function(event,ui) {
+	var header = $("div[data-role='header'] h1",$(this));
+	var title = $.trim(header.text());
+	modtitle = "/" + title + ".html";
+	console.log(modtitle);
+	_gaq.push(["_trackPageview",modtitle]);
+});
+</code>
+<p>
+<p>What this code does is listen for the pagebeforeshow event. This is one of many events you can listen to. (More information on events may be <a href="http://jquerymobile.com/demos/1.0a4.1/#docs/api/events.html">found in the docs</a>.) When a page is shown, I use jQuery to grab the text out of the header. If you look at the page example above, you can see I include a title there that represents the page. With that I create a URL of the form: &quot;/&quot; + title + &quot;.html.&quot; Here is where I screwed up. See the push event? It takes an array. My eyes missed that the first 10 times I looked at the code. Simply add [ and ] around the arguments seemed to fix everything:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip71.png" />
+<p>
+<p>Any comments on this technique? You can see the full code here: <a href="http://www.coldfusionjedi.com/demos/gajqm/">http://www.coldfusionjedi.com/demos/gajqm/</a> Although obviously you won't be able to view my analytics.</p>
+}

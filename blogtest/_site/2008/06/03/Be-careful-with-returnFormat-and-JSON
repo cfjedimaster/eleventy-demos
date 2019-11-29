@@ -1,0 +1,21 @@
+<h1>Post</h1>
+
+<p>A user pinged me earlier this morning with an interesting issue. His Ajax application wasn't working as expected. He was using jQuery to hit a CFC. Instead of showing you his code, I simplified it a bit which should make the problem a bit simpler to see. Try and figure it out before reading on:</p>
+<!--more-->
+<code>
+&lt;cffunction name="getTime2" access="remote" returnFormat="json"&gt;
+	&lt;cfset var s = {}&gt;
+	&lt;cfset s.time = now()&gt;
+	&lt;cfset s.name = "Current Time"&gt;
+	&lt;cfreturn serializeJSON(s)&gt;
+&lt;/cffunction&gt;
+</code>
+<p>It's a bit subtle - but the issue is that he mixes both returnFormat and serializeJSON. I've blogged about returnFormat quite a bit. It's one of my favorite features of ColdFusion 8 and it got little press. His use of it here though is not something I normally recommend. You can pass returnFormat as an argument in the request or you can specify it in the method inline  as he did. To me - using it inline is a bad idea. Not &quot;bad&quot; bad, but I don't think the CFC should be concerned with its return form. Instead, it should simply handle it's business logic and let the caller ask for a particular format.</p>
+<p>Where things go wrong is the serializeJSON. What's happening here is that CF first runs the code of the method (Make a struct, then JSON it), and then it formats the result in JSON. So basically it JSON encodes a string that is already JSON encoded.</p>
+<p>If you view this result (*), you can see the result is a bit funky:</p>
+<p>&quot;{&quot;TIME&quot;:&quot;June, 03 2008 08:20:06&quot;,&quot;NAME&quot;:&quot;Current Time&quot;}&quot;</p>
+<p>All those \ should tip you off. If you remove the serializeJSON, you see a result that should look a bit better:</p>
+<p>{&quot;TIME&quot;:&quot;June, 03 2008 08:20:06&quot;,&quot;NAME&quot;:&quot;Current Time&quot;}</p>
+<p>I'd remove both the serializeJSON and the returnFormat. I'd then edit the jQuery code's URL to add returnFormat=JSON.</p>
+<p>*Ok, so let me use this blog entry to say <b>once again</b> that 99% of Ajax problems can be solved with a tool like Firebug. Firebug would have let you see the Ajax request and response, and if you were familiar with JSON, it would have been an big clue. It's also a handy way to see times when you forget to turn off CF debugging.</p>
+}

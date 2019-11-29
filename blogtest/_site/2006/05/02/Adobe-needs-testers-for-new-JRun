@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>Adobe asked if I could share the word:</p>
+<blockquote>
+The beta release of next version of JRun appserver,  code named Cheetah, is available. Adobe JRun Team is inviting serious evaluators to give feedback on this beta release.
+Contact vrreddy@adobe.com to be included in the Beta program.
+<p>We believe Beta of JRun Cheetah is reasonably stable and reliable. And we plan to reward those who prove otherwise. We intend to give away fully functional JRun licenses to
+the users who report highest quality issues during the Beta.</p>
+<p>We are throwing open a JRun Sample Apps Challenge. We invite the beta users to develop sample applications exploiting the new JRun Cheetah feature sets. The best apps developed by you will be rewarded, and on qualification, will be featured as part JRun releases in samples section.</p>
+</blockquote>
+<p>I'm happy to see JRun getting some Adobe-lovin since it seemed to be only existing as a server for other products.</p>
+}

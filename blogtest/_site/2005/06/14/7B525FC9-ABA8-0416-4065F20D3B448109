@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I'm working on a project now where I'm converting a large set of search queries into a Verity search. I'm building the code now that will take the initial data and add it to the Verity index. The docs for cfindex make it seem that both category and categorytree must be simple values. By that I mean, if you pass in a query of data to index, category and categoryTree must have one value each. Ie, if I say category=&quot;weapons&quot;, all the data I'm inserting using cfindex must have the same category.</p>
+<p>This is incorrect though. Just like you can with body and title, you can specify the name of a query column for both the category and categorytree information.</p>
+<p>This may be obvious to others - but it wasn't to me.</p>
+<p>I looked into this because I was manually entering one entry at a time in a loop. This was somewhat slow to say the least. Now I can switch to using one cfindex and passing in a query.</p>
+}

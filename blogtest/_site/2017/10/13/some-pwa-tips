@@ -1,0 +1,45 @@
+<h1>Post</h1>
+
+<p>Yesterday I <a href="https://www.raymondcamden.com/2017/10/12/turning-my-no-mans-sky-app-into-a-pwa/">blogged</a> about my experience turning a simple front-end application into a PWA. Since then I've had some things come up that I wanted to share related to PWA (Progessive Web Apps). This is a bit of a random collection of items but I hope it's helpful.</p>
+<h1>Web App Install Banner Stuff</h1>
+<p>As a reminder, the [Web App Install Banner] feature is the Chrome thing where the browser will prompt the user to install your web app. I mentioned yesterday I had trouble getting this to trigger in my app, even though I had (as far as I know) did everything I needed to.</p>
+<p>First off - even though I couldn't get that prompt to occur, if I manually added the site via &quot;Add to Home screen&quot;, the app <em>was</em> saved correctly and recognized as a PWA. I'd share a screen shot of this but I assume you can trust me on this.</p>
+<p>I asked some questions related to PWA on a private Google Developer expert channel and a Googler, <a href="https://paul.kinlan.me/">Paul Kinlan</a>, shared some details.</p>
+<p>First, if the app was ever installed before, of if it was ever declined before, than the user won't be prompted again. That didn't cover my case, but it is important to remember.</p>
+<p>Second, there is a Chrome flag which bypasses this:</p>
+<pre><code>chrome://flags/#bypass-app-banner-engagement-checks
+</code></pre>
+<p>In theory when you enable this, you can then use the &quot;Add to Homescreen&quot; link in DevTools to force it. <em>However</em>, it does not force the prompt, it just &quot;resets&quot; it so that when you refresh the app, it's as if you never declined it or installed it before. I'm having trouble with remote debug and Android adb on my desktop so I've not yet confirmed this, but as I said, on a manual home screen save, everything is kosher with my app so I think I'm good.</p>
+<p><em>Edit:</em> So a few minutes after I released this blog post, I realized that I needed to set that Chrome flag on the device. Duh. I did that, restarted Chrome on my Android device, and instantly got the app installer banner. Woot!</p>
+<h1>Lighthouse Audits</h1>
+<p>One of the thing I keep repeating when I talk about PWAs is to not get too caught up in feeling like you have to implement everything immediately. That being said, there is a <em>great</em> way to test your PWA support and track your progress.</p>
+<p><a href="https://developers.google.com/web/tools/lighthouse/">Lighthouse</a> is a tool that checks various aspects of your site. It isn't just for PWAs but can cover performance, best practices, and accessibility as well. Best of all, it's included in DevTools now by default so you can run it directly in Chrome. Here is an example of it on my app:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/pwa13_1.jpg" alt="Shot"></p>
+<p>As you can see, I failed a few things in regards to splash screen support, which is what I expected, but otherwise got a great score. Not shown in the screen shot above is a simple download button. This exports a JSON file. It wasn't obvious to me, but Paul Irish (another Googler) let me know that you can drag and drop the file directly into DevTools to load it again.</p>
+<p>You can also find an online viewer here: https://googlechrome.github.io/lighthouse/viewer/. This lets you export HTML and print too.</p>
+<p>Don't forget about <a href="https://sonarwhal.com/">Sonar</a> though, a Microsoft project which provides some damn nice tools for testing your site as well.</p>
+<h1>Localhost Warning</h1>
+<p>So.... yeah, this was a fun mistake, and apparently I'm not the only one to do it. While preparing for my PWA talk last week (I'll be sharing the video URL and assets as soon as I get it), I ran into an interesting problem. I had gotten offline caching working well with a service cache in one app. I then moved to another app and noticed that my new HTML wasn't loading. Instead, all of the content from the other app loaded instead. Why?</p>
+<p>I use <a href="https://github.com/SimbCo/httpster">httpster</a> to quickly run web servers via the CLI. So I go into a folder, alpha, type httpster, and then open my browser to http://localhost:3333. When done, I kill it, go into another folder, and run it again.</p>
+<p>Server workers have a concept of 'scope' which means &quot;These are the domains and paths I control.&quot; When you first learn about this, you are encouraged to put your service worker JavaScript in the root directory of your web app as opposed to a &quot;js&quot; folder. That way the service worker can respond to HTML, CSS, and other requests for the entire site.</p>
+<p>So - in my case - it worked as expected. I had built a PWA under a folder, told it to cache everything and not check the network if an asset was in cache, and when I switched to another folder, <em>but used the same URL</em>, it worked exactly as expected.</p>
+<p>To fix it, I used the &quot;Unregister&quot; command in DevTools:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/pwa13_2.jpg" alt="Shot"></p>
+<p>There's a few ways to avoid this. One, I could have installed my serviceworker at the same folder level and not root, so</p>
+<pre><code>navigator.serviceWorker.register('serviceworker.js')
+</code></pre>
+<p>instead of what I did:</p>
+<pre><code>navigator.serviceWorker.register('/serviceworker.js')
+</code></pre>
+<p>Another option, and this would make sense for &quot;real&quot; project work, would be to just DNS aliases in your local HOSTS file. However, be careful here. Chrome has certain rules for when https can be skipped when using certain features, service workers included. I thought the rule was basically http://localhost or something under https.</p>
+<p>Lars Knudsen let me know though that you can avoid this with an alias that includes localhost in the URL. So while I'd normally do something like this in HOSTS:</p>
+<pre><code>127.0.0.1	mygoogle.dev
+</code></pre>
+<p>You can do this instead:</p>
+<pre><code>127.0.0.1	mygoogle.localhost
+</code></pre>
+<p>Details about Chrome's implementation of this rule may be found here: <a href="https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features">Prefer Secure Origins For Powerful New Features</a></p>
+<p>Again - thank you, Lars! Oh, and remember, even if you aren't doing anything PWA related, this would still be helpful when using other features. Geolocation, for example, is now a restricted feature.</p>
+<h1>More to Come</h1>
+<p>I hope this is helpful. I'll keep sharing posts like this as I dig deeper.</p>
+}

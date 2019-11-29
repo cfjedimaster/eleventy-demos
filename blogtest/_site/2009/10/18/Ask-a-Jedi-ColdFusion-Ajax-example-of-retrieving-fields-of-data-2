@@ -1,0 +1,71 @@
+<h1>Post</h1>
+
+<p>Earlier today I <a href="http://www.raymondcamden.com/index.cfm/2009/10/18/Ask-a-Jedi-ColdFusion-Ajax-example-of-retrieving-fields-of-data">blogged</a> a simple example of using ColdFusion Ajax controls to load detail information based on a primary key. The reader who asked the question sent me a followup asking if it was possible to change the form to use a button instead of a keypress to load the data.</p>
+<!--more-->
+<p>Using the second code sample from my previous entry, I added a button next to the ID field.</p>
+<code>
+&lt;cfform&gt;
+id: &lt;cfinput type="text" name="artid" id="artid"&gt; &lt;cfinput type="button" name="mybutton" value="Lookup"&gt;&lt;br/&gt;
+name: &lt;cfinput type="text" name="artname" id="artname" readonly="true"&gt;&lt;br/&gt;
+description: &lt;cftextarea name="description" id="description" readonly="true"&gt;&lt;/cftextarea&gt;&lt;br/&gt;
+price: &lt;cfinput type="text" name="price" id="price" readonly="true"&gt;&lt;br/&gt;
+&lt;/cfform&gt;
+</code>
+<p>Now for the weird part. It's easy enough to bind to a button. I'd just use {mybutton@click}. However, I still need the ID value. So in order to bind to the CFC, I'd have to use:</p>
+<code>
+&lt;cfajaxproxy bind="cfc:test.getData({artid@none},{mybutton@click})" onsuccess="showData"&gt;
+</code>
+<p>Unfortunately, this then requires that the getData method have a second argument. I <i>could</i> just add a dummy argument to the method, but that felt wrong. I decided to take another approach.</p>
+<p>The cfajaxproxy tag allows you to bind to JavaScript functions as well. I switched my tag to the following:</p>
+<code>
+&lt;cfajaxproxy bind="javascript:getData({mybutton@click})"&gt;
+</code>
+<p>Next, I knew I still needed a way to communicate to the CFC. I added another cfajaxproxy:</p>
+<code>
+&lt;cfajaxproxy cfc="test" jsclassname="dataproxy"&gt;
+</code>
+<p>The next change was to add the getData function:</p>
+<code>
+function getData() {
+	var artid = ColdFusion.getElementValue("artid")
+	if(isNaN(artid)) return
+	dataService.getData(artid)
+}
+</code>
+<p>I have to get the artid value manually so I made use of ColdFusion.getElmentValue. As before, I check for a valid number. Lastly I make use of dataService. What is that? I've added these two lines of JavaScript that make use of the new cfajaxproxy tag I added:</p>
+<code>
+var dataService = new dataproxy()
+dataService.setCallbackHandler(showData)
+</code>
+<p>Basically, dataService becomes a proxy to my remote methods in the CFC. This is probably a bit confusing now so let me paste in the entire template:</p>
+<code>
+&lt;cfajaxproxy bind="javascript:getData({mybutton@click})"&gt;
+&lt;cfajaxproxy cfc="test" jsclassname="dataproxy"&gt;
+<p>&lt;script&gt;
+function getData() {
+var artid = ColdFusion.getElementValue(&quot;artid&quot;)
+if(isNaN(artid)) return
+dataService.getData(artid)
+}</p>
+<p>function showData(d) {
+//convert into a struct
+var data = {}
+for(var i=0; i &lt; d.COLUMNS.length; i++) {
+data[d.COLUMNS[i]] = d.DATA[0][i]
+}
+document.getElementById('artname').value = data[&quot;ARTNAME&quot;]
+document.getElementById('description').value = data[&quot;DESCRIPTION&quot;]
+document.getElementById('price').value = data[&quot;PRICE&quot;]</p>
+<p>}</p>
+<p>var dataService = new dataproxy()
+dataService.setCallbackHandler(showData)
+&lt;/script&gt;</p>
+<p>&lt;cfform&gt;
+id: &lt;cfinput type=&quot;text&quot; name=&quot;artid&quot; id=&quot;artid&quot;&gt; &lt;cfinput type=&quot;button&quot; name=&quot;mybutton&quot; value=&quot;Lookup&quot;&gt;&lt;br/&gt;
+name: &lt;cfinput type=&quot;text&quot; name=&quot;artname&quot; id=&quot;artname&quot; readonly=&quot;true&quot;&gt;&lt;br/&gt;
+description: &lt;cftextarea name=&quot;description&quot; id=&quot;description&quot; readonly=&quot;true&quot;&gt;&lt;/cftextarea&gt;&lt;br/&gt;
+price: &lt;cfinput type=&quot;text&quot; name=&quot;price&quot; id=&quot;price&quot; readonly=&quot;true&quot;&gt;&lt;br/&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>I hope this helps and shows yet another variation on the theme from earlier today.</p>
+}

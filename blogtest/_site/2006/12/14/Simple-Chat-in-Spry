@@ -1,0 +1,83 @@
+<h1>Post</h1>
+
+<p>Last night I decided to try an experiment. I had read a good article over at Dynamic AJAX: <a href="http://www.dynamicajax.com/fr/JSON_AJAX_Web_Chat-271_290_324.html">JSON AJAX Web Chat Tutorial</a>. I decided to see if I could build something like that using Spry. Turned out it wasn't that hard. Let me show you what I did...</p>
+<!--more-->
+<p>First off - I want to thank the original author over at Dynamic AJAX for the idea. I borrowed his CSS and techniques and just changed the back end from PHP to ColdFusion. I also, obviously, decided to use Spry to see if it would help me out any.</p>
+<p>I'm not going to go over each line of code, but will focus on the interesting parts. The application works by requesting the chat history from the back end. It passes in a &quot;lastID&quot; value which lets the back end return only the chats that are newer than the last one it received. On the back end, I use the application scope to store the chats. Now this isn't a great idea. The original article used a database and I would recommend that as well, but I wanted to write something folks could download and play with on their own servers.</p>
+<p>So let's look at the code a bit. The function I run to get the chat data is this:</p>
+<code>
+function loadChat() {
+	Spry.Utils.loadURL("GET",  "chatdata.cfm?start=" +  encodeURIComponent(lastToken), true, chatResp);  
+}
+</code>
+<p>The loadURL function has been covered in this blog before. Essentially it is a simply Spry utility to hit a URL. I tell Spry to run chatResp when finished. That function looks like this:</p>
+<code>
+function chatResp(request) {
+	var result = request.xhRequest.responseText; 
+	var xmldom = Spry.Utils.stringToXMLDoc(result);	
+	var chats=xmldom.getElementsByTagName("chat");
+<pre><code>var lastId = &quot;&quot;;
+var cdiv = document.getElementById('div_chat');
+for(var i=0;i&amp;lt;chats.length;i++) {
+	var chatNode = chats.item(i);
+	var message = &quot;&quot;;
+	var user = &quot;&quot;;
+	
+	lastId = chatNode.getAttribute(&quot;id&quot;);
+	
+	message = chatNode.getElementsByTagName(&quot;message&quot;)[0].childNodes[0].nodeValue;	
+	user = chatNode.getElementsByTagName(&quot;user&quot;)[0].childNodes[0].nodeValue;	
+	time = chatNode.getElementsByTagName(&quot;time&quot;)[0].childNodes[0].nodeValue;	
+	
+	if(user != &quot;&quot; &amp;&amp; message != &quot;&quot; &amp;&amp; time != &quot;&quot;) {
+		cdiv.innerHTML += &quot;&amp;lt;span class='chat_time'&amp;gt;[&quot; + time + &quot;]&amp;lt;/span&amp;gt; &quot;;
+		cdiv.innerHTML += &quot;&amp;lt;span class='chat_talk'&amp;gt;&quot; + user + &quot; said: &quot; + message + &quot;&amp;lt;/span&amp;gt;&amp;lt;br&amp;gt;&quot;;
+		cdiv.scrollTop = cdiv.scrollHeight;
+	}
+}
+
+if(lastId != &quot;&quot;) lastToken = parseInt(lastId)+1;
+setTimeout('loadChat()', pingDur*1000);
+</code></pre>
+<p>}
+</code></p>
+<p>Now this function was a pain in the rear. Why? I've never dealt with XML before in JavaScript. While it looks simple enough, I had a heck of a time trying to find decent documentation. It took me twice as long to just find examples as it took for me to understand and use it. I really wish Spry would have a function to make that easier. But anyway - as you can see I parse the result XML and then simply add it to my DIV. Note the cool use of automatically scrolling the DIV to the end. Again - that comes from the guys at Dynamic AJAX.</p>
+<p>The back end is pretty trivial as well. Both getting and adding chats uses the same CFM. I'd probably split that up normally but this was a quick demo. Here is the contents of that file:</p>
+<code>
+&lt;cfparam name="url.start" default="1"&gt;
+<p>&lt;cfif structKeyExists(url, &quot;add&quot;) and structKeyExists(url, &quot;user&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset chat = structNew()&amp;gt;
+&amp;lt;cfset chat.user = htmlEditFormat(url.user) &amp; &quot; (&quot; &amp; cgi.remote_addr &amp; &quot;)&quot;&amp;gt;
+&amp;lt;cfset chat.message = htmlEditFormat(url.add)&amp;gt;
+&amp;lt;cfset chat.time = now()&amp;gt;
+
+&amp;lt;cflock scope=&quot;application&quot; type=&quot;exclusive&quot; timeout=&quot;30&quot;&amp;gt;
+	&amp;lt;cfset arrayAppend(application.chatdata, chat)&amp;gt;
+&amp;lt;/cflock&amp;gt;
+</code></pre>
+<p>&lt;cfelse&gt;</p>
+<pre><code>&amp;lt;cfsavecontent variable=&quot;chatdata&quot;&amp;gt;
+&amp;lt;chats&amp;gt;
+	&amp;lt;cflock scope=&quot;application&quot; type=&quot;readonly&quot; timeout=&quot;60&quot;&amp;gt;
+	&amp;lt;cfloop index=&quot;x&quot; from=&quot;#max(url.start, arrayLen(application.chatdata)-100)#&quot; to=&quot;#arrayLen(application.chatdata)#&quot;&amp;gt;
+		&amp;lt;cfoutput&amp;gt;
+		&amp;lt;chat id=&quot;#x#&quot;&amp;gt;
+			&amp;lt;user&amp;gt;#application.chatdata[x].user#&amp;lt;/user&amp;gt;
+			&amp;lt;message&amp;gt;#application.chatdata[x].message#&amp;lt;/message&amp;gt;
+			&amp;lt;time&amp;gt;#timeFormat(application.chatdata[x].time)#&amp;lt;/time&amp;gt;
+		&amp;lt;/chat&amp;gt;
+		&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;/cflock&amp;gt;
+&amp;lt;/chats&amp;gt;
+&amp;lt;/cfsavecontent&amp;gt;
+
+&amp;lt;cfcontent type=&quot;text/xml&quot;&amp;gt;&amp;lt;cfoutput&amp;gt;#chatdata#&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>Nothing too sexy here, although note the use of locking around the code that works with the chat data. Only one thing is kind of neat - note that I return, at most, 100 rows of chats. I do this using the MAX function in the loop.  This ensures that if you come into the chat late you won't be bombed with a huge amount of text.</p>
+<p>So thats it. Feel free to use this but remember to give credit to Dynamic AJAX. I do have a demo online - but for some reason the CFM is very slow on my box. There is no reason why it should be (as you can see above the code is very simple), but just keep it in mind when you test it out.</p>
+<p><a href="http://ray.camdenfamily.com/demos/chat">Chat Demo</a></p>
+<p><b>Update:</b> I've had a few folks jump in and note how slow the chat is. Yes, I know. Switching to a DB would make it run quicker - but as I said, I wanted something folks could play with it. I'm also dealing with a box that is getting a bit slow with age and will be moving in a week or so. I did a few small JavaScript updates so I've updated the zip.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Fchat1%2Ezip'>Download attached file.</a></p></p>
+}

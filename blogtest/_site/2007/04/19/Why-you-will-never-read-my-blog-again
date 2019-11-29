@@ -1,0 +1,65 @@
+<h1>Post</h1>
+
+<p>I was cleaning up my &quot;testingzone&quot; folder today when I ran across some pretty darn old code. (My testingzone folder is where I put all my random tests. My thinking was that it would keep the rest of my web root clean. Of course now my testingzone folder is almost unreadable.) This application was created in 1998, back when IE was the best browser (well in my opinion Netscape had really begun to slip) and ColdFusion was still at version 4.</p>
+<p>Oh - and its back when I thought code in all caps was really cool and actually readable.</p>
+<!--more-->
+<p>So first check out the demo:</p>
+<p><a href="http://ray.camdenfamily.com/demos/drconfusion/">Dr Confusion</a></p>
+<p>Check out the browser requirements. Check out the &quot;Team Allaire&quot;. Talk about ancient history! The application works on a very simple keyword basis. I set it up so that you would create a group of keywords (dogs,dog,canine,etc) and a list of responses. When a match to a keyword was made, a random response is picked.</p>
+<p>Back when I wrote this there was no XML parsing so I made the dubious choice of using line breaks for my data structure. Here is a snippet from the data file:</p>
+<code>
+paranoia
+paranoid
+<p>You're not paranoid if they really &lt;I&gt;are&lt;/I&gt; out to get you.
+Who is that behind you?</p>
+<p>fear
+scared
+afraid</p>
+<p>You must learn to overcome your fears.
+Fear is natural, we must learn to accept our fears if we are to truly enjoy life.
+Fear is a four letter word.</p>
+<p>you</p>
+<p>Let's talk about you, not me.
+You would find my life very boring, let's talk about you instead.
+Who is the doctor here?
+This conversation is about you, not me.
+</code></p>
+<p>Notice how the logic is - list of keywords, blank line, list of responses. Not what I'd consider best practice. Back in CF4 I believe they had INI file functions. I would have used that if I had thought it out better.</p>
+<p>Now for some code. Here is what I wrote to parse in the data file:</p>
+<code>
+&lt;!--- Static Variables ---&gt;
+&lt;CFSET ELIZADAT = "eliza.dat"&gt;
+&lt;CFSET OVERRIDE = TRUE&gt;
+<p>&lt;CFIF NOT IsDefined(&quot;Application.KEYWORDS&quot;) OR OVERRIDE&gt;
+&lt;CFFILE ACTION=&quot;Read&quot; FILE=&quot;#ExpandPath(ELIZADAT)#&quot; VARIABLE=&quot;BUFFER&quot;&gt;
+&lt;CFSET Application.KEYWORDS = ArrayNew(1)&gt;
+&lt;CFSET Application.RESPONSES = ArrayNew(1)&gt;
+&lt;CFSET Application.NULLRESPONSES = &quot;&quot;&gt;
+&lt;CFSET Application.NOTHINGRESPONSES = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;CFSET NL = Chr(10)&amp;gt;&amp;lt;CFSET NL2 = Chr(13)&amp;gt;
+&amp;lt;CFSET NEWLINE = NL2 &amp; NL&amp;gt;
+&amp;lt;CFSET DOUBLE_NEWLINE = NEWLINE &amp; NEWLINE&amp;gt;
+&amp;lt;CFSET BUFFER = Replace(BUFFER,DOUBLE_NEWLINE,&quot;@&quot;,&quot;ALL&quot;)&amp;gt;
+&amp;lt;CFSET ONKEY = TRUE&amp;gt;
+&amp;lt;CFSET LASTKEY = &quot;&quot;&amp;gt;
+&amp;lt;CFSET CURRX = 0&amp;gt;
+&amp;lt;CFLOOP INDEX=CURRLINE LIST=&quot;#BUFFER#&quot; DELIMITERS=&quot;@&quot;&amp;gt;
+	&amp;lt;CFSET CURRLINE = Replace(CURRLINE,&quot;,&quot;,&quot;&amp;COMMA;&quot;,&quot;ALL&quot;)&amp;gt;
+	&amp;lt;CFSET CURRLINE = Replace(CURRLINE,NL,&quot;,&quot;,&quot;ALL&quot;)&amp;gt;
+	&amp;lt;CFIF ONKEY&amp;gt;
+		&amp;lt;CFSET LEN = IncrementValue(ArrayLen(Application.KEYWORDS))&amp;gt;
+		&amp;lt;CFSET Application.KEYWORDS[LEN] = CURRLINE&amp;gt;
+		&amp;lt;CFSET CURRX = CURRX + 1&amp;gt;
+		&amp;lt;CFIF CURRLINE IS &quot;NULL&quot;&amp;gt;&amp;lt;CFSET Application.NULLX = CURRX&amp;gt;&amp;lt;/CFIF&amp;gt;
+		&amp;lt;CFIF CURRLINE IS &quot;NOTHING&quot;&amp;gt;&amp;lt;CFSET Application.NOTHINGX = CURRX&amp;gt;&amp;lt;/CFIF&amp;gt;
+	&amp;lt;CFELSE&amp;gt;
+		&amp;lt;CFSET LEN = IncrementValue(ArrayLen(Application.RESPONSES))&amp;gt;
+		&amp;lt;CFSET Application.RESPONSES[LEN] = CURRLINE&amp;gt;
+	&amp;lt;/CFIF&amp;gt;
+	&amp;lt;CFSET ONKEY = NOT ONKEY&amp;gt;
+&amp;lt;/CFLOOP&amp;gt;
+</code></pre>
+<p>&lt;/CFIF&gt;
+</code></p>
+<p>Wow - I think my eyes are actually bleeding. I'm not sure why I left override on (it's off now). I just noticed - I used caps for tags, normal case for functions. I seriously must have been on crack back then.</p>
+}

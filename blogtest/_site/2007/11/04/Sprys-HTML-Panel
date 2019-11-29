@@ -1,0 +1,99 @@
+<h1>Post</h1>
+
+<p>Over the past few weeks, I've been taking a look at Spry's widgets, specifically those related to form items. I've been surprised by what I've found. I really wish I would have looked at them earlier. Today I looked at another widget, the HTML Panel. This one isn't form related, but is <i>darn</i> cool.</p>
+<!--more-->
+<p>The HTML Panel is <i>not</i> a &quot;panel&quot; like what you get in ColdFusion 8. You can think of the panel as simply an item on your web page that can be loaded with other content. For example, imagine this div:</p>
+<code>
+&lt;div id="content"&gt;
+Stuff will load here.
+&lt;/div&gt;
+</code>
+<p>Now imagine I want to load content into this div. By creating an HTML Panel widget out of the div, I can easily change the content. Let's look at a real example.</p>
+<p>First off - like the other widgets, you need to use a CSS and JavaScript file:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script src=&quot;/spryjs/SpryHTMLPanel.js&quot; language=&quot;javascript&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;link href=&quot;/sprycssSpryHTMLPanel.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;&gt;
+&lt;/head&gt;
+</code></p>
+<p>Next I'm going to create a menu. This is what I'll use to load content:</p>
+<code>
+&lt;h2&gt;Products&lt;/h2&gt;
+<p>&lt;p&gt;
+&lt;b&gt;
+&lt;a onClick=&quot;panel.loadContent('apple.html'); return false&quot;&gt;Apples&lt;/a&gt; /
+&lt;a onClick=&quot;panel.loadContent('banana.html'); return false&quot;&gt;Bananas&lt;/a&gt; /
+&lt;a onClick=&quot;panel.loadContent('cherry.html'); return false&quot;&gt;Cherries&lt;/a&gt;
+&lt;/b&gt;
+&lt;/p&gt;
+</code></p>
+<p>Don't worry about the JavaScript just yet. Now I'll create the area where content will load:</p>
+<code>
+&lt;div id="product"&gt;
+&lt;p&gt;
+Please select a product.
+&lt;/p&gt;
+&lt;/div&gt;
+</code>
+<p>The last thing I'll do is enable the HTML panel with a line of JavaScript. This is like every other widget I've covered so far:</p>
+<code>
+&lt;script type="text/javascript"&gt;
+var panel = new Spry.Widget.HTMLPanel("product");
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code>
+<p>I simply create a new instance of the HTMLPanel, and point it to the ID of the item that will be replaceable. Ok, so now if you go back to the JavaScript you can see what I use to load content:</p>
+<code>
+&lt;a onClick="panel.loadContent('apple.html'); return false"&gt;Apples&lt;/a&gt;
+</code>
+<p>I just use the loadContent function of the panel object. I point it to the HTML to load, and that's it! You can see a live example of this <a href="http://www.raymondcamden.com/demos/spryform/test_html.html">here</a>. View source to see the complete example.</p>
+<p>So far so good - and easy as well. But wait - it gets a <i>lot</i> sexier. One of the things Spry tries to help out with is a <i>progressive enhancement</i>. That is a fancy way of saying &quot;support non-JavaScript&quot; browsers. One of the options you can use when loading widgets is to supply an ID. Spry will load the remote content, but only display the stuff within the specified ID. Why is that sexy? Consider this new example (note, I trimmed a bit of the HTML):</p>
+<code>
+&lt;h2&gt;Fragment Test&lt;/h2&gt;
+<p>&lt;p&gt;
+&lt;b&gt;
+&lt;a href=&quot;f1.html&quot; onClick=&quot;panel.loadContent(this.href,{id:'content'}); return false&quot;&gt;Test One&lt;/a&gt; /
+&lt;a href=&quot;f2.html&quot; onClick=&quot;panel.loadContent(this.href,{id:'content'}); return false&quot;&gt;Test Two&lt;/a&gt;
+&lt;/b&gt;
+&lt;/p&gt;</p>
+<p>&lt;div id=&quot;panel&quot;&gt;
+&lt;p&gt;
+Please select something!
+&lt;/p&gt;
+&lt;/div&gt;</p>
+<p>&lt;script type=&quot;text/javascript&quot;&gt;
+var panel = new Spry.Widget.HTMLPanel(&quot;panel&quot;);
+&lt;/script&gt;
+</code></p>
+<p>As with the previous example, I've got a menu on top with a section in the middle that will be dynamic, but let's focus on one of the links:</p>
+<code>
+&lt;a href="f1.html" onClick="panel.loadContent(this.href,{id:'content'}); return false"&gt;Test One&lt;/a&gt;
+</code>
+<p>Note that I have a normal href. Then notice my onclick. First off - the URL for the onclick refers to the same URL defined in the tag itself. A little fancy self-referring which is nice if you ever change the URL. The second argument passed to the loadContent function is an object with one key/value pair. The ID attribute simply means, &quot;Load the remote URL, but just show the stuff inside the content id.&quot; Let's look at f1.html:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;title&gt;F1&lt;/title&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;h2&gt;F1&lt;/h2&gt;</p>
+<p>&lt;div id=&quot;content&quot;&gt;
+&lt;p&gt;
+This is the content for fragement page 1.
+&lt;/p&gt;
+&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>As you can see - only one div has the ID of content. Now think about it. With one link you have 2 possible things going on:</p>
+<ol>
+<li>If the user doesn't have JavaScript, it loads up f1.html, and they get the complete page.
+<li>If the user does have JavaScript, the remote page is loaded, but only the content area is displayed.
+</ol>
+<p>So in one simple link you have support for both JS enabled browser and browsers that have JS turned off (or search engines). As I said - darn sexy! You can see this in action <a href="http://www.coldfusionjedi.com/demos/spryform/test_html2.html">here</a>, and I recommend testing it with JS on and off to see it working.</p>
+<p>Now one thing you can may not like about this is that even with the JS-enabled clicks, you are loading all the HTML, but it should still be faster for the end user as the browser won't have to load layout UI and stuff like that - just the content it needs. You can get around this easily enough in ColdFusion of course. Have your non-JS link to foo.cfm, and your Spry link to foo.cfm?slim=1, where the existence of the URL parameter tells your layout code to suppress any output.</p>
+<p>Lastly - be sure to check out the complete docs for the HTML panel:</p>
+<p><a href="http://labs.adobe.com/technologies/spry/articles/html_panel/index.html">HTML Region Overview</a></p>
+}

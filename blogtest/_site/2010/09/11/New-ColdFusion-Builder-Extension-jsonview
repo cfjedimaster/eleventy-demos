@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I'm not sure how useful this is, but earlier today I needed to quickly turn a JSON string into formatted data. I could do this in ColdFusion with one line of code, but I wanted it even <i>faster</i>. I found a great online viewer here: <a href="http://jsonviewer.stack.hu/">http://jsonviewer.stack.hu/</a> but I thought it would be kind of fun to build it into CFBuilder as well. I whipped up the following extension in about 20 minutes: <a href="http://jsonview.riaforge.org">http://jsonview.riaforge.org</a>. It allows you to enter either a URL or a block of JSON:</p>
+<img src="https://static.raymondcamden.com/images/Screen shot 2010-09-11 at 1.49.33 PM.png" />
+<p>Once entered, you just submit the form and can then see the rendered JSON:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2010-09-11 at 1.50.22 PM.png" />
+<p>Probably not very useful - but heck - once again let me just say how much I fracking love the fact that I was able to extend ColdFusion Builder to meet my needs!</p>
+}

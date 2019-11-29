@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>So, I just had an interesting idea. RSS is great for articles and other content related issues. I use it for my <a href="http://www.camdenfamily.com/morpheus/downloads/bugtracker.zip">bug tracker</a> for example. <a href="http://ray.camdenfamily.com/forums">Galleon</a> uses it as well so you can monitor a forum. It occured to me that it could also be useful for stats. Imagine an RSS feed with these &quot;headlines&quot;:</p>
+<ul>
+<li>Foo.com has had 42 new user registrations in the past 24 hours.
+<li>2 bugs have been added to database.
+<li>4312 posts have been made to the forums.
+<li>0 users have cancelled their membership.
+<li>Etc.
+</ul>
+<p>The order would never change - just the data itself. You could then embed this in your RSS viewer as just one more feed. I'm considering adding something like this for CFLib, my blog, and RSSWatcher.com and then adding it to my.yahoo so I have a simple way of keeping up to date with my sites.</p>
+}

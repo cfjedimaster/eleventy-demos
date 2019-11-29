@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>It has been a while since my last ColdFusion Friday puzzler, so I hope you enjoy this one. It occurred to me while driving my eldest to school Wednesday morning and in my &quot;not quite awake yet&quot; semi-conscious daze, it seemed like a sneaky little puzzle. I figured out a possible simple solution before I got home, but I'm curious to see what others make of it. Ready?</p>
+<!--more-->
+<p>Your client wants their web site to make use of a rotating color background. Each day, the background color of the web site will change. The list of colors used for the background are: red,blue,green,yellow,orange. (I know, I know, this is why I don't do web design.)</p>
+<p>Your goal is to write a UDF that accepts a date and selects a color. If you pass the day after that initial date, you should pick the next day in the list. On the day you pick orange, the next day would pick red.</p>
+<p>You may think - why not simply use the the day of the week modded by 5?</p>
+<script src="https://gist.github.com/cfjedimaster/5064328.js"></script>
+<p>But this doesn't work on the edges. You could switch to the day of the year but would have the same issue (although a heck of a lot less). So how would you solve this issue? Note that you cannot persist anything in the database (or file system, etc).</p>
+}

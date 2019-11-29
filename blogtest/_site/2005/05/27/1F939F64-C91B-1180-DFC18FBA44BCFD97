@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>The same user who original reported the issue with BlogCFC/BlueDragon/MS Access has noted another issue when you click on a day in the calendar pod. It looks like the issue is here:</p>
+<p>and posted &lt; <cfqueryparam cfsqltype="cf_sql_timestamp" value="#now()#"></p>
+<p>This code runs fine in CFMX with all three supported DBs, but is throwing an error in BD. I'm looking into this more and will hopefully have a fix soon.</p>
+}

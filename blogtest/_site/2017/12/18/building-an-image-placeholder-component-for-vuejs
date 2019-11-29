@@ -1,0 +1,111 @@
+<h1>Post</h1>
+
+<p>One of the more interesting parts of <a href="https://vuejs.org/">Vue.js</a> is the ability to build components. Components are a pretty big feature of Vue and I won't try to explain them completely here (the <a href="https://vuejs.org/v2/guide/components.html">docs</a> do a darn good job, and you should read Sarah Drasner's <a href="https://css-tricks.com/intro-to-vue-2-components-props-slots/">article</a> on them as well), but at a basic level, they allow you to build a self-contained piece of UI/logic within a larger Vue application. So for example, you may be building an administrator for a product database and find yourself displaying product thumbnails in multiple places. You could componetize that product display into a Vue component to make it easier to reuse the code multiple times.</p>
+<p>This is also how (from what I can tell!) most Vue libraries work. They ship as a component you can then simply drop into your code. When I added Bootstrap to my Vue demo (<a href="https://www.raymondcamden.com/2017/11/28/last-update-honest-to-my-vuejs-ineedit-demo/">&quot;Last Update, Honest, to My Vue.js INeedIt Demo&quot;</a>), this is what allowed me to write code like this:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+  
+  &lt;b-tabs&gt;
+
+    &lt;b-tab title=&quot;first&quot; active&gt;
+      &lt;br&gt;I'm the first tab
+    &lt;/b-tab&gt;
+
+    &lt;b-tab title=&quot;second&quot;&gt;
+       &lt;br&gt;I'm the second tab
+    &lt;/b-tab&gt;
+
+    &lt;b-tab title=&quot;Infinity War&quot;&gt;
+      &lt;br&gt;Trailer tomorrow!
+    &lt;/b-tab&gt;
+    
+  &lt;/b-tabs&gt;
+                      
+&lt;/div&gt;
+</code></pre>
+<p>In the snippet above, the <code>b-tabs</code> and <code>b-tab</code> tags are Vue components. All the logic behind rendering them was handled by the component. So yeah, a cool freaking feature, right? I wanted to build my own little demo of this feature and thought it would be cool to build a component to spit out placeholder images. Now - there's a bazillion of them are so, but the most stable, and serious (and as you know, I'm a serious blogger, remember, I work for IBM) is <a href="https://placeholder.com/">Placeholder.com</a>. Their service lets you create placeholders of any size while providing options for color and text. As an example, this HTML:</p>
+<pre><code class="language-html">&lt;img src=&quot;http://via.placeholder.com/350x150&quot;&gt;
+</code></pre>
+<p>Produces:</p>
+<img src="http://via.placeholder.com/350x150">
+<p>This adds text and a custom bgcolor:</p>
+<pre><code class="language-html">&lt;img src=&quot;http://via.placeholder.com/400x100/ee0000?text=Vue+Rocks!!&quot;&gt;
+</code></pre>
+<p>and here is the result:</p>
+<img src="http://via.placeholder.com/400x100/ee0000?text=Vue+Rocks!!">
+<p>Not too difficult, right? But I thought - what if I could create a simple Vue component for this. Here's what I came up with.</p>
+<pre><code class="language-js">Vue.component('placeholder', {
+  template:'&lt;img alt=&quot;placeholder&quot; :src=&quot;url&quot;&gt;',
+  data() {
+    return {
+    }
+  },
+  computed:{
+    url:function() {
+      let theUrl = 'http://via.placeholder.com/'+this.width+'x'+this.height;
+      //technically this ALWAYS runs as we have a default
+      if(this.bgcolor) theUrl += '/'+this.bgcolor;
+      if(this.textcolor) theUrl += '/'+this.textcolor;
+      if(this.text) theUrl += '?text='+encodeURIComponent(this.text);
+      return theUrl;
+    }
+  },
+  props:{
+    height:{
+      default:400,
+    },
+    width:{
+      default:400
+    },
+    text:{
+      type:String,
+      required:false
+    },
+    bgcolor:{
+      type:String,
+      default:'cccccc',
+      required:false
+    },
+    textcolor:{
+      type:String,
+      required:false
+    }
+  }
+});
+</code></pre>
+<p>Alright, so from the top, the very first argument simply specifies the name of the component. In this case it means I'll be able to do <code>&amp;lt;placeholder&amp;gt;</code> in my code. I've got an empty data function there I should probably remove as I didn't end up needing it. Skip down to the props section and you can see the various properties I've defined. This matches (for the most part) exactly with what the service provides. The meat of the component is comprised in the <code>template</code> and <code>computed</code> areas. The <code>template</code> is simple - just an image. But note that the URL value is somewhat complex. Hence the use of <code>computed</code> to deal with it. For the most part this began as just &quot;if you use this property, append the value&quot;, but I ran into an issue with the text color value. You can't specify text color without specifying a background as well. So my code &quot;fixes&quot; this by simply defaulting the background to what Placeholder.com uses. And that's it. Here's an example usage:</p>
+<pre><code class="language-html">&lt;placeholder width=&quot;200&quot; height=&quot;200&quot; text=&quot;My name is Ray&quot;&gt;&lt;/placeholder&gt;
+</code></pre>
+<p>And another:</p>
+<pre><code class="language-html">&lt;placeholder width=&quot;200&quot; height=&quot;200&quot; bgcolor=&quot;00ff00&quot;&gt;&lt;/placeholder&gt;
+</code></pre>
+<p>You can see a demo of this via the embed below:</p>
+<p data-height="400" data-theme-id="0" data-slug-hash="mpJWaw" data-default-tab="js,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="vue placeholder component" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/mpJWaw/">vue placeholder component</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>Of course, once you've done that, you can easily replace the boring (yet really good, honest!) placeholders with something more fun, like <a href="http://placebeer.com/">placebeer</a>. Placebeer isn't nearly as full featured as Placeholder.com, so the component is quite a bit simpler:</p>
+<pre><code class="language-js">Vue.component('placeholder', {
+  template:'&lt;img alt=&quot;&quot; :src=&quot;url&quot;&gt;',
+  data() {
+    return {
+    }
+  },
+  computed:{
+    url:function() {
+      let theUrl = 'http://placebeer.com/'+this.width+'/'+this.height;
+      return theUrl;
+    }
+  },
+  props:{
+    height:{
+      default:400,
+    },
+    width:{
+      default:400
+    }
+  }
+});
+</code></pre>
+<p>But the result is awesome:</p>
+<p data-height="500" data-theme-id="dark" data-slug-hash="wpaJRm" data-default-tab="result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="vue placeholder component 2" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/wpaJRm/">vue placeholder component 2</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>Anyway, obviously there are more powerful ways to build Vue components, and better examples, but I hope this is interesting. As I've been blogging about, and learning Vue, I'm hoping my readers will come to me with suggestions and questions about what they would like to see. Just drop me a comment below!</p>
+}

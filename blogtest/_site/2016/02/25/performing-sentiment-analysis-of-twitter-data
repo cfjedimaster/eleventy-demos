@@ -1,0 +1,92 @@
+<h1>Post</h1>
+
+<p>One of the more interesting services available on <a href="https://ibm.biz/IBM-Bluemix">IBM Bluemix</a> is <a href="https://console.ng.bluemix.net/catalog/services/insights-for-twitter">Insights for Twitter</a>. This service
+provides a deep look at real-time Twitter data. The API provides a basic &quot;search&quot; feature but can also include some incredibly detailed filters. So for example, you can look at data from users who are (possibly) married and have kids. As part of the analysis, you can also get a sentiment value: positive, negative, neutral, and ambivalent. I thought it would be interesting to build a tool that let me compare the &quot;general&quot; sentiment for a search term compared to that of more focused segments of the audience. Obviously this isn't 100% accurate, but it provides an interesting look at how different types of people view/discuss the same topic.</p>
+<!--more-->
+<p>The API supports multiple filters:</p>
+<ul>
+<li>By language</li>
+<li>By location</li>
+<li>By country</li>
+<li>By the number of followers</li>
+<li>By the number of people the person follows</li>
+<li>By people with children</li>
+<li>By people who are married</li>
+<li>By verified users</li>
+<li>By people in a range of lists</li>
+<li>By people within a circular region around a long/lat.</li>
+<li>In a certain sentiment</li>
+<li>In a certain date range</li>
+<li>And more</li>
+</ul>
+<p>For my demo, I decided to focus on a certain set of filters that would be most applicable to more terms. (I'm toying with the idea of building an &quot;advanced form&quot; later.) Given a term, I will return the sentiment for:</p>
+<ul>
+<li>The general dataset</li>
+<li>People with 5k+ followers</li>
+<li>Married people</li>
+<li>People with children</li>
+<li>Results over the last year (Jan1-Dec31 of 2015 as of the time I'm writing this blog post)</li>
+</ul>
+<p>The <a href="https://console.ng.bluemix.net/docs/services/Twitter/index.html#twitter">docs</a> explain how the API works including the query language. In general it is pretty simple, but the best news is that you can skip getting results and just use the <code>count</code> method instead. That means I can easily get sentiment analysis with 4 API calls (one for each sentiment). As an aside, I ended up not displaying all four sentiments in my charts, but the back end code still fetches them all.</p>
+<p>I'll include a link to the code base below, but here is a snippet showing how I fetch the general sentiment for a term.</p>
+<pre><code class="language-javascript">
+sentiments.forEach(function(s) {
+	var p = new Promise(function(fulfill, reject) {
+		request.get(getURL()+&#x27;messages&#x2F;count?q=&#x27;+encodeURIComponent(term)+&#x27; AND sentiment:&#x27;+s, function(error, response, body) {
+			
+			if(error) console.error(error);
+			fulfill({scope:&#x27;main&#x27;,sentiment:s,data:JSON.parse(body).search.results});	
+		});
+	});
+	promises.push(p);
+});
+</code></pre>
+<p>Here is the block that handles married (again, possibly married) people:</p>
+<pre><code class="language-javascript">
+sentiments.forEach(function(s) {
+	var p = new Promise(function(fulfill, reject) {
+		request.get(getURL()+&#x27;messages&#x2F;count?q=&#x27;+encodeURIComponent(term)+&#x27; AND is:married AND sentiment:&#x27;+s, function(error, response, body) {
+			
+			if(error) console.error(error);				
+			fulfill({scope:&#x27;married&#x27;,sentiment:s,data:JSON.parse(body).search.results});	
+		});
+	});
+	promises.push(p);
+});	
+</code></pre>
+<p>As you can see, I'm using promises to handle the fact that I'm firing a <em>bunch</em> of async processes. As I've got 5 charts and 4 sentiments, each query performs 20 different HTTP calls. Handling that isn't too hard:</p>
+<pre><code class="language-javascript">
+Promise.all(promises).then(function(results) {
+
+	console.log('deep query done');
+	console.dir(results);
+	
+	var metaResult = {};
+	results.forEach(function(r) {
+		var append = '';
+		if(r.scope !== 'main') {
+			append = '_'+r.scope;
+		}
+		metaResult[r.sentiment+append] = r.data;
+	});
+
+	fulfill(metaResult);	
+	
+});
+</code></pre>
+<p>The code in the forEach there is handling applying each HTTP result to a proper location in my main result object. Generally your array of results will match how they were applied to the array, but as I'm using 5 forEach statements for my reports, I can't know for sure the order they will be added to the array. Kind of complex, but that's all nicely hidden away in my library. Back in the main Node.js route that handles all of this, it is rather simple.</p>
+<pre><code class="language-javascript">
+app.get('/analyze', function(req, res) {
+	var term = req.query.term;
+	if(!term) return res.end();
+
+	twitterInsights.deepSentiment(term).then(function(result) {
+		res.send(result);
+	});
+});
+</code></pre>
+<p>So how about the front end? I decided to use Bootstrap to create a simple UI for the term searching. For my charts, I decided on <a href="http://www.highcharts.com/">Highcharts</a>. It is free for commercial use and I liked the animation of the charts. Here's a sample report.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/02/twitterinsights.png" alt="Screen shot"></p>
+<p>You can see all the code for this project on the GitHub repo I just set up: <a href="https://github.com/cfjedimaster/twitterinsights">https://github.com/cfjedimaster/twitterinsights</a>.</p>
+<p>And you can run the demo yourself here: <a href="http://twitterwall.mybluemix.net/">http://twitterwall.mybluemix.net/</a>. I had some good folks test this and they managed to crash it a few times, but hopefully I've covered up most of the issues. Let me know what you think. And remember, the sentiment analysis is <em>not</em> going to be perfect. I'm sure you can find examples that don't make sense. Be nice. :)</p>
+}

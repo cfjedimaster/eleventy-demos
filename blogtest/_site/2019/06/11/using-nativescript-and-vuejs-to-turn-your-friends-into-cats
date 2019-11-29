@@ -1,0 +1,143 @@
+<h1>Post</h1>
+
+<p>An incredibly long time ago, OK, way back in 2016, I wrote up an experiment concerning Ionic and the Contacts API wrapper (<a href="https://www.raymondcamden.com/2016/12/12/working-with-ionic-native-contact-fixer">&quot;Working with Ionic Native - Contact Fixer&quot;</a>). The idea was simple. Given that you have a large set of contacts on your device, what if there was a simple way to add pictures to those contacts without one? And if we're going to add pictures to contacts, surely the best picture possible would be of a cat, right?</p>
+<figure>
+<img src="https://static.raymondcamden.com/images/2019/06/cat1.jpg" alt="This is your new boss, right?" class="imgborder imgcenter">
+<figcaption>Wouldn't you love to get a call from this guy?</figcaption>
+</figure>
+<p>As an excuse to work with NativeScript more, I thought it would be fun to rebuild this and of course, take the opportunity to use <a href="https://nativescript-vue.org/">NativeScript Vue</a>. The end application is incredibly simple so it isn't that exciting, but the end results are kind of neat. There is, of course, a plugin for working with contacts and NativeScript, <a href="https://www.npmjs.com/package/nativescript-contacts">NativeScript Contacts</a>. The plugin worked well for me in general, but there is an <a href="https://github.com/firescript/nativescript-contacts/issues/30">open issue</a> with updating existing contacts. My code seemed to work despite this issue, but you'll notice a try/catch around the operation. I also made use of <a href="https://www.npmjs.com/package/nativescript-permissions">nativescript-permissions</a> to handle Android specific permission stuff. This was easy too, but I almost wish it was baked into NativeScript as it feels like something you'll <em>always</em> need.</p>
+<p>Let's begin by taking a look at the code. It's a &quot;one view&quot; app so I've only got one component to share, and as I said, it's almost stupid simple so I'm not sure how useful it is. I'll start with the layout first.</p>
+<pre><code class="language-html">&lt;template&gt;
+    &lt;Page class=&quot;page&quot;&gt;
+        &lt;ActionBar class=&quot;action-bar&quot;&gt;
+            &lt;Label class=&quot;action-bar-title&quot; text=&quot;Home&quot;&gt;&lt;/Label&gt;
+        &lt;/ActionBar&gt;
+		&lt;StackLayout&gt;
+			&lt;Label textWrap=&quot;true&quot; :text=&quot;status&quot; height=&quot;40&quot; /&gt;
+
+			&lt;Button v-if=&quot;readyToFix&quot; text=&quot;Fix Contacts!&quot; @tap=&quot;fixContacts&quot;&gt;&lt;/Button&gt;
+			&lt;ScrollView orientation=&quot;vertical&quot; height=&quot;100%&quot;&gt;
+				&lt;ListView for=&quot;contact in contacts&quot;&gt;
+					&lt;v-template&gt;
+						&lt;GridLayout columns=&quot;*,40&quot; padding=&quot;20&quot;&gt;
+						&lt;Label row=&quot;0&quot; col=&quot;0&quot; :text=&quot;contact | name&quot;/&gt;
+						&lt;Image row=&quot;0&quot; col=&quot;1&quot; :src=&quot;contact.photo&quot; /&gt;
+						&lt;/GridLayout&gt;
+					&lt;/v-template&gt;
+				&lt;/ListView&gt;
+			&lt;/ScrollView&gt;
+
+		&lt;/StackLayout&gt;
+    &lt;/Page&gt;
+&lt;/template&gt;
+</code></pre>
+<p>At the top, you can see a label bound to a <code>status</code> value that I'll be using to report on, well, status of the application. Loading contacts on my device took about 4 or so seconds so I needed a message to let the user know what was going on.</p>
+<p>Beneath that I've got a button and a list of contacts. The button is what you will use to &quot;fix&quot; your contacts and notice it only shows up when we're ready to update them. The contacts are displayed in a <code>ListView</code> using a <code>GridLayout</code> to show their names and pictures (which will be blank at first).</p>
+<p>Now let's look at the code.</p>
+<pre><code class="language-js">const permissions = require('nativescript-permissions');
+const contacts = require('nativescript-contacts');
+const imageSource = require('image-source');
+
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomCatURL() {
+    let w = getRandomInt(200,500);
+    let h = getRandomInt(200,500);
+    return `https://placekitten.com/${w}/${h}`;
+}
+
+export default {
+    data() {
+        return {
+            status:'',
+            contacts:[],
+            readyToFix:false
+        }
+    },
+    created() {
+        this.status = 'Loading up your contacts to find those missing a picture - please stand by!';
+
+        permissions.requestPermissions([android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.WRITE_CONTACTS], 'I need these permissions to work with your contact.')
+            .then(() =&gt; {
+
+                var contactFields = ['name','nickname','photo'];
+                contacts.getAllContacts(contactFields).then(
+                    args =&gt; {
+
+
+                        //get contacts w/o a picture AND with a name
+                        let fixableContacts = args.data.filter(c =&gt; {
+                            if(c.photo) return false;
+                            if(!c.nickname &amp;&amp; !c.name.family) return false;
+                            return true;
+                        });
+    
+                        this.status = `You have ${fixableContacts.length} named contacts without pictures...`;
+                        this.contacts = fixableContacts;
+                        this.readyToFix = true;
+
+                    },
+                    err =&gt; {
+                        console.log(&quot;Error: &quot; + err);
+                    }
+                );
+
+            })
+            .catch(e =&gt; {
+                console.log('error in perms thing',e);
+            });
+    },
+    methods:{
+        fixContacts() {
+            let fixes = [];
+            for(let i=0; i&lt;this.contacts.length; i++) {
+                fixes.push(imageSource.fromUrl(getRandomCatURL()));
+            }
+            Promise.all(fixes).then(sources =&gt; {
+                console.log('in the promise all and ive got '+sources.length + ' sources');
+                // should be a 1 to 1 map to contacts, but doesn't matter since random :&gt;
+                for(let i=0; i&lt;sources.length; i++) {
+                    this.contacts[i].photo = sources[i];
+                    // wrap in try/catch: https://github.com/firescript/nativescript-contacts/issues/30
+                    try {
+                        this.contacts[i].save();
+                    } catch(e) {
+                        // ignore
+                    }
+                }
+            });
+        }
+
+    }
+};
+</code></pre>
+<p>Up top we've got the required libraries being loaded in and beneath that, two helper functions. <code>getRandomInt</code> does exactly that, a random number between two values, and <code>getRandomCatURL</code> is how I handle generating a new cat photo for contacts. It uses the (newly resurrected) <a href="https://placekitten.com">placekitten.com</a> image placeholder service. In this case we're simply generating random dimensions between 200 and 500 pixels wide.</p>
+<p>Beneath that comes the Vue specific code. My <code>created</code> method handles loading all contacts, but note that we filter both by contacts with pictures already and those that don't have a name of some sort. The end result is an array of contacts that could be fixed. They are saved to the <code>contacts</code> value and then rendered out in the <code>ListView</code>.</p>
+<p>Finally, you can see the <code>fixContacts</code> method that handles getting those random cat pictures. I make use of <code>imageSource.fromUrl</code> to load in an image from a URL. This returns a promise so I use <code>Promise.all</code> to then assign those results to my contacts. (In case you're curious, you <em>can</em> use Async/Await in NativeScript, Alex Ziskind has an article <a href="https://nativescripting.com/posts/async-await-in-nativescript">here</a> discussing it, but as it involves a small workaround, I decided to avoid it for today.)</p>
+<p>And that's it. Let's look at the result! First, here are the contacts on my virtual Android device before running the app. Notice the boring icons by their names:</p>
+<img src="https://static.raymondcamden.com/images/2019/06/cat2.png" alt="List of contacts without nice pictures" class="imgborder imgcenter">
+<p>When I run the app, it will load all of my contacts as none of them have a photo. Notice the bug in the last row:</p>
+<img src="https://static.raymondcamden.com/images/2019/06/cat3.png" alt="App running, list of contacts" class="imgborder imgcenter">
+<p>This comes from the Vue filter I used to display names. The basic idea was, look for a nickname, and if it isn't there, use first and last name:</p>
+<pre><code class="language-js">// Used to find a good name for a contact
+Vue.filter('name', contact =&gt; {
+    if (contact.nickname) return nickname;
+    else if (contact.name.family) return contact.name.given + ' ' + contact.name.family;
+    return '';
+});
+</code></pre>
+<p>Unfortunately, the <code>Discord</code> contact didn't have a first name. Discord is just Discord.</p>
+<img src="https://static.raymondcamden.com/images/2019/06/discord.jpg" alt="You don't mess with Discord" class="imgborder imgcenter">
+<p>However, I thought &quot;null Discord&quot; sounded like a cool name anyway so I kept the bug in. Or I'm lazy. You pick.</p>
+<p>After clicking the button, each contact was assigned a random cat URL which was automatically updated in the <code>ListView</code>:</p>
+<img src="https://static.raymondcamden.com/images/2019/06/cat4.png" alt="Contacts with cats!" class="imgborder imgcenter">
+<p>And what's cool is you see this right away. I went back to my Contacts app on the virtual device and saw great results. First the list of all contacts:</p>
+<img src="https://static.raymondcamden.com/images/2019/06/cat5.png" alt="Fixed contacts" class="imgborder imgcenter">
+<p>And here's two examples:</p>
+<img src="https://static.raymondcamden.com/images/2019/06/cat6.png" alt="First example" class="imgborder imgcenter">
+<img src="https://static.raymondcamden.com/images/2019/06/cat7.png" alt="Second example" class="imgborder imgcenter">
+<p>And that's it. Stupid fun, but nice to build. If anyone wants the complete source code, just ask!</p>
+<p><i>Header photo by <a href="https://unsplash.com/@mewmewmew?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Q'AILA</a> on Unsplash</i></p>
+}

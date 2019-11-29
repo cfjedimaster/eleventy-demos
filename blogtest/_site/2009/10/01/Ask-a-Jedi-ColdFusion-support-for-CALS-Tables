@@ -1,0 +1,190 @@
+<h1>Post</h1>
+
+<p>Aaron asked:</p>
+<blockquote>
+<p>
+I've been a follower of your blog forever and it's been an indispensable tool while I've been learning ColdFusion. I started on Allaire's 4.5 version and more recently got ahold of CF8. I'd consider myself a moderate level developer, with a good handle on building CFC's and manipulating XML documents.
+</p>
+<p>
+I've run into a snag recently though, regarding table representation in XML and the process of converting CALS-based format into HTML and vice-versa. This issue came about when I exported pages out of Adobe InDesign to XML and saw CALS format for the first time. My attempt to use the same data from an exported catalog for use on a website has been thwarted by these demonic CALS tables.
+</p>
+Knowing that CF8 has awesome XML power, I thought there would be a custom tag or CFC for converting these tables into either format but my search has turned up nil. Before attempting to write my own, I was curious if you had any suggestions or knew of any resources I could tap to help with the process? If I did end up creating one, I'd love to pass it off to any who needed it. Maybe you could cover it in a blog entry?
+</p>
+</blockquote>
+<!--more-->
+I had to admit to Aaron - I had no idea what CALS was. I did a quick Google search and didn't have luck, but Wikipedia helped me out: <a href="http://en.wikipedia.org/wiki/CALS_Table_Model">CALS Table Model</a>. From what I can gather, CALS is an XML format for describing tables for print. I could be a bit off on that - some of the jargon was a bit hard to grok. But that's what I took from it. Wikipedia then led me to a web page and a DTD description: <a href="http://www.oasis-open.org/specs/a502.htm">CALS Table Model Document Type Definition</a>. Be sure to check the date on that document - 2001. I had a lot less gray hairs in the beard back when this was published. 
+<p>I asked Aaron for a sample of his XML to see if I could work with it. Here is a sample of the XML he had to work with:</p>
+<code>
+&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
+&lt;catalog&gt;
+	&lt;category&gt;	
+		&lt;item&gt;
+			&lt;itemsku&gt;SEE BELOW&lt;/itemsku&gt;
+			&lt;itemroottitle&gt;Aimpoint CompM3 Weapon Sight &lt;/itemroottitle&gt;
+			&lt;itemintroduction&gt;When police and armed forces personnel are on duty, they need their equipment to handle just about any situation, anytime, anywhere. That's why Aimpoint created the CompM3, a revolutionary sight that offers the highest standard available for sight systems technology.  The CompM3 features their latest technology and is even more rugged than Aimpoint's other sights. Featuring revolutionary Advanced Circuit Efficiency Technology that gives the sight unparalleled battery life and ease of use, the CompM3 works with any generation of night vision device (NVD). Built primarily for armed forces and police use to hold up under the roughest physical handling and most severe weather conditions.   The CompM3 comes with a replaceable, outer black rubber cover, which protects it from scratching and adds an additional stealth factor. The outer cover is also available in Dark Earth Brown perfect camo for use in the desert and in  the jungle.&lt;/itemintroduction&gt;
+			&lt;itemfeatures&gt;Compatible with every generation of NVD New technology called ACET allows 50,000 hours of operation on one single battery (on setting 7 out of 10) 500,000 hours of use on NVD setting Unequalled light transmission Available in 2 dot sizes (2 and 4 MOA) Submersible to 45 meters (135 feet) Comes with replaceable outer black rubber cover Outer rubber cover available in Dark Earth Brown&lt;/itemfeatures&gt;
+			&lt;!--- CALS Table Format. (tables is the defined tag in indesign where the table is kept, the rest is IndDesign created stuff ---&gt;
+			&lt;tables&gt;
+				&lt;table frame="none"&gt;
+					&lt;tgroup cols="2"&gt;
+						&lt;colspec colname="c1" colwidth="56.82176592382906pt"&gt;&lt;/colspec&gt;
+						&lt;colspec colname="c2" colwidth="90.68922308716pt"&gt;&lt;/colspec&gt;
+						&lt;tbody&gt;
+							&lt;row&gt;
+								&lt;entry namest="c1" nameend="c2" colsep="0" align="center" valign="top"&gt;Models&lt;/entry&gt;
+							&lt;/row&gt;
+							&lt;row&gt;
+								&lt;entry colsep="0" align="right" valign="top"&gt;AIM-11408&lt;/entry&gt;
+								&lt;entry colsep="0" align="left" valign="top"&gt;With 2 MOA dot size&lt;/entry&gt;
+							&lt;/row&gt;
+							&lt;row&gt;
+								&lt;entry colsep="0" rowsep="0" align="right" valign="top"&gt;AIM-11403&lt;/entry&gt;
+								&lt;entry colsep="0" rowsep="0" align="left" valign="top"&gt;With 4 MOA dot size&lt;/entry&gt;
+							&lt;/row&gt;
+						&lt;/tbody&gt;
+					&lt;/tgroup&gt;
+				&lt;/table&gt;
+			&lt;/tables&gt;
+			&lt;!--- End of CALS Table Format ---&gt;
+			&lt;pageid&gt;199&lt;/pageid&gt;
+		&lt;/item&gt;
+	&lt;/category&gt;
+&lt;/catalog&gt;
+</code>
+<p>Would you believe I just now noticed this XML contains information about weapons and &quot;outer black rubber cover&quot;?? Ok, so that aside, the CALS specific section should be obvious. For my testing I copied that portion into a CFXML variable:</p>
+<code>
+&lt;!--- COLS Data ---&gt;
+&lt;cfxml variable="colxml"&gt;
+&lt;tables&gt;
+	&lt;table frame="none"&gt;
+		&lt;tgroup cols="2"&gt;
+			&lt;colspec colname="c1" colwidth="56.82176592382906pt"&gt;&lt;/colspec&gt;
+			&lt;colspec colname="c2" colwidth="90.68922308716pt"&gt;&lt;/colspec&gt;
+			&lt;tbody&gt;
+				&lt;row&gt;
+					&lt;entry namest="c1" nameend="c2" colsep="0" align="center" valign="top"&gt;Models&lt;/entry&gt;
+				&lt;/row&gt;
+				&lt;row&gt;
+					&lt;entry colsep="0" align="right" valign="top"&gt;AIM-11408&lt;/entry&gt;
+					&lt;entry colsep="0" align="left" valign="top"&gt;With 2 MOA dot size&lt;/entry&gt;
+				&lt;/row&gt;
+				&lt;row&gt;
+					&lt;entry colsep="0" rowsep="0" align="right" valign="top"&gt;AIM-11403&lt;/entry&gt;
+					&lt;entry colsep="0" rowsep="0" align="left" valign="top"&gt;With 4 MOA dot size&lt;/entry&gt;
+				&lt;/row&gt;
+			&lt;/tbody&gt;
+		&lt;/tgroup&gt;
+	&lt;/table&gt;
+&lt;/tables&gt;
+&lt;/cfxml&gt;
+</code>
+<p>From my reading of the spec, my understanding was that a table contained N sets of tgroups. Each tgroup is really it's own table, but they must all fit within one uber table frame. To simplify things though I decided to just work with the main tgroup.</p>
+<code>
+&lt;!--- get the tgroup ---&gt;
+&lt;cfset myTable = colxml.tables.table.tgroup&gt;
+</code>
+<p>This could be a bit more dynamic, but for a proof of concept I'll go with it. My next step was to parse the colspec tags.</p>
+<code>
+&lt;!--- parse the cols to get names and widths ---&gt;
+&lt;cfset cols = []&gt;
+&lt;cfif structKeyExists(myTable, "colspec")&gt;
+	&lt;cfloop index="x" from="1" to="#arrayLen(myTable.colspec)#"&gt;
+		&lt;cfset colspec = myTable.colspec[x]&gt;
+		&lt;cfset col = {}&gt;
+		&lt;cfif structKeyExists(colspec.xmlAttributes, "colname")&gt;
+			&lt;cfset col.name = colspec.xmlAttributes.colname&gt;
+		&lt;/cfif&gt;
+		&lt;cfif structKeyExists(colspec.xmlAttributes, "colwidth")&gt;
+			&lt;cfset col.width = colspec.xmlAttributes.colwidth&gt;
+		&lt;/cfif&gt;
+		&lt;cfset arrayAppend(cols, col)&gt;
+	&lt;/cfloop&gt;
+&lt;/cfif&gt;
+</code>
+<p>Basically I create an array of structs, where each struct contains information about the colspec tags. CALS may support more attributes, but I worked with what I saw in the sample XML.</p>
+<p>Next was to parse the cells. For the most part this was simple, but notice how they handle colspans. They have a namest and nameend attribute. These point to named columns and represent a start/end &quot;span&quot; for a cell. That's going to be a bit tricky, but before we get ahead of ourselves, let's begin the basic parsing:</p>
+<code>
+&lt;!--- now parse the rows ---&gt;
+&lt;cfset rows = []&gt;
+&lt;cfloop index="x" from="1" to="#arrayLen(myTable.tbody.row)#"&gt;
+	&lt;cfset row = myTable.tbody.row[x]&gt;
+	&lt;!--- each row has N or more entries (cells) ---&gt;
+	&lt;cfset cells = []&gt;
+<pre><code>&amp;lt;cfloop index=&quot;y&quot; from=&quot;1&quot; to=&quot;#arrayLen(row.entry)#&quot;&amp;gt;
+	&amp;lt;cfset entry = row.entry[y]&amp;gt;
+</code></pre>
+</code>
+<p>I begin by creating an array for my rows. I then loop over the XML for each row. A row is an array of cells so I create another array as well. Lastly I loop over each entry.</p>
+<code>
+		&lt;cfset cell = {}&gt;
+		&lt;!--- support colspan by looking for namest/namend ---&gt;
+		&lt;!--- require both for now ---&gt;
+		&lt;cfif structKeyExists(entry.xmlAttributes, "namest") and structKeyExists(entry.xmlAttributes, "nameend")&gt;
+			&lt;cfset colstart = entry.xmlAttributes.namest&gt;
+			&lt;cfset colend = entry.xmlAttributes.nameend&gt;
+			&lt;!--- Ok, given that we know the name of our start and end col, we can get a colspan. Don't support not starting at 0, just support a count ---&gt;
+			&lt;cfset begin = 0&gt;
+			&lt;cfset end = 0&gt;
+			&lt;cfloop index="z" from="1" to="#arrayLen(cols)#"&gt;
+				&lt;cfif structKeyExists(cols[z], "name")&gt;
+					&lt;cfif cols[z].name is colstart&gt;
+						&lt;cfset begin = z&gt;
+					&lt;cfelseif cols[z].name is colend&gt;
+						&lt;cfset end = z&gt;
+					&lt;/cfif&gt;
+				&lt;/cfif&gt;
+			&lt;/cfloop&gt;
+			&lt;cfif begin gt 0 and end gt 0&gt;
+				&lt;cfset cell.colspan = end-begin+1&gt;
+			&lt;/cfif&gt;
+		&lt;/cfif&gt;
+</code>
+<p>The cell structure represents one table cell. My first task is to see if a colspan should be in effect. This becomes a bit tricky because it is possible I may not have the named columns. So I do a lot of checking to see if they actually exist, and finally, if they do, I set a colspan value equal to the &quot;distance&quot; between the two columns.</p>
+<code>
+		&lt;cfif structKeyExists(entry.xmlAttributes,"valign")&gt;
+			&lt;cfset cell.valign = entry.xmlAttributes.valign&gt;
+		&lt;/cfif&gt;
+		&lt;cfif structKeyExists(entry.xmlAttributes,"align")&gt;
+			&lt;cfset cell.align = entry.xmlAttributes.align&gt;
+		&lt;/cfif&gt;
+</code>
+<p>The rest of the cell creation is a bit more simpler. If I have a valign or align attribute, copy it over. Finally, add the cell, add the rows, end the loops, etc:</p>
+<code>
+		&lt;cfset cell.text = entry.xmlText&gt;
+		&lt;cfset arrayAppend(cells, cell)&gt;
+	&lt;/cfloop&gt;
+<pre><code>&amp;lt;cfset arrayAppend(rows, cells)&amp;gt;	
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>Woot. So at this point I've got an array of arrays. Let's see about rendering it:</p>
+<code>
+&lt;!--- try to render ---&gt;
+&lt;table border="1"&gt;
+<p>&lt;cfloop index=&quot;row&quot; array=&quot;#rows#&quot;&gt;
+&lt;tr&gt;</p>
+<pre><code>&amp;lt;cfloop index=&quot;cell&quot; array=&quot;#row#&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;td
+		&amp;lt;cfif structKeyExists(cell, &quot;colspan&quot;)&amp;gt;
+		colspan=&quot;#cell.colspan#&quot;
+		&amp;lt;/cfif&amp;gt;
+		&amp;lt;cfif structKeyExists(cell, &quot;valign&quot;)&amp;gt;
+		valign=&quot;#cell.valign#&quot;
+		&amp;lt;/cfif&amp;gt;
+		&amp;lt;cfif structKeyExists(cell, &quot;align&quot;)&amp;gt;
+		align=&quot;#cell.align#&quot;
+		&amp;lt;/cfif&amp;gt;
+	&amp;gt;#cell.text#&amp;lt;/td&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;/tr&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;/table&gt;
+</code></p>
+<p>I begin, and end, with a table tag. I added a border to my output to make it a bit clearer, but obviously that is something that CALS handles with an XML attribute not present in the sample above. For each row, and each cell, I check the attributes and output the relevant HTML for it. The result?</p>
+<img src="https://static.raymondcamden.com/images/Screen shot 2009-10-01 at 10.43.34 AM.png" />
+<p>I've attached the entire template to the blog entry. As I said above - this code isn't terribly flexible, but hopefully it can give people a head start if they need to work with CALS data.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Ftest%2Ezip'>Download attached file.</a></p></p>
+}

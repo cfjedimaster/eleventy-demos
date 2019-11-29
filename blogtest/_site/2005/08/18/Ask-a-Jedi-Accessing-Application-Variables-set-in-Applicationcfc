@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>Tim asks:</p>
+<blockquote>
+Question about application.cfc. In my constructor section, I have the standard:
+<cfset This.name = "TEST_APP_NAME">
+<cfset This.clientmanagement = true>
+<cfset This.clientstorage = "TEST_ClientStorage">
+<p>My question: How do you reference those variables outside the CFC? Say for example I wanted to refer to the &quot;name&quot; variable set above for some reason. Dumping the Application scope doesnt show those variables. Dumping the &quot;This&quot; scope doesnt work (the This scope doesnt work outside the CFC).</p>
+</blockquote>
+<p>Turns out Tim had a simple misunderstanding. He followed up his original question saying he was doing this:</p>
+<div class="code">This.EmailForErrors = <FONT COLOR=BLUE>"<A HREF="mailto:my@email.com">my@email.com</A>"</FONT>;</div>
+<p>His mistake was that he was using the This scope for Application data. The This scope, in terms of Application.cfc, is for Application <i>settings</i>, not data. Basically - remember all the attributes you used to pass to the CFAPPLICATION tag? That's what we're talking about here. The This scope simply turns on or off various features of ColdFusion applications. For Application data, do what you did in the past - use the Application scope.</p>
+<p>That being said, how do you go about getting the settings? The name of the application is always available in the application scope using the ApplicationName key:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfoutput&gt;</FONT>This app is #application.applicationName#<FONT COLOR=MAROON>&lt;/cfoutput&gt;</FONT></div>
+<p>The other settins are not <i>directly</i> available. You can, for example, determine if the session scope is turned on using a try/catch statement. There is even a <a href="http://www.cflib.org/udf.cfm?ID=634">UDF</a> for this.</p>
+<p>Another thing to remember is - all variables set in the This scope are available from an instance of the component. You can do this:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfset app = createObject(<FONT COLOR=BLUE>"component"</FONT>, <FONT COLOR=BLUE>"Application"</FONT>)&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;cfoutput&gt;</FONT>#structkeylist(app)#<FONT COLOR=MAROON>&lt;/cfoutput&gt;</FONT></div>
+<p>The structKeyList will show all members of the This scope. You could then check to see if SessionManagement is turned on, as well as other settings.</p>
+}

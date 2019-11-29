@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>There has been a lot of press the last few days on the upcoming new version of Internet Explorer. Most articles talk of new CSS and PNG support - however - I think one big thing is being overlooked.</p>
+<p>One of the things I despised about IE, even when I used IE as my primary browser, was that there was no way (no simple way) to run multiple versions of the browser on one computer. Because of how deeply IE was tied to the system, once you upgraded, that was it - you were using the latest version of IE - and <i>only</i> that version.</p>
+<p>Thats all fine and good for 99% of the public out there - but for web developers - it is a royal pain in the rear. It means we have to either jump through hoops, or use multiple computers, to test our sites on multiple versions of IE.</p>
+<p>I can certainly understand Microsoft's decision to do this - however - it does kinda screw over web developers.</p>
+<p>Just to be clear - I don't blame just Microsoft in this regard. For too many years now I've felt that the browser makers haven't done the best they could to support the folks who actually built web sites. Consider the Web Developer Toolbar for Firefox. This sort of tool should have been around back in the wild 1.0 days. The simple ability to disable/enable JS in one click is obvious - and should have been this easy in the beginning.</p>
+<p>Of course - these tools would do nothing but confuse end users. I wouldn't expect them to be turned on by default. But it would have been nice to have the option at least.</p>
+<p>Of course, I shouldn't complain. I still remember working with Netscape 4 alphas that required me to reboot my machine when I made a simple mistake in JavaScript. ;)</p>
+}

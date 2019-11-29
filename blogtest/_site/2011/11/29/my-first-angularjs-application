@@ -1,0 +1,213 @@
+<h1>Post</h1>
+
+<p>Earlier this year I <a href="http://www.raymondcamden.com/index.cfm/2011/6/19/Take-a-look-at-Angular">blogged</a> about the <a href="http://angularjs.org">AngularJS</a> framework. I thought the docs and the tutorial were cool and overall it felt like a real cool way to build a JavaScript &quot;Application&quot; - and yes, with the quotes there I'm talking about something more than a simple one page, Ajaxified file. Unfortunately, I never got the time to play more with AngularJS until this week. Yesterday I reviewed the <a href="http://docs.angularjs.org/#!/tutorial">tutorial</a> again and decided to take a stab at building my own application. I ran into a few hiccups, but in general, the process was straight forward, and after actually <i>building</i> something with the framework, <b>I love it</b>, and can't wait to try more with it. Let's take a look at my application. (And of course, please keep in mind that this is my first AngularJS application. It's probably done completely wrong. Keep that in mind....)</p>
+<p>
+<!--more-->
+For my first application, I decided to build a simple Note manager. This is something I've done many times before. I'm a huge fan of <a href="http://evernote.com/">Evernote</a> and I keep hundreds of notes stored in it. My application will allow for adding, editing, deleting, and viewing of simple notes. In this first screen shot you can see the basic UI.
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip239.png" />
+<p>
+<p>You can click a note to see the details...</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip240.png" />
+<p>
+<p>And of course basic editing is supported...</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip241.png" />
+<p>
+<p>So what does the code look like? First, I've got my core index page:</p>
+<p>
+<code>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html xmlns:ng=&quot;http://angularjs.org/&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;Note Application&lt;/title&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;css/main.css&quot;/&gt;
+&lt;/head&gt;</p>
+<p>&lt;body ng:controller=&quot;NoteCtrl&quot;&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;ng:view&amp;gt;&amp;lt;/ng:view&amp;gt;
+
+&amp;lt;/div&amp;gt;
+
+&amp;lt;script src=&quot;lib/angular/angular.js&quot; ng:autobind&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script src=&quot;js/controllers.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script src=&quot;js/services.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>All of the real display will happen within the view, which is managed in my controller. Let's look at that file next.</p>
+<p>
+<code>
+/* App Controllers */
+<p>function NoteCtrl($route) {
+var self = this;</p>
+<p>$route.when('/notes',
+{template: 'partials/note-list.html',   controller: NoteListCtrl});
+$route.when('/notes/add',
+{template: 'partials/note-edit.html', controller: NoteEditCtrl});
+$route.when('/notes/edit/:noteId',
+{template: 'partials/note-edit.html', controller: NoteEditCtrl});
+$route.when('/notes/:noteId',
+{template: 'partials/note-detail.html', controller: NoteDetailCtrl});
+$route.otherwise({redirectTo: '/notes'});</p>
+<p>$route.onChange(function(){
+self.params = $route.current.params;
+});</p>
+<p>$route.parent(this);
+}</p>
+<p>function NoteListCtrl(Note_) {
+var self = this;
+self.orderProp = 'title';
+self.notes = Note_.query();</p>
+<pre><code>self.delete = function(id) {
+	console.log(&quot;delete &quot;+id);
+	Note_.delete(id);
+	self.notes = Note_.query();
+	//refreshes the view
+	self.$root.$eval();	
+}
+
+self.edit = function(id) {
+	window.location = &quot;./index.html#/notes/edit/&quot;+id;
+}
+</code></pre>
+<p>}</p>
+<p>function NoteDetailCtrl(Note_) {
+var self = this;
+self.note = Note_.get(self.params.noteId);</p>
+<p>if(typeof self.note === &quot;undefined&quot;) window.location = &quot;./index.html&quot;;
+}</p>
+<p>function NoteEditCtrl(Note_) {
+console.log('EDIT CTRL');
+var self = this;</p>
+<pre><code>if(self.params.hasOwnProperty(&quot;noteId&quot;)) self.note = Note_.get(self.params.noteId);
+else self.note = { title:&quot;&quot;, body:&quot;&quot;};
+
+self.cancel = function() {
+	window.location = &quot;./index.html&quot;;
+}
+
+self.save = function() {
+	Note_.store(self.note);
+	window.location = &quot;./index.html&quot;;
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Essentially, this file consists of the main controller which simply handles routing based on the URL. The other three controls handle listing, editing, and the detail view. Now let's look at the note service.</p>
+<p>
+<code>
+<p>/* http://docs.angularjs.org/#!angular.service */</p>
+<p>angular.service('Note', function(){
+return {
+query:function() {
+var notes = [];
+for(var key in localStorage) {
+if(key.indexOf(&quot;note_&quot;) == 0) {
+notes.push(JSON.parse(localStorage[key]));
+}
+}
+console.dir(notes);
+return notes;
+},
+delete:function(i) {
+localStorage.removeItem(&quot;note_&quot;+i);
+},
+get:function(i) {
+if(localStorage[&quot;note_&quot;+i]) return JSON.parse(localStorage[&quot;note_&quot;+i]);
+console.log(&quot;no note for &quot;+i);
+},
+store:function(note) {
+if(!note.hasOwnProperty('id')) {
+//yep, hack, get all notes and find highest id
+var notes = this.query();
+var highest = 0;
+for(var i=0; i&lt;notes.length; i++) {
+if(notes[i].id &gt; highest) highest=notes[i].id;
+}
+note.id = ++highest;
+}
+note.updated = new Date();
+localStorage[&quot;note_&quot;+note.id] = JSON.stringify(note);
+}
+}</p>
+<p>});
+</code></p>
+<p>
+<p>As you can see, my note service is simply a collection of methods. My application makes use of HTML5's Local Storage feature. It looks for any key that begins with note_ and considers that application data. It stores notes as JSON strings and the service handles both deserializing and serializing the information. What's cool is that I could - in theory - replace this with a SQL version and nothing else would change.</p>
+<p>
+<p>All that's really left are the views. Here is the first view - and keep in mind - this is the entire file for the display of notes on the first screen.</p>
+<p>
+<code>
+<pre><code>Search: &amp;lt;input type=&quot;text&quot; name=&quot;query&quot;/&amp;gt;
+Sort by:
+&amp;lt;select name=&quot;orderProp&quot;&amp;gt;
+  &amp;lt;option value=&quot;title&quot;&amp;gt;Title&amp;lt;/option&amp;gt;
+  &amp;lt;option value=&quot;-updated&quot;&amp;gt;Newest&amp;lt;/option&amp;gt;
+&amp;lt;/select&amp;gt;
+</code></pre>
+<p>&lt;h2&gt;Notes&lt;/h2&gt;</p>
+<p>&lt;table class=&quot;bordered-table&quot;&gt;
+&lt;tr&gt;
+&lt;th&gt;Title&lt;/th&gt;
+&lt;th&gt;Updated&lt;/th&gt;
+&lt;th&gt; &lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr ng:repeat=&quot;note in notes.$filter(query).$orderBy(orderProp)&quot;&gt;
+&lt;td&gt;&lt;a href=&quot;#/notes/{{note.id}}&quot;&gt;{{note.title}}&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;{{note.updated |{% endraw %} date:'MM/dd/yyyy @ h:mma'}}&lt;/td&gt;
+&lt;td&gt;&lt;a href=&quot;&quot; ng:click=&quot;edit(note.id)&quot; title=&quot;Edit&quot;&gt;&lt;img src=&quot;images/page_edit.png&quot;&gt;&lt;/a&gt; &lt;a href=&quot;&quot; ng:click=&quot;delete(note.id)&quot; title=&quot;Delete&quot;&gt;&lt;img src=&quot;images/page_delete.png&quot;&gt;&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;</p>
+<p>&lt;p ng:show=&quot;notes.length==0&quot;&gt;
+Sorry, there are no notes yet.
+&lt;/p&gt;</p>
+<p>&lt;a href=&quot;#/notes/add&quot; class=&quot;btn primary&quot;&gt;Add Note&lt;/a&gt;
+</code></p>
+<p>
+<p>Take note of the ng:repeat and the embedded tokens wrapped in {}. Also note how easy it is to format the date. The detail view is incredibly boring.</p>
+<p>
+<code>
+&lt;h1&gt;{% raw %}{{note.title}}&lt;/h1&gt;
+&lt;p&gt;
+&lt;b&gt;Last Updated:&lt;/b&gt; {{note.updated |{% endraw %} date:'MM/dd/yyyy @ h:mma'}}
+&lt;/p&gt;
+<p>{% raw %}{{note.body}}
+</code></p>
+<p>
+<p>And the edit one is also pretty trivial:</p>
+<p>
+<code>
+<p>&lt;h1&gt;Edit Note&lt;/h1&gt;</p>
+<p>&lt;form class=&quot;form-stacked&quot; onSubmit=&quot;return false&quot; id=&quot;editForm&quot;&gt;
+&lt;div class=&quot;clearfix&quot;&gt;
+&lt;label for=&quot;title&quot;&gt;Title:&lt;/label&gt;
+&lt;div class=&quot;input&quot;&gt;
+&lt;input type=&quot;text&quot; id=&quot;title&quot;  name=&quot;note.title&quot; class=&quot;xlarge&quot;&gt;
+&lt;/div&gt;
+&lt;/div&gt;</p>
+<pre><code>&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+	&amp;lt;label for=&quot;body&quot;&amp;gt;Body&amp;lt;/label&amp;gt;
+	&amp;lt;div class=&quot;input&quot;&amp;gt;
+		&amp;lt;textarea class=&quot;xxlarge&quot; id=&quot;body&quot; name=&quot;note.body&quot; rows=&quot;3&quot;&amp;gt;&amp;lt;/textarea&amp;gt;
+	&amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div&amp;gt;
+	&amp;lt;button ng:click=&quot;save()&quot; class=&quot;btn primary&quot;&amp;gt;Save&amp;lt;/button&amp;gt; &amp;lt;button ng:click=&quot;cancel()&quot; class=&quot;btn&quot;&amp;gt;Cancel&amp;lt;/button&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/form&gt;
+</code></p>
+<p>
+<p>Pretty simple, right? For the heck of it, I ported this over into a PhoneGap application, and it worked well. The UI is a bit small, but I was able to add, edit, delete notes just fine on my Xoom table. I've included a zip file of the core code for the application and the APK as well if you want to try it. You may demo the app yourself below, and note, it makes use of console for debugging, so don't run it unless you've got a proper browser.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/2011/nov/29/index.html"><img src="https://static.raymondcamden.com/images/icon_128.png" title="Demo, Baby" border="0"></a><p><a href='/enclosures/angular%2Dnotes.zip'>Download attached file.</a></p></p>
+}

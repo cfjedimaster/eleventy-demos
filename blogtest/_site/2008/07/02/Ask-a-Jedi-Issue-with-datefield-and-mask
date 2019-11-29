@@ -1,0 +1,36 @@
+<h1>Post</h1>
+
+<p>Mathew asks:</p>
+<blockquote>
+<p>
+i know you havent used cfform much but im attempting to use the
+datefield in 8, to display an inline datepicker etc. the datepicker works fine on first load, but then when I submit the
+, i get an error saying 1-Jul-2008 is an invalid date or time string.
+</p>
+</blockquote>
+<!--more-->
+Mathew is right. I haven't played much at all with some of the newer form controls, but let's take a quick look at what he is seeing. First, the code:
+<code>
+&lt;cfparam name="form.etic" default="#now()#"&gt;
+<p>&lt;cfform action=&quot;#cgi.SCRIPT_NAME#&quot; preservedata=&quot;yes&quot; method=&quot;post&quot;&gt;
+&lt;cfinput type=&quot;dateField&quot; name=&quot;etic&quot; mask=&quot;DD-MMM-YY&quot; style=&quot;font-size:12px;text-align:center&quot; width=&quot;75&quot; &gt;
+&lt;input type=&quot;submit&quot; name=&quot;btnSubmit&quot; value=&quot;PRESS ME&quot;&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>There isn't anything too special in there. When run, you see a simple form with the datefield. You see a form field with 02-Jul-08. It doesn't matter if you change the date. As soon as you hit submit you get:</p>
+<p>02-Jul-08 is an invalid date or time string.</p>
+<p>So what's going wrong here? As always, it helps if you examine the 'flow' of the script. We begin by defaulting form.etic to the current date and time. If you output that value you would see:</p>
+<p>{ts '2008-07-02 08:37:22'}</p>
+<p>We then create a form. In the cfinput/type=datefield control, we pass in the date/time and use a mask to format it.</p>
+<p>When we submit the form, here is where things get wonky. I added a cfdump on form to help figure this out. On submitting the form, the value of the form.etic is now:</p>
+<p>02-Jul-08</p>
+<p>When ColdFusion tries to treat this as a date for the datefield, it barfs. Why? I don't know. This is especially odd when you consider the solution. I changed his cfparam to this:</p>
+<code>
+&lt;cfif not structKeyExists(form, "etic")&gt;
+	&lt;cfset form.etic = now()&gt;
+&lt;cfelse&gt;
+	&lt;cfset form.etic = parseDateTime(form.etic)&gt;
+&lt;/cfif&gt;
+</code>
+<p>ColdFusion has no problems parsing the masked date. This returns a value that works just fine within the datefield. Something to watch out. I'd also assume that you would want to use this before saving the data - although I bet a cfqueryparam with the sql type set to date would handle it fine. (If not, we know what function to use!)</p>
+}

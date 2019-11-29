@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Two things I found:</p>
+<p>Along with $Id$, which shows the last updated date as well as who made the mod, you can use $Log$, which will insert the comment you used when you checked it in.</p>
+<p>Also - while playing with the feature, I checked a file out and then committed it back in without changing anything. I noticed that the header info did NOT change. So, at first I thought I'd be required to add $x$ to my header each time. However, it appears as if CVS was smart enough to notice that I didn't change anything. When I tested again and actually changed the file, it worked great.</p>
+}

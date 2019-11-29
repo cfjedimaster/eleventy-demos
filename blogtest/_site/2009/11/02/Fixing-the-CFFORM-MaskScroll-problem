@@ -1,0 +1,41 @@
+<h1>Post</h1>
+
+<p>Dave asks:</p>
+<blockquote>
+I have a question regarding <cfinput> masks.
+<br/><br/>
+I'm using <cfform> which includes a few phone number entry fields. I'm applying a mask of "999-999-9999" (since it's all US phone numbers).  The resulting HTML includes a CF generated script that focuses the cursor on any fields that contain a mask in order to apply it to the initial value.
+<br/><br/>
+Is there a way to disable this but retain the mask?  My client is saying that the page "jumps" to the phone number fields instead of loading at the top of the page.
+</blockquote>
+<!--more-->
+I wasn't quite sure what Dave meant, but I saw it quickly enough when I whipped up this demo:
+<code>
+&lt;h1&gt;Ray&lt;/h1&gt;
+&lt;cfoutput&gt;#repeatString("&lt;br/&gt;",120)#&lt;/cfoutput&gt;
+<p>&lt;cfform name=&quot;form&quot;&gt;
+Telephone: &lt;cfinput type=&quot;text&quot; name=&quot;tel&quot; mask=&quot;999-999-9999&quot;&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>So this is a bit contrived, but it definitely shows the issue. On load, you will be scrolled down to the telephone. When I viewed source I could see the focus() calls added by CFFORM. From what I saw, if I were to have multiple fields with masks, I would probably end up at the lowest possible form field.</p>
+<p>My fix was simple - and it seemed to work ok. I simply ran code on page load to scroll back to the top:</p>
+<code>
+&lt;html&gt;
+&lt;head&gt;
+&lt;script&gt;
+function init() {
+	window.scrollTo(0,0)
+}
+&lt;/script&gt;
+&lt;/head&gt;
+<p>&lt;body onload=&quot;init()&quot;&gt;
+&lt;h1&gt;Ray&lt;/h1&gt;
+&lt;cfoutput&gt;#repeatString(&quot;&lt;br/&gt;&quot;,120)#&lt;/cfoutput&gt;</p>
+<p>&lt;cfform name=&quot;form&quot;&gt;
+Telephone: &lt;cfinput type=&quot;text&quot; name=&quot;tel&quot; mask=&quot;999-999-9999&quot;&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>I thought this would result in a 'jump' effect, but it seemed to just load and stay on top for me (FireFox 3.5).</p>
+}

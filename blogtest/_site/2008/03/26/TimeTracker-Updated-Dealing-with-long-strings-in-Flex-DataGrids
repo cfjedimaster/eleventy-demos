@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>I've updated TimeTracker again. This version includes the code fixes by Sid Wing (thanks!) which was part cleanup and a fix to the mx:Legend. I agree with Sid's <a href="http://www.raymondcamden.com/index.cfm/2008/3/25/Time-Tracker-AIR-Application-Updated#cE8C92552-19B9-E658-9D7D44FCBB65C571">comment</a> that the docs could certainly be clearer.</p>
+<p>I also removed the 'Enter key submits hours' thing so folks could enter multiline task descriptions. This is where I ran into an issue with the Flex DataGrid. It refused to correctly render the text in a readable format. Thanks to Scott Stroz for pointing out the variableRowHeight attribute for Flex DataGrids.</p>
+<code>
+&lt;mx:DataGrid id="todayshours" dataProvider="{todaysHoursData}" width="100%" height="100%" sortableColumns="true" variableRowHeight="true"&gt;
+</code>
+<p>Oh my sweet little adorable Flex DataGrid, is there anything you cannot do?</p>
+<p>I also added word wrap to the description columns as well as sorting. (Although I bet date sorting isn't quite right.)</p>
+<p>Next up is the CSV export. After that is done I plan on releasing the code to RIAForge since there seems to be some interest.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FArchive20%2Ezip'>Download attached file.</a></p></p>
+}

@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>A user on my forums <a href="http://www.raymondcamden.com/forums/messages.cfm?threadid=C3300F90-19B9-E658-9D17FD71521D69BA&">asked</a> about creating a region on his web page that would auto reload, like what he saw on <a href="http://www.att.com">att.com</a>. I used to have an auto-reloading item on <a href="http://www.coldfusionbloggers.org">coldfusionbloggers.org</a>, and I thought I had blogged on it, but wasn't able to find it. Forgive the dupe if you remember an earlier entry about this. Anyway, here is a real simple example.</p>
+<!--more-->
+<p>First, I'm to start with a page that uses cfdiv to load the content I want to reload.</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;	
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;h2&gt;Where is Oktoberfest?&lt;/h2&gt;</p>
+<p>&lt;p&gt;
+Foo
+&lt;/p&gt;</p>
+<p>&lt;cfdiv id=&quot;ad&quot; bind=&quot;url:ad.cfm&quot; /&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>The file I'm using, ad.cfm, will rotate between 4 ads, or pieces of content, or whatever. In my case it is a simple counter:</p>
+<code>
+&lt;cfparam name="session.counter" default="0"&gt;
+&lt;cfset maxAds = 4&gt;
+&lt;cfset session.counter++&gt;
+&lt;cfif session.counter gt maxAds&gt;
+	&lt;cfset session.counter = 1&gt;
+&lt;/cfif&gt;
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+&lt;b&gt;This is ad #session.counter#&lt;/b&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>So to start reloading the content, I'm going to set up a interval. I'll launch this using ajaxOnLoad:</p>
+<code>
+&lt;cfset ajaxOnLoad('setup')&gt;
+</code>
+<p>and here is setup:</p>
+<code>
+function setup() {
+	setInterval(reload,5000);
+}
+</code>
+<p>This says, run the reload function ever 5 seconds. The reload function is pretty trivial:</p>
+<code>
+function reload() {
+	ColdFusion.navigate('ad.cfm','ad');
+}
+</code>
+<p>So all in all a very simple piece of code. I've included the entire template below.</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;	
+&lt;script&gt;
+function reload() {
+ColdFusion.navigate('ad.cfm','ad');
+}</p>
+<p>function setup() {
+setInterval(reload,5000);
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;h2&gt;Where is Oktoberfest?&lt;/h2&gt;</p>
+<p>&lt;p&gt;
+Foo
+&lt;/p&gt;</p>
+<p>&lt;cfdiv id=&quot;ad&quot; bind=&quot;url:ad.cfm&quot; /&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+&lt;cfset ajaxOnLoad('setup')&gt;
+</code></p>
+}

@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>Yesterday I was helping a ColdFusion user who is just getting into Flex. He kept getting this error:</p>
+<code>
+[RPC Fault faultString="[MessagingError message='Unknown destination
+'Coldfusion'.']" faultCode="InvokeFailed" faultDetail="Couldn't establish a
+connection to 'Coldfusion'"]
+</code>
+<p>This was his first attempt trying to hook Flex 2 into ColdFusion and he wasn't getting anywhere. His code looked ok to me:</p>
+<code>
+&lt;mx:RemoteObject id="cfService" destination="Coldfusion"
+source="flexbtb.cfc.myService" /&gt;
+</code>
+<p>But then I noticed something. He had &quot;Cold<b>f</b>usion&quot;, not &quot;ColdFusion&quot;. Turns out the destination value is case sensitive. Just one more example of something us ColdFusion developers have probably gotten a bit lazy with - case sensitivity.</p>
+}

@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>So for some reason, I could have sworn the ROLES attribute of CFFUNCTION was an &quot;and&quot; list, by that I mean any role specified would be required. I just read on cf-talk that this is not the case and I have confirmed it. I'll be updating Galleon soon and will remove my workarounds to support checking for a role in a list of roles. (Only a few methods did this, but any unnecessary code is code that should be yanked!)</p>
+}

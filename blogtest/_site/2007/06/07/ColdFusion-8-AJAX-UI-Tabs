@@ -1,0 +1,103 @@
+<h1>Post</h1>
+
+<p>Yesterday I blogged about <a href="http://www.raymondcamden.com/index.cfm/2007/6/6/ColdFusion-8-AJAX-UI-Layouts">layouts</a> in ColdFusion 8. This was accomplished with the handy cflayoutarea and cflayout tags. Today's post will use the same tabs but deal with tabs. (No, not bar tabs.) I'm a big fan of tabs for breaking up complex forms, so I'm happy to see this baked into the product.</p>
+<br clear="left">
+<!--more-->
+Let's start with a simple example:
+<code>
+&lt;cflayout type="tab"&gt;
+<pre><code>&amp;lt;cflayoutarea title=&quot;Tab 1&quot;&amp;gt;
+This is the first tab.
+&amp;lt;/cflayoutarea&amp;gt;
+
+&amp;lt;cflayoutarea title=&quot;Tab 2&quot;&amp;gt;
+This is the second tab.
+&amp;lt;/cflayoutarea&amp;gt;
+</code></pre>
+<p>&lt;/cflayout&gt;
+</code></p>
+<p>As you can see - this uses the same tags discussed in the previous post, except this time I used a type of tab. Insdie a tab based layout, all cflayoutarea groups will create a tab. The titles of the layoutareas will be the titles of the tabs. You can see a live demo of this <a href="http://www.coldfusionjedi.com/demos/layout/layout1.cfm">here</a>.</p>
+<p>Building basic tab sets is trivial enough. ColdFusion provides many options for the tabs as well. As an example, you can supply a tab height to the layout control like so:</p>
+<code>
+&lt;cflayout type="tab" tabheight="100"&gt;
+<pre><code>&amp;lt;cflayoutarea title=&quot;Tab 1&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+This is the first tab.
+&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;
+This is the first tab.
+&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;
+This is the first tab.
+&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;
+This is the first tab.
+&amp;lt;/p&amp;gt;
+
+&amp;lt;/cflayoutarea&amp;gt;
+
+&amp;lt;cflayoutarea title=&quot;Tab 2&quot;&amp;gt;
+This is the second tab.
+&amp;lt;/cflayoutarea&amp;gt;
+</code></pre>
+<p>&lt;/cflayout&gt;
+</code></p>
+<p>This will set the height for the tabs. The content in the tabs will automatically scroll if they need to. (If for some reason you don't want this, you can set the overflow attribute to hidden.) The code above can be seen <a href="http://www.coldfusionjedi.com/demos/layout/layout2.cfm">here</a>.</p>
+<p>You can also set the tabs to display at the bottom:</p>
+<code>
+&lt;cflayout type="tab" tabheight="100" tabPosition="bottom"&gt;
+</code>
+<p><a href="http://www.coldfusionjedi.com/demos/layout/layout3.cfm">Demo</a></p>
+<p>By default, the first tab is selected, but you can also specify a default tab in the code:</p>
+<code>
+&lt;cflayoutarea title="Tab 2" selected="true"&gt;
+</code>
+<p><a href="http://www.coldfusionjedi.com/demos/layout/layout4.cfm">Demo</a></p>
+<p>You can even disable a tab if you want:</p>
+<code>
+&lt;cflayoutarea title="Tab 2" disabled="true"&gt;
+</code>
+<p><a href="http://www.coldfusionjedi.com/demos/layout/layout5.cfm">Demo</a></p>
+<p>Along with all of these options, there is a nice JavaScript API to work with the tabs. You can select a tab. You can enable or disable tabs. You can even hide or show a tab (although this wasn't working for me so I assume it is currently buggy). For an example of all of this (including the buggy show/hide code), see this final <a href="http://www.coldfusionjedi.com/demos/layout/layout6.cfm">demo</a>. The code for this demo is:</p>
+<code>
+&lt;cflayout type="tab" tabheight="100" name="mytabs"&gt;
+<pre><code>&amp;lt;cflayoutarea title=&quot;Tab 1&quot; name=&quot;t1&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+This is the first tab.
+&amp;lt;/p&amp;gt;	
+
+&amp;lt;p&amp;gt;
+&amp;lt;form&amp;gt;
+&amp;lt;select onChange=&quot;if(this.selectedIndex != 0) ColdFusion.Layout.selectTab('t' + this.options[this.selectedIndex].value,'mytabs')&quot;&amp;gt;
+&amp;lt;option&amp;gt;&amp;lt;/option&amp;gt;
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;2&quot; to=&quot;5&quot;&amp;gt;
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;option value=&quot;#x#&quot;&amp;gt;Select tab #x#&amp;lt;/option&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+&amp;lt;/select&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;a href=&quot;javaScript:ColdFusion.Layout.showTab('hiddentab','mytabs')&quot;&amp;gt;Show Hidden Tab&amp;lt;/a&amp;gt; /
+&amp;lt;a href=&quot;javaScript:ColdFusion.Layout.hideTab('hiddentab','mytabs')&quot;&amp;gt;Hide Hidden Tab&amp;lt;/a&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cflayoutarea&amp;gt;
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;2&quot; to=&quot;5&quot;&amp;gt;
+	&amp;lt;cflayoutarea title=&quot;Tab #x#&quot; name=&quot;t#x#&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;p&amp;gt;
+	This is tab number #x#.
+	&amp;lt;/p&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cflayoutarea&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cflayoutarea title=&quot;Dharma Tab&quot; name=&quot;hiddentab&quot; inithide=&quot;true&quot;&amp;gt;
+This is the hidden tab. Can't touch this.
+&amp;lt;/cflayoutarea&amp;gt;
+</code></pre>
+<p>&lt;/cflayout&gt;
+</code></p>
+}

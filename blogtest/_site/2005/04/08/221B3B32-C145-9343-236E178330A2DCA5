@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>A ColdFusion user pinged me today with an odd problem. Whenever he was inside a CFC method (err, his code) and he called a private CFC method, he would get an access error. I asked him how we was calling his methods, and he said:</p>
+<p>&lt;cfset foo = this.someMethod()&gt;</p>
+<p>The problem is the use of &quot;this.&quot; It is not needed when calling methods in the same CFC. You can simply do:</p>
+<p>&lt;cfset foo = someMethod()&gt;</p>
+<p>You can also use cfinvoke if you want.</p>
+<p>So I'm pretty sure I posted this in the past, but I've seen it a few times recently so I hope folks don't mind the recyling.</p>
+}

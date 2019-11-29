@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>When I was preparing to move my site from http://ray.camdenfamily.com to http://www.raymondcamden.com, I certainly didn't want all of my old URLs to stop working. I wrote some quick code (literally, I forgot to write the code before hand so I wrote it live on the old server) to handle this. Here is what I did...</p>
+<!--more-->
+<p>First off - I read Pete Freitag's excellent blog post, <a href="http://www.petefreitag.com/item/359.cfm">What CFLOCATION Does</a>, where he talks about how the status code sent out by CFLOCATION is intended for <i>temporary</i> move, not a permanent one. Using the code he suggested, I added a cfheader to my site. However, I have two styles of URLs. I have both traditional query_string style:</p>
+<p>http://ray.camdenfamily.com/index.cfm?mode=entry&amp;entry=XXXX</p>
+<p>And my SEO style cgi.path_info style:</p>
+<p>http://ray.camdenfamily.com/index.cfm/noone/reads/code/samples</p>
+<p>So I needed code to notice either of these two forms. This is what I came up with:</p>
+<code>
+&lt;cfset loc = cgi.script_name&gt;
+&lt;cfif len(cgi.query_string)&gt;
+	&lt;cfset loc = loc & "?" & cgi.query_string&gt;
+&lt;cfelseif len(cgi.path_info)&gt;
+	&lt;cfset loc = loc & cgi.path_info&gt;
+&lt;/cfif&gt;
+&lt;cfset loc = replaceNoCase(loc,"index.cfm/index.cfm","index.cfm")&gt;
+<p>&lt;cfheader statuscode=&quot;301&quot; statustext=&quot;Moved Permanently&quot;&gt;
+&lt;cfheader name=&quot;Location&quot; value=&quot;http://www.coldfusionjedi.com#loc#&quot;&gt;
+&lt;cfabort&gt;
+</code></p>
+<p>As you can see - I check both cgi.query_string and cgi.path_info. Depending on what is used, I build up my new URL in a variable called loc. I can then push the user there using the two cfheader tags.</p>
+<p>Now how does ColdFusion 8 make this easier? The cflocation tag has been updated to allow you to pass in a status code. There is a set of valid status codes, of which 301 is one of them. The two tags above would become one. (Actually I'd be able to get rid of the cfabort as well.)</p>
+}

@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Peter F blogs about <a href="http://www.petefreitag.com/item/224.cfm">isValid</a> in CFMX7. This is a very nice feature. I used to do try/catch around cfparam in the past so I'm happy to have this.</p>
+<p>One note - the docs say that the regex allowed is JavaScript regex. This is not true. CFML Regex is what is allowed. I'll ping LiveDocs in a moment.</p>
+}

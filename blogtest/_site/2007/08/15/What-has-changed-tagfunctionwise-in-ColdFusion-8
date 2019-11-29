@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>A user on CF-TALK asked today about finding out what new tags and functions were added to ColdFusion 8. If you download the CFML Reference PDF (<a href="http://livedocs.adobe.com/coldfusion/8/cf8_cfml_ref.pdf">Link</a>), you will see before the Tags and Functions chapters a list of what new tags (or functions) were added after ColdFusion 5. You want to look at these lists carefully. First - I'm willing to bet that many of us (myself included) probably missed something in CF7 (maybe even CF6). Secondly - the list also includes new attributes and arguments.</p>
+}

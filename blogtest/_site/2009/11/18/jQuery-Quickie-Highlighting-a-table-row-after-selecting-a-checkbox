@@ -1,0 +1,80 @@
+<h1>Post</h1>
+
+<p>One of the nice little UI features in GMail is how it will highlight an entire table row when you check the checkbox for a particular mail message. It's a relatively simple thing to do but I wanted to whip up a quick sample for myself. Here is one way to do it with ColdFusion and jQuery.</p>
+<!--more-->
+<p>First, our data:</p>
+<code>
+&lt;cfquery name="art" datasource="cfartgallery"&gt;
+select	*
+from	art
+&lt;/cfquery&gt;
+</code>
+<p>Yes, I know, select * is evil. I figure as long as I don't drop an entire database in my SQL statement I'm coming out ahead. Next - the output:</p>
+<code>
+&lt;table id="artTable" border="1"&gt;
+	&lt;tr&gt;
+		&lt;td&gt; &lt;/td&gt;
+		&lt;th&gt;Name&lt;/th&gt;
+		&lt;th&gt;Price&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;cfoutput query="art"&gt;
+		&lt;tr&gt;
+			&lt;td&gt;&lt;input type="checkbox" name="select" value="#artid#"&gt;&lt;/td&gt;
+			&lt;td&gt;#artname#&lt;/td&gt;
+			&lt;td&gt;#dollarFormat(price)#&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/cfoutput&gt;
+&lt;/table&gt;
+</code>
+<p>Nothing too fancy here. I display two columns from the query along with a checkbox in the left most column. Now for the JavaScript:</p>
+<code>
+$(document).ready(function() {
+<pre><code>$(&quot;#artTable input:checkbox&quot;).click(function() {
+	$(this).parent().parent().toggleClass(&quot;highlight&quot;)
+})
+</code></pre>
+<p>})
+</code></p>
+<p>Basically - listen to click events in checkboxes within my art table, and on click, toggle a CSS class named highlight. Not exactly rocket science, but it gets the job done! The entire template is below the screen shot. Enjoy!</p>
+<img src="https://static.raymondcamden.com/images/Screen shot 2009-11-18 at 1.00.34 PM.png" />
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>$(&quot;#artTable input:checkbox&quot;).click(function() {
+	$(this).parent().parent().toggleClass(&quot;highlight&quot;)
+})
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;style&gt;
+.highlight {
+background-color:pink;
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfquery name=&quot;art&quot; datasource=&quot;cfartgallery&quot;&gt;
+select	*
+from	art
+&lt;/cfquery&gt;</p>
+<p>&lt;table id=&quot;artTable&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;td&gt; &lt;/td&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Price&lt;/th&gt;
+&lt;/tr&gt;
+&lt;cfoutput query=&quot;art&quot;&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;input type=&quot;checkbox&quot; name=&quot;select&quot; value=&quot;#artid#&quot;&gt;&lt;/td&gt;
+&lt;td&gt;#artname#&lt;/td&gt;
+&lt;td&gt;#dollarFormat(price)#&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/table&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

@@ -1,0 +1,63 @@
+<h1>Post</h1>
+
+<p>Yesterday at CFUNITED I presented some more (useless) code concerning mazes and ColdFusion. I've blogged on this a few times already, but I decided to play around with it a bit more. For the derby, I demonstrated code that generated mazes in a slightly different way than I've had before. I've shown outputting mazes with text. I've shown outputting mazes with graphics. But this version puts one more little spin on it - old school style:</p>
+<img src="https://static.raymondcamden.com/images/Picture 181.png" />
+<p>What you are seeing here is a text based description of a maze stored in the session scope. This is done by first figuring out what directions are allowed based on your current position in the maze:</p>
+<code>
+public function getExits(numeric x, numeric y) {
+	var exits = "";
+	//handle west possible
+	if(variables.mazedata.maze[arguments.y][arguments.x-1] == 0) exits = listAppend(exits, "west"); 
+	//handle east possible
+	if(variables.mazedata.maze[arguments.y][arguments.x+1] == 0) exits = listAppend(exits, "east"); 
+	//handle north possible
+	if(variables.mazedata.maze[arguments.y-1][arguments.x] == 0) exits = listAppend(exits, "north"); 
+	//handle south possible
+	if(variables.mazedata.maze[arguments.y+1][arguments.x] == 0) exits = listAppend(exits, "south"); 
+	return exits;
+}
+</code>
+<p>This then is used by a simple function to describe the current room. All rooms in the maze have the exact same look - it is only the exits that change:</p>
+<code>
+function describePosition(numeric x, numeric y) {
+	//better not be a wall or you are dead
+	var exits = getExits(arguments.x,arguments.y);
+	var s = "You are in a dark and dusty maze.&lt;br/&gt;&lt;br/&gt;";
+	var i = "";
+<pre><code>//Ok, I'm using pos with 0,0 in upper left				
+if(listLen(exits) is 1) {
+	s &amp;= &quot;There is one exit to the #exits#.&quot;;
+} else {
+	s &amp;= &quot;There are exits to the &quot;;
+	for(i=1; i &amp;lt;= listLen(exits); i++) {
+		s &amp;= listGetAt(exits, i);
+		if(i &amp;lt; listLen(exits)-1) s&amp;= &quot;, &quot;;
+		else if (i == listLen(exits)-1) s&amp;= &quot; and &quot;;
+		//else if (listLen(exists) is 2 and i is 1) s
+	}
+}		
+		
+return s;
+</code></pre>
+<p>}	
+</code></p>
+<p>Movement is done by simply checking your current position against valid exits. Also note that I allow for shorthand versions of movements (e for east, etc):</p>
+<code>
+public function move(string dir, numeric x, numeric y) {
+	var pos = {x=arguments.x,y=arguments.y};
+	if(dir == "e") dir="east";
+	if(dir == "w") dir="west";
+	if(dir == "s") dir="south";
+	if(dir == "n") dir="north";
+<pre><code>if(listFindNoCase(getExits(x,y), dir)) {
+	if(dir == &quot;east&quot;) pos.x++;
+	if(dir == &quot;south&quot;) pos.y++;
+	if(dir == &quot;west&quot;) pos.x--;
+	if(dir == &quot;north&quot;) pos.y--;
+}
+return pos;
+</code></pre>
+<p>}
+</code></p>
+<p>Totally useless - and totally fun - and yes - I have inklings for other maze demos to try as well. I've attached the code (including the Grue version) but note that it is ColdFusion 9 only.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Farchive%2D2%2Ezip'>Download attached file.</a></p></p>
+}

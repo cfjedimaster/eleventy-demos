@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>My friend James pointed me to a cool snippet on <a href="http://www.dzone.com">DZone</a>:</p>
+<p><a href="http://snippets.dzone.com/posts/show/3156">Email a JavaScript Error using ColdFusion</a></p>
+<p>This snippet uses an AJAX request along with a server side script to email an admin the contents of any JavaScript error.</p>
+}

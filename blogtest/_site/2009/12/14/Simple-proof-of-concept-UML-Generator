@@ -1,0 +1,56 @@
+<h1>Post</h1>
+
+<p>I was talking with <a href="http://www.briankotek.com/blog/">Brian Kotek</a> recently about a particular design issue when he suggested I make use of <a href="http://yuml.me">yUML</a>. This is an online service that allows you to dynamically generate UML documents. UML is <i>not</i> something that I'm really into. I can see the benefits of it, but I just haven't felt the need yet to make it part of my development process. That being said, I thought it was pretty cool how yUML allowed you to generate a UML picture straight from a URL. If you look at their <a href="http://yuml.me/diagram/scruffy/class/samples">samples</a> page, you can see how they go from a simple URL &quot;api&quot; to a generate graphic.</p>
+<p>Based on that, I decided to see if I could whip up some code to examine a CFC and generate the URL. While this isn't completely useful (it only works with one CFC and doesn't handle relationships), it was fun and I thought someone may be able to play with it more. Here is the script I came up with:</p>
+<!--more-->
+<code>
+<p>&lt;cfset meta = getComponentMetadata(&quot;test&quot;)&gt;
+&lt;cfdump var=&quot;#meta#&quot; expand=&quot;false&quot;&gt;</p>
+<p>&lt;cfset modifiers = {public=&quot;+&quot;,protected=&quot;##&quot;,private=&quot;-&quot;,package=&quot;~&quot;,remote=&quot;+&quot;}&gt;</p>
+<p>&lt;cfset rooturl = &quot;http://yuml.me/diagram/scrufy/class/&quot;&gt;</p>
+<p>&lt;!--- Name ---&gt;
+&lt;cfset rooturl &amp;= &quot;[&quot; &amp; urlEncodedFormat(meta.name) &amp; &quot;|&quot;&gt;</p>
+<p>&lt;!--- Properties ---&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(meta.properties)#&quot;&gt;
+&lt;cfset p = meta.properties[x]&gt;
+&lt;!--- all properties are public ---&gt;
+&lt;cfset rooturl &amp;= &quot;#urlEncodedFormat(modifiers.public)##p.name#;&quot;&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;!--- Methods---&gt;
+&lt;cfif arrayLen(meta.functions)&gt;
+&lt;cfset rooturl &amp;= &quot;|&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(meta.functions)#&quot;&gt;
+&lt;cfset f = meta.functions[x]&gt;
+&lt;cfif not structKeyExists(f, &quot;access&quot;)&gt;
+&lt;cfset f.access = &quot;public&quot;&gt;
+&lt;/cfif&gt;
+&lt;cfset rooturl &amp;= &quot;#urlEncodedFormat(modifiers[f.access])##f.name#();&quot;&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfset rooturl &amp;= &quot;]&quot;&gt;</p>
+<p>&lt;cfoutput&gt;
+#rooturl#&lt;br/&gt;
+&lt;img src=&quot;#rooturl#&quot;&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>Going from top to bottom, you can see I get the metadata for a CFC called test. If this code were converted into a UDF you would want to simply make that portion dynamic. I create a structure that maps ColdFusion's access modifiers into the symbols that yUML will use to generate the UML graphic. Since remote doesn't make sense in this context, I mapped it to public.</p>
+<p>After that, it's simply then a matter of looping over the metadata. I start off with the properties and then handle the methods. Given this input:</p>
+<code>
+&lt;cfcomponent persistent="true"&gt;
+<p>&lt;cfproperty name=&quot;foo&quot; ormtype=&quot;string&quot;&gt;
+&lt;cfproperty name=&quot;goo&quot; ormtype=&quot;string&quot;&gt;
+&lt;cfproperty name=&quot;aaa&quot; ormtype=&quot;string&quot;&gt;</p>
+<p>&lt;cffunction name=&quot;privatetest&quot; access=&quot;private&quot;&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;publictest&quot; access=&quot;public&quot;&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;packagetest&quot; access=&quot;package&quot;&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;remotetest&quot; access=&quot;remote&quot;&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>The output is:</p>
+<img src="http://yuml.me/diagram/scrufy/class/[test|%2Bfoo;%2Bgoo;%2Baaa;|%2Dprivatetest();%7Epackagetest();%2BSETGOO();%2BSETAAA();%2Bremotetest();%2BGETAAA();%2Bpublictest();%2BGETGOO();%2BGETFOO();%2BSETFOO();]">
+<p>It would probably be nice to sort the values (one thing I wish cfdump would do for CFCs). Handling relationships should - in theory - be possible. You just want to ensure you don't get into an infinite recursion loop with bidirectional relationships.</p>
+}

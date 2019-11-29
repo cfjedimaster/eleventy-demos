@@ -1,0 +1,41 @@
+<h1>Post</h1>
+
+<p>I had some time to kill today and I decide to mix cfchart up with some jQuery love. You can see the demo of this <a href="http://www.raymondcamden.com/demos/jquerychart/">here</a>. When the chart loads, click on the bars, and you will see a detail load beneath the graph.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 326.png">
+<p>The code behind this is fairly trivial. I've got a file I include to generate my chart data. Normally this would be a proper database query. The main template's code consists of:</p>
+<code>
+&lt;cfinclude template="data.cfm"&gt;
+<p>&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+function loadData(l) {
+$(&quot;#detail&quot;).load('detail.cfm?name='+escape(l)).hide().fadeIn('slow')
+}
+&lt;/script&gt;</p>
+<p>&lt;cfchart chartWidth=&quot;500&quot; chartHeight=&quot;250&quot; format=&quot;flash&quot; url=&quot;javascript:loadData('$ITEMLABEL$')&quot;&gt;
+&lt;cfchartseries type=&quot;bar&quot; query=&quot;data&quot; itemcolumn=&quot;name&quot; valuecolumn=&quot;sales&quot; /&gt;
+&lt;/cfchart&gt;</p>
+<p>&lt;div id=&quot;detail&quot; style=&quot;width:500&quot;&gt;&lt;/div&gt;
+</code></p>
+<p>The cfchart makes use of the url attribute to specify what should happen when you click. In this case, I'm simply calling a function, loadData(). This then uses jQuery to make a remote call to detail.cfm. Note that I pass the name. Normally you would pass a primary key, but we don't have (easy) access to that (see <a href="http://www.coldfusionjedi.com/index.cfm/2009/4/24/Handling-additional-non-charted-values-in-CFCHART">this entry</a> for more info) value so we have to work with the name instead. That's it. All detail.cfm does is look up the detail information:</p>
+<code>
+&lt;cfinclude template="data.cfm"&gt;
+<p>&lt;cfparam name=&quot;url.name&quot; default=&quot;&quot;&gt;</p>
+<p>&lt;!--- get detail based on label ---&gt;
+&lt;cfquery name=&quot;detail&quot; dbtype=&quot;query&quot;&gt;
+select	*
+from	data
+where	name = &lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#url.name#&quot;&gt;
+&lt;/cfquery&gt;</p>
+<p>&lt;cfif detail.recordCount is 1&gt;</p>
+<pre><code>&amp;lt;cfoutput&amp;gt;
+&amp;lt;h2&amp;gt;#url.name#&amp;lt;/h2&amp;gt;
+&amp;lt;p&amp;gt;
+Founded: #detail.yearfounded#&amp;lt;br/&amp;gt;
+Sales: #dollarFormat(detail.sales)#&amp;lt;br/&amp;gt;
+#paragraphFormat(detail.bio)#
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>Not terribly useful I guess, but fun.</p>
+}

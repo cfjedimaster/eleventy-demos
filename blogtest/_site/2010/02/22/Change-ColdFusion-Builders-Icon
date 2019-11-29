@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>So while I love ColdFusion Builder, I'm not a big fan of the logo. To me, it looks <i>way</i> too close to the ColdFusion Server logo, and while I can live with it, Eclipse makes it pretty darn easy to change. All you have to do is fine the CFBuilder.ini file. On the Mac, you would right click on CFBuilder.app and do &quot;Show Package Contents&quot;. On the PC, you would sell your laptop and buy a Mac. Once you've got the file, just find this line:</p>
+<code>
+-Xdock:icon=../Resources/cf.icns
+</code>
+<p>and change it to whatever you want. So for example, I changed mine to:</p>
+<code>
+-Xdock:icon=/Users/ray/Pictures/studio.icns
+</code>
+<p>And now I can run it in &quot;Old School&quot; mode:</p>
+<img src="https://static.raymondcamden.com/images/mydock.png" title="Studio Forever, Baby" />
+<p>You can download the ICNS file I used below. I also tried CFDude:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2010-02-22 at 9.51.56 AM.png" title="I'm too sexy for this dock." />
+<p>But the icon was a bit too small. Note - when you start CFBuilder, you will see the original icon for a second or two. After it goes done loading though the new icon will be used.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fstudio%2Ezip'>Download attached file.</a></p></p>
+}

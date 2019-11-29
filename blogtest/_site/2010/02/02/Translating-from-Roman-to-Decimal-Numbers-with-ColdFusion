@@ -1,0 +1,82 @@
+<h1>Post</h1>
+
+<p>A few days ago I saw on Twitter a request for code that would convert roman numerals to decimal. <a href="http://www.cflib.org">CFLib</a> has a UDF for going from decimal to Roman, but not the other way. I did a bit of searching and while I found a bunch of code libraries, I didn't find one that explained the <i>logic</i> behind the translation. Finally I came across this page: <a href="http://www.mathematische-basteleien.de/romannumerals.htm">Roman Numerals</a>, which I thought explained the issue very nicely. The basic process to convert from Roman to decimal is:</p>
+<p>
+<ol>
+<li>
+<p>Read the numbers from left to right.<br/></p>
+</li>
+<li>
+<p>Each number is added to the next... <br/></p>
+</li>
+<li>
+<p>Except when the next number is larger than the current number. Then you take the pair and do a subtraction.<br/></p>
+</li>
+</ol>
+<p>
+<p>So with this logic in mind, I came up with the following UDF. It assumes valid Roman numerals for input. But it seems to work ok.</p>
+<p>
+<code>
+function romantodec(input) {
+	var romans = {};
+	var result = 0;
+	var pos = 1;
+	var char = "";
+	var thisSum = "";
+	var nextchar = "";
+<pre><code>romans[&quot;I&quot;] = 1;
+romans[&quot;V&quot;] = 5;
+romans[&quot;X&quot;] = 10;
+romans[&quot;L&quot;] = 50;
+romans[&quot;C&quot;] = 100;
+romans[&quot;D&quot;] = 500;
+romans[&quot;M&quot;] = 1000;
+
+while(pos lte len(input)) {
+	char = mid(input, pos, 1);
+	//are we NOT at the end?
+	if(pos != len(input)) {
+		//check my next character - if bigger, replace with a sub
+		nextchar = mid(input, pos+1, 1);
+		if(romans[char] &amp;lt; romans[nextchar]) {
+			thisSum = romans[nextchar] - romans[char];
+			result += thisSum;
+			pos+=2;
+		} else {
+			result += romans[char];
+			pos++;
+		} 
+	} else {
+		result += romans[char];
+		pos++;
+	}
+}
+
+return result;
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>You can see how it follows the basic, 'left to right, add the numbers together' process, and how it notices when the current character has a higher number to the right of it. I wrote up a quick test script for it like so:</p>
+<p>
+<code>
+&lt;cfset inputs = "XX,XI,IV,VIII,MC,DL,XL"&gt;
+&lt;cfloop index="input" list="#inputs#"&gt;
+	&lt;cfoutput&gt;
+	#input#=#romantodec(input)#&lt;br/&gt;
+	&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+</code>
+<p>
+<p>Which produced:</p>
+<p>
+<p>XX=20<br/>
+XI=11<br/>
+IV=4<br/>
+VIII=8<br/>
+MC=1100<br/>
+DL=550<br/>
+XL=40<br/></p>
+<p>You can download this UDF at CFLib now: <a href="http://www.cflib.org/udf/romanToDecimal">romanToDecimal</a></p>
+<p>p.s. Sorry for those still waiting for UDF approval at CFLib. It is a volunteer process (myself, Scott Pinkston, Todd Sharp) so be patient!</p>
+}

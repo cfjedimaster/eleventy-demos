@@ -1,0 +1,114 @@
+<h1>Post</h1>
+
+<p>My readers are probably sick and tired of me gushing over data attributes, and for that, I apologize. I'm just a huge fan of <i>practical</i>, useful solutions, and no, I'm not going to use this as opportunity to complain about how silly Canvas is again. Rather, I thought I'd whip up another simple example of how you can make use of data attributes in your shiny Ajax-enabled web sites.</p>
+<!--more-->
+<p>
+<p>If you don't remember what data attributes are, here's a quick reminder. Data attributes are a way to add ad hoc data to your DOM. By prefixing an attribute with data- in front of your name/value pair, your have HTML that is still valid no matter what name you use. So for example:</p>
+<p>
+<code>
+&lt;img src="something" data-nsfw="true"&gt;
+</code>
+<p>
+<p>There is no data-nsfw attribute for the image tag, but because I began the attribute with data-, it's valid. Another example:</p>
+<p>
+<code>
+&lt;img src="something" data-nsfw="true" data-hires="someurl"&gt;
+</code>
+<p>
+<p>In both examples, the browser blissfully ignores the custom attributes, but you can write your own code to do whatever you want with it. This comes in handy in numerous situations, but here's one simple example. Imagine I'm selecting data from a table that includes price information. To make it pretty, I'll wrap the output of the price in a function to render it as a currency. Here's an example in ColdFusion:</p>
+<p>
+<code>
+Price: #dollarFormat(price)#&lt;br/&gt;
+</code>
+<p>
+<p>For the hell of it, here's the PHP version of it:</p>
+<p>
+<code>
+echo money_format('%i', $price) . "\n";
+</code>
+<p>
+<p>This outputs something like : $12,3900.11. What if you wanted to work with this price in JavaScript but treat it as a number? You would need to strip out the currency, possibly even the commas first. Instead of worrying about that, what if we used data attributes to store the &quot;naked&quot; price as a simple number? This will be hidden from the end user (technically <b>not</b> hidden - it will be available in view source) but will be available for our code. Here's an example. The code below loops over a query of art work. (I'll show the entire template in a bit.)</p>
+<p>
+<code>
+&lt;cfoutput query="getArt"&gt;
+	&lt;div class="artPiece" data-id="#artid#" data-price="#price#"&gt;
+<pre><code>	&amp;lt;h2&amp;gt;#artname#&amp;lt;/h2&amp;gt;
+	Price: #dollarFormat(price)#&amp;lt;br/&amp;gt;
+	Media: #mediatype#&amp;lt;br/&amp;gt;
+	Artist: #firstname# #lastname#&amp;lt;br/&amp;gt;
+	#description#&amp;lt;br/&amp;gt;
+	&amp;lt;img src=&quot;/cfdocs/images/artgallery/#largeimage#&quot;&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>As you can see, I've included two data attributes in my div tag. One of the primary key of the record and one for the price. To be clear, I could have used other methods. I could have used a hidden form field for example. But this is <i>much</i> cleaner. Grabbing the values is a matter of simple JavaScript, but jQuery makes it even easier. Here's the complete template:</p>
+<p>
+<code>
+<p>&lt;!--- get art work ---&gt;
+&lt;cfquery name=&quot;getArt&quot; datasource=&quot;cfartgallery&quot;&gt;
+select	art.artid, art.artname, art.description, art.price, art.largeimage,
+artists.firstname, artists.lastname,
+media.mediatype
+from art
+join artists on art.artistid = artists.artistid
+join media on art.mediaid = media.mediaid
+&lt;/cfquery&gt;</p>
+<p>&lt;html&gt;</p>
+<pre><code>&amp;lt;head&amp;gt;
+	&amp;lt;title&amp;gt;Data Example&amp;lt;/title&amp;gt;
+	&amp;lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css&quot; /&amp;gt;
+	&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+
+	&amp;lt;style&amp;gt;
+	.artPiece {
+		margin: 12px;	
+		border-style:solid;            
+       	border-width:thin;
+		width: 230px;   
+		padding: 5px;
+		float: left;
+	}
+	
+	&amp;lt;/style&amp;gt;
+	&amp;lt;script type=&quot;text/javascript&quot;&amp;gt;
+	$(function() {
+		$(&quot;.artPiece&quot;).click(function() {
+			var selectedId = $(this).data(&quot;id&quot;);
+			var selectedPrice = $(this).data(&quot;price&quot;);
+			console.log(selectedId+&quot; &quot;+selectedPrice);
+		});			
+	});	
+	&amp;lt;/script&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+	
+	&amp;lt;div class=&quot;container&quot;&amp;gt;
+		
+	&amp;lt;h1&amp;gt;Art Work&amp;lt;/h1&amp;gt;
+	
+	&amp;lt;cfoutput query=&quot;getArt&quot;&amp;gt;
+		&amp;lt;div class=&quot;artPiece&quot; data-id=&quot;#artid#&quot; data-price=&quot;#price#&quot;&amp;gt;
+			
+			&amp;lt;h2&amp;gt;#artname#&amp;lt;/h2&amp;gt;
+			Price: #dollarFormat(price)#&amp;lt;br/&amp;gt;
+			Media: #mediatype#&amp;lt;br/&amp;gt;
+			Artist: #firstname# #lastname#&amp;lt;br/&amp;gt;
+			#description#&amp;lt;br/&amp;gt;
+			&amp;lt;img src=&quot;/cfdocs/images/artgallery/#largeimage#&quot;&amp;gt;
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	
+	&amp;lt;/div&amp;gt;
+	
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>You can ignore the SQL and most of the formatting. Focus on the fact that I've got a click handler on my div. Grabbing my two values is as simple as using jQuery's data method. You can demo this below.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/2011/nov/3/test3.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

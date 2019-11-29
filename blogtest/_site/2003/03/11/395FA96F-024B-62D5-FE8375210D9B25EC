@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>As you may (or may not know), CFMX introduced a new security system called roles-based security. If you haven't checked out the feature, I encourage you to take a quick look at it. Unfortunately, being a 1.0 feature, has a few 'issues' with it. Here is one I found today:</p>
+<p>The &lt;cfloginuser&gt; tag marks a user as being logged in. From that moment onward, getAuthUser() should return the username of the user. However, it will NOT return anything until after the closing &lt;cflogin&gt; tag. So, when you first log the user in, you can't call getAuthUser().</p>
+<p>Here is a sample script:</p>
+<p>&lt;cflogout&gt;</p>
+<p>&lt;cflogin&gt;</p>
+<pre><code>&amp;lt;cfloginuser name=&quot;foo&quot; password=&quot;foo&quot; roles=&quot;&quot;&amp;gt;
+&amp;lt;cfoutput&amp;gt;Test1=#getAuthUser()#&amp;lt;p&amp;gt;&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cflogin&gt;</p>
+<p>&lt;cfoutput&gt;Test2=#getAuthUser()#&lt;/cfoutput&gt;</p>
+<p>When you run this test, only the line beginning with Test2 will work correctly.</p>
+}

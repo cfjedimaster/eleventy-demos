@@ -1,0 +1,213 @@
+<h1>Post</h1>
+
+<p>Last night I decided to whip together a simple example of how to add Solr search indexing to an application. Luckily, for the most part, this is the exact same process we've been using for years now with Verity. I know many people avoided Verity due to the document size limits so with that in mind, I thought a simple ColdFusion 9 example would help introduce the feature. To start off with, let me show you a simple application that has no search capability at all. This will be the first draft application that I'll modify to add Solr support.</p>
+<!--more-->
+<p>My application is a Press Release viewer. The public page consists of a list of press releases. You click on a press release to view the details. The admin folder (and for this proof of concept it won't have any security) allows for basic CRUD operations. I won't show most of the code as it's rather boring, but I'll demonstrate my Application.cfc and the model layer. First, the Application.cfc file:</p>
+<code>
+component {
+<pre><code>this.name = &quot;pressreleases&quot;;
+this.ormenabled = true;
+this.datasource=this.name;
+this.ormsettings = {
+	dialect=&quot;MySQL&quot;,
+	dbcreate=&quot;update&quot;,
+	eventhandling=&quot;true&quot;
+};
+this.mappings[&quot;/model&quot;] = getDirectoryFromPath(getCurrentTemplatePath()) &amp; &quot;model&quot;;
+
+public boolean function onApplicationStart() {
+	application.prService = new model.prService();
+	return true;
+}
+		
+public boolean function onRequestStart(string page) {
+	if(structKeyExists(url, &quot;init&quot;)) { ormReload(); applicationStop(); location('index.cfm?reloaded=true'); }
+	return true;
+}
+</code></pre>
+<p>}
+</code></p>
+<p>Nothing too fancy here - I've enabled ORM, allowed for easy restarts, and created a grand total of one CFC in the application scope, the prService. The prService is simply a component to abstract access to my press release model. The press release entity is just:</p>
+<code>
+component persistent="true" {
+<pre><code>property name=&quot;id&quot; generator=&quot;native&quot; sqltype=&quot;integer&quot; fieldtype=&quot;id&quot;;
+property name=&quot;title&quot; ormtype=&quot;string&quot;;
+property name=&quot;author&quot; ormtype=&quot;string&quot;;
+property name=&quot;body&quot; ormtype=&quot;text&quot;;
+property name=&quot;published&quot; ormtype=&quot;date&quot;;
+</code></pre>
+<p>}
+</code></p>
+<p>And the service provides an abstraction layer to it:</p>
+<code>
+component {
+<pre><code>pubic function deletePressRelease(id) {
+	entityDelete(getPressRelease(id));
+	ormFlush();
+}
+
+public function getPressRelease(id) {
+	if(id == &quot;&quot;) return new pressrelease();
+	else return entityLoad(&quot;pressrelease&quot;, id, true);
+}
+
+public function getPressReleases() {
+	return entityLoad(&quot;pressrelease&quot;);
+}
+
+public function getReleasedPressReleases() {
+	return ormExecuteQuery(&quot;from pressrelease where published &amp;lt; ? order by published desc&quot;, [now()]);
+}
+
+public function savePressRelease(id,string title,string author,date published,string body) {
+	var pr = getPressRelease(id);
+	pr.setTitle(title);
+	pr.setAuthor(author);
+	pr.setPublished(published);
+	pr.setBody(body);
+	entitySave(pr);
+}
+</code></pre>
+<p>}
+</code></p>
+<p>I assume most of this makes sense. Note that I have bot ha getPressReleases function as well as a getReleasedPressReeleases function. The later handles the public view and only gets press releases where the published date is in the past. Notice that savePressRelease is kind of nice - it just plain works whether you have a new press release or an existing one. Also make note of delete. In order to handle calling a delete operation followed by a list, I force a flush on the ORM stuff. If I didn't, the deleted item would show in the list during the same request.</p>
+<p>You can download all of this code at the bottom, and again, I don't want to waste too much time on basic list/edit forms. What I want to talk about instead is the process of enabling Solr searching support for this application.</p>
+<p>When you work with Solr (and Verity as well), you work with an index of your data. This index, much like an index in a book, represents all the data that you want to be searchable. However, and this is the critical point, it is <b>your responsibility</b> to keep the index up to date. That means every time you add, edit, or delete content, you have to update the index. The maintenance aspect then is typically the most complex part of the process. Searching really just comes down to one tag.</p>
+<p>I normally create a &quot;Ground Zero&quot; type script that handles creating my collection and index from scratch. (Think of the collection just as the folder or name of the index.) This is useful to run during testing or if you encounter a bug where your index gets out of data. I created the following script for that purpose:</p>
+<code>
+&lt;cfcollection action="list" name="collections" engine="solr"&gt;
+<p>&lt;!--- collection check ---&gt;
+&lt;cfif not listFindNoCase(valueList(collections.name), application.collection)&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+Need to create collection #application.collection#.
+&lt;/p&gt;
+&lt;/cfoutput&gt;</p>
+<pre><code>&amp;lt;cfcollection action=&quot;create&quot; collection=&quot;#application.collection#&quot; engine=&quot;solr&quot; path=&quot;#application.collection#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;!--- nuke old data ---&gt;
+&lt;cfindex collection=&quot;#application.collection#&quot; action=&quot;purge&quot;&gt;</p>
+<p>&lt;!--- get data ---&gt;
+&lt;cfset prs = application.prService.getPressReleases()&gt;
+&lt;cfoutput&gt;&lt;p&gt;Total of #arraylen(prs)# press releases.&lt;/p&gt;&lt;/cfoutput&gt;</p>
+<p>&lt;!--- convert to a query ---&gt;
+&lt;cfset data = entityToQuery(prs)&gt;</p>
+<p>&lt;!--- add to collection ---&gt;
+&lt;cfindex collection=&quot;#application.collection#&quot; action=&quot;update&quot; body=&quot;body,title&quot; custom1=&quot;author&quot; title=&quot;title&quot; key=&quot;id&quot; query=&quot;data&quot;&gt;</p>
+<p>&lt;p&gt;Done.&lt;/p&gt;
+</code></p>
+<p>I begin by getting a list of collections. The ColdFusion 9 docs say that if you leave the engine attribute off the cfcollection tag it will return everything. I did <b>not</b> see that. I file a bug on it. But for now, I've just added the engine attribute. This returns a query of collections. If I don't find my collection in there (I created an application variable to store the name) then I create one. In theory, this will only happen one time.</p>
+<p>Next I remove all data from the collection with the purge. Again, I'm thinking that this script would be useful both for a first time seeding of the index as well as a 'recovery' type action.</p>
+<p>Once we have an empty index, I get all of my press releases and convert it to a query with the entityToQuery function.</p>
+<p>Lastly, I simply pass that query to the cfindex tag. Now, here is an important part. When you pass data into the index, you get to the decide what gets stored in the body and what, if anything, gets stored in the 4 custom fields. I decided that the body and title made sense for the searchable information. I repeated title again for the title attribute. This will let me get the title in search results. For the custom field I used the author. Again, this was totally up to me and what made sense for my application.</p>
+<p>Alright, so at this point we can run the script to create our collection and populate the index. I then switched gears and worked on the front end. I create a new search template to handle that:</p>
+<code>
+&lt;cfparam name="url.search" default=""&gt;
+&lt;cfparam name="form.search" default="#url.search#"&gt;
+&lt;cfset form.search = trim(form.search)&gt;
+<p>&lt;form action=&quot;search.cfm&quot; method=&quot;post&quot;&gt;
+&lt;cfoutput&gt;&lt;input type=&quot;text&quot; name=&quot;search&quot; value=&quot;#form.search#&quot;&gt; &lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;&lt;/cfoutput&gt;
+&lt;/form&gt;</p>
+<p>&lt;cfif len(form.search)&gt;
+&lt;cfsearch collection=&quot;#application.collection#&quot; criteria=&quot;#form.search#&quot; name=&quot;results&quot; status=&quot;r&quot; suggestions=&quot;always&quot; contextPassages=&quot;2&quot;&gt;</p>
+<pre><code>&amp;lt;cfif results.recordCount&amp;gt;
+
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;p&amp;gt;There were #results.recordCount# result(s).&amp;lt;/p&amp;gt;
+	&amp;lt;cfloop query=&quot;results&quot;&amp;gt;
+	&amp;lt;p&amp;gt;
+	&amp;lt;a href=&quot;detail.cfm?id=#key#&quot;&amp;gt;#title#&amp;lt;/a&amp;gt;&amp;lt;br/&amp;gt;
+	#context#
+	&amp;lt;/p&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfelse&amp;gt;
+
+	&amp;lt;p&amp;gt;
+	Sorry, but there were no results.
+	&amp;lt;!--- trim is in relation to bug 79509 ---&amp;gt;
+	&amp;lt;cfif len(trim(r.suggestedQuery))&amp;gt;
+		&amp;lt;cfoutput&amp;gt;Try a search for &amp;lt;a href=&quot;search.cfm?search=#urlEncodedFormat(r.suggestedQuery)#&quot;&amp;gt;#r.suggestedQuery#&amp;lt;/a&amp;gt;.&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;/p&amp;gt;
+	
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>Going line by line, we begin with some simple parameterizing of a search variable, along with a basic form. If the user actually searched for something, we use cfsearch. As you can see, it works pretty simply. Pass in a criteria and a name for the results and you are done. The status attribute is not necessary but provides some cool functionality I'll describe in a bit.</p>
+<p>If we have any results, I simply loop over them like any other query. The context is created by Solr based on your matches. So if you searched for enlightenment (don't we all), then the context will show you where it was found in the data.</p>
+<p>The cool part is the else block. Solr (and Verity before it) provided a nice feature for searches called suggestions. Let's say a user wanted to search for Dharma but accidentally entered Dhrma. In some cases, the Solr engine can recognize the typo and will actually return a suggested query: Dharma. Pretty cool, right? Please note that the trim in there is due to another bug I found. In cases where Solr could not find a suggestion, it returned a single space character. I'm sure this will be fixed for the final release. If we do get a suggested query then we simply provide a link to allow the user to try that instead.</p>
+<p>So far so good. Now let's talk about keeping the index up to date. If you remember, I had built a simple service component, prService, to handle all CRUD operations for my data. Because I did that, it was rather simple to handle the changes necessary for my index. First, my Application.cfc onApplicationStart was modified to support passing in the collection name:</p>
+<code>
+public boolean function onApplicationStart() {
+	application.collection = "pressreleases";
+	application.prService = new model.prService(application.collection);
+	return true;
+}
+</code>
+<p>And then prService was modified to support it. Unfortunately, there are no script based alternatives for Solr/Verity support. To be honest, it would probably be trivial to create such a component. (In case you didn't know, the ColdFusion 9 script based support for mail, and other things, was done this way.) I ended up simply rewriting my component into tags:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<pre><code>&amp;lt;cffunction name=&quot;init&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;collection&quot;&amp;gt;
+	&amp;lt;cfset variables.collection = arguments.collection&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;deletePressRelease&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;id&quot;&amp;gt;
+
+
+	&amp;lt;cfset entityDelete(getPressRelease(id))&amp;gt;
+	&amp;lt;cfset ormFlush()&amp;gt;
+
+	&amp;lt;!--- update collection ---&amp;gt;
+	&amp;lt;cfindex collection=&quot;#variables.collection#&quot; action=&quot;delete&quot; key=&quot;#id#&quot; type=&quot;custom&quot;&amp;gt;
+
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;getPressRelease&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;id&quot;&amp;gt;
+	
+	&amp;lt;cfif id is &quot;&quot;&amp;gt;
+		&amp;lt;cfreturn new pressrelease()&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfreturn entityLoad(&quot;pressrelease&quot;, id, true)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;getPressReleases&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfreturn entityLoad(&quot;pressrelease&quot;)&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;getReleasedPressReleases&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfreturn ormExecuteQuery(&quot;from pressrelease where published &amp;lt; ? order by published desc&quot;, [now()])&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;savePressRelease&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;id&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;title&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;author&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;published&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;body&quot;&amp;gt;
+	
+	&amp;lt;cfset var pr = getPressRelease(id)&amp;gt;
+	&amp;lt;cfset pr.setTitle(title)&amp;gt;
+	&amp;lt;cfset pr.setAuthor(author)&amp;gt;
+	&amp;lt;cfset pr.setPublished(published)&amp;gt;
+	&amp;lt;cfset pr.setBody(body)&amp;gt;
+	&amp;lt;cfset entitySave(pr)&amp;gt;
+	
+	&amp;lt;!--- update collection ---&amp;gt;
+	&amp;lt;cfindex collection=&quot;#variables.collection#&quot; action=&quot;update&quot; key=&quot;#pr.getId()#&quot; body=&quot;#pr.getBody()#,#pr.getTitle()#&quot; title=&quot;#pr.getTitle()#&quot; custom1=&quot;#pr.getAuthor()#&quot; type=&quot;custom&quot;&amp;gt;
+	
+&amp;lt;/cffunction&amp;gt;
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>If we ignore the tags, the only changes are the cfindex tags in deletePressRelease and savePressRelease. In both cases it isn't too difficult. The key attribute refers to the primary key in the index. We used the database ID record so it's what we use when updating/deleting. The update action works for both additions and updates, so that is pretty simple as well.</p>
+<p>Unfortunately, I ran into an issue with deletes. Delete operations are 100% broken in the current release of ColdFusion 9, at least on the Mac (and I bet it works ok in Verity). Keep this in mind as you play with the demo code. I've been told this is fixed already.</p>
+<p>So what do folks think? Will you use this when you upgrade to ColdFusion 9? Also, have you notice the slight logic bug with search? I won't say what it was - but I'll tackle it in the next post.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Formsolr%2Ezip'>Download attached file.</a></p></p>
+}

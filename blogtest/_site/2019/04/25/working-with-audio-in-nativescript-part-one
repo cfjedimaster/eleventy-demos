@@ -1,0 +1,107 @@
+<h1>Post</h1>
+
+<p>This post was originally meant to be more of a demo application, but I decided to &quot;pause&quot; while working on the app I had planned and share some things I've learned about working with audio in NativeScript. The end goal is a recreation of a demo I did a while ago with Ionic and Cordova - a <a href="https://www.raymondcamden.com/2015/07/30/cordovaionic-sample-app-my-sound-board">custom sound board</a>.</p>
+<p>This application was rather simple. You recorded a sound, gave it a name, and could play it back later. If you don't want to read the article about it, here's how it turned out:</p>
+<img src="https://static.raymondcamden.com/images/wp-content/uploads/2015/07/shot44.png" alt="" class="imgborder imgcenter">
+<p>In general it was easy, once I struggled to get <a href="https://www.raymondcamden.com/2015/07/27/recording-and-saving-audio-in-cordova-applications">persistent recordings</a> saved to the device. File IO with Cordova was <em>never</em> really a pleasant experience and as long as I'm sharing old images, I might as well bring this one back:</p>
+<img src="https://static.raymondcamden.com/images/wp-content/uploads/2015/07/onesimply.jpg" alt="" class="imgborder imgcenter">
+<p>Ok, so that's Cordova - how difficult was it to record, save, and play audio in NativeScript?</p>
+<p>I began by searching for &quot;audio&quot; on the <a href="https://market.nativescript.org/">marketplace</a> and came across <a href="https://github.com/bradmartin/nativescript-audio">nativescript-audio</a>. It supports recording and playing audio so in theory it has everything I need. Unfortunately the docs were a bit slim on the recording side so I had to guess a bit. The plugin does have a sample app written in Angular and I swear, I can barely grok Angular now. (Mainly it's trying to find out which file actually has the logic. That's not a fault of Angular just an issue with me now being incredibly rusty with it!)</p>
+<p>Looking at this plugin also forced me to be exposed to file system access in NativeScript. You could say I approached this with a bit of trepidation. NativeScript has a built-in <a href="https://docs.nativescript.org/ns-framework-modules/file-system">File System</a> module. Right away I saw this and was happy: &quot;All file system operations have synchronous and asynchronous forms.&quot; One of the hardest issues with the FileSystem API in Cordova was managing all the multiple deep async calls. I'm not saying async is bad of course or poorly engineering, I'm just saying I hated to work with it. I also saw a lot of things built in that (I don't believe) existed in the Cordova plugin, like being able to clear the contents of a folder and path normalization.</p>
+<p>Also, like Cordova, they make it easy to get to folders you would use more often. So for example, let's say I want to use a folder in my app to store recordings, here's basic pseudo-code to handle this:</p>
+<pre><code class="language-js">const fileSystemModule = require('tns-core-modules/file-system');
+const audioFolder = fileSystemModule.knownFolders.currentApp().getFolder('recordings');
+</code></pre>
+<p>So <code>knownFolders</code> is your shortcut to important folder aliases, <code>currentApp()</code> is the app, and <code>getFolder</code> will return a Folder object that will also handle creating if it doesn't exist. I love how simple that was!</p>
+<p>When actually writing, the folder object has a <code>.path</code> property, so I could construct a filename like so: <code>audioFolder.path+'/recording.mp4'</code>.</p>
+<p>All I can say is that after being burned so many times trying to work with the file system in Cordova, this actually made me start thinking about other ways I could use it (as opposed to avoiding it).</p>
+<p>So with that knowledge in place, the first version of my demo simply has two buttons. One to record, and one to play. I always record to the same file name (an issue I'll fix in the next blog post) and always plays the same file. Here's the complete code.</p>
+<pre><code class="language-html">&lt;template&gt;
+    &lt;Page class=&quot;page&quot;&gt;
+        &lt;ActionBar class=&quot;action-bar&quot;&gt;
+            &lt;Label class=&quot;action-bar-title&quot; text=&quot;Home&quot;&gt;&lt;/Label&gt;
+        &lt;/ActionBar&gt;
+
+        &lt;StackLayout&gt;
+            &lt;Button text=&quot;Record&quot; @tap=&quot;doRecord&quot; /&gt;
+            &lt;Button text=&quot;Test Play&quot; @tap=&quot;doPlay&quot; /&gt;
+        &lt;/StackLayout&gt;
+    &lt;/Page&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+const audio = require('nativescript-audio');
+const fileSystemModule = require('tns-core-modules/file-system');
+const audioFolder = fileSystemModule.knownFolders.currentApp().getFolder('recordings');
+const platform = require('tns-core-modules/platform');
+
+export default {
+    methods:{
+        async doRecord() {
+            console.log('doRecord Called 1e');
+            let recorder = new audio.TNSRecorder();
+
+            /*
+            from the sample app
+            */
+            let androidFormat;
+            let androidEncoder;
+            if (platform.isAndroid) {
+                // static constants are not available, using raw values here
+                // androidFormat = android.media.MediaRecorder.OutputFormat.MPEG_4;
+                androidFormat = 2;
+                // androidEncoder = android.media.MediaRecorder.AudioEncoder.AAC;
+                androidEncoder = 3;
+            }
+
+            let options = {
+                filename:audioFolder.path+'/recording.mp4',
+                format:androidFormat,
+                encoder:androidEncoder,
+                infoCallback:info =&gt; {
+                    //apparently I'm necessary even if blank
+                },
+                errorCallback:e =&gt; {
+                    console.log('error cb',e);
+                }
+            };
+
+            await recorder.start(options);
+            console.log('in theory recording');
+            setTimeout(() =&gt; {
+                console.log('calling stop');
+                recorder.stop()
+                .then(() =&gt; {
+                    console.log('really done');
+                })
+                .catch(e =&gt; {
+                    console.log('error stopping', e);
+                });
+            }, 3000);
+        },
+
+        doPlay() {
+
+            let player = new audio.TNSPlayer();
+            player.playFromFile({
+                audioFile:audioFolder.path+'/recording.mp4'
+            })
+            .then(() =&gt; {
+                console.log('in then');
+            })
+            .catch(e =&gt; {
+                console.log('in error', e);
+            });
+        }
+    }
+};
+&lt;/script&gt;
+
+&lt;style scoped lang=&quot;scss&quot;&gt;
+&lt;/style&gt;
+</code></pre>
+<p>Ok, let's talk about this top to bottom! The top portion handles the UI which in this case is just two buttons. Recording is handled in the <code>doRecord</code> method. For the most part I just copied and pasted from the official docs. I added an &quot;auto stop&quot; feature with a <code>setTimeout</code> so I wouldn't have to add in UI for it. My real app will support that of course. Also I want to apologize for all the <code>console.log</code> statements. Normally I clean those up before publication, but as I struggled a bit with this app I kept them as evidence of how I work. :)</p>
+<p><code>doPlay</code> handles actually playing the file. You can get information about the file, like duration, but for my purposes I just wanted to play and not worry about it. In my real app I'm going to need a way to stop the playback if another sound file is played (maybe - it could be fun to play multiple at once).</p>
+<p>And that's it. Oh and I kinda skipped this above but I did <em>add</em> the plugin as well to get this working. So as always, ask me any questions you have and in the next part I'll (hopefully!) have a fully working custom sound board in NativeScript!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/fvLNFnnLPIk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Jonas Zürcher</a> on Unsplash</i></p>
+}

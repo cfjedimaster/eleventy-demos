@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>Chas asked:</p>
+<blockquote>
+<p>
+Thanks for your great series on working with PDFs.  I have a question I hope you can help me with.  I want to create a PDF (simple enough using cfdocument) but then I would like to email it without having to write it disk using a filename.  I can create it and save to "name", but I can't seem to be able to use that in the cfmailparam.  Any way to generate a PDF and email it on the fly?
+</p>
+</blockquote>
+<p>Turns out this is rather simple, if you are using ColdFusion 8.0.1. CF801 added the ability to use cfmailparam to attach files stored in a variable. For example:</p>
+<code>
+&lt;cfdocument format="pdf" name="pdfdoc"&gt;
+&lt;h1&gt;Snazzy PDF&lt;/h1&gt;
+<p>Here is your cool PDF that is dynamic: &lt;cfoutput&gt;#randRange(1,100)#&lt;/cfoutput&gt;
+&lt;/cfdocument&gt;</p>
+<p>&lt;cfmail to=&quot;ray@camdenfamily.com&quot; from=&quot;foo@foo.com&quot; subject=&quot;Your PDF&quot;&gt;
+&lt;cfmailparam file=&quot;doc.pdf&quot; content=&quot;#pdfdoc#&quot;&gt;
+Attached please find your cool PDF. Enjoy!
+&lt;/cfmail&gt;</p>
+<p>Done.
+</code></p>
+<p>The first part of the template creates a simple dynamic PDF. Then I mail it to myself. Note that cfmailparam uses both file and content attributes. The content will be the actual data attached to the email while the file attribute will be used for the file name.</p>
+<p>In case you are wondering why this isn't in the docs, or why I didn't do this in my <a href="http://www.raymondcamden.com/index.cfm/2009/1/14/Ask-a-Jedi-Emailing-CFCHART">'emailing cfchart'</a> blog post, it is simply the fact that the main docs have not been updated for 8.0.1. You will be able to find this documented, along with everything else new, in the 8.0.1 release notes: <a href="http://www.adobe.com/support/documentation/en/coldfusion/releasenotes.html#801">http://www.adobe.com/support/documentation/en/coldfusion/releasenotes.html#801</a></p>
+}

@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Ok, so this is a weird one - and something Google has failed to help me with. Before yesterday my laptop Win7 machine showed every item in the notification area. I was attempting to modify what showed up but wasn't able to. The UI even talked about it a bit...</p>
+<img src="https://static.raymondcamden.com/images/screen32.png" />
+<p>I went ahead and tried editing in the Group Policy Editor:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/screen33.png" />
+<p>Unfortunately I did something wrong and now I have <i>no</i> notification area:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/screen34.png" />
+<p>I've tried everything I can think of but nothing restores it anymore. In my group policy editor under Start Menu and Taskbar, every single setting is &quot;Not Configured&quot; except for &quot;Hide the notification area&quot; which is Disabled. (Which should block the ability to disable it - not hide it.)</p>
+<p>Any ideas?</p>
+}

@@ -1,0 +1,37 @@
+<h1>Post</h1>
+
+<p>One of the announced features for ColdFusion 8 is support for dynamically passing attributes to ColdFusion tags. This will be a godsend for tags like CFMAIL. A reader asked me (and by the way, folks, don't ask me about Scorpio, in general I can't answer) if this support carried over to cfmodule and custom tags.</p>
+<!--more-->
+<p>This is actually something that has been supported in ColdFusion for quite some time. I don't have the exact version it was added to ColdFusion, but custom tags have had support for 'attributeCollection' for a while. Consider this simple custom tag:</p>
+<code>
+&lt;cfdump var="#attributes#" label="In the tag"&gt;
+</code>
+<p>If you first run it like so:</p>
+<code>
+&lt;cf_customtag name="ray" age="34"&gt;
+</code>
+<p>You will see a struct with 2 keys, name and age. However, you can get the same result like so:</p>
+<code>
+&lt;cfset s = structNew()&gt;
+&lt;cfset s.name = "ray"&gt;
+&lt;cfset s.age = 34&gt;
+&lt;cf_customtag attributeCollection="#s#"&gt;
+</code>
+<p>At the same time, ColdFusion UDFs support an argumentCollection value. Consider this example:</p>
+<code>
+&lt;cffunction name="mirrorargs"&gt;
+	&lt;cfreturn arguments&gt;
+&lt;/cffunction&gt;
+<p>&lt;cfset result = mirrorargs(name='ray',age=34)&gt;
+&lt;cfdump var=&quot;#result#&quot;&gt;
+</code></p>
+<p>This returns a structure much like the custom tag example. Now imagine we call it like so:</p>
+<code>
+&lt;cfset s = structNew()&gt;
+&lt;cfset s.name = "ray"&gt;
+&lt;cfset s.age = 34&gt;
+&lt;cfset result=mirrorargs(argumentCollection=s)&gt;
+&lt;cfdump var="#result#" label="Result using argumentcollection"&gt;
+</code>
+<p>This will return the same structure as well. (Although to be clear - the case of the structs keys is different, but you should not be relying on struct key case anyway.)</p>
+}

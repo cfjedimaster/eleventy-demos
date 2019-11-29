@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>A user on cf-talk today asked if it was possible to use ColdFusion 8's new HTML CFTREE as a navigation tool. Turns out it is rather simple, and like most things in ColdFusion, there are multiple solutions.</p>
+<p>First off - when you use the HREF attribute of CFTREEITEM, you are allowed to use JavaScript. One simple solution would be to just do:</p>
+<code>
+&lt;cftreeitem display="products" href="javaScript:doProducts('...')"&gt;
+</code>
+<p>You could use document.href.location to move the entire page, or use the new ColdFusion.navigate function to load a URL into a UI item like a CFDIV or CFWINDOW.</p>
+<p>While that works ok for static, hard coded trees, it isn't a good solution for dynamic trees, and, it can be done simpler if you just bindings. Consider this example:</p>
+<code>
+&lt;cfform name="form"&gt;
+<p>&lt;cftree format=&quot;html&quot; name=&quot;mytree&quot;&gt;
+&lt;cftreeitem display=&quot;Navigation&quot; value=&quot;root&quot;&gt;
+&lt;cftreeitem display=&quot;Page A&quot; parent=&quot;root&quot; value=&quot;a&quot;&gt;
+&lt;cftreeitem display=&quot;Page B&quot; parent=&quot;root&quot; value=&quot;b&quot;&gt;
+&lt;/cftree&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;cfdiv bind=&quot;url:content.cfm?value={mytree.node}&quot; /&gt;
+</code></p>
+<p>I've built a simple tree with one main node and two child nodes. I then added a CFDIV that is bound to the tree. When binding to a tree, you can get two values: node and path. Node returns just the value for the selected item. Path returns the path of the node itself. Thanks to <a href="http://cfsilence.com/blog/client/index.cfm">Todd Sharp</a> for finding these values in the docs.</p>
+<p>p.s. As a side question - who would like to see an API doc that covers stuff like this? I wasn't able to find it in the reference and it was hard to find in the developers guide. I'd like a guide that more clearly describes working with ColdFusion's new UI elements.</p>
+}

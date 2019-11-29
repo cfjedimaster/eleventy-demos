@@ -1,0 +1,444 @@
+<h1>Post</h1>
+
+<p>One of my goals for this year was to play more with Vue &quot;apps&quot; (ie, not simple page enhancement demos) and to dig more into <a href="https://vuex.vuejs.org/">Vuex</a>. I really like Vuex, but I'm struggling with the &quot;best&quot; way to use it, what makes sense with it and what doesn't, and generally just how to approach it. I figure one of the best ways to get more comfortable is to just build stuff and see what feels right. With that in mind, today I'm sharing a game I built called Lemonade Stand.</p>
+<img src="https://static.raymondcamden.com/images/2019/08/ls.png" alt="Lemonade Stand" class="imgborder imgcenter">
+<p>Lemonade Stand was a classic PC game from way, <em>way</em> back in the old days. I remember playing it on my Apple II at home and at school. I also remember editing the code so I'd have a lot of money, which wasn't really as fun as you'd imagine. (Although ask me about editing Bard's Tale saves, that was cool.)</p>
+<p>The game is a really simple economic simulator. You run a lemonade stand and every day you're given a weather report, a cost of materials, and you have to decide how many cups of lemonade you want to make as well as the cost. You can also buy advertising signs to help improve your sales.</p>
+<p>The entire project is hosted up on <a href="https://codesandbox.io">Code Sandbox</a> - <a href="https://codesandbox.io/s/lemonade-stand-oxbfq?fontsize=14&amp;view=preview">https://codesandbox.io/s/lemonade-stand-oxbfq?fontsize=14&amp;view=preview</a>. You can both play the game and edit the code (and if you do, let me know in a comment below). Let me break down how I built this.</p>
+<p>First, the application makes use of <a href="https://router.vuejs.org/">Vue Router</a> to handle the different states of the game. There's an initial page that provides a basic introduction.</p>
+<img src="https://static.raymondcamden.com/images/2019/08/ls2.png" alt="Introduction View" class="imgborder imgcenter">
+<p>The next view is the &quot;planner&quot; where you determine how many glasses you want to make, how many signs you want to buy, and what price you want to sell your goods.</p>
+<img src="https://static.raymondcamden.com/images/2019/08/ls3.png" alt="Screen where you set selling options." class="imgborder imgcenter">
+<p>When you figure out your options, you then go to the next screen and see the results.</p>
+<img src="https://static.raymondcamden.com/images/2019/08/ls4.png" alt="Sales results" class="imgborder imgcenter">
+<p>Now let's look at the code. I'm not going to show every single line but will rather focus on what I think is important. Don't forget you can use the link above to see the code and fork it.</p>
+<p>First, let's look at main.js, the top level setup for my game.</p>
+<pre><code class="language-js">import Vue from &quot;vue&quot;;
+import App from &quot;./App.vue&quot;;
+
+import router from &quot;./routes&quot;;
+import store from &quot;./store&quot;;
+
+Vue.config.productionTip = false;
+
+Vue.filter(&quot;money&quot;, value =&gt; {
+  if (!window.Intl) return value;
+  return new Intl.NumberFormat(&quot;en-US&quot;, {
+    style: &quot;currency&quot;,
+    currency: &quot;USD&quot;
+  }).format(value);
+});
+
+new Vue({
+  render: h =&gt; h(App),
+  router,
+  store
+}).$mount(&quot;#app&quot;);
+</code></pre>
+<p>The unique parts here are loading a router, loading a Vuex store, and setting up a global filter for displaying money values.</p>
+<p>The router is trivial as I only have three views:</p>
+<pre><code class="language-js">import Vue from &quot;vue&quot;;
+import VueRouter from &quot;vue-router&quot;;
+
+import Home from &quot;./views/Home&quot;;
+import Game from &quot;./views/Game&quot;;
+import Report from &quot;./views/Report&quot;;
+
+Vue.use(VueRouter);
+
+const routes = [
+  {
+    path: &quot;/&quot;,
+    component: Home
+  },
+  {
+    path: &quot;/game&quot;,
+    component: Game
+  },
+  {
+    path: &quot;/report&quot;,
+    component: Report
+  }
+];
+
+export default new VueRouter({
+  routes
+});
+</code></pre>
+<p>The first view is called <code>Home.vue</code> and is mainly just text, but make note of the <code>&lt;router-view&gt;</code> to handle navigation.</p>
+<pre><code class="language-html">&lt;template&gt;
+  &lt;div&gt;
+    &lt;h1&gt;Welcome to Lemonade Stand&lt;/h1&gt;
+
+    &lt;p&gt;
+      In this game, you will have ten turns to try to earn as
+      much profit as you can at a simulated Lemonade Stand.
+    &lt;/p&gt;
+
+    &lt;p&gt;
+      On each turn you will be given a weather forecast and the price
+      for each cup of lemonade. You can then select
+      &lt;strong&gt;how many glasses you want to make&lt;/strong&gt;,
+      &lt;strong&gt;how many advertising signs you want to produce&lt;/strong&gt;, and at
+      &lt;strong&gt;what price you will see your lemonade&lt;/strong&gt;.
+    &lt;/p&gt;
+
+    &lt;p&gt;
+      Good luck, and remember that the weather forecase will
+      &lt;strong&gt;not&lt;/strong&gt; always be correct!
+    &lt;/p&gt;
+
+    &lt;router-link to=&quot;/game&quot; tag=&quot;button&quot;&gt;Get Started&lt;/router-link&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {};
+&lt;/script&gt;
+</code></pre>
+<p>So far so good. Now let's look at the next view, <code>Game.vue</code>.</p>
+<pre><code class="language-html">&lt;template&gt;
+  &lt;div&gt;
+    &lt;h1&gt;Forecast: {{ forecast }}&lt;/h1&gt;
+    &lt;p&gt;On day {{ day }} the cost of lemonade is {{ costOfLemonade }} cents each.&lt;/p&gt;
+    &lt;p&gt;You currently have {{ assets | money }} in cash.&lt;/p&gt;
+    &lt;p&gt;
+      How many glasses of lemonade do you wish to make?
+      &lt;input
+        type=&quot;number&quot;
+        v-model.number=&quot;numGlasses&quot;
+        min=&quot;0&quot;
+      &gt;
+    &lt;/p&gt;
+    &lt;p&gt;
+      How many advertising signs ({{costOfSigns}} cents each) do you wish to make?
+      &lt;input
+        type=&quot;number&quot;
+        v-model.number=&quot;numSigns&quot;
+        min=&quot;0&quot;
+      &gt;
+    &lt;/p&gt;
+    &lt;p&gt;
+      What price (in cents) do you wish to charge for lemonade?
+      &lt;input
+        type=&quot;number&quot;
+        v-model.number=&quot;pricePerGlass&quot;
+        min=&quot;0&quot;
+      &gt;
+    &lt;/p&gt;
+
+    &lt;div v-if=&quot;hasErrors&quot;&gt;
+      &lt;strong&gt;Oh oh! Please fix these errors!&lt;/strong&gt;
+      &lt;ul&gt;
+        &lt;li v-for=&quot;e in errors&quot;&gt;{{e}}&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+
+    &lt;button @click=&quot;initiateSales&quot;&gt;Start Selling!&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+  data() {
+    return {
+      numGlasses: 0,
+      numSigns: 0,
+      pricePerGlass: 0
+    };
+  },
+  created() {
+    console.log('created');
+    this.$store.commit(&quot;generateForecast&quot;);
+  },
+  computed: {
+    assets() {
+      return this.$store.state.assets / 100;
+    },
+    day() {
+      return this.$store.state.day;
+    },
+    costOfLemonade() {
+      return this.$store.getters.costOfLemonade;
+    },
+    costOfSigns() {
+      return this.$store.state.signCost;
+    },
+    errors() {
+      return this.$store.state.errors;
+    },
+    forecast() {
+      return this.$store.getters.forecast;
+    },
+    hasErrors() {
+      return this.$store.getters.hasErrors;
+    }
+  },
+  methods: {
+    initiateSales() {
+      // try to sell - note we pass the getter value cuz Mutations can't use Getters (weird!)
+      this.$store.commit(&quot;doSales&quot;, {
+        glasses: this.numGlasses,
+        signs: this.numSigns,
+        cost: this.pricePerGlass,
+        costOfLemonade: this.costOfLemonade
+      });
+      if(!this.hasErrors) this.$router.replace(&quot;/report&quot;);
+    }
+  }
+};
+&lt;/script&gt;
+</code></pre>
+<p>There's a lot going on here. The component begins with the layout which is essentially a report on top and three form fields.</p>
+<p>The first thing the code does in the <code>created</code> handler is to ask the store to generate a forecast: <code>this.$store.commit(&quot;generateForecast&quot;);</code>. I'll share the store code soon, but basically every aspect of the game that relates to numbers and logic is placed in the store. You can see this in multiple places, like where we ask for the price of signs. While that value won't change, I set it up as a constant in my store so I can change it in one place.</p>
+<p>This is why you see a bunch of <code>computed</code> values that just call out to the store. There <em>is</em> a nicer way of doing this (see <a href="https://vuex.vuejs.org/guide/getters.html">mapGetters</a>) but I just didn't feel like using that.</p>
+<p>And note the last bit of code, <code>initiateSales</code>, simply gets the values and asks the store to try to start selling lemonade. If there aren't any errors, we go on to the report page. Let's look at that next.</p>
+<pre><code class="language-html">&lt;template&gt;
+  &lt;div&gt;
+    &lt;h1&gt;Daily Financial Report&lt;/h1&gt;
+
+    &lt;p v-if=&quot;message&quot;&gt;
+      &lt;strong&gt;{{message}}&lt;/strong&gt;
+    &lt;/p&gt;
+
+    &lt;p&gt;For day {{day}}, you sold {{glassesSold}} glasses of lemonade.&lt;/p&gt;
+
+    &lt;p&gt;
+      You earned {{income | money}} and had expenses of {{expenses | money}}
+      for a net profit of {{ profit | money }}.
+    &lt;/p&gt;
+
+    &lt;p&gt;You currently have {{ assets | money }}.&lt;/p&gt;
+
+    &lt;router-link to=&quot;/game&quot; tag=&quot;button&quot;&gt;Next Day&lt;/router-link&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+  data() {
+    return {};
+  },
+  created() {
+    // we update our assets now, nto before, so i don't have to worry about the
+    // display changing for a spli second. could be better?
+    this.$store.commit(&quot;updateAssets&quot;);
+  },
+  computed: {
+    assets() {
+      return this.$store.state.assets / 100;
+    },
+    day() {
+      return this.$store.state.day;
+    },
+    glassesSold() {
+      return this.$store.state.glassesSold;
+    },
+    income() {
+      return this.$store.state.income / 100;
+    },
+    expenses() {
+      return this.$store.state.expenses / 100;
+    },
+    profit() {
+      return this.income - this.expenses;
+    },
+    message() {
+      return this.$store.state.message;
+    }
+  },
+  methods: {}
+};
+&lt;/script&gt;
+</code></pre>
+<p>In general, all this view does is report back to the user what happened. My store will know how many items were sold, the profit, and so forth (and you'll see the store next), so my view just has to ask for the values. The only <em>slightly</em> weird part is probably this, <code>this.$store.commit(&quot;updateAssets&quot;);</code>. This store mutation updates your assets and I do it here so you don't see a split second change in the previous view after sales are tabulated. Something tells me this could be done nicer.</p>
+<p>Alright, now let's take a look at the store!</p>
+<pre><code class="language-js">import Vue from &quot;vue&quot;;
+import Vuex from &quot;vuex&quot;;
+
+Vue.use(Vuex);
+
+/*
+forecast posibilities and their impacts on sales
+*/
+const FORECASTS = [
+  {
+    label: &quot;Sunny&quot;,
+    salesRange: [60, 90],
+    chanceOfRain: 10
+  },
+  {
+    label: &quot;Cloudy&quot;,
+    salesRange: [40, 60],
+    chanceOfRain: 40
+  },
+  {
+    label: &quot;Storms&quot;,
+    salesRange: [20, 40],
+    chanceOfRain: 70
+  },
+  {
+    label: &quot;Heat Wave&quot;,
+    salesRange: [70, 100],
+    chanceOfRain: 5
+  },
+  {
+    label: &quot;Partly Cloudy&quot;,
+    salesRange: [50, 70],
+    chanceOfRain: 20
+  }
+];
+
+const SIGN_COST = 15;
+const RAIN_PENALTY = 33;
+
+// Credit: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#Getting_a_random_integer_between_two_values
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+
+export default new Vuex.Store({
+  state: {
+    day: 0,
+    assets: 200,
+    forecast: null,
+    signCost: SIGN_COST,
+    errors: [],
+    message: &quot;&quot;,
+    glassesSold: null,
+    expenses: null,
+    income: null
+  },
+  mutations: {
+    doSales(state, salesData) {
+      console.log(&quot;Attempting to do sales with &quot; + JSON.stringify(salesData));
+      // reset errors
+      state.errors = [];
+      if (salesData.glasses &lt;= 0)
+        state.errors.push(
+          &quot;You must enter a positive number of glasses to sell.&quot;
+        );
+
+      if (salesData.signs &lt; 0)
+        state.errors.push(&quot;You can only buy a positive number of signs.&quot;);
+      if (salesData.cost &lt; salesData.costOfLemonade)
+        state.errors.push(
+          &quot;You can't sell glasses for less than they are worth.&quot;
+        );
+
+      let totalCost =
+        salesData.glasses * salesData.costOfLemonade +
+        salesData.signs * state.signCost;
+      console.log(&quot;totalCost&quot;, totalCost);
+
+      if (totalCost &gt; state.assets)
+        state.errors.push(
+          `Your cost (${totalCost / 100}) is more than you have.`
+        );
+
+      if (state.errors.length &gt; 0) return;
+
+      /*
+        Ok, so a few things here. We have a forecast, and that gives us a range of sales, 
+        ie on sunny days you can expect to sell 60-100% of your inventory. 
+
+        The # of signs though has an impact, 1 to 0 signs will reduce your chance. Many signs
+        will help, but to a max (the user doesnt know)
+
+        Finally, we have a random chance of rain that is higher with cloudy and partly cloudy, 
+        rain reduces your sales range too. We could add more things like construction on the street, etc
+
+        Nope, not finally, cost of lemonade impacts sales too
+      */
+
+      //Ok, first get the range
+      let range = state.forecast.salesRange;
+      console.log(&quot;current range is &quot; + range);
+
+      //now determine signs bonus
+      let signsBonus = 0;
+      if (salesData.signs === 0) signsBonus = -20;
+      else if (salesData.signs === 1) signsBonus = -10;
+      else if (salesData.signs &lt;= 4) signsBonus = 10;
+      else if (salesData.signs &lt;= 6) signsBonus = 15;
+      else if (salesData.signs &gt; 6) signsBonus = 20;
+
+      console.log(&quot;bonus from signs is &quot; + signsBonus);
+
+      //now determine cost bonus
+      let costBonus = 0;
+      if (salesData.cost &lt; 10) costBonus = 25;
+      else if (salesData.cost &lt; 30) costBonus = 15;
+      else if (salesData.cost &lt; 50) costBonus = 10;
+      else if (salesData.cost &lt; 75) costBonus = 10;
+      else if (salesData.cost &lt; 100) costBonus = 0;
+      else costBonus = -10;
+
+      console.log(&quot;bonus from col is &quot; + costBonus);
+
+      //now do we have rain?
+      let didItRain = getRandomInt(0, 100) &lt; state.forecast.chanceOfRain;
+      console.log(&quot;did it rain?&quot;, didItRain);
+
+      //ok, get our percent sold
+      let [bottom, top] = state.forecast.salesRange;
+      let percentSold = getRandomInt(bottom, top);
+
+      console.log(&quot;initial percent sold&quot;, percentSold);
+
+      //modify range based on signsBonus and didItRain
+      percentSold += signsBonus;
+      percentSold += costBonus;
+      if (didItRain) percentSold -= RAIN_PENALTY;
+
+      console.log(&quot;now percent sold is &quot;, percentSold);
+      //figure our glasses sold
+      let glassesSold = Math.floor((percentSold / 100) * salesData.glasses);
+      let moneyEarned = glassesSold * salesData.cost;
+      console.log(&quot;you sold &quot; + glassesSold + &quot; and earned &quot; + moneyEarned);
+
+      //save the data
+      state.glassesSold = glassesSold;
+      state.income = moneyEarned;
+      state.expenses = totalCost;
+      if (didItRain) state.message = &quot;It rained!&quot;;
+    },
+    generateForecast(state) {
+      let prediction = FORECASTS[getRandomInt(0, FORECASTS.length - 1)];
+      state.forecast = prediction;
+      //also clear previous message
+      state.message = &quot;&quot;;
+      state.day++;
+    },
+    updateAssets(state) {
+      state.assets += state.income - state.expenses;
+    }
+  },
+  getters: {
+    costOfLemonade(state) {
+      if (state.day &gt; 2) return 4;
+      return 2;
+    },
+    forecast(state) {
+      return state.forecast.label;
+    },
+    hasErrors(state) {
+      return state.errors.length &gt; 0;
+    }
+  }
+});
+</code></pre>
+<p>My store contains state that represents the current values of the game, but it also has &quot;config&quot; information that won't change. Things like the price of a sign. As folks play the game and provide feedback, I could tweak that value higher or lower.</p>
+<p>The <code>FORECASTS</code> constant represents the types of weather that can happen in the game. Each weather type has an impact on sales (<code>salesRange</code>) and a chance of rain. You can see this logic employed in <code>doSales</code>. After I calculate if your sales values were ok (i.e. you aren't spending more than you have), I determine what percentage of your glasses you sold. This is based on the weather, how many signs you made, the cost of your lemonade, and whether or not it rained. This will increase (or decrease) the percentage of glasses sold.</p>
+<p>Once that's known the values are all stored in the state so they can be used on the report view.</p>
+<p>And that's pretty much it, but I wanted to call out some specific things that occurred to me while I was building this.</p>
+<ul>
+<li>One of the things I like best about Vuex is how it gives me a nice abstraction for my logic. My store ends up complex, my Vue app and components end up simple and dumb.</li>
+<li>I was a bit unsure about using Vuex for &quot;config&quot; data as well as state that actually changes. I asked on Twitter though and it looks like people do that so at least I'm not alone. ;)</li>
+<li>I ran into an interesting issue. Mutations are not allowed to access Getters. Actions can, but I didn't have any async calls in my store. You can see my workaround in <code>doSales</code> where I have to pass in the cost of lemonade, even though it's a getter. This brings me back to the whole mutation/action thing which still feels awkward to me. Yes one is for sync and one is for async but I just kinda wish Vuex had one way to change data, async or not.</li>
+</ul>
+<p>As always, I'd love feedback on this (critical or not!), please leave me a comment below.</p>
+<p><i>Header photo by <a href="https://unsplash.com/@rodlong?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Rod Long</a> on Unsplash</i></p>
+}

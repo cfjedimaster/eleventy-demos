@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>So, I ran into a problem this week. I was trying to use virtual hosts w/ CFMX under Apache for Windows. However, everytime I'd request a file on the second server that also existed on the first server, CF would run the file from the first server instead of the second server.</p>
+<p>I double, triple checked my httpd.conf file but couldn't find anything wrong.</p>
+<p>However, I had forgotten one of the first things you check when you run into problems - I was running an older version of Apache (2.0.44 instead of 2.0.47). As soon as I upgraded, it worked fine.</p>
+}

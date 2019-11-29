@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>Ok, I've run into a problem both google and Macromedia's Forums can't seem to solve. I have a virtual host on my dev machine. Under the web root of this virtual host is foo.cfc. When I first called it via the browser, I got an error. This was fixed by simply adding an alias for CFIDE that pointed to the main webroots CFIDE folder. I could then view the self-documentation created for the CFC.</p>
+<p>However, every attempt to call the CFC as a web service results in:</p>
+<div class="code">AXIS error<br>
+<br>
+Sorry, something seems to have gone wrong... here are the details:<br>
+<br>
+Fault - [java.lang.ClassNotFoundException : tasktrackerproxy][; nested exception is:<br>
+coldfusion.xml.rpc.CFCInvocationException: [java.lang.ClassNotFoundException : tasktrackerproxy]</div>
+<p>Anyone have an idea what the problem is? (And even better, a solution.)</p>
+}

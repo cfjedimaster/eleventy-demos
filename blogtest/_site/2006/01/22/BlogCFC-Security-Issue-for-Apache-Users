@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>So, all of this attention to BlogCFC has let me do a bit of digging. While I know others (or one person anyway) believes I'm perfect. I am not. Here is a great example. On Apache servers, if the ORG folder is under web root, you can view the INI file that defines BlogCFC behaviour. In general, most of the stuff in this file isn't a security risk - but one pair of settings defines the mail username and password to use when connecting to the local mail server.</p>
+<p>Again - in IIS - this seems to be protected by default. (Wow, imagine that.) In Apache it is exposed. You can get around this by simply using a .htaccess file to block access to the INI file.</p>
+<p>Don't feel comfortable with .htacces? For a few versions now BlogCFC has let you pass configuration information in as a structure. To do this, simply create a structure that mimics the ini file and pass it to the creation code in the Application.cfm file. Feel free to ping me.</p>
+<p>What will I do to handle this in the future? I'll switch to the method I used on later applications - an XML file wrapped inside a CFM page.</p>
+}

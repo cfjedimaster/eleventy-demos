@@ -1,0 +1,109 @@
+<h1>Post</h1>
+
+<p>A <a href="https://www.raymondcamden.com/2018/02/26/hello-auth0/">happy day</a> deserves another happy blog post, right? A few weeks ago I signed up for an interesting listserv called <a href="https://tinyletter.com/data-is-plural">Data is Plural</a>. This is a weekly newsletter of &quot;interesting&quot; datasets. I put that in quote not because it's dangerous or anything, but the datasets are <em>incredibly</em> varied from week to week. I want to thank my super-smart former coworker <a href="http://erinmckean.com/">Erin McKean</a> for sharing this resource.</p>
+<!--more-->
+<p>In the <a href="https://tinyletter.com/data-is-plural/letters/data-is-plural-2018-02-21-edition">last newsletter</a>, one of the datasets caught my eye - <a href="https://rit-public.github.io/HappyDB/">HappyDB</a>. HappyDB is a collection of one hundred thousand different &quot;moments&quot;. Simply put - 100K little messages of joy. So for example:</p>
+<blockquote>
+My Mother gave me a surprise visit at my home.
+</blockquote>
+<p>And...</p>
+<blockquote>
+I got engaged with my parents support.
+</blockquote>
+<p>To be clear, this isn't all deep or emotional stuff. Sometimes the data contains stuff like this:</p>
+<blockquote>
+Frankly, I am constipated over the past 2 days and not able to defecate, today my bowel got cleared that moment really makes me feel happy and my bowel feels well that moment makes me feel happy really.
+</blockquote>
+<p>So yeah, there's that, but I'm going to focus on the fact that this is a giant pile of happiness. That's good, right? I thought it would be cool to turn this data into a little Vue.js application that randomly displayed one happy message at a time.</p>
+<p>Now - as always - I know this isn't a practical idea. But I also knew that I'd learn a bit while building it. The first issue I ran into was getting the data into a form that would be usable by the web. The data is in CSV, and while I know libraries exist for this, I also figured I could do a one time conversion to JSON locally. I also knew that 100K strings would be a bit large. I decided to take a &quot;slice&quot; of the original data since no one was going to sit there and watch my app go through all 100k messages. With that in mind, here's what I built to prepare my data.</p>
+<pre><code class="language-js">const fs = require('fs');
+const parse = require('csv-parse/lib/sync');
+let contents = fs.readFileSync('./cleaned_hm.csv','UTF-8');
+
+let rawData = parse(contents, { from:2, to:5001});
+
+let data = [];
+data = rawData.map(d =&gt; {
+	return d[4];
+});
+
+fs.writeFileSync('./quotes.json', JSON.stringify(data));
+console.log('Done - wrote '+data.length+ ' records.');
+</code></pre>
+<p>Yeah, not terribly complex. I used a nice little csv parsing library, read the file, and worked with 5000 entries. The end result was a JSON file that &quot;weighed&quot; 482K which is pretty big, but I thought it was acceptable. In theory I could zip it and use a client-side JavaScript Zip parser (yes, of course one exists), but for a fun little demo I thought that was overkill. Another idea I considered and threw out was storing the data in IndexedDB. I actually think that would make sense, but again, KISS (Keep it Simple, Stupid).</p>
+<p>For the front end, I decided to use a simple transition. I'd show a message - fade it out and then fade in the new one (selected by random). This turned out to be difficult for me. Vue has <a href="https://vuejs.org/v2/guide/transitions.html">native support</a> for transitions, but the docs really confused me. To be clear, there's nothing particularly wrong with them, but I had a hard time wrapping my head around them. Also, look at this:</p>
+<pre><code class="language-html">&lt;transition name=&quot;fade&quot;&gt;
+	&lt;p v-if=&quot;show&quot;&gt;hello&lt;/p&gt;
+&lt;/transition&gt;
+</code></pre>
+<p>The fact that a visual effect is in markup just didn't sit well in my head. I mean technically the <code>v-if</code> part of the paragraph tag represents something that can appear and disappear, but it doesn't bug me like the transition does. And again, I'm not saying Vue is doing it wrong. Just that mentally - my brain had a hard time with it. I'll also point out that Sarah Drasner has an article on the feature that is worth checking out as well: <a href="https://css-tricks.com/intro-to-vue-5-animations/">Intro to Vue.js: Animations </a>.</p>
+<p>Alright, so with that said, let me share the code I wrote. First, the front end:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot; /&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+	&lt;title&gt;Happy&lt;/title&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+	&lt;link href=&quot;https://fonts.googleapis.com/css?family=Happy+Monkey&quot; rel=&quot;stylesheet&quot;&gt; 
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; media=&quot;screen&quot; href=&quot;main.css&quot; /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+	&lt;div id=&quot;app&quot; v-cloak&gt;
+		&lt;transition name=&quot;fade&quot; mode=&quot;out-in&quot;&gt;
+			&lt;p :key=&quot;text&quot; v-bind:style=&quot;{fontStyle:loading}&quot;&gt;{{text}}&lt;/p&gt;
+		&lt;/transition&gt;
+	&lt;/div&gt;
+
+	&lt;div id=&quot;footer&quot;&gt;Quotes are sourced from &lt;a href=&quot;https://rit-public.github.io/HappyDB/&quot;&gt;HappyDB&lt;/a&gt;.&lt;/div&gt;
+	&lt;script src=&quot;https://unpkg.com/vue@2.5.13/dist/vue.js&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;main.js&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>The app is really just one paragraph tag wrapped in a transition. Now let's look at the code.</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data:{
+		index:-1,
+		quotes:[],
+		text:'Loading the Happy...',
+		loading:'italic'
+	},
+	created() {
+		fetch('quotes.json')
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			this.quotes = res;
+			console.log('loaded');
+
+			this.newQuote();
+
+			setInterval(() =&gt; {
+				this.newQuote();
+			}, 6000);
+			
+		});
+	},
+	methods:{
+		newQuote() {
+			index = getRandomInt(0, this.quotes.length-1);
+			app.text = this.quotes[index];
+			app.loading='';
+		}
+	}
+});
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+function getRandomInt(min, max) {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+</code></pre>
+<p>The code handles loading in the JSON file, parsing it, and setting the local quotes array equal to the result. Then I select a random one and kick off an interval to load a new one every six seconds. Definitely not rocket science, but you can check out the live version here: https://cfjedimaster.github.io/webdemos/happy/.</p>
+<p>This one was beautiful:</p>
+<blockquote>
+I took my mom to a small hill at Lake Elsinore that was filled with a lot of flowers.
+</blockquote>}

@@ -1,0 +1,61 @@
+<h1>Post</h1>
+
+<p>I updated my Spry demo, again, this time with a few fixes. First, the URL:</p>
+<blockquote>
+<a href="http://ray.camdenfamily.com/spry/blog3.cfm">http://ray.camdenfamily.com/spry/blog3.cfm</a>
+</blockquote>
+<p>Just in case it isn't obvious, this is an AJAX front end to this blog. The only thing different from the &quot;real&quot; blog is that I limit the total amount of entries per category to 100.</p>
+<!--more-->
+<p>So what changed? First, there was a bug in paging and sorting. If you sorted, it only applied to the current page, and not the entire set. This was fixed thanks to Adobe. The fix will be in the next release of Spry. (Lucky me, I know all the right people. :)</p>
+<p>The second fix was more interesting. I noticed that the HTML data wasn't being rendered right. My HTML was being escaped. Turns out this made sense as my CFC was xmlFormatting the result. Kin Blas of Adobe (one of the Spry folks) pointed out that I need to CDATA wrap my result. Let me show you how I did that in my CFC:</p>
+<code>
+&lt;cffunction name="queryToXML" returnType="string" access="private" output="false"&gt;
+	&lt;cfargument name="data" type="query" required="true"&gt;
+	&lt;cfargument name="rootelement" type="string" required="true"&gt;
+	&lt;cfargument name="itemelement" type="string" required="true"&gt;
+	&lt;cfargument name="cDataCols" type="string" required="false" default=""&gt;
+<pre><code>&amp;lt;cfset var s = &quot;&amp;lt;?xml version=&quot;&quot;1.0&quot;&quot; encoding=&quot;&quot;UTF-8&quot;&quot;?&amp;gt;&quot;&amp;gt;
+&amp;lt;cfset var col = &quot;&quot;&amp;gt;
+&amp;lt;cfset var columns = arguments.data.columnlist&amp;gt;
+&amp;lt;cfset var txt = &quot;&quot;&amp;gt;
+
+&amp;lt;cfset s = s &amp; &quot;&amp;lt;&quot; &amp; arguments.rootelement &amp; &quot;&amp;gt;&quot;&amp;gt;
+&amp;lt;cfloop query=&quot;arguments.data&quot;&amp;gt;
+	&amp;lt;cfset s = s &amp; &quot;&amp;lt;&quot; &amp; arguments.itemelement &amp; &quot;&amp;gt;&quot;&amp;gt;
+
+	&amp;lt;cfloop index=&quot;col&quot; list=&quot;#columns#&quot;&amp;gt;
+		&amp;lt;cfset txt = arguments.data[col][currentRow]&amp;gt;
+		&amp;lt;cfif listFindNoCase(arguments.cDataCols, col)&amp;gt;
+			&amp;lt;cfset txt = &quot;&amp;lt;![CDATA[&quot; &amp; txt &amp; &quot;]]&quot; &amp; &quot;&amp;gt;&quot;&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;cfset txt = xmlFormat(txt)&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+		&amp;lt;cfset s = s &amp; &quot;&amp;lt;&quot; &amp; col &amp; &quot;&amp;gt;&quot; &amp; txt &amp; &quot;&amp;lt;/&quot; &amp; col &amp; &quot;&amp;gt;&quot;&amp;gt;
+
+	&amp;lt;/cfloop&amp;gt;
+	
+	&amp;lt;cfset s = s &amp; &quot;&amp;lt;/&quot; &amp; arguments.itemelement &amp; &quot;&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfset s = s &amp; &quot;&amp;lt;/&quot; &amp; arguments.rootelement &amp; &quot;&amp;gt;&quot;&amp;gt;
+
+&amp;lt;cfreturn s&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>This method, queryToXML, translates a query to XML. (Duh.) There is a method for this already at CFLib, but I wrote mine from scratch because I like doing that. My fix today was to add a new optional argument, cDataCols. This lets me specify which query columns will contain HTML and should be CDATA wrapped instead of xmlFormatted. All I did then was to simply change my call in getEntries:</p>
+<code>
+&lt;cffunction name="getEntries" returnType="xml" access="remote" output="false"&gt;
+	&lt;cfargument name="category" type="uuid" required="true"&gt;
+	&lt;cfset var s = structNew()&gt;
+	&lt;cfset var q = ""&gt;
+	&lt;cfset s.maxEntries = 100&gt;
+	&lt;cfset s.byCat = arguments.category&gt;
+<pre><code>&amp;lt;cfset q = variables.blog.getEntries(s)&amp;gt;
+
+&amp;lt;cfcontent type=&quot;text/xml&quot;&amp;gt;	
+&amp;lt;cfreturn queryToXML(q, &quot;entries&quot;,&quot;entry&quot;,&quot;body&quot;)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+}

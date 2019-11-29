@@ -1,0 +1,46 @@
+<h1>Post</h1>
+
+<p>Brett asks:</p>
+<blockquote>
+I was wondering if you have come across anything that would allow me to
+have a "Show All" feature on a cfgrid. Basically I want to set the page size
+equal to the recordcount. I have seen some options on the web, but nothing
+that works for a CF8 html grid that binds to a cfc. Any info you can give me
+would be great.
+</blockquote>
+<p>Before I answer this - a quick warning. Don't forget that ColdFusion 9 has an entirely updated version of the embedded Ext controls. The code I show here works fine in ColdFusion 9, but has not been tested in ColdFusion 8. Ok, with that out of the way, here is the solution I found.</p>
+<!--more-->
+<p>First, a quick Google search turned up this gem: <a href="http://www.extjs.com/forum/archive/index.php/t-5524.html">Grid Page Size Refresh</a>. In this forum posting, the user uses the Datasource object from the Grid to update the size and refresh the data. Using his code as a sample, I whipped up the following simple example:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script&gt;
+function showall() {
+console.log('hello')
+var theGrid = ColdFusion.Grid.getGridObject('entries')
+var ds = theGrid.getDataSource()
+ds.reload({params:{start:0,limit:ds.totalLength}})
+theGrid.getView().refresh()
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;entries&quot; format=&quot;html&quot; bind=&quot;url:getentries.cfm?page={cfgridpage}&amp;pagesize={cfgridpagesize}&amp;sort={cfgridsortcolumn}&amp;dir={cfgridsortdirection}&quot;&gt;
+&lt;cfgridcolumn name=&quot;id&quot; display=&quot;false&quot;&gt;
+&lt;cfgridcolumn name=&quot;body&quot; display=&quot;false&quot;&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;title&quot; header=&quot;Title&quot; width=&quot;600&quot;&gt;
+&lt;cfgridcolumn name=&quot;posted&quot; header=&quot;Posted&quot; width=&quot;100&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;cfinput type=&quot;button&quot; name=&quot;showallbtn&quot; value=&quot;Show All&quot; onclick=&quot;showall()&quot;&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>The bottom portion of the code block is a simple cfgrid bound to a CFM that returns blog entries. I've added a button below it that runs the function showall.</p>
+<p>That function uses the ColdFusion Ajax API to get the native grid object and at that point, it's nothing more than figuring out the total size of the real data (i.e., ds.totalLenth) and passing that in as new parameters to the dataSource. Finally you do a quick resize and your golden. Here is a screen shot of the grid before the button is clicked:</p>
+<img src="https://static.raymondcamden.com/images/Screen shot 2009-10-29 at 12.05.22 PM.png" />
+<p>And here is a (slightly shrunk) version of it after clicking:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2009-10-29 at 12.05.56 PM.png" />
+<p>Obviously you don't want to do this on a very large set of data.</p>
+}

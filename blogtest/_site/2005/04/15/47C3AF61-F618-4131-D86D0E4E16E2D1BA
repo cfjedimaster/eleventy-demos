@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>Another minor update:</p>
+<ul>
+<li>Fixes a MS Access bug in forum.getForums(). I love joins. I especially love writing them so they work across three databases. (No, honestly, I hate SQL. Ick.)
+<li>If there were no conference or forums, there was a minor layout bug in their files.
+<li>In the auto-push that index.cfm does, I added addToken=false.
+</ul>
+<p>Enjoy.</p>
+}

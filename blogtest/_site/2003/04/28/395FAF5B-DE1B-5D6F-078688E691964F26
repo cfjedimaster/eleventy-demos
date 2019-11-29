@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>A new version will be released soon. What will be included:</p>
+<ul>
+<li>As I've said before, the client included with the zip was very quickly thrown together. I put a lot more thought into the CFC then the viewer. I'm going to work on the viewer to be a bit more 'tight' and to be better example code for CF newbies.
+<li>Side content will be all cfincludes. This will make it easier to modify if you use my client code.
+<li>The current admin for the blog is part of my greater camdenfamily.com admin. In order to make things easier for folks using my blog, I'm going to make the admin 'inline' - that just means it will work like designmode in Spectra.
+<li>And as mentioned before - support for nMaxCount in getEntries().}

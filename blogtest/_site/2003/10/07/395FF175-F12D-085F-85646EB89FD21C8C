@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>So, everyone (well, in our biz) is talking about the upcoming changes to IE due to the Eolas lawsuit. I was reading over a <a href="http://msdn.microsoft.com/ieupdate/activexchanges.asp#userexperience">document</a> over at Microsoft.com and noticed something interesting.</p>
+<p>Apparently, the prompt to load plugins only occur if your plugin has params and if the params reference external datasources.</p>
+<p>Now, my question is this - what if we lie? Is IE changing the browser so that it detects if a plugin is making a net connection? If not, then can't we simply tell the object tag, noexternaldata=true, pass a param, and still let the plugin make a external request? For example, if I pass a param, method=goo, IE doesn't need to know that Flash is going to to take that param, call a cfc, and use the value of method to determine which method to call.</p>
+<p>I assume Microsoft wouldn't let something like this slip, but wouldn't it be funny if they did? They could cover themselves legally by saying they provided the <i>framework</i> for developers to comply with the lawsuit, but can't be blamed if the developer incorrectly sets the externaldata attribute.</p>
+}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I <a href="http://ray.camdenfamily.com/index.cfm/2007/5/4/cfObjective--Mark-Drew-and-CFEclipse">blogged</a> about the new frameworks support in CFEclipse two days ago, and now it is ready for download. It is still in development so use it with care, but if you want to play with it, grab it from <a href="http://www.cfeclipse.org/index.cfm?event=page&page=download">the site</a>. Check out the screen shot below:</p>
+<img src="http://ray.camdenfamily.com/images/frameworks.jpg">
+<p>This is what the tool automatically picked up from my RIAForge project.</p>
+}

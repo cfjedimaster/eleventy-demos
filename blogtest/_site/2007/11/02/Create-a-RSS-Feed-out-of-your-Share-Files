@@ -1,0 +1,50 @@
+<h1>Post</h1>
+
+<p>Adobe's <a href="http://share.adobe.com">Share</a> service doesn't have RSS feeds yet (as far as I know), but there is no reason you can't role your own! Here is a quick example.</p>
+<!--more-->
+<p>The first piece is <a href="http://sharecfc.riaforge.org">ShareCFC</a>, my open source wrapper for the Share service. Grab the bits - get the required logon bits, and then create an instance:</p>
+<code>
+&lt;cfapplication name="shareapi"&gt;
+<p>&lt;cfset appkey = &quot;harrypotter&quot;&gt;
+&lt;cfset sharedsecret = &quot;parishiltonisactuallyreallysmart&quot;&gt;</p>
+<p>&lt;cfif not isDefined(&quot;application.share&quot;)&gt;
+&lt;cfset application.share = createObject(&quot;component&quot;, &quot;share&quot;).init(&quot;ray@camdenfamily.com&quot;,&quot;password-noreally&quot;,appkey,sharedsecret)&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>The initial logon to the Share service can be a bit slow so the cache here is important. Next we grab the files. Now the Share service is still in development and currently has some performance issues (like Lindsey has drinking issues), but I've been assured this will be fixed soon. For my testing I cached the results. To get all of my Share files it is one simple CFC call:</p>
+<code>
+&lt;cfif not isDefined("application.files")&gt;
+	&lt;cfset application.files = application.share.list()&gt;
+&lt;/cfif&gt;
+&lt;cfset files = application.files&gt;
+</code>
+<p>I copied from the application scope to save myself some typing. So far so good? We don't want to create an RSS feed that points to items that folks can't use, so let's filter out the non-public stuff (and maybe this is a good idea to add to my code):</p>
+<code>
+&lt;!--- filter by public ---&gt;
+&lt;cfquery name="files" dbtype="query"&gt;
+select	*
+from	files
+where	sharelevel = 'public'
+&lt;/cfquery&gt;
+</code>
+<p>Last but not least - lets make the feed. I create a column map to define columns to CFFEED required items, and create a struct of metadata:</p>
+<code>
+&lt;cfset cmap = structNew()&gt;
+&lt;cfset cmap.publisheddate = "createddate"&gt;
+&lt;cfset cmap.title = "name"&gt;
+&lt;cfset cmap.rsslink = "recipienturl"&gt;
+<p>&lt;cfset meta = structNew()&gt;
+&lt;cfset meta.title = &quot;My Public Share Files&quot;&gt;
+&lt;cfset meta.description = &quot;All of my public files from Share&quot;&gt;
+&lt;cfset meta.link = &quot;http://www.raymondcamden.com&quot;&gt;
+&lt;cfset meta.version = &quot;rss_2.0&quot;&gt;
+</code></p>
+<p>And finally - serve up the RSS:</p>
+<code>
+&lt;cffeed action="create" properties="#meta#" query="#files#"
+		columnMap="#cmap#" xmlVar="feedXML"&gt;
+<p>&lt;cfcontent type=&quot;text/xml&quot; reset=&quot;true&quot;&gt;&lt;cfoutput&gt;#feedxml#&lt;/cfoutput&gt;
+</code></p>
+<p>Easy peasy, lemon squeezy as my son would say. I see two potential things I can add to ShareCFC now - an optional share level filter to List(), and perhaps an automatic way to return the data in the RSS form.</p>
+<p>I've saved my RSS here: <a href="feed://www.coldfusionjedi.com/demos/test.xml">feed://www.coldfusionjedi.com/demos/test.xml</a></p>
+}

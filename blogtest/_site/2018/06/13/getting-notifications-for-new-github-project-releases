@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>This is one more post covering something that I assume most folks knew already. I just discovered this a few weeks ago myself. It definitely isn't new, and in fact, you can find a StackOverflow answer covering this from <a href="https://stackoverflow.com/questions/20839622/notifications-for-new-github-project-releases">two years ago</a>. But as I usually do - I share what I learn since I figure I can't be the only one who missed this.</p>
+<p>So as the title says - how can you get notifications for new releases of a project at GitHub? Turns out every repo has an Atom feed available at:</p>
+<p>https://github.com/(org or user)/(repo)/releases.atom</p>
+<p>So for example, here is the feed for one of my favorite new projects, <a href="https://vuepress.vuejs.org/">VuePress</a>:</p>
+<p><a href="https://github.com/vuejs/vuepress/releases.atom">https://github.com/vuejs/vuepress/releases.atom</a></p>
+<p>And that's really it. Of course, the 'notifications' aspect involves reading the Atom feed and figuring out when something new has been added. Luckily, <a href="https://ifttt.com/discover">IFTTT</a> has a service for this. If you've never used it, IFTTT is essentially an &quot;automation&quot; service for the web with hundreds of plugins/connections/etc for various services. One of the simplest solutions they have is a &quot;email me on new item in a RSS feed&quot; service. That works great for blogs that don't have a subscription feature and it works great here as well.</p>
+<p>Simply <a href="https://ifttt.com/create">create a new applet</a> and on the first step, select RSS Feed:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/ifttt1.jpg" alt="I like arrows"></p>
+<p>Then select &quot;New feed item&quot;:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/ifttt2.jpg" alt="I love arrows"></p>
+<p>And then paste in the feed URL:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/ifttt3.jpg" alt="Sorry, no arrows"></p>
+<p>Click &quot;Create trigger&quot; and then you move onto the &quot;that&quot; aspect (i.e. what should happen when a new item appears in the feed). On the action service page, select email:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/ifttt4.jpg" alt="Woot the arrows are back!"></p>
+<p>This only gives you one option (so I'll skip the screenshot), &quot;Send me an email&quot;. You can now customize the email. I suggest adding a prefix to the Subject to make it obvious what is going on:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/ifttt5.jpg" alt="Sigh, no arrows"></p>
+<p>You can customize more there too if you want. Finally click &quot;Create action&quot;. You'll get to the review page and you want to make sure you then hit the &quot;Finish&quot; button.</p>
+<p>And that's it. I hope this is helpful!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/TLBplYQvqn0?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Ankush Minda</a> on Unsplash</i></p>
+}

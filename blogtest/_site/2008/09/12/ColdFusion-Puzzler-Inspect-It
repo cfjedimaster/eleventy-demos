@@ -1,0 +1,56 @@
+<h1>Post</h1>
+
+<p>Today's ColdFusion Puzzler is based on a cool Groovy feature. I was surprised to discover that Groovy supports a Dump function. While I don't find it as pretty as ColdFusion's version, it's nice to have when debugging. But Groovy takes it a bit further and adds something similar called the inspect() function. The inspect function will take any arbitrary object and return a string that could be used to create it. Here is an example:</p>
+<code>
+def s = [
+         name:"Raymond",
+         age:35,
+         rank:"Jedi"
+         ]
+<p>def a = [0,2,3]
+def b = new Date()</p>
+<p>s.a = a
+s.bornondate = b</p>
+<p>println s.inspect()
+</code></p>
+<p>This returns:</p>
+<blockquote>
+<p>
+["name":"Raymond", "age":35, "rank":"Jedi", "a":[0, 2, 3], "bornondate":Fri Sep 12 08:48:16 CDT 2008]
+</p>
+</blockquote>
+<p>As you can see, it isn't the code I used but code that would generate the same data.</p>
+<p>Your challege, should you choose to accept it, is to write a similar function for ColdFusion. Your output need not look the exact same of course. I've provided a simple example that only works with arrays to get your started.</p>
+<code>
+<p>&lt;cfscript&gt;
+function inspect(arr) {
+var r = &quot;&quot;;
+var i = &quot;&quot;;</p>
+<pre><code>r = &quot;[&quot;;
+
+for(i=1; i &amp;lt;= arrayLen(arr); i++) {
+	r &amp;= arr[i];
+	if(i &amp;lt; arrayLen(arr) ) r&amp;=&quot;,&quot;;
+}
+
+r &amp;= &quot;]&quot;;
+return r;
+</code></pre>
+<p>}
+&lt;/cfscript&gt;</p>
+<p>&lt;cfset a = [1,2,9,20]&gt;
+&lt;cfoutput&gt;#inspect(a)#&lt;/cfoutput&gt;
+</code></p>
+<p>Your code should handle arrays, structs, and simple values. For extra credit you can handle queries to by using a bunch of query set sells.</p>
+<p>Also note that my test UDF returns a literal value like Groovy. You can also return a series of statements instead:</p>
+<blockquote>
+<p>
+ob = arrayNew(1);
+ob[1] = 1;
+ob[2] = 2;
+etc
+</p>
+</blockquote>
+<p>Note that I used &quot;ob&quot; to represent the top level data. Since I pass the variable, and not the variable name, I chose an arbitrary variable name to store the data.</p>
+<p>Enjoy!</p>
+}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>If you try to use roles-based security under an application with a name that contains a space, you will get the following error:</p>
+<p>The string &quot;COOKIE.CFAUTHORIZATION_Testnew 2&quot; is not a valid ColdFusion variable name.</p>
+<p>The fix, of course, is to not use an application name with a space in it, but since Session variables work fine under this name, it may not be so obvious.</p>
+}

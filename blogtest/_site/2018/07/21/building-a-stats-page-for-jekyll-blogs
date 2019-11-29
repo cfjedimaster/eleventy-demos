@@ -1,0 +1,291 @@
+<h1>Post</h1>
+
+<p>Back when I ran this blog on <a href="http://gohugo.io/">Hugo</a>, I built my own little stats script (<a href="https://www.raymondcamden.com/2016/12/01/a-simple-stats-script-for-hugo">A Simple Stats Script Hugo</a>) to help me look at my blog at a high level. I converted to <a href="https://jekyllrb.com/">Jekyll</a> a few months ago and recently I started work on rebuilding that support back into my site. What follows is my own little stab at creating a script to report on Jekyll-based blog content. All of the code I'll show below is up on my GitHub repo for this site and I'll share specific links at the end. This is just the beginning and I have some ideas for more stats I'd like to add, but I'd love to hear what you think so drop me a line below.</p>
+<p>First and foremost - I decided to did <em>not</em> want to use the same approach I had done for my Hugo script. In that one, I used a local Node script to generate a set of JSON data. I then copied that into a simple web app that used JavaScript to render the data. Instead, I wanted something that required zero manual work on my end. To accomplish that - I wrote two scripts.</p>
+<p>The first one was a <code>stats.json</code> file that would use Liquid (Jekyll's template engine) to output the raw data. The second script was <code>stats.md</code>. This would use Vue.js to load in the JSON and then render it out. Let's first take a look at the JSON script.</p>
+<p>Before I show the code, let me show the output:</p>
+<pre><code class="language-js">{
+	&quot;totalPosts&quot;:15,
+	&quot;totalCategories&quot;: 8,
+	&quot;totalTags&quot;: 6,
+	&quot;totalWords&quot;: 13757,
+	&quot;averageWordsPerPost&quot;: 917,
+	&quot;firstPost&quot;: {
+		&quot;title&quot;:&quot;Adding a Recent Content Component to VuePress&quot;,
+		&quot;published&quot;:&quot;2018-05-09&quot;,
+		&quot;url&quot;:&quot;/2018/05/09/adding-a-recent-content-component-to-vuepress&quot;
+	},
+	&quot;lastPost&quot;: {
+		&quot;title&quot;:&quot;Building a Stats Page for Jekyll Blogs&quot;,
+		&quot;published&quot;:&quot;2018-07-21&quot;,
+		&quot;url&quot;:&quot;/2018/07/21/building-a-stats-page-for-jekyll-blogs&quot;
+	},
+	&quot;postsPerCategory&quot;:[
+			{ &quot;name&quot;: &quot;static sites&quot;, &quot;size&quot;:3 }
+			,
+			{ &quot;name&quot;: &quot;misc&quot;, &quot;size&quot;:1 }
+			,
+			{ &quot;name&quot;: &quot;serverless&quot;, &quot;size&quot;:2 }
+			,
+			{ &quot;name&quot;: &quot;ColdFusion&quot;, &quot;size&quot;:1 }
+			,
+			{ &quot;name&quot;: &quot;Uncategorized&quot;, &quot;size&quot;:1 }
+			,
+			{ &quot;name&quot;: &quot;development&quot;, &quot;size&quot;:3 }
+			,
+			{ &quot;name&quot;: &quot;javascript&quot;, &quot;size&quot;:1 }
+			,
+			{ &quot;name&quot;: &quot;Serverless&quot;, &quot;size&quot;:3 }
+	],
+	&quot;postsPerTag&quot;:[
+			{ &quot;name&quot;: &quot;vuejs&quot;, &quot;size&quot;:4 }
+			,
+			{ &quot;name&quot;: &quot;development&quot;, &quot;size&quot;:3 }
+			,
+			{ &quot;name&quot;: &quot;webtask&quot;, &quot;size&quot;:2 }
+			,
+			{ &quot;name&quot;: &quot;visual studio code&quot;, &quot;size&quot;:1 }
+			,
+			{ &quot;name&quot;: &quot;azure&quot;, &quot;size&quot;:3 }
+			,
+			{ &quot;name&quot;: &quot;jekyll&quot;, &quot;size&quot;:1 }	
+	],
+
+	&quot;dates&quot;:&quot;2018-07-21,2018-07-16,2018-07-06,2018-07-02,2018-06-18,2018-06-15,2018-06-13,2018-06-11,2018-06-07,2018-06-04,2018-05-22,2018-05-21,2018-05-16,2018-05-15,2018-05-09&quot;
+
+}
+</code></pre>
+<p>While it should be obvious from the names of the values, let me go over the stats:</p>
+<ul>
+<li>Total Posts, total categories, and total tags. Of those three, only total posts is really interesting, but I do think it makes sense to keep track of how many tags and categories you have. Too many may reflect a lack of editorial focus.</li>
+<li>Total words is 100% silly. Average words per post is definitely a bit more relevant.</li>
+<li>First and last post is interesting from a simple historical perspective.</li>
+<li>Posts per category and tags gives you an idea of where you focus your content.</li>
+<li>Finally - the list of dates. So this is where I ran into an issue with Liquid. I wanted to create an &quot;index&quot; that represented posts per year, month, day of week, etc. This turned out to be extraordinarily difficult in Liquid. Then I thought - what if I simply output all the dates and let the client handle it? I was worried about the size of the data but even on my blog with near six thousand entries the JSON only got to about 68K. I do have a lot of whitespace in my JSON (that I removed above) so there is room for improvement, but for now I'm satisfied with it.</li>
+</ul>
+<p>Now let's look at the script behind this:</p>
+<pre><code class="language-js">---
+layout: null
+---
+
+{% assign totalWords = 0 %}
+{% assign dateOb = '' %}
+
+{% for post in site.posts %}
+	{% assign postWords = post.content | number_of_words %}
+	{% assign totalWords = totalWords | plus:  postWords %}
+	{% assign pd = post.date | date: &quot;%Y-%m-%d&quot; %}
+	{% unless forloop.first %}
+		{% assign dateOb = dateOb | append: &quot;,&quot; %}
+	{% endunless %}
+	{% assign dateOb = dateOb | append: pd %}
+{% endfor %}
+
+{% assign avgWords = totalWords | divided_by: site.posts.size %}
+
+{
+	&quot;totalPosts&quot;:{{ site.posts.size }},
+	&quot;totalCategories&quot;: {{ site.categories.size }},
+	&quot;totalTags&quot;: {{ site.tags.size }},
+	&quot;totalWords&quot;: {{ totalWords }},
+	&quot;averageWordsPerPost&quot;: {{ avgWords }},
+	&quot;firstPost&quot;: {
+		&quot;title&quot;:&quot;{{ site.posts.last.title }}&quot;,
+		&quot;published&quot;:&quot;{{ site.posts.last.date | date: &quot;%Y-%m-%d&quot; }}&quot;,
+		&quot;url&quot;:&quot;{{site.posts.last.url}}&quot;
+	},
+	&quot;lastPost&quot;: {
+		&quot;title&quot;:&quot;{{ site.posts.first.title }}&quot;,
+		&quot;published&quot;:&quot;{{ site.posts.first.date | date: &quot;%Y-%m-%d&quot; }}&quot;,
+		&quot;url&quot;:&quot;{{site.posts.first.url}}&quot;
+	},
+	&quot;postsPerCategory&quot;:[
+		{% for category in site.categories %}
+			{% assign cat = category[0] %}
+			{% unless forloop.first %},{% endunless %}
+			{ &quot;name&quot;: &quot;{{cat}}&quot;, &quot;size&quot;:{{site.categories[cat].size}} }
+		{% endfor %}
+	],
+	&quot;postsPerTag&quot;:[
+		{% for tag in site.tags %}
+			{% assign tagName = tag[0] %}
+			{% unless forloop.first %},{% endunless %}
+			{ &quot;name&quot;: &quot;{{tagName}}&quot;, &quot;size&quot;:{{site.tags[tagName].size}} }
+		{% endfor %}
+	],
+	&quot;dates&quot;:&quot;{{ dateOb }}&quot;
+
+}
+</code></pre>
+<p>I begin by looping over every single post to gather up my word and data data. Once I have that, the rest of the content is pretty simple to generate. Do note that the <code>first</code> and <code>last</code> values for <code>site.posts</code> is reversed because <code>site.posts</code> is in reverse chronological order. (A big thank you to @mmistakes from the <a href="https://talk.jekyllrb.com/t/question-about-site-posts-values/1972/7">Jekyll forum</a>.)</p>
+<p>So that's the &quot;back end&quot; - although to be clear - when I publish my site this is run once and output as raw JSON. You can see the output <a href="https://www.raymondcamden.com/stats.json">here</a>. Now for the &quot;front end&quot;:</p>
+<pre><code class="language-html">---
+layout: page
+title: Stats
+---
+
+&lt;style&gt;
+[v-cloak] {display: none}
+&lt;/style&gt;
+
+{% raw %}
+&lt;div id=&quot;app&quot; v-cloak=&quot;&quot;&gt;
+	&lt;table&gt;
+		&lt;tr&gt;
+			&lt;td width=&quot;30%&quot;&gt;Total Posts:&lt;/td&gt;
+			&lt;td width=&quot;70%&quot;&gt;{{totalPosts}}&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+		&lt;td&gt;First Post:&lt;/td&gt;
+		&lt;td&gt;
+		&lt;a :href=&quot;firstPost.url&quot;&gt;{{firstPost.title}}&lt;/a&gt; published {{firstPost.age}} on {{firstPost.date}}
+		&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+		&lt;td&gt;Last Post:&lt;/td&gt;
+		&lt;td&gt;
+		&lt;a :href=&quot;lastPost.url&quot;&gt;{{lastPost.title}}&lt;/a&gt; published {{lastPost.age}} on {{lastPost.date}}
+		&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+		&lt;td&gt;Total Words Written:&lt;/td&gt;
+		&lt;td&gt;{{totalWords}}&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+		&lt;td&gt;Average Words per Post:&lt;/td&gt;
+		&lt;td&gt;{{avgWords}}&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/table&gt;
+
+    &lt;h3&gt;Posts Per Year&lt;/h3&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Year&lt;/td&gt;
+            &lt;td&gt;Number of Posts&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr v-for=&quot;year in sortedYears&quot;&gt;
+            &lt;td&gt;{{year}}&lt;/td&gt;
+            &lt;td&gt;{{years[year]}}&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+
+    &lt;h3&gt;Posts Per Category&lt;/h3&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Category&lt;/td&gt;
+            &lt;td&gt;Number of Posts&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr v-for=&quot;cat in sortedCats&quot;&gt;
+            &lt;td&gt;{{cat.name}}&lt;/td&gt;
+            &lt;td&gt;{{cat.size}}&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+
+    &lt;h3&gt;Posts Per Tag&lt;/h3&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Tag&lt;/td&gt;
+            &lt;td&gt;Number of Posts&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr v-for=&quot;tag in sortedTags&quot;&gt;
+            &lt;td&gt;{{tag.name}}&lt;/td&gt;
+            &lt;td&gt;{{tag.size}}&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+
+&lt;/div&gt;
+{% endrawx %}
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/vue&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+new Vue({
+	el:'#app',
+	data:{
+		totalPosts:0,
+		firstPost:{
+			title:&quot;&quot;,
+			date:&quot;&quot;,
+			url:&quot;&quot;
+		},
+		lastPost:{
+			title:&quot;&quot;,
+			date:&quot;&quot;,
+			url:&quot;&quot;
+		},
+		totalWords:0,
+		avgWords:0,
+        years:{},
+        cats:[], 
+        tags:[]
+	},
+	created:function() {
+		fetch('/stats.json')
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			console.log(res);
+			this.totalPosts = res.totalPosts;
+			
+			this.firstPost = {
+				title:res.firstPost.title,
+				date:res.firstPost.published,
+				url:res.firstPost.url,
+				age:moment(res.firstPost.published).fromNow()
+			};
+
+			this.lastPost = {
+				title:res.lastPost.title,
+				date:res.lastPost.published,
+				url:res.lastPost.url,
+				age:moment(res.lastPost.published).fromNow()
+			};
+
+			this.totalWords = res.totalWords;
+			this.avgWords = res.averageWordsPerPost;
+
+            let dates = res.dates.split(',');
+            // process res.dates on the client site
+            dates.forEach(d =&gt; {
+                let year = new Date(d).getFullYear();
+                if(!this.years[year]) Vue.set(this.years,year,0);
+                Vue.set(this.years,year, this.years[year]+1);
+            });
+
+            this.cats = res.postsPerCategory;
+            this.tags = res.postsPerTag;
+
+		}).catch(e =&gt; {
+            console.error(e);
+        });
+	},
+    computed:{
+        sortedCats:function() {
+            return this.cats.sort((a,b) =&gt; {
+                if(a.name &lt; b.name) return -1;
+                if(a.name &gt; b.name) return 1;
+                return 0;
+            });
+        },
+        sortedTags:function() {
+            return this.tags.sort((a,b) =&gt; {
+                if(a.name &lt; b.name) return -1;
+                if(a.name &gt; b.name) return 1;
+                return 0;
+            });
+        },
+        sortedYears:function() {
+            return Object.keys(this.years).sort();
+        }
+    }
+});
+&lt;/script&gt;
+</code></pre>
+<p>(Note - due to an issue of trying to render Liquid stuff to the browser in the source code, I renamed an <code>endraw</code> tag above to <code>endrawx</code>. It is correct in GitHub.) So this is a pretty trivial Vue app. I fetch my JSON and then just start assigning values. The only real work I do is to parse the dates. Right now I'm just rendering a &quot;per year&quot; stat, but I will probably add a &quot;per month&quot; and &quot;per dow&quot; table as well. You can view the output for my blog's stats here: <a href="https://www.raymondcamden.com/stats">https://www.raymondcamden.com/stats</a>.</p>
+<p>If you want the code yourself, you can grab both scripts here:</p>
+<ul>
+<li><a href="https://github.com/cfjedimaster/raymondcamden2018/blob/master/stats.json">https://github.com/cfjedimaster/raymondcamden2018/blob/master/stats.json</a></li>
+<li><a href="https://github.com/cfjedimaster/raymondcamden2018/blob/master/stats.md">https://github.com/cfjedimaster/raymondcamden2018/blob/master/stats.md</a></li>
+</ul>
+<p>So, what do you think? Are there any stats you would add? Leave me a comment below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/1qkyck-UL3g?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">James Pond</a> on Unsplash</i></p>
+}

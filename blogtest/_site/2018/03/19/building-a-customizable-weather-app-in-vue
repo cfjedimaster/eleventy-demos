@@ -1,0 +1,137 @@
+<h1>Post</h1>
+
+<p>I am somewhat of a weather app collector. Even though they all basically give the <em>exact</em> same information, I just have a thing for beautiful renderings of the weather. My default weather app, Yahoo Weather, can be stunning at times.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/03/yahooweather3.jpg" alt="Yahoo Weather App"></p>
+<p>A few days ago I discovered my new favorite - <a href="http://weatherkittyapp.com/">Weather Kitty</a>.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/03/weatherkitty.jpg" alt="Weather Kitty App"></p>
+<p>As you can guess, there is also a <a href="http://weatherpuppy.com/">Weather Puppy</a>, which is cute, but not cat cute. Sorry, nothing beats that. I was looking at the kitty app and realized that you can probably make a weather app on <em>any</em> topic and just churn out apps like crazy. Since &quot;like crazy&quot; is my main impetus for building things, I thought it would be fun (and educational!) to build a weather app in Vue. But not just any weather app. One that you could easily (with access to the code I mean) drop in your own photos. For example, one with your kids:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/03/kids2.jpg" alt="My Kids App"></p>
+<p>Or even a Marvel comics one - because - why not?</p>
+<p><img src="https://static.raymondcamden.com/images/2018/03/marvel.jpg" alt="Marvel"></p>
+<p>In general, all of these apps tend to follow a similar pattern - get the weather and try to show an appropriate picture. In the case of the Yahoo app, it is a picture from the same geographical location. For others, it's just a picture that matches the current weather.</p>
+<p>My end goal here then is to create an app where you can simply provide the pictures. You will need to categorize them (here are the sunny pics, here are the rainy pics), but then you're good to go. You can plop the code up on a web site and then run the app from your browser. (And sure, if you want, you could build a hybrid mobile app too if you want, but why?)</p>
+<p>For the first iteration of the code, I focused on getting the weather and rendering it over a hard coded picture. In the next version (which may be a while - I have a week of travel ahead of me) I'll work on the &quot;It's raining, find the best picture&quot; logic. You can find the current code base here: https://github.com/cfjedimaster/webdemos/tree/master/vueweather/v1. I did not upload the picture so be sure to supply your own. Ok, let's take a look at the individual components. First, the HTML.</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot; /&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+	&lt;title&gt;Weather Demo 1&lt;/title&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; media=&quot;screen&quot; href=&quot;main.css&quot; /&gt;
+&lt;/head&gt;
+&lt;body class=&quot;darken&quot;&gt;
+
+	&lt;div id=&quot;app&quot; v-cloak&gt;
+		&lt;div v-if=&quot;loading&quot;&gt;
+			&lt;h1&gt;Loading...&lt;/h1&gt;
+		&lt;/div&gt;
+		&lt;div id=&quot;content&quot; v-else&gt;
+			&lt;h1&gt;{{location}}&lt;/h1&gt;
+			&lt;p&gt;
+				&lt;span class=&quot;temp&quot;&gt;{{temp}}&amp;deg;&lt;/span&gt;&lt;br/&gt;
+				Low: {{temp_low}}&amp;deg; High: {{temp_high}}&amp;deg;&lt;br/&gt;
+				{{desc}}
+			&lt;/p&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+
+	&lt;script src=&quot;https://cdn.jsdelivr.net/npm/vue&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;https://unpkg.com/axios/dist/axios.min.js&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;main.js&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>There's not much here. Basically I've got a loading div (that will go away when data has been received) and a few blocks for the forecast. Most weather apps support a way to add multiple cities and I have some ideas on how to support that, but I'm holding off for that till later. Also note that I've loaded <a href="https://github.com/axios/axios">Axios</a>. Axios is a HTTP client and seems to be popular with Vue developers. I thought it would be nice to force myself to give it a try and for the most part, it looked like a good idea. But within five minutes I ran into a <a href="https://github.com/axios/axios/issues/1000">bug</a> with one of the core features, so I probably won't use it again. (That sounds a bit mean perhaps, but if I run into an issue right away with a library, I don't take that as a good sign.)</p>
+<p>I don't normally share the CSS, but I'll do so here. It was a bit of a strugle to get the background picture right and text lined up right. I'm 100% confident this could be done better:</p>
+<pre><code class="language-css">
+.darken {
+	background-image:linear-gradient(
+		rgba(0,0,0,0.5),
+		rgba(0,0,0,0.5)
+	), url(rainkids.jpg);
+}
+
+body {
+	background-size:contain;
+	background:url(rainkids.jpg);
+}
+
+#content {
+	width: 100%;
+	text-align: center;
+	font-weight: bold;
+	text-shadow: 1px 1px 2px black; 
+	font-size: 2em;
+}
+
+.temp {
+	font-size: 3em;
+}
+
+body {
+	color: white;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+[v-cloak] {display: none};
+</code></pre>
+<p>Note the use of the gradient. This is done to slightly darken the background and make text a bit more clearer to read. Later, I need to make the background picture (which is used twice) something that I can edit via JavaScript. And speaking of JavaScript...</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data:{
+		loading:true,
+		lat:null,
+		lon:null,
+		location:null,
+		temp:null,
+		temp_low:null,
+		temp_high:null,
+		images:{
+			&quot;rain&quot;:[
+				&quot;clouds.jpg&quot;
+			]
+		}
+	},
+	created() {
+
+		navigator.geolocation.getCurrentPosition(pos =&gt; {
+			console.log('got coordinates', pos.coords);
+			this.lat = pos.coords.latitude;
+			this.lon = pos.coords.longitude;
+			this.loadWeather();
+		});
+
+	},
+	methods:{
+		loadWeather() {
+
+			axios.get(`https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(SELECT%20woeid%20FROM%20geo.places%20WHERE%20text%3D%22(${this.lat}%2C${this.lon})%22)&amp;format=json&amp;env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys`)
+			.then(res =&gt; {
+				let weather = res.data.query.results.channel;
+				console.log('response',weather);
+				
+				this.location = weather.location.city + &quot;, &quot; + weather.location.region;
+				this.temp = weather.item.condition.temp;
+				this.temp_low = weather.item.forecast[0].low;
+				this.temp_high = weather.item.forecast[0].high;
+				this.desc = weather.item.condition.text;
+				this.loading = false;
+				
+			})
+			.catch(e =&gt; {
+				console.error(e);
+			});
+				
+		}
+	}
+
+});
+</code></pre>
+<p>I begin by defining my Vue instance and some basic variables I'll use in the app. The only one I think may be confusing is the <code>images</code> block, which will be fleshed out later to let you define images for your app.</p>
+<p>When the <code>created</code> event is fired, I do a Geolocation request. I don't properly handle the error state, but that could be added of course. Note that modern browsers require an https server to use this feature. While you definitely can test this on localhost, be aware of this restriction if you deploy to production. (And just freaking use https!)</p>
+<p>Next is the <code>loadWeather</code> function. I went back and forth between multiple different weather API providers, but ended up with the <a href="https://developer.yahoo.com/weather/">Yahoo Weather API</a>. This is <em>not</em> a fan I'm a big fan of, but it is free and doesn't require a key. But look at the URL. Ick. (And I know it's ugly because it is using an embedded YQL string and YQL in general is pretty cool, but... ick!)</p>
+<p>Once done - I simply upload my values and that's it. Want to test it? I pushed it up on Surge here: https://adhesive-flavor.surge.sh.</p>
+<p>As I said above, the next step is to start working on image loading. What I'd like is the ability to provide multiple images per condition (so you don't always see the same thing) and a &quot;fallback&quot; option so that if you can't find pictures for every condition, you can at least show something. I'm definitely open to more suggestions as well - just let me know in a comment below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/YUSV-xtOHqo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Nilo Isotalo</a> on Unsplash</i></p>
+}

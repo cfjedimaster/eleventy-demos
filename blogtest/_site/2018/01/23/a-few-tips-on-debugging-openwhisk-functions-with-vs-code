@@ -1,0 +1,73 @@
+<h1>Post</h1>
+
+<p>A few weeks ago fellow IBMer Niklas Heidloff wrote a great blog post on debugging OpenWhisk actions with Visual Studio Code. Please, please, <em>please</em> read his post first: <a href="http://heidloff.net/article/debug-apache-openwhisk-functions-vscode">Debugging Apache OpenWhisk Functions with VS Code</a> While his post was great, I had a few problems understanding exactly how to make use of his code, in particular, how to work with an existing OpenWhisk project. You can see my conversation with him in his comments. I offered to help write up the process for integrating his work in existing code and the result is the guide below. Note that there are probably multiple different ways of doing this, but this is what worked for me. Ok, ready?</p>
+<p>Let's begin with a new OpenWhisk project in Visual Studio Code. In the screen shot below, you can see the project. I've got one action, <code>hello.js</code>, in an <code>actions</code>. folder. None of this is a requirement. You don't need a subdirectory and you can have any structure, file name, etc that makes sense to you.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/dow1.jpg" alt="Screen shot"></p>
+<p>My action is a pretty simple &quot;Hello World&quot; type example. It is not using an async response or a zip file, but I'll get to that in a minute. Also, I have <em>not</em> actually deployed the code to OpenWhisk. You don't have to do so in order to debug it first.</p>
+<h1>Step Zero</h1>
+<p>Alright - so to get started, you do not have to clone Niklas' <a href="https://github.com/nheidloff/openwhisk-debug-nodejs">repo</a>. Having his files locally will help in the next few steps, but you can also copy code right from the GitHub site itself. You will only need to copy a few things so I'd probably skip cloning the repo.</p>
+<h1>Step One</h1>
+<p>The debugger is going to use a local file called <code>run.js</code>. Make a new file in your project called <code>run.js</code>, and copy it from here: https://raw.githubusercontent.com/nheidloff/openwhisk-debug-nodejs/master/run.js. Note that you can save it anywhere in the project. In the screen shot below it is in root.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/dow2.jpg" alt="Screen shot"></p>
+<h1>Step Two</h1>
+<p>Now you need to create a debug configuration. Click the debug icon in the left hand panel, and in the drop down that currently says &quot;No Configurations&quot;, click to open it and select &quot;Add Configuration...&quot;:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/dow3.jpg" alt="Screen shot"></p>
+<p>If you're prompted to select an ennvironment, just select Node. This opens a new JSON file (launch.json). In this file you need to define how Code will debug your file. The configuration will consist of both the file to test as well as another file of parameters. You can find samples of this configuration here: https://raw.githubusercontent.com/nheidloff/openwhisk-debug-nodejs/master/.vscode/launch.json. Let's add one:</p>
+<pre><code class="language-js">{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	&quot;version&quot;: &quot;0.2.0&quot;,
+	&quot;configurations&quot;: [
+        {
+            &quot;args&quot;: [
+                &quot;./actions/hello.js&quot;,
+                &quot;./payloads/payload1.json&quot;
+            ],
+            &quot;type&quot;: &quot;node&quot;,
+            &quot;request&quot;: &quot;launch&quot;,
+            &quot;name&quot;: &quot;Run hello with payload&quot;,
+            &quot;program&quot;: &quot;${workspaceFolder}/run.js&quot;,
+            &quot;outFiles&quot;: [
+                &quot;${workspaceFolder}/**/*.js&quot;
+            ]
+        },
+
+
+	]
+}
+</code></pre>
+<p>There are three important parts here.</p>
+<ul>
+<li>In <code>args</code>, the first argument is the action to run. The second argument is a JSON file containing parameters for your action. I'll show this in a moment. You need to ensure your paths are correct.</li>
+<li>The second thing to note is <code>name</code>. This can be anything, but you probably want to name it something that makes sense.</li>
+<li>Finally, the <code>program</code> value should point to where you saved <code>run.js</code>.</li>
+</ul>
+<h1>Step Three</h1>
+<p>Now let's set up the payload. Payloads are simply your action arguments. What you have here will depend on your action and what you are trying to debug. As before, the use of a <code>payloads</code> subdirectory is arbitrary. Here is the one we will use:</p>
+<pre><code class="language-js">{
+	&quot;name&quot;:&quot;ray&quot;
+}
+</code></pre>
+<h1>Step Four</h1>
+<p>Almost there, I promise! As a final step, you need to add one line to your action:</p>
+<pre><code class="language-js">exports.main = main // necessary for local debugging
+</code></pre>
+<p>As the comment says, this is required for debugging. It is also required for zip-based actions. It is completely harmless in this action so we can just add this and forget it, even if we never debug again.</p>
+<p>Ok, just to ensure we're on the same page, here's my Code window now:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/dow4.jpg" alt="Screen shot"></p>
+<h1>Let's Debug!</h1>
+<p>Now we have everything we need to debug. To start, I'll simply ensure my new configuration is showing and then hit the green button:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/dow5.jpg" alt="Screen shot"></p>
+<p>You do not have to actually add any breakpoints if you just want to quickly run the action and see the output. But obviously adding breakpoints let you step through your code line by line and track down bugs and other nefarious issues.</p>
+<p>And yeah - that's it. Async actions? It works the same. Zip actions? It works the same. All you have to do is keep adding configurations to launch.json to add more ways to debug. You could have one per action, or many per action if you want to have multiple different payloads to test with.</p>
+<h1>Summary</h1>
+<p>So just to quickly go over the above, here is what you need to do:</p>
+<ul>
+<li>Ensure your action has <code>exports.main = main</code> at the end.</li>
+<li>Add a configuration that points to your action, a JSON file for arguments, and run.js.</li>
+<li>Copy run.js into your project (one time).</li>
+<li>Make a payload file for arguments.</li>
+<li>Debug like cray cray.</li>
+</ul>
+}

@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>Here is an odd one for you. Consider the following Flex code:</p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" horizontalAlign="left"&gt;
+<pre><code>&amp;lt;mx:VBox paddingLeft=&quot;10&quot; paddingRight=&quot;10&quot; width=&quot;80%&quot;&amp;gt;
+	
+	&amp;lt;mx:Label text=&quot;First Label&quot;  /&amp;gt;
+	&amp;lt;mx:TextArea borderColor=&quot;#ff0000&quot; borderThickness=&quot;3&quot;/&amp;gt;
+	&amp;lt;mx:Label text=&quot;Second Label&quot; /&amp;gt;
+
+&amp;lt;/mx:VBox&amp;gt;
+</code></pre>
+<p>&lt;/mx:Application&gt;
+</code></p>
+<p>You would expect 3 items to show up, left aligned, in a VBox, and you get that of course, but the textarea is <i>very</i> slightly more to the left than the two labels. Check out this screen shot where I placed another window directly above the left edge of the text:</p>
+<img src="https://static.raymondcamden.com/images//Picture 141.png">
+<p>Notice the red border is very slightly smaller than the other ones. If I remove the borderColor and set borderThickness to 0, it is still there:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 221.png">
+<p>It almost seems as if Flex is aligning by the text of the TextArea control. In other words, when I typed in there it seemed as if that was the 'line' Flex used to line up all 3 controls, as opposed to the 'chrome' of the TextArea.</p>
+<p>So am I seeing things, or is that what really is happening? And if so, is there where to align it by the chrome, not the text?</p>
+}

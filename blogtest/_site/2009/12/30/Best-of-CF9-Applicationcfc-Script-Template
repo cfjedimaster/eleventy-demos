@@ -1,0 +1,160 @@
+<h1>Post</h1>
+
+<p><img src="https://static.raymondcamden.com/images/cfjedi/bestcfcontest1.jpg" title="Best of ColdFusion 9" align="left" style="margin-right:5px;margin-bottom:5px"/> <b>Note from the Editor, AKA Ray:</b> Well obviously the contest is taking a bit longer to review than I thought. Sorry folks! But so far the entries have been great and I'm happy we have too <b>many</b> entries versus not enough! Anyway, this is, most likely, the last review for 2009. They will continue in 2010. This review was written by <a href="http://www.cfsilence.com">Todd Sharp</a>.</p>
+<!--more-->
+<p>This contest entry comes from Russ Spivey and is a simple template for cfscript style Application.cfc.  In Russ' words:</p>
+<p><blockquote>
+This is self-explanatory. I did it because I couldn't find a complete Coldfusion 9 Application.cfc reference, or an example Application.cfc in CFScript, or a good example of documentation for components in CFScript. Method and variable descriptions are from Adobe's documentation. The order of variables and methods are the same as Adobe's. Variables are set to default values (where applicable). Method and argument hints will appear in the CFC explorer.</blockquote></p>
+<p>Before I get into this version I should also point out <a href="http://www.danvega.org/blog/index.cfm/2009/12/13/ColdFusion9-Application-cfc-script-reference">Dan Vega's version</a>, which Dan released after Russ created his version.  I only mention Dan's because it offers an alternative and it helped me in reviewing both of the ref's side-by-side (since I'm personally not a user/fan of cfscript). </p>
+<p>Russ starts out his reference by setting some attributes in the new 'java doc' style notation:</p>
+<code>
+/**
+@title "Application.cfc reference in CFScript for Coldfusion 9"
+@description "This component includes all Application.cfc methods and variables, set to their default values (if applicable). Please note that default values are not always desirable, and some methods or variables should be modified or removed depending on the situation."
+@author "Russ Spivey (http://cfruss.blogspot.com)"
+<p>@dateCreated &quot;November 29, 2009&quot;
+@licence &quot;This work is licensed under the Creative Commons Attribution 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by/3.0/us/ or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA.&quot;</p>
+<p>@hint &quot;You implement methods in Application.cfc to handle ColdFusion application events and set variables in the CFC to configure application characteristics.&quot;
+*/</p>
+<p>component output=&quot;false&quot; {</code></p>
+<p>The first thing that stands out is the lack of a few of the potential component level attributes.  Russ mainly used the component level attribute declaration block for meta info (@title, @author) which is certainly 'OK' to do, but he's missing many of the actual potential component level attributes (like @accessors, @alias, etc) so I'll deduct 100 <cfpoints> for that omission.  I liked that he used the 'java doc' style notation for the meta, but then he used an inline declaration for the 'output' attribute.  I'm a big proponent of consistency and I'd personally prefer choosing one style and sticking with it. </p>
+<p>The next part of his reference showed the potential application specific variables (the 'this' scoped vars):</p>
+<p><code>/* **************************** APPLICATION VARIABLES **************************** */</p>
+<p>// The application name. If you do not set this variable, or set it to the empty string, your CFC applies to the unnamed application scope, which is the ColdFusion J2EE servlet context.
+THIS.name = &quot;foo&quot;;</p>
+<p>// Life span, as a real number of days, of the application, including all Application scope variables.
+THIS.applicationTimeout = createTimeSpan(0, 1, 0, 0);</p>
+<p>// Whether the application supports Client scope variables.
+THIS.clientManagement = false;</p>
+<p>// Where Client variables are stored; can be cookie, registry, or the name of a data source.
+THIS.clientStorage = &quot;registry&quot;; //cookie||registry||datasource</p>
+<p>// Contains ColdFusion custom tag paths.
+THIS.customTagPaths = &quot;&quot;;</p>
+<p>// The Google Maps API key required to embed Google Maps in your web pages.
+THIS.googleMapKey = &quot;&quot;;</p>
+<p>// Name of the data source from which the query retrieves data.
+THIS.datasource = &quot;&quot;;</p>
+<p>// Whether to store login information in the Cookie scope or the Session scope.
+THIS.loginStorage = &quot;cookie&quot;; //cookie||session</p>
+<p>// A structure that contains ColdFusion mappings. Each element in the structure consists of a key and a value. The logical path is the key and the absolute path is the value.
+THIS.mappings = {};</p>
+<p>// Whether to enable validation on cfform fields when the form is submitted.
+THIS.serverSideFormValidation = true;</p>
+<p>// Whether the application supports Session scope variables.
+THIS.sessionManagement = true;</p>
+<p>// Life span, as a real number of days, of the user session, including all Session variables.
+THIS.sessionTimeout = createTimeSpan(0, 0, 30, 0);</p>
+<p>// Whether to send CFID and CFTOKEN cookies to the client browser.
+THIS.setClientCookies = true;</p>
+<p>// Whether to set CFID and CFTOKEN cookies for a domain (not just a host).
+THIS.setDomainCookies = false;</p>
+<p>// Whether to protect variables from cross-site scripting attacks.
+THIS.scriptProtect = false;</p>
+<p>// A Boolean value that specifies whether to add a security prefix in front of the value that a ColdFusion function returns in JSON-format in response to a remote call.
+THIS.secureJSON = false;</p>
+<p>// The security prefix to put in front of the value that a ColdFusion function returns in JSON-format in response to a remote call if the secureJSON setting is true.
+THIS.secureJSONPrefix = &quot;&quot;;</p>
+<p>// A comma-delimited list of names of files. Tells ColdFusion not to call the onMissingTemplate method if the files are not found.
+THIS.welcomeFileList = &quot;&quot;;</p>
+<p>// A struct that contains the following values: server, username, and password.If no value is specified, takes the value in the administrator.
+THIS.smtpServersettings = {};</p>
+<p>// Request timeout. Overrides the default administrator settings.
+THIS.timeout = 30; // seconds</p>
+<p>// A list of ip addresses that need debugging.
+THIS.debugipaddress = &quot;&quot;;</p>
+<p>// Overrides the default administrator settings. It does not report compile-time exceptions.
+THIS.enablerobustexception = false;</p>
+<p>/* ORM variables */</p>
+<p>// Specifies whether ORM should be used for the ColdFusion application.Set the value to true to use ORM. The default is false.
+THIS.ormenabled = false;</p>
+<p>// The struct that defines all the ORM settings. Documentation: http://help.adobe.com/en_US/ColdFusion/9.0/Developing/WSED380324-6CBE-47cb-9E5E-26B66ACA9E81.html
+THIS.ormsettings = {};</p>
+<p>// note: THIS.datasource applies to cfquery as well as ORM. It is defined on line 31.
+</code></p>
+<p>
+Pretty standard and he appears to have nailed everything.  A part of me strongly wishes that Ben Forta would have never used UPPERCASE scope names in the WACK books so that my eyes wouldn't have to bleed every time I see someone else do that, but oh well :).  One minor correction - this.debugipaddress is actually this.debuggingipaddresses (see <a href="http://www.raymondcamden.com/index.cfm/2009/7/13/ColdFusion-9s-new-Application-variables#c2EE4FB47-B864-DABB-DCFFBC5FE56A2C9C">here</a>) - no points deducted for that since it's a doc bug.  I also would have liked to have seen him mention the struct keys for smtpServerSettings ({server="",username="",password=""}).</p>
+<p>The rest of this entry just lays out a skeleton for the various methods within Application.cfc with some helpful comments. </p>
+<p><code>/* **************************** APPLICATION METHODS **************************** */</p>
+<p>/**
+@hint &quot;Runs when an application times out or the server is shutting down.&quot;
+@ApplicationScope &quot;The application scope.&quot;
+*/
+public void function onApplicationEnd(struct ApplicationScope=structNew()) {</p>
+<p>return;
+}</p>
+<p>/**
+@hint &quot;Runs when ColdFusion receives the first request for a page in the application.&quot;
+*/
+public boolean function onApplicationStart() {</p>
+<p>return true;
+}</p>
+<p>/**
+@hint &quot;Intercepts any HTTP or AMF calls to an application based on CFC request.&quot;
+@cfcname &quot;Fully qualified dotted path to the CFC.&quot;</p>
+<p>@method &quot;The name of the method invoked.&quot;
+@args &quot;The arguments (struct) with which the method is invoked.&quot;
+*/
+public void function onCFCRequest(required string cfcname, required string method, required string args) {</p>
+<p>return;
+}</p>
+<p>/**
+@hint &quot;Runs when an uncaught exception occurs in the application.&quot;
+@Exception &quot;The ColdFusion Exception object. For information on the structure of this object, see the description of the cfcatch variable in the cfcatch description.&quot;
+@EventName &quot;The name of the event handler that generated the exception. If the error occurs during request processing and you do not implement an onRequest method, EventName is the empty string.&quot;</p>
+<p>note: This method is commented out because it should only be used in special cases
+<em>/
+/</em>
+public void function onError(required any Exception, required string EventName) {
+return;
+}
+*/</p>
+<p>/**
+@hint &quot;Runs when a request specifies a non-existent CFML page.&quot;
+@TargetPage &quot;The path from the web root to the requested CFML page.&quot;
+note: This method is commented out because it should only be used in special cases
+<em>/
+/</em>
+public boolean function onMissingTemplate(required string TargetPage) {
+return true;
+}
+*/</p>
+<p>/**
+@hint &quot;Runs when a request starts, after the onRequestStart event handler. If you implement this method, it must explicitly call the requested page to process it.&quot;
+@TargetPage &quot;Path from the web root to the requested page.&quot;
+note: This method is commented out because it should only be used in special cases
+<em>/
+/</em>
+public void function onRequest(required string TargetPage) {
+return;
+}
+*/</p>
+<p>/**
+@hint &quot;Runs at the end of a request, after all other CFML code.&quot;</p>
+<p>*/
+public void function onRequestEnd() {
+return;</p>
+<p>}</p>
+<p>/**
+@hint &quot;Runs when a request starts.&quot;
+@TargetPage &quot;Path from the web root to the requested page.&quot;
+*/
+public boolean function onRequestStart(required string TargetPage) {</p>
+<p>return true;
+}</p>
+<p>/**
+@hint &quot;Runs when a session ends.&quot;
+@SessionScope &quot;The Session scope&quot;</p>
+<p>@ApplicationScope &quot;The Application scope&quot;
+*/
+public void function onSessionEnd(required struct SessionScope, struct ApplicationScope=structNew()) {</p>
+<p>return;
+}</p>
+<p>/**
+@hint &quot;Runs when a session starts.&quot;
+*/
+public void function onSessionStart() {</p>
+<p>return;
+}</p>
+<p>}</code></p>
+<p>
+Overall it's a handy reference for folks.  Nice job Russ!</p><p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fupdatedapplication%5Fcfcincfscriptreference1%2Ezip'>Download attached file.</a></p>}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Thanks to Geoff Bowers for pointing out an issue with my RSS code. I wasn't formatting the time correctly. He also pointing out a cool web app to validate RSS feeds:</p>
+<p><a href="http://feeds.archive.org/validator">http://feeds.archive.org/validator</a></p>
+<p>The zip file has been updated and can be retrieved using the link below.</p>
+}

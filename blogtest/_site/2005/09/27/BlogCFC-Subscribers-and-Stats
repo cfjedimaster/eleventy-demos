@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>I was asked today, is there a way to see who is subscribed to your blog? The short answer is yes, if you don't mind editing your stats file. I modified my own copy, outside of what you download, so I could see my subscribers, but only if I was logged in. To add the same mod to your code, simply find stats.cfm, and add this:</p>
+<code>
+&lt;cfif isUserInRole("admin")&gt;
+	&lt;cfquery name="getpeople" datasource="#dsn#"&gt;
+	select * from tblblogsubscribers
+	&lt;/cfquery&gt;
+	&lt;cfdump var="#getpeople#"&gt;
+&lt;/cfif&gt;
+</code>
+<p>It isn't pretty, but works great.</p>
+}

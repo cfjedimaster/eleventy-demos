@@ -1,0 +1,74 @@
+<h1>Post</h1>
+
+<p>Here is an interesting scenario that a reader (Mike) and I talked about earlier in the week. He had a query of car data that included make, VIN, and miles. Here is some sample data to give you an idea:</p>
+<!--more-->
+<code>
+&lt;cfset q3 = queryNew("car_make, car_vin, car_miles","varchar, varchar, integer")&gt;
+&lt;cfset newrow = queryaddrow(q3, 3)&gt;
+&lt;cfset temp=querysetcell(q3, "car_make", "FORD", 1)&gt;
+&lt;cfset temp=querysetcell(q3, "car_vin", "10001", 1)&gt;
+&lt;cfset temp=querysetcell(q3, "car_miles", 88, 1)&gt;
+<p>&lt;cfset temp=querysetcell(q3, &quot;car_make&quot;, &quot;CHEVROLET&quot;, 2)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_vin&quot;, &quot;10002&quot;, 2)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_miles&quot;,32, 2)&gt;</p>
+<p>&lt;cfset temp=querysetcell(q3, &quot;car_make&quot;, &quot;CRYSLER&quot;, 3)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_vin&quot;, &quot;10003&quot;, 3)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_miles&quot;, 56, 3)&gt;
+</code></p>
+<p>He then wanted to chart the data so that the model was used for labels, and miles was used for data.</p>
+<code>
+&lt;cfchart&gt;
+	&lt;cfchartseries query="q3" itemColumn="car_make" valueColumn="car_miles" type="bar"&gt;
+	&lt;/cfchartseries&gt;
+&lt;/cfchart&gt;
+</code>
+<p>The problem he had was with links. He wanted the user to click on a column and be taken to a page that passed the VIN number, not the make. Unfortunately, even though you can pass in an entire query to the chart engine, it seems as if the only data you really have available for links is the item label (Make), value (miles) and series label (only one series here so no label). It would be nice to be able to create a URL that used any column from the data.</p>
+<p>I did a bit of digging with the chart editor and was not able to find out if this was possible. I think it might actually be doable, but, I didn't have time to really dig deep.</p>
+<p>I came up with another solution. Mike said that the Model name was just as unique as the VIN. That being said, we can convert the query to JavaScript, and use a JavaScript handler for the chart link. Consider this complete template:</p>
+<code>
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;
+&lt;/head&gt;
+<p>&lt;body&gt;</p>
+<p>&lt;cfset q3 = queryNew(&quot;car_make, car_vin, car_miles&quot;,&quot;varchar, varchar, integer&quot;)&gt;
+&lt;cfset newrow = queryaddrow(q3, 3)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_make&quot;, &quot;FORD&quot;, 1)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_vin&quot;, &quot;10001&quot;, 1)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_miles&quot;, 88, 1)&gt;</p>
+<p>&lt;cfset temp=querysetcell(q3, &quot;car_make&quot;, &quot;CHEVROLET&quot;, 2)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_vin&quot;, &quot;10002&quot;, 2)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_miles&quot;,32, 2)&gt;</p>
+<p>&lt;cfset temp=querysetcell(q3, &quot;car_make&quot;, &quot;CRYSLER&quot;, 3)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_vin&quot;, &quot;10003&quot;, 3)&gt;
+&lt;cfset temp=querysetcell(q3, &quot;car_miles&quot;, 56, 3)&gt;</p>
+<p>&lt;cfdump var=&quot;#q3#&quot;&gt;</p>
+<p>&lt;script&gt;
+&lt;cfoutput&gt;var #toScript(q3,'mydata',false)#&lt;/cfoutput&gt;</p>
+<p>function translateToVin(make) {
+for(var i=0;i&lt;mydata.length;i++) {
+if(mydata[i]['car_make']==make) {
+var vin = mydata[i]['car_vin']
+console.log(vin)
+//document.location.href='test.cfm?vin='+vin
+}
+}
+}
+&lt;/script&gt;</p>
+<p>&lt;!---
+&lt;cfchart url=&quot;test.cfm?P_CAR_VIN=$ITEMLABEL$&amp;val=$VALUE$&amp;sl=$SERIESLABEL$&quot;&gt;
+---&gt;
+&lt;cfchart url=&quot;javascript:translateToVin('$ITEMLABEL$')&quot;&gt;</p>
+<pre><code>	&amp;lt;cfchartseries query=&quot;q3&quot; itemColumn=&quot;car_make&quot; valueColumn=&quot;car_miles&quot; type=&quot;bar&quot;&amp;gt;
+	&amp;lt;/cfchartseries&amp;gt;
+</code></pre>
+<p>&lt;/cfchart&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>After the first set of lines that just set the data up, notice my use of &quot;toScript&quot;. This lets you convert any CFML data into JavaScript statements. That one function will essentially just change my query into a set of JavaScript data.</p>
+<p>Skip down a bit to the chart, and notice I'm now calling translateToVin, and passing in my car model.</p>
+<p>Go back up to the JavaScript, and you can see the code. It basically loops over the query data, looks for a match, and when it finds it, it uses the Firebug console to report it. The actual &quot;movement&quot; to the new page is right after, but commented out since I didn't have a detail page locally.</p>
+<p>Of course, if car makes are unique, I could have just passed that and let the server do the lookup instead.</p>
+<p>Anyway, hope this helps other.</p>
+}

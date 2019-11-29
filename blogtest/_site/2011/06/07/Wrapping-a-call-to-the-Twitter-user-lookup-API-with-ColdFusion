@@ -1,0 +1,42 @@
+<h1>Post</h1>
+
+<p>I just wrote a quick UDF (available now on <a href="http://www.cflib.org/udf/getTwitterUser">CFLib</a>) that wraps the call to Twitter's user look up system. Like most Twitter APIs, this one is ridiculously simple, but I need this code for another project I'm working on (technically I need it in Flex, but the ColdFusion version helps me understand how I'll write that) so I thought I'd write it up real quick like. Here is getTwitterUser:</p>
+<!--more-->
+<p>
+<code>
+&lt;cffunction name="getTwitterUser" output="false" returnType="struct"&gt;
+	&lt;cfargument name="screenname" type="string" required="true"&gt;
+	&lt;cfset var httpResult = ""&gt;
+<pre><code>&amp;lt;!--- remove the @ if they included it. ---&amp;gt;
+&amp;lt;cfif left(arguments.screenname,1) is &quot;@&quot;&amp;gt;
+	&amp;lt;cfset arguments.screenname = right(arguments.screenname, len(arguments.screenname)-1)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfset var theUrl = &quot;http://api.twitter.com/1/users/show.json?screen_name=#arguments.screenname#&quot;&amp;gt;
+
+&amp;lt;cfhttp url=&quot;#theUrl#&quot; result=&quot;httpResult&quot;&amp;gt;
+&amp;lt;cfset var result = deserializeJSON(httpResult.filecontent)&amp;gt;
+
+&amp;lt;cfreturn result&amp;gt;	
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>
+<p>I'd rather that be in script to be honest, but that wouldn't be difficult to rewrite. Usage then is pretty trivial. If you ask for a user that exists, you get a large structure back. If you get one that does not, you get an error key in the struct. Here's example code:</p>
+<p>
+<code>
+&lt;cfset res = getTwitterUser("cfjedimaster")&gt;
+&lt;cfif structKeyExists(res, "name") and structKeyExists(res, "profile_image_url")&gt;
+	&lt;cfoutput&gt;
+	&lt;p&gt;
+	&lt;img src="#res.profile_image_url#" align="left"&gt; #res.name#
+	&lt;br clear="left"&gt;
+	&lt;/p&gt;
+	&lt;/cfoutput&gt;
+&lt;/cfif&gt;
+<p>&lt;cfdump var=&quot;#getTwitterUser('cfjedimaster221920')#&quot;&gt;
+</code></p>
+<p>
+<p>And the result...</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip109.png" />}

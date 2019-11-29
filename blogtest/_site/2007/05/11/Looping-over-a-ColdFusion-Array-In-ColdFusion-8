@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>Wednesday I <a href="http://ray.camdenfamily.com/index.cfm/2007/5/9/Variable-Type-Gotchas--ColdFusion-Arrays-and-Missing-Indexes">blogged </a> about ColdFusion arrays and today I got permission to mention another new feature in ColdFusion 8 - Array-based CFLOOP. In the past you would loop over an array like so:</p>
+<code>
+&lt;cfloop index="x" from="1" to="#arrayLen(arr)#"&gt;
+   &lt;cfoutput&gt;#arr[x]#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+</code>
+<p>ColdFusion 8 adds a new array attribute to cfloop so you can do this instead:</p>
+<code>
+&lt;cfloop index="x" array="#arr#"&gt;
+   &lt;cfoutput&gt;#x#&lt;br /&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+</code>
+<p>I don't think this has been shared yet publicly, so enjoy, and remember that I was given permission to share this. This weekend I think I'll resurrect my 'Known Facts' blog post and update it with all the juicy bits that have been revealed lately.</p>
+}

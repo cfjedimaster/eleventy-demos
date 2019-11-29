@@ -1,0 +1,118 @@
+<h1>Post</h1>
+
+<p>Kerrie asks:</p>
+<blockquote>
+<p>
+A couple of weeks ago, I read a post you wrote on jQuery and form validation... really peaked my interest so I've been taking a look at not only the validation plugin, but many of the other great jQuery plugins... I found this one last night, and its perfect for an app I'm working on, but I cannot figure out how to return the output of a query to populate the list.  In the demo they are returning the results of tvshows.php. I noticed a number of other folks were having the same problem but no solution. Might you have a few spare moments to take a look??
+</p>
+</blockquote>
+<p>Kerrie, don't feel alone. I've noticed this in a few other jQuery plugins. The author will give you an example of the JSON they want, but they don't describe the JSON in pure data forms. So for example, if the JSON string is an array of strings, they don't say that. They just show it and assume you know that is how arrays are represented in JSON. JSON may be easy, but I definitely can't parse it in my head quite yet. Lets take a look at what the plugin wants:</p>
+<!--more-->
+<blockquote>
+<p>
+[{"id":"856","name":"House"},
+ {"id":"1035","name":"Desperate Housewives"},
+ {"id":"1048","name":"Dollhouse"},
+ {"id":"1113","name":"Full House"}
+]
+</p>
+</blockquote>
+<p>Ok, so what do you do here? Obviously this is a pattern where every result is {&quot;id&quot;:&quot;X&quot;, &quot;name&quot;:&quot;Y&quot;}, wrapped in [ and ]. So I took a guess here and thought maybe they wanted an array of structs. There is an easy way to test this - just write a quick test script:</p>
+<cfoutput>
+<cfset s = {}>
+<cfset a = []>
+<cfset c = []>
+<cfset c[1] = s>
+<cfoutput>
+s, just a struct: #serializeJSON(s)#<br/>
+a, just an array: #serializeJSON(a)#<br/>
+c, an array with a struct: #serializeJSON(c)#
+</cfoutput>
+</code>
+<p>This output:</p>
+<blockquote>
+<p>
+s, just a struct: {}<br/>
+a, just an array: []<br/>
+c, an array with a struct: [{}]<br/>
+</p>
+</blockquote>
+<p>Perfect! So now I know - I need to convert a query into an array of structs. Easy enough, right?</p>
+<p>Here is the first CFC method I came up with:</p>
+<code>
+&lt;cffunction name="getNames" access="remote" output="false" returnType="any"&gt;
+	&lt;cfargument name="q" type="string" required="true"&gt;
+	&lt;cfset var entrylookup = ""&gt;
+	&lt;cfset var r = []&gt;
+	&lt;cfset var s = {}&gt;
+<pre><code>&amp;lt;cfquery name=&quot;entrylookup&quot; datasource=&quot;blogdev&quot;&amp;gt;
+select	id, title
+from	tblblogentries
+where	title like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#arguments.q#%&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfloop query=&quot;entrylookup&quot;&amp;gt;
+	&amp;lt;cfset s = {id=id, name=title}&amp;gt;
+	&amp;lt;cfset r[arrayLen(r)+1] = s&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfreturn r&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>The docs said one argument, q, was always passed in, so I look for that and pass it to a query. I then loop over the results and create a struct for each, append it to the array, and return the array.</p>
+<p>I next whipped up a quick demo script:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script src=&quot;/jquery/jquery.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/jquery/jquery.tokeninput.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;/jquery/tokeninput/token-input.css&quot; type=&quot;text/css&quot; /&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>$(&quot;#name&quot;).tokenInput(&quot;data.cfc?method=getNames&amp;returnFormat=json&quot;, {
+	hintText: &quot;Type in the name of a blog entry.&quot;,
+	noResultsText: &quot;No results&quot;,
+	searchingText: &quot;Searching...&quot;
+})
+</code></pre>
+<p>})</p>
+<p>&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form&gt;
+&lt;input type=&quot;text&quot; name=&quot;name&quot; id=&quot;name&quot;&gt;
+&lt;/form&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>The code comes from the docs, and me viewing source, for the plugin. As far as I can tell, he doesn't actually document the options, but I was able to guess. So I gave it a try and did it work?</p>
+<p>Heck no!</p>
+<p>And since it was Ajax and I couldn't see why, I cried into my beer, shut the laptop, and went home.</p>
+<p>Oh wait - I have Firebug! And what do I always say when something goes wrong with Ajax? Check Firebug. And guess what - notice the result:</p>
+<img src="https://static.raymondcamden.com/images//Picture 331.png">
+<p>See the case of the ID and NAME values? They are both upper case. I changed my code to use the more verbose struct creation and set the keys so that my case was maintained:</p>
+<code>
+&lt;cffunction name="getNames" access="remote" output="false" returnType="any"&gt;
+	&lt;cfargument name="q" type="string" required="true"&gt;
+	&lt;cfset var entrylookup = ""&gt;
+	&lt;cfset var r = []&gt;
+	&lt;cfset var s = {}&gt;
+<pre><code>&amp;lt;cfquery name=&quot;entrylookup&quot; datasource=&quot;blogdev&quot;&amp;gt;
+select	id, title
+from	tblblogentries
+where	title like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#arguments.q#%&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfloop query=&quot;entrylookup&quot;&amp;gt;
+	&amp;lt;cfset s[&quot;id&quot;] = id&amp;gt;
+	&amp;lt;cfset s[&quot;name&quot;] = title&amp;gt;
+	&amp;lt;cfset arrayAppend(r, s)&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfreturn r&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>And voila - it worked. So long story short - the basic idea is to try to figure out the real data behind the expected JSON - or the real data form I should say. It would have been nice if the author had said &quot;An array of maps&quot; (or whatever PHP uses) though.</p>
+}

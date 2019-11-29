@@ -1,0 +1,21 @@
+<h1>Post</h1>
+
+<p>I'm currently fighting (ok, not fighting - debugging - it just feels like a fight) an issue with a ColdFusion 9 site that makes heavy use of ORM. I thought it might help to take a look at the Hibernate config files generated, so I added this to my ormSettings structure in Application.cfc:</p>
+<code>
+&lt;cfset this.ormsettings = {
+	dbcreate="update",
+	logsql="true",
+	eventhandling="true",
+	savemapping="true"
+}&gt;
+</code>
+<p>I reloaded my application and confirmed that in every folder containing my entity CFCs there was now a file named cfcname.hbmxml, where cfcname matched the name of the CFC.</p>
+<p>Ok, so far so good. Back in ColdFusion Builder I refreshed my project so I could see the files. But since the extension wasn't recognized, CFB didn't know how to handle it. I had previously opened up HBMXML files with TextMate, so CFB recognized that and sent all requests for such files to TextMate. I wanted to see them within CFB instead so this is what I did. (And to be clear, this should work for any Eclipse product, not just CFB.)</p>
+<p>I opened up my Preferences and went to General/Editors/File Associations.</p>
+<img src="https://static.raymondcamden.com/images/Picture 192.png" />
+<p>Click add and specify *.hbmxml for the file type.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture 262.png" />
+<p>Lastly - click Add under Associated editors. Select CF Builder XML Editor.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture 339.png" />
+<p>Hit Ok to dismiss the preferences panel and you are done.</p>
+}

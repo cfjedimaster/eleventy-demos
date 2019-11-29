@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Looks like an old Mozilla bug is back - one I find extremely annoying. In the older versions of Mozilla, every time you would View Source, the browser would actually refetch the source. Even though it was sitting right there on your desktop - it would hit the server again to get the source of the generated page. If your current page was random - well you can imagine the result.</p>
+<p>I was doing a test today and did a View Source on a form generated page. Imagine my surprise when it warned me it was going to post the data again.</p>
+<p>I still prefer Mozilla over IE - but bonehead stuff like this is really surprising.</p>
+}

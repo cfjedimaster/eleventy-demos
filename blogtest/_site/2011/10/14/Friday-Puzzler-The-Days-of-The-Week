@@ -1,0 +1,44 @@
+<h1>Post</h1>
+
+<p>Here is a little puzzler that I think will be fun, and hopefully much simpler than my last one. For today's puzzler, you must use ColdFusion to create a function that returns the day of the week (numerical) for a date. I know what you're thinking - doesn't ColdFusion have that built in? It does. But your task is to recreate it. I have absolutely no guidelines for how you recreate it - except that you can't - obviously - use the same logic that someone else does. While the winner of these things are pretty much always picked arbitrarily, today's is going to be even more crazy. I want to see the most weird, stupid, insane, etc, ways to solve this problem. Go crazy. The only restriction is that you have to run your code via a test harness to ensure it works right. I've written one for you. It allows you to pass in your UDF and it confirms it works for a large sample of dates.</p>
+<p/>
+<code>
+<p>&lt;cffunction name=&quot;testHarness&quot;&gt;
+&lt;cfargument name=&quot;myfunc&quot; required=&quot;true&quot;&gt;
+&lt;cfset var dates = []&gt;
+&lt;cfset var x = &quot;&quot;&gt;
+&lt;cfset var result = {}&gt;</p>
+<pre><code>&amp;lt;!--- first make the dates ---&amp;gt;
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;100&quot;&amp;gt;
+	&amp;lt;cfset arrayAppend(dates, dateAdd(&quot;d&quot;, randRange(-1000,1000), now()))&amp;gt;
+&amp;lt;/cfloop&amp;gt;	
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(dates)#&quot;&amp;gt;
+	&amp;lt;cfif dayOfWeek(dates[x]) neq myfunc(dates[x])&amp;gt;
+		&amp;lt;cfset result.status = &quot;fail&quot;&amp;gt;
+		&amp;lt;cfset result.message = &quot;Your function said the DOW for #dateformat(dates[x])# was #myfunc(dates[x])# and it should be #dayofweek(dates[x])#&quot;&amp;gt;
+		&amp;lt;cfreturn result&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfset result.status = &quot;pass&quot;&amp;gt;
+&amp;lt;cfreturn result&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p/>
+<p>And as an example, check this one. It will fail - eventually.</p>
+<p/>
+<code>
+&lt;cfscript&gt;
+function mycheatfunc(d) {
+	if(dayofweek(d) == 7) return 8;
+	return dayofweek(d);
+}
+&lt;/cfscript&gt;
+<p>&lt;cfset res = testHarness(mycheatfunc)&gt;
+&lt;cfdump var=&quot;#res#&quot; label=&quot;The Result&quot;&gt;
+</code></p>
+<p/>
+<p>Unfortunately, I don't have anything to give away today - except the pride of being called King Nerd. So get cracking!</p>
+}

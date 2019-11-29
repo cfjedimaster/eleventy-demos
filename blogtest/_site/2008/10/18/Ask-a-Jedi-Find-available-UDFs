@@ -1,0 +1,40 @@
+<h1>Post</h1>
+
+<p>Brandon asks:</p>
+<blockquote>
+<p>
+Is there a way to see what UDF's are available to the requesting template?
+</p>
+</blockquote>
+<p>While there is probably some internal method that can do this, there is a little known function you can use to find out if a variable is a UDF. Let's start by creating a bunch of variables and UDFs.</p>
+<!--more-->
+<code>
+&lt;cfscript&gt;
+a = 1;
+b = 2;
+c = 3;
+d = 'you betcha!';
+<p>function e() { return 'beer!'; }</p>
+<p>f = [1,2,3];
+g = {name='Ray',consuming=e};</p>
+<p>function h() { return &quot;more beer!&quot;; }
+&lt;/cfscript&gt;</p>
+<p>&lt;cffunction name=&quot;i&quot;&gt;
+&lt;cfreturn &quot;Stuff&quot;&gt;
+&lt;/cffunction&gt;
+</code></p>
+<p>Yes, those are horrible variable names, but you get the idea. In the above list, e, h, and i are udfs. Everything else is not. So how can we find them? First lets treat the variables scope like a structure:</p>
+<code>
+&lt;cfloop item="k" collection="#variables#"&gt;
+</code>
+<p>Next use the <a href="http://www.cfquickdocs.com/cf8/?getDoc=IsCustomFunction">isCustomFunction</a> function:</p>
+<code>
+&lt;cfoutput&gt;
+The variable #k# is 
+&lt;cfif not isCustomFunction(variables[k])&gt;NOT&lt;/cfif&gt; a UDF.&lt;br /&gt;
+&lt;/cfoutput&gt;
+</code>
+<p>That's it! If you run this you will see that it correctly recognizes which variables are UDFs.</p>
+<p>In case you're curious, there isn't a direct way to tell if &quot;X&quot; is a built in function. You can use <a href="http://www.cfquickdocs.com/cf8/?getDoc=GetFunctionList">getFunctionList</a>, which returns a struct, but you would then obviously need to do a structKeyList followed by a listFindNoCase.</p>
+<p>I'll admit to have never using either of these functions in production. Has anyone used them?</p>
+}

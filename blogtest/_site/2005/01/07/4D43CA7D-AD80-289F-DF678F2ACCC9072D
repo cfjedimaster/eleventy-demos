@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>As I mentioned in a previous <a href="http://www.camdenfamily.com/morpheus/blog/index.cfm?mode=entry&entry=19B03FFB-D745-2FFC-3E29FED6BF7816EC">post</a>, there is a bug with isSimpleValue that affects my RSS.cfc. I've added a workaround for the bug and the <a href="http://www.camdenfamily.com/morpheus/downloads/rss.zip">download</a>  has now been updated. As before, you can find the documentation <a href="http://www.camdenfamily.com/morpheus/downloads/rss.html">here</a>.</p>
+}

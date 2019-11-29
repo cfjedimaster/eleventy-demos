@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>So I released <a href="http://ray.camdenfamily.com/index.cfm/2005/11/10/BlogCFC-4-Released">BlogCFC  4</a> about an hour and a half ago, and I've got my first bug report in. Arindam emailed me to let me know that the Access database was missing the blog column in tblBlogSubscribers. The zip has been updated.</p>
+<p><b>Edited:</b> Arindam also found a bug with dateAdd and Access. This is fixed as of 5:31 PM CST.</p>
+}

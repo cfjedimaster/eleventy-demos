@@ -1,0 +1,451 @@
+<h1>Post</h1>
+
+<p>After spending some time arguing with an &quot;expert&quot; who made a comment about my favorite language without actually trying it, I thought it might be interesting to build a Twitter search tool that helps highlight &quot;important&quot; Tweets. I put &quot;important&quot; in quotes since there are many factors that might make one tweet more important compared to another. (And yes - I'm sure this has been done. But darnit, when has that ever stopped me from coding before?) I decided to whip up a quick prototype and see how it works.</p>
+<!--more-->
+<p>
+<p>I began with a simple form. When you click, I take your result, hit the Twitter API, and render the results. Here's the code for the first draft.</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+&amp;lt;title&amp;gt;Twitter Search with Rating&amp;lt;/title&amp;gt;
+&amp;lt;link rel=&quot;stylesheet&quot; href=&quot;bootstrap.min.css&quot;&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script&amp;gt;
+function getImportance(t){
+	//First we check follower count
+	//Then we check RT count
+	//Then we check if the first part of the string is 'RT'
+	var score=0;
+
+	if(t.metadata.hasOwnProperty(&quot;recent_retweets&quot;)) score+= parseInt(t.metadata.recent_retweets);
+	if(t.text.toLowerCase().indexOf(&quot;rt&quot;) == 0) score+=1;
+	console.log(score);
+	return score;
+}
+
+function renderTweet(t) {
+	//console.log(JSON.stringify(t.metadata));
+	var tweet = &quot;&quot;;
+	var importance = getImportance(t);
+	tweet += &quot;&amp;lt;p class='tweet &quot;+importance+&quot;'&amp;gt;&quot;;
+	tweet += &quot;&amp;lt;img src='&quot;+t.profile_image_url+&quot;'&amp;gt;&quot;;
+	tweet += &quot;From &quot;+t.from_user_name + &quot; on &quot;+t.created_at + &quot;&amp;lt;br/&amp;gt;&quot;;
+	tweet += t.text+&quot;&amp;lt;/p&amp;gt;&quot;;
+	return tweet;
+}
+
+$(document).ready(function() {
+
+	$(&quot;#mainForm&quot;).submit(function(e) {
+		$(&quot;#searchButton&quot;).trigger(&quot;click&quot;);
+		e.preventDefault();
+	});
+
+	$(&quot;#searchButton&quot;).click(function() {
+		var term = $.trim($(&quot;#searchterm&quot;).val());
+		if(term == &quot;&quot;) return;
+		console.log(&quot;Sarch for &quot;+term);
+		$.getJSON(&quot;http://search.twitter.com/search.json?q=&quot;+escape(term)+&quot;&amp;lang=en&amp;include_entities=true&amp;rpp=100&amp;result_type=mixed&amp;callback=?&quot;, {}, function(res,code) {
+			//console.dir(res.results);
+			console.log(res.results.length + &quot; results.&quot;);
+			var s = &quot;&quot;;
+			for(var i=0; i&amp;lt;res.results.length; i++) {
+				s+=renderTweet(res.results[i]);
+			}
+			$(&quot;#resultContainer&quot;).html(s);
+		});
+	});	
+
+
+	
+})
+&amp;lt;/script&amp;gt;
+&amp;lt;style&amp;gt;
+#resultContainer {
+	height: 500px;
+	overflow:auto;
+	border-style:solid;
+	border-width:thin;
+}
+
+.tweet {
+
+}
+.tweet img {
+	align: left;
+	padding-right: 10px;
+}
+&amp;lt;/style&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+
+	&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+		&amp;lt;form id=&quot;mainForm&quot;&amp;gt;
+			&amp;lt;fieldset&amp;gt;
+			&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+				&amp;lt;input type=&quot;text&quot; id=&quot;searchterm&quot; placeholder=&quot;Search Term&quot; class=&quot;xlarge&quot; size=&quot;30&quot;&amp;gt;
+				&amp;lt;input type=&quot;button&quot; id=&quot;searchButton&quot; value=&quot;Search&quot; class=&quot;btn primary&quot;&amp;gt;
+			&amp;lt;/div&amp;gt;
+			&amp;lt;/fieldset&amp;gt;
+		&amp;lt;/form&amp;gt;
+		
+		&amp;lt;div id=&quot;resultContainer&quot;&amp;gt;
+			
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	
+			
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>First take a look at the searchButton click handler. I grab the value out of the form and pass it to Twitter's API. For each result I'm running a render function for the tweet. For the most part this is just vanilla HTML, but note the call out to getImportance. Sometimes Twitter will return metadata for a tweet noting how many times it has been retweeted. I take that and a possible &quot;RT&quot; in front and create a score from it. I'm including it in the result HTML but not actually doing anything with it yet. Basically I just wanted to test the types of score values I get back. While Twitter returns the user ID and user name, it doesn't return any additional metadata for the user. I'll address that in the next draft.</p>
+<p>
+<p>Demo: <a href="http://www.raymondcamden.com/demos/2011/nov/21/searchwithrating.html">http://www.coldfusionjedi.com/demos/2011/nov/21/searchwithrating.html</a></p>
+<p>
+<p>Ok, now let's ramp it up a bit.</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+&amp;lt;title&amp;gt;Twitter Search with Rating&amp;lt;/title&amp;gt;
+&amp;lt;link rel=&quot;stylesheet&quot; href=&quot;bootstrap.min.css&quot;&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script&amp;gt;
+var tweets = {};
+var users = {};
+var lookupusers = {};
+
+//Credit: http://stackoverflow.com/questions/5223/length-of-javascript-associative-array/6700#6700
+Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+function getImportance(t){
+	//First we check follower count
+	//Then we check RT count
+	//Then we check if the first part of the string is 'RT'
+	var score=0;
+
+	//first draft logic is 1 point per 1k followers
+	score += Math.floor(users[t.from_user_id_str].followers_count/1000);
+	if(t.metadata.hasOwnProperty(&quot;recent_retweets&quot;)) score+= parseInt(t.metadata.recent_retweets);
+	if(t.text.toLowerCase().indexOf(&quot;rt&quot;) == 0) score+=1;
+
+	//based on score return 3 levels of importance
+	if(score &amp;lt; 10) return &quot;lowImportance&quot;;
+	if(score &amp;lt; 25) return &quot;mediumImportance&quot;;
+	return &quot;highImportance&quot;;
+	return score;
+}
+
+function renderTweet(t) {
+	//console.log(JSON.stringify(t.metadata));
+	var tweet = &quot;&quot;;
+	var importance = getImportance(t);
+	tweet += &quot;&amp;lt;p class='tweet &quot;+importance +&quot;' id='&quot;+t.id+&quot;'&amp;gt;&quot;;
+	tweet += &quot;&amp;lt;img src='&quot;+t.profile_image_url+&quot;'&amp;gt;&quot;;
+	tweet += &quot;From &quot;+t.from_user_name + &quot; on &quot;+t.created_at + &quot;&amp;lt;br/&amp;gt;&quot;;
+	tweet += t.text+&quot;&amp;lt;/p&amp;gt;&quot;;
+	//console.log(tweet);
+	return tweet;
+}
+
+function renderTweets(){
+	var s = &quot;&quot;;
+	for (var i = 0; i &amp;lt; tweets.length; i++) {
+		s += renderTweet(tweets[i]);
+	}
+	$(&quot;#resultContainer&quot;).html(s);
+}
+
+$(document).ready(function() {
+
+	$(&quot;#mainForm&quot;).submit(function(e) {
+		$(&quot;#searchButton&quot;).trigger(&quot;click&quot;);
+		e.preventDefault();
+	});
+
+	$(&quot;#searchButton&quot;).click(function() {
+		var term = $.trim($(&quot;#searchterm&quot;).val());
+		if(term == &quot;&quot;) return;
+		$(&quot;#status&quot;).html(&quot;&amp;lt;i&amp;gt;Working....&amp;lt;/i&amp;gt;&quot;);
+		lookupusers = {};
+		console.log(&quot;Search for &quot;+term);
+		$.getJSON(&quot;http://search.twitter.com/search.json?q=&quot;+escape(term)+&quot;&amp;lang=en&amp;include_entities=false&amp;rpp=100&amp;result_type=mixed&amp;callback=?&quot;, {}, function(res,code) {
+			console.log(res.results.length + &quot; tweet results.&quot;);
+			tweets = res.results;
+			for(var i=0; i&amp;lt;res.results.length; i++) {
+				if(!users.hasOwnProperty(res.results[i].from_user_id_str)) lookupusers[res.results[i].from_user_id_str] = 1;
+			}
+			//if we have lookup users, let's do the api call
+			console.log(&quot;I need to look up &quot;+Object.size(lookupusers)+&quot; users.&quot;);
+			var idlist = &quot;&quot;;
+			for(var u in lookupusers) {
+				idlist += u + &quot;,&quot;;
+			}
+			if(idlist != &quot;&quot;) {
+				$.getJSON(&quot;https://api.twitter.com/1/users/lookup.json?user_id=&quot;+idlist+&quot;&amp;include_entities=false&amp;callback=?&quot;, {}, function(res, code) {
+					console.log(res.length + &quot; user results.&quot;);
+					//add everyone to the users cache
+					for(var i=0; i&amp;lt;res.length; i++) {
+						users[res[i].id] = res[i];
+					}
+					//then call render
+					$(&quot;#status&quot;).html(&quot;&quot;);
+					renderTweets();
+				});
+			} else {
+				$(&quot;#status&quot;).html(&quot;&quot;);
+				renderTweets();
+			}
+		});
+	});	
+
+
+	
+})
+&amp;lt;/script&amp;gt;
+&amp;lt;style&amp;gt;
+#resultContainer {
+	height: 500px;
+	overflow:auto;
+	border-style:solid;
+	border-width:thin;
+}
+
+.tweet {
+
+}
+.tweet img {
+	align: left;
+	padding-right: 10px;
+}
+.lowImportance {
+}
+.mediumImportance {
+	background-color: yellow;
+}
+.highImportance {
+	background-color: red;
+}
+&amp;lt;/style&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+
+	&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+		&amp;lt;form id=&quot;mainForm&quot;&amp;gt;
+			&amp;lt;fieldset&amp;gt;
+			&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+				&amp;lt;input type=&quot;text&quot; id=&quot;searchterm&quot; placeholder=&quot;Search Term&quot; class=&quot;xlarge&quot; size=&quot;30&quot;&amp;gt;
+				&amp;lt;input type=&quot;button&quot; id=&quot;searchButton&quot; value=&quot;Search&quot; class=&quot;btn primary&quot;&amp;gt; &amp;lt;span id=&quot;status&quot;&amp;gt;&amp;lt;/span&amp;gt;
+			&amp;lt;/div&amp;gt;
+			&amp;lt;/fieldset&amp;gt;
+		&amp;lt;/form&amp;gt;
+		
+		&amp;lt;div id=&quot;resultContainer&quot;&amp;gt;
+			
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	
+			
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>Big changes here, so let me try to address each one in kind. First - notice that I've got a global users object. The point of this is to cache user data. So if you search for jquery, for example, and then jquery ui, you may have the user info for a person's tweet already. The lookupusers object is going to be used as a way to track the people I need to look up (versus those I already have in cache).  Hop on down to the click handler. Now - I had thought about displaying the tweets after the search results, doing a user lookup, and then applying the styles when the data came back. You can see that a bit in the fact that I applied the tweet ID to the paragraph wrapping the display. I then discovered that the user look up system could take up to 100 people at once. That means that my network calls come down to just 2 per search. To me, that seemed like it would be fast enough to just make the user wait.</p>
+<p>
+<p>You can see then where I loop over the results and figure out which users I don't know. If I have any at all, I call a user request. If not, I immediately render them. The getImportance function now checks the user's follower count. It divides that by 1000 and adds it to the score. Not very scientific perhaps, but it's a demo. ;)</p>
+<p>
+<p>Demo - and note - this has bugs that we'll be addressing) - <a href="http://www.coldfusionjedi.com/demos/2011/nov/21/searchwithrating2.html">http://www.coldfusionjedi.com/demos/2011/nov/21/searchwithrating2.html</a></p>
+<p>
+<p>Ok - now for the third and final edition. I call this the epic version. In this version I make use of Session Storage. This is an HTML5 feature I've talked about before (but I focused on Local Storage) that makes it really easy to store arbitrary data. I used Session Storage instead of Local Storage since I don't want to persist the data forever. Basically - I take user results, JSONify them, and put them in session. When the HTML page is loaded, if I have data there, I deserialize it. I also fixed a bug where Twitter was - for some reason - returning more than 100 tweets even though a) I asked just for a 100 and b) their docs say they only return 100. I also handled cases where user data for a particular user wasn't returned. (I'm assuming it's a protected user.) Here's the latest code base:</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+&amp;lt;title&amp;gt;Twitter Search with Rating&amp;lt;/title&amp;gt;
+&amp;lt;link rel=&quot;stylesheet&quot; href=&quot;bootstrap.min.css&quot;&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script&amp;gt;
+var tweets = {};
+var users = {};
+var lookupusers = {};
+
+//Credit: http://stackoverflow.com/questions/5223/length-of-javascript-associative-array/6700#6700
+Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+function getImportance(t){
+	//First we check follower count
+	//Then we check RT count
+	//Then we check if the first part of the string is 'RT'
+	var score=0;
+
+	//first draft logic is 1 point per 1k followers
+	if (users.hasOwnProperty(t.from_user_id_str) &amp;&amp; users[t.from_user_id_str].hasOwnProperty(&quot;followers_count&quot;)) {
+		score += Math.floor(users[t.from_user_id_str].followers_count / 1000);
+	} 
+	if(t.metadata.hasOwnProperty(&quot;recent_retweets&quot;)) score+= parseInt(t.metadata.recent_retweets);
+	if(t.text.toLowerCase().indexOf(&quot;rt&quot;) == 0) score+=1;
+
+	//based on score return 3 levels of importance
+	if(score &amp;lt; 10) return &quot;lowImportance&quot;;
+	if(score &amp;lt; 25) return &quot;mediumImportance&quot;;
+	return &quot;highImportance&quot;;
+	return score;
+}
+
+function renderTweet(t) {
+	//console.log(JSON.stringify(t.metadata));
+	var tweet = &quot;&quot;;
+	var importance = getImportance(t);
+	tweet += &quot;&amp;lt;p class='tweet &quot;+importance +&quot;' id='&quot;+t.id+&quot;'&amp;gt;&quot;;
+	tweet += &quot;&amp;lt;img src='&quot;+t.profile_image_url+&quot;'&amp;gt;&quot;;
+	tweet += &quot;From &quot;+t.from_user_name + &quot; on &quot;+t.created_at + &quot;&amp;lt;br/&amp;gt;&quot;;
+	tweet += t.text+&quot;&amp;lt;/p&amp;gt;&quot;;
+	//console.log(tweet);
+	return tweet;
+}
+
+function renderTweets(){
+	var s = &quot;&quot;;
+	for (var i = 0; i &amp;lt; tweets.length; i++) {
+		s += renderTweet(tweets[i]);
+	}
+	$(&quot;#resultContainer&quot;).html(s);
+}
+
+$(document).ready(function() {
+
+	//if we have users in sessionstore, load em 
+	if(sessionStorage.hasOwnProperty(&quot;users&quot;)) {
+		console.log(&quot;good news, I have users already&quot;);
+		users = JSON.parse(sessionStorage[&quot;users&quot;]);
+		console.log(&quot;I preloaded &quot;+Object.size(users)+ &quot; users.&quot;);
+		console.dir(users);
+	} 
+	
+	$(&quot;#mainForm&quot;).submit(function(e) {
+		$(&quot;#searchButton&quot;).trigger(&quot;click&quot;);
+		e.preventDefault();
+	});
+
+	$(&quot;#searchButton&quot;).click(function() {
+		var term = $.trim($(&quot;#searchterm&quot;).val());
+		if(term == &quot;&quot;) return;
+		$(&quot;#status&quot;).html(&quot;&amp;lt;i&amp;gt;Working....&amp;lt;/i&amp;gt;&quot;);
+		$(&quot;#resultContainer&quot;).html(&quot;&quot;);
+		lookupusers = {};
+		console.log(&quot;Search for &quot;+term);
+		$.getJSON(&quot;http://search.twitter.com/search.json?q=&quot;+escape(term)+&quot;&amp;lang=en&amp;include_entities=false&amp;rpp=100&amp;result_type=mixed&amp;callback=?&quot;, {}, function(res,code) {
+			console.log(res.results.length + &quot; tweet results.&quot;);
+			tweets = res.results;
+			for(var i=0; i&amp;lt;Math.min(100,res.results.length); i++) {
+				if(!users.hasOwnProperty(res.results[i].from_user_id_str)) lookupusers[res.results[i].from_user_id_str] = 1;
+			}
+			//if we have lookup users, let's do the api call
+			console.log(&quot;I need to look up &quot;+Object.size(lookupusers)+&quot; users.&quot;);
+			var idlist = &quot;&quot;;
+			for(var u in lookupusers) {
+				idlist += u + &quot;,&quot;;
+			}
+			if(idlist != &quot;&quot;) {
+				$.getJSON(&quot;https://api.twitter.com/1/users/lookup.json?user_id=&quot;+idlist+&quot;&amp;include_entities=false&amp;callback=?&quot;, {}, function(res, code) {
+					console.log(res.length + &quot; user results.&quot;);
+					//add everyone to the users cache
+					for(var i=0; i&amp;lt;res.length; i++) {
+						users[res[i].id] = res[i];
+					}
+					//copy to session
+					sessionStorage[&quot;users&quot;] = JSON.stringify(users);
+					//then call render
+					$(&quot;#status&quot;).html(&quot;&quot;);
+					renderTweets();
+				});
+			} else {
+				$(&quot;#status&quot;).html(&quot;&quot;);
+				renderTweets();
+			}
+		});
+	});	
+
+
+	
+})
+&amp;lt;/script&amp;gt;
+&amp;lt;style&amp;gt;
+#resultContainer {
+	height: 500px;
+	overflow:auto;
+	border-style:solid;
+	border-width:thin;
+}
+
+.tweet {
+
+}
+.tweet img {
+	align: left;
+	padding-right: 10px;
+}
+.lowImportance {
+}
+.mediumImportance {
+	background-color: yellow;
+}
+.highImportance {
+	background-color: red;
+}
+&amp;lt;/style&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+
+	&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+		&amp;lt;form id=&quot;mainForm&quot;&amp;gt;
+			&amp;lt;fieldset&amp;gt;
+			&amp;lt;div class=&quot;clearfix&quot;&amp;gt;
+				&amp;lt;input type=&quot;text&quot; id=&quot;searchterm&quot; placeholder=&quot;Search Term&quot; class=&quot;xlarge&quot; size=&quot;30&quot;&amp;gt;
+				&amp;lt;input type=&quot;button&quot; id=&quot;searchButton&quot; value=&quot;Search&quot; class=&quot;btn primary&quot;&amp;gt; &amp;lt;span id=&quot;status&quot;&amp;gt;&amp;lt;/span&amp;gt;
+			&amp;lt;/div&amp;gt;
+			&amp;lt;/fieldset&amp;gt;
+		&amp;lt;/form&amp;gt;
+		
+		&amp;lt;div id=&quot;resultContainer&quot;&amp;gt;
+			
+		&amp;lt;/div&amp;gt;
+	&amp;lt;/div&amp;gt;
+	
+			
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>And here is a sample. Yes, the red is horrible. I know.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip236.png" />
+<p>
+<p>You can demo this one here: <a href="http://www.coldfusionjedi.com/demos/2011/nov/21/searchwithrating3.html">http://www.coldfusionjedi.com/demos/2011/nov/21/searchwithrating3.html</a></p>
+}

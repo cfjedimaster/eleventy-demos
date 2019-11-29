@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>Zach asks, &quot;Is there a way to bind an image to a column in a Flash Grid?&quot; The answer is yes. From the docs for <a href="http://livedocs.macromedia.com/coldfusion/7/htmldocs/wwhelp/wwhimpl/common/html/wwhelp.htm?context=ColdFusion_Documentation&file=00000267.htm">cfgridcolumn</a>, we see that the type attribute for cfgridcolumn allows for &quot;image&quot; as a value. Some notes though:</p>
+<ul>
+<li>If you use a relative path, i.e., "images/jedi.jpg", CF will assume the image lies under CFIDE/classes. Read on for a way to handle that.
+<li>If the image is too big to fit in the column cell, it will be clipped.
+<li>The image must be a JPEG file.
+</ul>
+<p>So, if you are like me, you don't normally store the full path to an image in the database. This means you will have relative image paths in your data and the gridcolumn won't display right. There are a few ways you can fix that. You can actually write your sql so that it returns the data with the proper path. As an example:</p>
+<p>select name, '&lt;img src=&quot;/images/&quot;' &amp; img &amp; '&gt;' as imagepath<br>
+from foo</p>
+<p>(<b>Note - I always forget the proper character to join strings in SQL - it may be + instead of &amp;, but you get the idea.</b>)</p>
+<p>You could also use QueryOfQuery to modify the query to contain the full path. You get the idea.</p>
+}

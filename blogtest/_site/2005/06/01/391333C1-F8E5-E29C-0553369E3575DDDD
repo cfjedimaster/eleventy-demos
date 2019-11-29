@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>Pete Freitag pointed out an old RSS bug in BlogCFC. If HTML is contained in the entity, it is correctly escaped, but the Short version of the RSS feed will truncate the HTML midtag (or MAY truncate it). I'm in Boston so I don't access to my source, but it is an incredibly easy fix.</p>
+<p>In BlogCFC, line 502, change:</p>
+<p>(FYI, I added line breaks to make it a bit more readable.)</p>
+<div class="code"><FONT COLOR=NAVY>&lt;description&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfif arguments.mode is <FONT COLOR=BLUE>"short"</FONT> <br>
+and len(body) gte arguments.excerpt&gt;</FONT>#xmlFormat(left(body,arguments.excerpt))#...<br>
+<FONT COLOR=MAROON>&lt;cfelse&gt;</FONT>#xmlFormat(body)#<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfif len(morebody)&gt;</FONT> [More]<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT><FONT COLOR=NAVY>&lt;/description&gt;</FONT></div>
+<p>to</p>
+<div class="code"><FONT COLOR=NAVY>&lt;description&gt;</FONT><FONT COLOR=MAROON>&lt;cfif arguments.mode is <FONT COLOR=BLUE>"short"</FONT> <br>
+and len(REReplaceNoCase(body,<FONT COLOR=BLUE>"&lt;[^&gt;</FONT>]*&gt;"</FONT>,<FONT COLOR=BLUE>""</FONT>,<FONT COLOR=BLUE>"ALL"</FONT>)) gte arguments.excerpt&gt;<br>#xmlFormat(left(REReplaceNoCase(body,<FONT COLOR=BLUE>"&lt;[^&gt;]*&gt;"</FONT>,<FONT COLOR=BLUE>""</FONT>,<FONT COLOR=BLUE>"ALL"</FONT>),<br>arguments.excerpt))#...<br>
+<FONT COLOR=MAROON>&lt;cfelse&gt;</FONT>#xmlFormat(body)#<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT><FONT COLOR=MAROON>&lt;cfif len(morebody)&gt;</FONT> [More]<FONT COLOR=MAROON>&lt;/cfif&gt;</FONT><FONT COLOR=NAVY>&lt;/description&gt;</FONT></div>
+<p>All I did was replace 'body' with a regex from cflib. Note that a better solution would be to store the result of the regex on the first call so we don't have to run it again, but for only 2 uses, I don't feel too bad about it.</p>
+<p>Also note that this won't stop <i>escaped</i> html. So, as you can see the sentence before this one, I have real HTML - the italics. Above that is escaped HTML in code. This won't stop escaped HTML being truncated, but will stop real HTML. If that makes sense.</p>
+<p>So - this will be pushed into source next week. I also detected a bug where an error in RSS generation will cause an infinite loop in rss.cfm. I'll fix that as well.</p>
+}

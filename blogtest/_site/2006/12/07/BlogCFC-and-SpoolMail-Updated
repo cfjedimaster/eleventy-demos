@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>A few cool updates today. <a href="http://blogcfc.riaforge.org">BlogCFC</a> now supports comment moderation. This is a feature people have been asking about for a long time, and it's finally in, thanks to Trent Richardson.</p>
+<p>Secondly, I updated <a href="http://spoolmail.riaforge.org">SpoolMail</a>. I cleaned up the UI a bit and added pagination to the mail display. This will make the application a heck of a lot faster for servers with a lot of email in the undelivered folder.</p>
+}

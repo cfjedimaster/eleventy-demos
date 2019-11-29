@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Here are some things that have not gotten a lot of press but I relaly think you should look at:</p>
+<p>The updated Verity support is sexy. I mean really, really sexy. You can now get spelling suggestions for queries that don't return any, or enough results. You can get the context for your search terms with highlighting options. Collection data can now support categorization of items to make for more precise searching. Oh - and it supports natural language queries. I wrote an article for CFDJ on this. I'll post the link when it is up.</p>
+<p>The Application Event framework. <b>FINALLY!</b> You can now run code when sessions start and end - ditto for Applications and requests. Now if can only get a getSessions() function, I'll be happy. ;)</p>
+<p>CFDUMP now has a top feature, much like my fDump custom tag.</p>
+<p>Query of Query enhancements: You can now use CAST in QofQ. Half of the complains about QofQ were issues where the CF parser misread the data. CAST takes that away. You can now get metadata about queries as well.</p>
+<p>All tags that used to write to the Variables scope, like cfhttp, now let you specify the variable name to create. This means you can make 100% thread-safe CFCs.</p>
+}

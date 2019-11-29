@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>A while ago I mentioned how I had added a new feature to <a href="http://www.cflib.org">cflib</a>. This feature allowed you to go straight to a UDF if you knew its name. This was done by using this syntax:</p>
+<p>http://www.cflib.org/udf.cfm/NAME</p>
+<p>While this worked ok, the links to view and download the UDF were broken. This is now fixed. Thanks go to Bert Dawson for pointing it out.</p>
+<p>By the way, if you have any CFLib suggestions, please let me know. My queue bashing resolution is going ok so far. If I can process ten a week I should be done with the queue by mid February.</p>
+}

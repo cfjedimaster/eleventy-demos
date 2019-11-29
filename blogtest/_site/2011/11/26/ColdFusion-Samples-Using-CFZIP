@@ -1,0 +1,137 @@
+<h1>Post</h1>
+
+<p>It's been a while since I did a &quot;ColdFusion Sample&quot;, so if you've forgotten, the idea of this is blog series to demonstrate a ColdFusion tag or feature in a complete, if simple, application. In this entry, I'm going to demonstrate <a href="http://help.adobe.com/en_US/ColdFusion/9.0/CFMLRef/WSc3ff6d0ea77859461172e0811cbec22c24-7695.html">CFZIP</a>. This tag allows for creating, reading, and extracting zip files. In my example I'll be making use of reading and extracting.</p>
+<p/>
+<!--more-->
+I've built a small web application that allows you to upload image. 
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip237.png" />
+<p>
+<p>When you upload a file, the logic is pretty simple. Check to see if it's an image first. If it is, we copy the image to the photos directory, then read in the image and scale it for a thumbnail directory. Checking a file to see if it a valid image as easy as using <a href="http://help.adobe.com/en_US/ColdFusion/9.0/CFMLRef/WSc3ff6d0ea77859461172e0811cbec22c24-7978.html">isImageFile</a>. Resizing is also pretty easy with <a href="http://help.adobe.com/en_US/ColdFusion/9.0/CFMLRef/WSc3ff6d0ea77859461172e0811cbec22c24-7975.html">imageScaleToFit</a>. You can also resize with <a href="http://help.adobe.com/en_US/ColdFusion/9.0/CFMLRef/WSc3ff6d0ea77859461172e0811cbec22c24-7961.html">imageResize</a>, but imageScaleToFit allows you to scale images and keep their proportions.</p>
+<p>
+<p>So that portion isn't too complex. But let's ramp it up a notch. What if we allowed folks to upload both images and zips of images. We need to modify our code to check zips for images and extract them as well. Here's the entire template.</p>
+<p>
+<code>
+&lt;!--- images and thumbs dir are relative ---&gt;
+&lt;cfset imageDir = expandPath("./photos") & "/"&gt;
+&lt;cfset thumbDir = expandPath("./thumbs") & "/"&gt;
+<p>&lt;!--- used to flag if we uploaded crap ---&gt;
+&lt;cfset successFlag = false&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;upload&quot;) and len(form.upload)&gt;
+&lt;cfset tempDir = getTempDirectory()&gt;
+&lt;cffile action=&quot;upload&quot; filefield=&quot;upload&quot; destination=&quot;#tempDir#&quot; nameconflict=&quot;overwrite&quot;&gt;</p>
+<pre><code>&amp;lt;cfset theFile = file.serverdirectory &amp; &quot;/&quot; &amp; file.serverfile&amp;gt;
+
+&amp;lt;cfset images = []&amp;gt;
+
+&amp;lt;cfif file.filewassaved&amp;gt;
+	&amp;lt;cfif isImageFile(theFile)&amp;gt;
+		&amp;lt;cfset arrayAppend(images,theFile)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;!--- check for zip ---&amp;gt;
+	&amp;lt;cfif file.serverfileext is &quot;zip&quot;&amp;gt;
+		&amp;lt;cftry&amp;gt;
+			&amp;lt;cfzip action=&quot;list&quot; filter=&quot;*.jpg,*.png,*.gif&quot; file=&quot;#theFile#&quot; name=&quot;files&quot;&amp;gt;
+			&amp;lt;cfloop query=&quot;files&quot;&amp;gt;
+				&amp;lt;cfzip action=&quot;unzip&quot; entryPath=&quot;#name#&quot; destination=&quot;#tempDir#&quot; file=&quot;#theFile#&quot; overwrite=&quot;true&quot;&amp;gt;
+				&amp;lt;cfif isImageFile(tempdir &amp; &quot;/&quot; &amp; name)&amp;gt;
+					&amp;lt;cfset arrayAppend(images, tempdir &amp; &quot;/&quot; &amp; name)&amp;gt;
+				&amp;lt;/cfif&amp;gt;
+			&amp;lt;/cfloop&amp;gt;
+			&amp;lt;cfcatch&amp;gt;
+				&amp;lt;cfdump var=&quot;#cfcatch#&quot;&amp;gt;
+			&amp;lt;/cfcatch&amp;gt;
+		&amp;lt;/cftry&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif arrayLen(images)&amp;gt;
+	&amp;lt;cfloop index=&quot;theFile&quot; array=&quot;#images#&quot;&amp;gt;
+		&amp;lt;!--- create a UUID based name. Helps ensure we don't conflict ---&amp;gt;
+		&amp;lt;cfset newName = createUUID() &amp; &quot;.&quot; &amp; listLast(theFile, &quot;.&quot;)&amp;gt;
+		&amp;lt;!--- copy original to image dir ---&amp;gt;
+		&amp;lt;cfset fileCopy(theFile, imageDir &amp; newName)&amp;gt;
+		&amp;lt;!--- now make a thumb version ---&amp;gt;
+		&amp;lt;cfset imgOb = imageRead(theFile)&amp;gt;
+		&amp;lt;cfset imageScaleToFit(imgOb, 200,200)&amp;gt;
+		&amp;lt;cfset imageWrite(imgOb, thumbDir &amp; newName)&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;cfset successFlag = true&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfset thumbs = directoryList(thumbDir,true,&quot;name&quot;,&quot;<em>.jpg|</em>.png|*.gif&quot; )&gt;</p>
+<p>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Zip Demo&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=ISO-8859-1&quot; /&gt;</p>
+<pre><code>&amp;lt;link rel=&quot;stylesheet&quot; href=&quot;http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css&quot;&amp;gt;
+&amp;lt;link rel=&quot;stylesheet&quot; href=&quot;jquery.lightbox-0.5.css&quot; type=&quot;text/css&quot; /&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;jquery.lightbox-0.5.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot;&amp;gt;
+	$(function() {
+		$(&quot;.imageList&quot;).lightBox();
+	});	
+&amp;lt;/script&amp;gt;
+</code></pre>
+<p>&lt;/head&gt;
+&lt;body&gt;</p>
+<pre><code>&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	&amp;lt;h2&amp;gt;Images&amp;lt;/h2&amp;gt;
+	&amp;lt;ul class=&quot;media-grid&quot;&amp;gt;
+		&amp;lt;cfloop index=&quot;image&quot; array=&quot;#thumbs#&quot;&amp;gt;
+			&amp;lt;cfoutput&amp;gt;
+			&amp;lt;li&amp;gt;
+			&amp;lt;a href=&quot;photos/#getFileFromPath(image)#&quot; class=&quot;imageList&quot;&amp;gt;
+			&amp;lt;img class=&quot;thumbnail&quot; src=&quot;thumbs/#getFileFromPath(image)#&quot;&amp;gt;
+			&amp;lt;/a&amp;gt;
+			&amp;lt;/li&amp;gt;
+			&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+	&amp;lt;/ul&amp;gt;
+
+	&amp;lt;h2&amp;gt;Upload New Image&amp;lt;/h2&amp;gt;
+	&amp;lt;form enctype=&quot;multipart/form-data&quot; method=&quot;post&quot;&amp;gt;
+	
+	&amp;lt;cfif successFlag&amp;gt;
+		&amp;lt;p&amp;gt;
+		Image(s) have been uploaded. Thanks!
+		&amp;lt;/p&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+	&amp;lt;cfif structKeyExists(variables, &quot;errors&quot;)&amp;gt;
+		&amp;lt;cfoutput&amp;gt;&amp;lt;p&amp;gt;#variables.errors#&amp;lt;/p&amp;gt;&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	Select image, or zip file of images: 
+	&amp;lt;input type=&quot;file&quot; name=&quot;upload&quot;&amp;gt;
+	&amp;lt;/p&amp;gt;
+	
+	&amp;lt;p&amp;gt;
+	&amp;lt;input type=&quot;submit&quot; value=&quot;Upload&quot; class=&quot;btn primary&quot;&amp;gt;
+	&amp;lt;/p&amp;gt;
+	
+	&amp;lt;/form&amp;gt;
+
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Consider the template as two halves. The bottom half simply handles outputting the images and providing a form. This is just regular HTML although I made use of a <a href="http://leandrovieira.com/projects/jquery/lightbox/">jQuery LightBox</a> plugin to make it sexier.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip238.png" />
+<p>Let's focus more on the top portion. First, we wrap our main handling code in a check for an actual file upload. If the form was submitted and nothing was uploaded, we could provide an error. (In fact, you can see where I made use of an error display in the bottom half, but I ended up not bothering creating any errors.) I send the upload to a temp directory <b>outside of web root</b>. Hopefully we all know why.</p>
+<p>
+<p>I've created an array, images, that will store all the files I'll be copying and creating thumbs with. My code then branches into two sections. If the file was an image, I just add it to the array. If the file was a zip, and note we check the extension, there is no &quot;isZipFile&quot; in ColdFusion, I use the list operation of cfzip to get all the images contained within it. For each one, I extract it, check it again to ensure it <i>really</i> is an image, and then add it to array.</p>
+<p>
+<p>At this point I've got an array of images in a temporary directory. I can then simply loop over it and perform my copy/scale operations. Note the use of createUUID(). This provides a new name for the image and allows me to not worry about overwriting an existing image.</p>
+<p>
+<p>That's it. I'm not going to post a demo for this as I <i>know</i> some jerk will abuse the upload. I did include a zip of the code base though. You should be able to extract this locally under your web root and just play with it.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fzipdemo%2Ezip'>Download attached file.</a></p></p>
+}

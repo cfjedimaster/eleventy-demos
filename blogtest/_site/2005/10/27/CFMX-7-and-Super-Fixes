@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>So, I don't think this was in the release notes, but either CFMX7 or 7.0.1 fixes a bug where a super call can't use named arguments. In other words, this used to throw an error:</p>
+<code>
+&lt;cfreturn super.someMethod(arg1=value1, arg2=value2)&gt;
+</code>
+<p>As I said, this works fine now. <b>However</b>, if you try the same thing with a simple UDF copied to a structure, like the request scope, an error will occur:</p>
+<blockquote>
+Cannot invoke method ran on an object of type coldfusion.runtime.RequestScope with named arguments.
+Use ordered arguments instead.
+</blockquote>
+<p>I've filed a bug and hopefully this will be corrected.</p>
+}

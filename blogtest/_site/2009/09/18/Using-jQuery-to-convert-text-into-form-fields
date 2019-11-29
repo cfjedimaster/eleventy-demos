@@ -1,0 +1,91 @@
+<h1>Post</h1>
+
+<p>I'm working on a new project now (Picard FTW - Engage!) and it involves converting some existing JavaScript. The &quot;old&quot; JavaScript works fine, but is <i>very</i> difficult to get to and also suffers from the fact that it isn't jQuery. That's a huge problem if you ask me. So as I work through the project I'm slowly converting various dynamic elements into ColdFusion. One of those elements was pretty interesting. A list of fields had an associated piece of metadata. Each piece was represented in simple text. Next to it was an edit link. Clicking edit changed the plain text into a drop down. I reworked this into jQuery and this is what I came up.</p>
+<!--more-->
+<p>First let's define the data. My form will have a list of movies. For each movie there is a simple rating system based on 4 values: Hated It, Disliked It, Liked It, Loved It. It is assumed that the user has already selected some values which end up being rendered as hidden form fields:</p>
+<code>
+star wars: &lt;span class="changeable"&gt;&lt;input type="hidden" name="starwars" value="4"&gt;Loved It - &lt;a href="" class="edit"&gt;edit&lt;/a&gt;&lt;/span&gt;&lt;br/&gt;
+star trek: &lt;span class="changeable"&gt;&lt;input type="hidden" name="startrek" value="3"&gt;Liked It - &lt;a href="" class="edit"&gt;edit&lt;/a&gt;&lt;/span&gt;&lt;br/&gt;
+</code>
+<p>This wouldn't normally be hard coded - it would come in dynamically via ColdFusion. But you get the idea. Notice that I've wrapped the hidden field, the current text, and a link within a span. Ok, now for the jQuery:</p>
+<code>
+$(document).ready(function() {
+<pre><code>//used for our drop downs
+var values = [1,2,3,4]
+var labels = [&quot;Hated It&quot;,&quot;Disliked It&quot;,&quot;Liked It&quot;,&quot;Loved It&quot;]
+
+$(&quot;.changeable a.edit&quot;).click(function() {
+	//find the hidden item
+	var hiddenItem = $(&quot;input:hidden&quot;, $(this).parent())
+	//get the current val
+	var currentVal = hiddenItem.val()
+	//get the name
+	var currentName = hiddenItem.attr(&quot;name&quot;);
+	//now we can draw our drop down and select the right val
+	var s = &quot;&amp;lt;select name=\&quot;&quot;+currentName+&quot;\&quot;&amp;gt;&quot;;
+	//hard coded values for our drop down
+	for(var i=0;i&amp;lt;values.length;i++) {
+		s+= &quot;&amp;lt;option value=\&quot;&quot; + values[i] + &quot;\&quot;&quot;
+		if(currentVal == values[i]) s+= &quot; selected&quot;
+		s+= &quot;&amp;gt;&quot; + labels[i] + &quot;&amp;lt;/option&amp;gt;&quot;
+	}
+	s += &quot;&amp;lt;/select&amp;gt;&quot;
+	//now replace
+	$(this).parent().html(s)
+	return false	
+})
+</code></pre>
+<p>})
+</code></p>
+<p>First notice I've got two hard coded values. These represent the values and labels for the drop down I'll build later. Again, this would probably be dynamic. Don't forget ColdFusion provides a nice utility function, toScript, to make it easy to convert ColdFusion variables into JavaScript.</p>
+<p>Now let's walk through the main function. My selector looks for links with the class edit with DOM items with the class changeable. I've binded to the click event for the link. This matches the link within the span I used. But I need to get information from the rest of the span. So I grab a pointer to the hidden form field by doing a selector against the parent of the link. Does that make sense? Ie: &quot;jQuery, within the <b>parent</b> of what you just found please look for a hidden input field.&quot; Once I have that I can get the value as well as the name.</p>
+<p>Once I have the name, and the current value, building the drop down is just a matter of string builder. I use the values/labels variables and just create the select. When done I can replace the link for the span. Remember that $(this) represents the original link so $(this).parent() will be the span.</p>
+<p>You can see a demo of this here: <a href="http://www.raymondcamden.com/demos/changedropdown/test.cfm">http://www.coldfusionjedi.com/demos/changedropdown/test.cfm</a></p>
+<p>And here is the complete script:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>$(document).ready(function() {</p>
+<pre><code>//used for our drop downs
+var values = [1,2,3,4]
+var labels = [&quot;Hated It&quot;,&quot;Disliked It&quot;,&quot;Liked It&quot;,&quot;Loved It&quot;]
+
+$(&quot;.changeable a.edit&quot;).click(function() {
+	//find the hidden item
+	var hiddenItem = $(&quot;input:hidden&quot;, $(this).parent())
+	//get the current val
+	var currentVal = hiddenItem.val()
+	//get the name
+	var currentName = hiddenItem.attr(&quot;name&quot;);
+	//now we can draw our drop down and select the right val
+	var s = &quot;&amp;lt;select name=\&quot;&quot;+currentName+&quot;\&quot;&amp;gt;&quot;;
+	//hard coded values for our drop down
+	for(var i=0;i&amp;lt;values.length;i++) {
+		s+= &quot;&amp;lt;option value=\&quot;&quot; + values[i] + &quot;\&quot;&quot;
+		if(currentVal == values[i]) s+= &quot; selected&quot;
+		s+= &quot;&amp;gt;&quot; + labels[i] + &quot;&amp;lt;/option&amp;gt;&quot;
+	}
+	s += &quot;&amp;lt;/select&amp;gt;&quot;
+	//now replace
+	$(this).parent().html(s)
+	return false	
+})
+</code></pre>
+<p>})</p>
+<p>&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form method=&quot;post&quot;&gt;</p>
+<p>star wars: &lt;span class=&quot;changeable&quot;&gt;&lt;input type=&quot;hidden&quot; name=&quot;starwars&quot; value=&quot;4&quot;&gt;Loved It - &lt;a href=&quot;&quot; class=&quot;edit&quot;&gt;edit&lt;/a&gt;&lt;/span&gt;&lt;br/&gt;
+star trek: &lt;span class=&quot;changeable&quot;&gt;&lt;input type=&quot;hidden&quot; name=&quot;startrek&quot; value=&quot;3&quot;&gt;Liked It - &lt;a href=&quot;&quot; class=&quot;edit&quot;&gt;edit&lt;/a&gt;&lt;/span&gt;&lt;br/&gt;</p>
+<p>&lt;input type=&quot;submit&quot; value=&quot;click me like you mean it&quot;&gt;
+&lt;/form&gt;</p>
+<p>&lt;cfif not structIsEmpty(form)&gt;
+&lt;cfdump var=&quot;#form#&quot; label=&quot;form&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

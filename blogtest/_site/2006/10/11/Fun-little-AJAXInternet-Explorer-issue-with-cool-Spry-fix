@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>A few days ago I mentioned a little issue I ran into with Spry. Today I was helping my friend diagnose some issues with his application and IE and I ran into a new little bug. This isn't a Spry issue - but just IE in general.</p>
+<p>Imagine this situation: You have a drop down field being populated by Spry. Let's call it Categories. Whenever you change the category, you use Spry to populate a second drop down of products.</p>
+<p>Pretty simple related selects type feature, right?</p>
+<p>Turns out in IE, something interesting happens. Whenever I would change the category, the products drop down would be correctly populated - but defaulted to the last item in the drop down. In FireFox, the first item would be selected.</p>
+<p>What's worse is that in my friend's demo, he had a detail region tied to the second drop down. It would correctly show the detail for the first item in the drop down, but visually you saw the last item selected.</p>
+<p>Once again I went to my buddy Kin Blas of Adobe. Turns out this isn't a bug really - but a &quot;feature&quot; of IE, where it simply uses the last option as the default if you don't mark one as the selected item.</p>
+<p>Luckily there is a cool little way to fix this in Spry using conditionals. Spry gives you a hook to various bits of information related to the current dataset. These are named ds_Something or another. The following example shows how we can use them.</p>
+<code>
+&lt;div spry:region="categories"&gt;
+&lt;select spry:repeatchildren="categories" spry:choose="choose" name="category" onChange="categories.setCurrentRow(this.selectedIndex);"&gt;
+&lt;option spry:when="{ds_RowNumber} == {ds_CurrentRowNumber}" selected="selected"&gt;{category}&lt;/option&gt;
+&lt;option spry:default="default"&gt;{category}&lt;/option&gt;
+&lt;/select&gt;
+&lt;/div&gt; 
+</code>
+<p>Of particular note look at the when and default clause on the option tags. This will apply logic before letting the item be printed when the dataset is applied. Note the use of ds_RowNumber and ds_CurrentRowNumber. When the dataset is applied, these values will be dynamic and checked as Spry prints out the option tags.</p>
+<p>Make sense? If not - let me know.</p>
+}

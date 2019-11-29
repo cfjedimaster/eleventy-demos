@@ -1,0 +1,301 @@
+<h1>Post</h1>
+
+<p>It's been a while since I've talked about one of my favorite APIs, <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">IndexedDB</a>. Mainly because as cool as it is, there hasn't been much new about it recently. That being said, I was thinking about how I'd use it in Vue.js and decided to build a few demos to test it out. This post is <em>not</em> meant to be an introduction to IndexedDB, please see that previous link for a good guide. You can also check out jsMobileConf where I'm giving a <a href="https://jsmobileconf.com/schedule/session-camden.html">talk</a> on client-side data storage next month. For my exploration, I built two demos. The first one is rather simple and makes use of CodePen and Vue embedded directly on the page. I.e. a &quot;non-app&quot; use of Vue. (I'm still struggling with the best way to refer to that!) The second demo is more complete, uses a full Vue application, and works with Vuex. As always, I'm hoping folks will provide feedback, suggestions, and share their own examples.</p>
+<h2>Example One</h2>
+<p>As I said above, the first example was meant to be as simple as possible. With that in mind, I built a demo that lets you work with Cat data. You can add cats, but not via a form, just a simple button that adds random data. You can delete cats. And that's it.</p>
+<p>As it's rather short, let's start with the HTML.</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  &lt;div v-if=&quot;ready&quot;&gt;
+    &lt;button @click=&quot;addCat&quot; :disabled=&quot;addDisabled&quot;&gt;Add Cat&lt;/button&gt;
+    &lt;p/&gt;
+    &lt;ul&gt;
+      &lt;li v-for=&quot;cat in cats&quot;&gt;
+        {{cat.name}} is {{cat.age}} years old. &lt;button @click=&quot;deleteCat(cat.id)&quot;&gt;Delete&lt;/button&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>You can see the button used to add new cats, the list of existing cats, and then a delete button for each one. The JavaScript is where things get interesting. I tried my best to separate out the Vue methods such that event handlers focused on their own thing and other methods were specifically targeting IndexedDB calls. This will (hopefully) make a bit more sense when you see the code. Let's start with the <code>created</code> handler:</p>
+<pre><code class="language-js">async created() {
+	this.db = await this.getDb();
+	this.cats = await this.getCatsFromDb();
+	this.ready = true;
+},
+</code></pre>
+<p>This does three things. First, it initializes the IndexedDB database and waits for the db object so it can be used later. Then it asks for any existing data. Let's first look at <code>getDb</code>:</p>
+<pre><code class="language-js">async getDb() {
+	return new Promise((resolve, reject) =&gt; {
+
+	let request = window.indexedDB.open(DB_NAME, DB_VERSION);
+	
+	request.onerror = e =&gt; {
+		console.log('Error opening db', e);
+		reject('Error');
+	};
+
+	request.onsuccess = e =&gt; {
+		resolve(e.target.result);
+	};
+	
+	request.onupgradeneeded = e =&gt; {
+		console.log('onupgradeneeded');
+		let db = e.target.result;
+		let objectStore = db.createObjectStore(&quot;cats&quot;, { autoIncrement: true, keyPath:'id' });
+	};
+	});
+}
+</code></pre>
+<p>This is fairly boilerplate IndexedDB stuff. Open the database and setup an object store the first time you run the application. Our object store (&quot;cats&quot;) uses autoincrementing primary keys. I don't specify any indexes on the store as I'm keeping it simple. In order to use <code>async</code> and <code>await</code>, I return a promise from the method and I resolve it in the <code>onsuccess</code> handler for the database. Now let's look at <code>getCatsFromDb</code>:</p>
+<pre><code class="language-js">async getCatsFromDb() {
+	return new Promise((resolve, reject) =&gt; {
+
+		let trans = this.db.transaction(['cats'],'readonly');
+		trans.oncomplete = e =&gt; {
+			resolve(cats);
+		};
+		
+		let store = trans.objectStore('cats');
+		let cats = [];
+		
+		store.openCursor().onsuccess = e =&gt; {
+			let cursor = e.target.result;
+			if (cursor) {
+				cats.push(cursor.value)
+				cursor.continue();
+			}
+		};
+
+	});
+},
+</code></pre>
+<p>This method opens up a read transaction, then a cursor, and will iterate over each object until done. As before, I wrap this up in a promise so I can use <code>async\await</code>.</p>
+<p>Whew, ok, almost there. Let's look at the 'add cat' logic. As I said above, to make this simpler, I just created random data. I've written enough forms in my life, I'm allowed to skip them from time to time.</p>
+<pre><code class="language-js">async addCat() {
+	this.addDisabled = true;
+	// random cat for now
+	let cat = {
+		name:&quot;Cat&quot; + Math.floor(Math.random() * 100),
+		age:Math.floor(Math.random() * 10)+1
+	};
+	console.log('about to add '+JSON.stringify(cat));
+	await this.addCatToDb(cat);
+	this.cats = await this.getCatsFromDb();
+	this.addDisabled = false;      
+},
+</code></pre>
+<p>This method is primarily just concerned with the UI/UX of the operation. It chains out to <code>addCatToDb</code> for the actual persistence.</p>
+<pre><code class="language-js">async addCatToDb(cat) {
+	return new Promise((resolve, reject) =&gt; {
+
+	let trans = this.db.transaction(['cats'],'readwrite');
+	trans.oncomplete = e =&gt; {
+		resolve();
+	};
+
+	let store = trans.objectStore('cats');
+	store.add(cat);
+
+	});
+},
+</code></pre>
+<p>While not much more complex, I liked separating this out. And as before, I'm wrapping my calls in a promise. The final bit is deletion and it uses a similar pattern. First the method you call when clicking the delete button.</p>
+<pre><code class="language-js">async deleteCat(id) {
+	await this.deleteCatFromDb(id);
+	this.cats = await this.getCatsFromDb();      
+},
+</code></pre>
+<p>And then the actual deletion:</p>
+<pre><code class="language-js">async deleteCatFromDb(id) {
+	return new Promise((resolve, reject) =&gt; {
+	let trans = this.db.transaction(['cats'],'readwrite');
+	trans.oncomplete = e =&gt; {
+		resolve();
+	};
+
+	let store = trans.objectStore('cats');
+	store.delete(id);
+	});
+},
+</code></pre>
+<p>All in all not too bad. If you want, you can play with the complete demo here:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="oNNxavx" style="height: 400px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="IDB1">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/oNNxavx">
+  IDB1</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<h2>Example Two</h2>
+<p>For the second example, I went all in. A full Vue.js application, routing, Vuex, and more. I built a full CRUD that lets you view cats, add and edit them, and then delete it.</p>
+<img src="https://static.raymondcamden.com/images/2019/10/catdb.png" alt="Example of the app's UI" class="imgborder imgcenter">
+<p>All of the code for this demo may be found in my GitHub repo: <a href="https://github.com/cfjedimaster/vue-demos/tree/master/idb">https://github.com/cfjedimaster/vue-demos/tree/master/idb</a></p>
+<p>You can run this version in your browser here: <a href="https://idb.raymondcamden.now.sh/">https://idb.raymondcamden.now.sh/</a></p>
+<p>I won't share all of the code as it's mostly UI stuff (and you can browse it yourself at the link above), but I will describe my general approach. I built the first version of the app such that IndexedDB wasn't used at all. Instead, Vuex kept the data in memory. This allowed me to build out the UI, routing, and so forth, and then simply edit the store later. Here's the initial version of my store.</p>
+<pre><code class="language-js">import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  state: {
+    cats:[]
+  },
+  mutations: {
+
+  },
+  actions: {
+    deleteCat(context, cat) {
+      console.log('store is being asked to delete '+cat.id);
+      context.state.cats = context.state.cats.filter(c =&gt; {
+        return c.id != cat.id;
+      });
+    },
+    getCats(context) {
+      if(context.state.cats.length === 0) {
+        context.state.cats.push({name:'default cat', age:1, id: 1});
+        context.state.cats.push({ name: 'cat deux', age: 2, id: 2 });
+      }
+    },
+    async saveCat(context, cat) {
+      if(cat.id) {
+        context.state.cats.forEach(c =&gt; {
+          if(c.id === cat.id) {
+            c.name = cat.name;
+            c.age = cat.age;
+          }
+        });
+      } else {
+        cat.id = context.state.cats.length+1;
+        context.state.cats.push(cat);
+      }
+    }
+  }
+})
+</code></pre>
+<p>Just three methods, all working with a simple array of data. This worked perfectly though and let me focus on the flow of the application. Switching to IndexedDB then was a completely separate job. Here's the current version of the store.</p>
+<pre><code class="language-js">import Vue from 'vue'
+import Vuex from 'vuex'
+
+import idb from '@/api/idb';
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  state: {
+    cats:[]
+  },
+  mutations: {
+
+  },
+  actions: {
+    async deleteCat(context, cat) {
+      await idb.deleteCat(cat); 
+    },
+    async getCats(context) {
+      context.state.cats = [];
+      let cats = await idb.getCats();
+      cats.forEach(c =&gt; {
+        context.state.cats.push(c);
+      });
+    },
+    async saveCat(context, cat) {
+      await idb.saveCat(cat);
+    }
+  }
+})
+</code></pre>
+<p>As you can see, it's actually somewhat simpler. That's because the actual storage work is being done in a new component, <code>idb</code>. In this version, Vuex simply handles managing the data, but not storing or retrieving. I could replace IndexedDB with API calls and no one would be the wiser. Let's consider <code>idb.js</code> now.</p>
+<pre><code class="language-js">const DB_NAME = 'catdb';
+const DB_VERSION = 1;
+let DB;
+
+export default {
+
+	async getDb() {
+		return new Promise((resolve, reject) =&gt; {
+
+			if(DB) { return resolve(DB); }
+			console.log('OPENING DB', DB);
+			let request = window.indexedDB.open(DB_NAME, DB_VERSION);
+			
+			request.onerror = e =&gt; {
+				console.log('Error opening db', e);
+				reject('Error');
+			};
+	
+			request.onsuccess = e =&gt; {
+				DB = e.target.result;
+				resolve(DB);
+			};
+			
+			request.onupgradeneeded = e =&gt; {
+				console.log('onupgradeneeded');
+				let db = e.target.result;
+				db.createObjectStore(&quot;cats&quot;, { autoIncrement: true, keyPath:'id' });
+			};
+		});
+	},
+	async deleteCat(cat) {
+
+		let db = await this.getDb();
+
+		return new Promise(resolve =&gt; {
+
+			let trans = db.transaction(['cats'],'readwrite');
+			trans.oncomplete = () =&gt; {
+				resolve();
+			};
+
+			let store = trans.objectStore('cats');
+			store.delete(cat.id);
+		});	
+	},
+	async getCats() {
+
+		let db = await this.getDb();
+
+		return new Promise(resolve =&gt; {
+
+			let trans = db.transaction(['cats'],'readonly');
+			trans.oncomplete = () =&gt; {
+				resolve(cats);
+			};
+			
+			let store = trans.objectStore('cats');
+			let cats = [];
+			
+			store.openCursor().onsuccess = e =&gt; {
+				let cursor = e.target.result;
+				if (cursor) {
+					cats.push(cursor.value)
+					cursor.continue();
+				}
+			};
+
+		});
+	},
+
+	async saveCat(cat) {
+
+		let db = await this.getDb();
+
+		return new Promise(resolve =&gt; {
+
+			let trans = db.transaction(['cats'],'readwrite');
+			trans.oncomplete = () =&gt; {
+				resolve();
+			};
+
+			let store = trans.objectStore('cats');
+			store.put(cat);
+
+		});
+	
+	}
+
+}
+</code></pre>
+<p>In general, this is pretty similar to the code used in the first version. I've got IndexedDB calls wrapped in promises. I cache the database handler too so it's only opened once. I could make this easier too if I used one of the many IndexedDB wrapper libraries out there, but as I was a bit out of practice working with IndexedDB, I kinda wanted to do things &quot;by hand&quot; as a way of remembering.</p>
+<p>So - I hope this helps. If you want to learn more, definitely look at the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">MDN docs</a> on the subject. As always, leave me a comment below if you have a question or suggestion!</p>
+<p><i>Header photo by <a href="https://unsplash.com/@frankiefoto?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">frank mckenna</a> on Unsplash</i></p>
+}

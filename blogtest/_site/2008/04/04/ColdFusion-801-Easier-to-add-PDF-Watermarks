@@ -1,0 +1,30 @@
+<h1>Post</h1>
+
+<p>ColdFusion 8.0.1 makes it much easier to add watermarks to PDF documents. In the past you had to either use an image or another PDF, but now you can simply pass in text. You can even pass in styled text. Here is a simple example.</p>
+<p>First we generate a PDF dynamically.</p>
+<!--more-->
+<code>
+&lt;cfdocument format="pdf" name="mypdf"&gt;
+&lt;cfloop index="x" from="1" to="9"&gt;
+&lt;p&gt;
+Lorem impsum delorem battlestar galactica begins tonight and it kicks butt.
+Lorem impsum delorem battlestar galactica begins tonight and it kicks butt.
+Lorem impsum delorem battlestar galactica begins tonight and it kicks butt.
+Lorem impsum delorem battlestar galactica begins tonight and it kicks butt.
+&lt;/p&gt;
+&lt;/cfloop&gt;
+&lt;/cfdocument&gt;
+</code>
+<p>Now let's add the watermark:</p>
+<code>
+&lt;cfpdf action="addWatermark" text="&lt;b&gt;TOP SECRET!&lt;/b&gt;" source="mypdf" foreground="true"&gt;
+</code>
+<p>The foreground attribute is critical for PDFs made with cfdocument. If you don't use it - your watermark will be behind the text.</p>
+<p>Now I can serve the PDF to the user:</p>
+<code>
+&lt;cfheader name="content-disposition" value="attachment; filename=""test.pdf"""/&gt;
+&lt;cfcontent type="application/pdf" variable="#toBinary(mypdf)#"&gt;
+</code>
+<p>Note the toBinary thing. This is an bug that was not fixed in CF8. Even though &quot;mypdf&quot; is a PDF document, when I performed the addWatermark action, I converted what was pure binary data into a PDF object recognized by ColdFusion. If I had used destinaiton= in the cfpdf tag, it would have worked fine, but I wanted to serve the document directly to the user, so I had to wrap it with toBinary.</p>
+<p>Anyway - even with that little hitch at the end, it's far easier now to add watermarks to PDFs!</p>
+}

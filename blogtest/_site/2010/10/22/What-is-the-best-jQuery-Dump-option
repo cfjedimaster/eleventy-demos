@@ -1,0 +1,245 @@
+<h1>Post</h1>
+
+<p>While investigating an issue at work I came across a jQuery based dump utility. You can see an example of it <a href="http://mohammed.morsi.org/blog/node/268">here</a>. Unfortunately it completely failed to work for me in any tests of DOM objects. I could pass in simple arrays and strings just fine, but anything DOM related died. (Even though his screen shots clearly show DOM items.) That led me to do a more generic search for a jQuery-based dump plugin. Two results were found of which one had no download. The remaining one, <a href="http://plugins.jquery.com/project/Dump">Dump</a>, was last updated two years ago but worked fine no matter what I threw at it. It's not as pretty as the ColdFusion dump, but at least it works. I've found myself needing a tool like this recently so I'd like to know if anyone has a better jQuery dump solution? Here is a simple example showing the plugin from tdolsen:</p>
+<!--more-->
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;jquery/jquery.dump2.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>$(&quot;#testButton&quot;).click(function() {
+	console.log('run!');
+	res = $.dump($(&quot;#someForm&quot;)[0]);
+	console.log(res);
+});
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form id=&quot;someForm&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;name:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;name&quot; id=&quot;name&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;email:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;email&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;fav movie:&lt;/td&gt;
+&lt;td&gt;
+&lt;input type=&quot;radio&quot; name=&quot;movie&quot; value=&quot;Star Wars&quot;&gt;Star Wars&lt;br/&gt;
+&lt;input type=&quot;radio&quot; name=&quot;movie&quot; value=&quot;Empire Strikes Back&quot; selected=&quot;true&quot;&gt;Empire Strikes Back&lt;br/&gt;
+&lt;input type=&quot;radio&quot; name=&quot;movie&quot; value=&quot;Return of the Jedi&quot;&gt;Return of the Jedi&lt;br/&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td colspan=&quot;2&quot;&gt;comments:&lt;br/&gt;
+&lt;textarea name=&quot;comments&quot;&gt;&lt;/textarea&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Test:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;button&quot; id=&quot;testButton&quot; value=&quot;Test&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/form&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p/>
+<p>And if you are curious as to the result....</p>
+<p/>
+<code>
+run!
+test3.cfm:12DOMElement [ 
+	nodeName: FORM
+	nodeValue: null
+	innerHTML: [ 
+		1 = DOMElement [ 
+			nodeName: TABLE
+			nodeValue: null
+			innerHTML: [ 
+				1 = DOMElement [ 
+					nodeName: TBODY
+					nodeValue: null
+					innerHTML: [ 
+						0 = DOMElement [ 
+							nodeName: TR
+							nodeValue: null
+							innerHTML: [ 
+								1 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = String: name:
+									]
+								]
+								3 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = DOMElement [ 
+											nodeName: INPUT
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+									]
+								]
+							]
+						]
+						2 = DOMElement [ 
+							nodeName: TR
+							nodeValue: null
+							innerHTML: [ 
+								1 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = String: email:
+									]
+								]
+								3 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = DOMElement [ 
+											nodeName: INPUT
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+									]
+								]
+							]
+						]
+						4 = DOMElement [ 
+							nodeName: TR
+							nodeValue: null
+							innerHTML: [ 
+								1 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = String: fav movie:
+									]
+								]
+								3 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										1 = DOMElement [ 
+											nodeName: INPUT
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+										2 = String: Star Wars
+										3 = DOMElement [ 
+											nodeName: BR
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+										5 = DOMElement [ 
+											nodeName: INPUT
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+										6 = String: Empire Strikes Back
+										7 = DOMElement [ 
+											nodeName: BR
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+										9 = DOMElement [ 
+											nodeName: INPUT
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+										10 = String: Return of the Jedi
+										11 = DOMElement [ 
+											nodeName: BR
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+									]
+								]
+							]
+						]
+						6 = DOMElement [ 
+							nodeName: TR
+							nodeValue: null
+							innerHTML: [ 
+								1 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = String: comments:
+										1 = DOMElement [ 
+											nodeName: BR
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+										3 = DOMElement [ 
+											nodeName: TEXTAREA
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+									]
+								]
+							]
+						]
+						8 = DOMElement [ 
+							nodeName: TR
+							nodeValue: null
+							innerHTML: [ 
+								1 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = String: Test:
+									]
+								]
+								3 = DOMElement [ 
+									nodeName: TD
+									nodeValue: null
+									innerHTML: [ 
+										0 = DOMElement [ 
+											nodeName: INPUT
+											nodeValue: null
+											innerHTML: [ 
+											]
+										]
+									]
+								]
+							]
+						]
+					]
+				]
+			]
+		]
+	]
+]
+</code>
+<p/>
+<p>As you can see - it is readable, but it would be nicer if it was a bit more compact. Color coding wouldn't work well in the console. Of course, if your only target is the console itself, it probably makes sense to just use console.dir:</p>
+<p/>
+<code>
+console.dir($("#someForm")[0]);
+</code>
+<p/>
+<p>This returns (and I cropped this screen shot a bit to make it fit):</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/screen22.png" />}

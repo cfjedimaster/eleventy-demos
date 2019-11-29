@@ -1,0 +1,99 @@
+<h1>Post</h1>
+
+<p>Yesterday (well, early this morning), I <a href="http://ray.camdenfamily.com/index.cfm/2007/5/30/ColdFusion-8-Checking-to-see-if-a-file-upload-is-an-image">blogged</a> about how you can use ColdFusion 8 for the rather simple (and common) task of verifying that a file uploaded is a valid image. In today's post I'll expand on this a bit and show how you can check the size of the image.</p>
+<!--more-->
+<p>First and foremost - what do we mean by size? Do we mean file size or image dimensions? It has always been easy to check the size of an upload files. Consider this check:</p>
+<code>
+&lt;cfelseif fileupload.filesize gt 50000&gt;
+    &lt;cfset errors = errors & "Avast Ye! Your image cannot be larger than 50k!&lt;br /&gt;"&gt;		
+</code>
+<p>In this code block, fileupload was the result of my CFFILE/Upload tag. So as you can see, that is easy enough. But we also want to check the size of the image. For our sample application, we will only allow images up to 100 pixels high or wide.</p>
+<p>To begin - we first need to create a ColdFusion Image variable. Images are a new type of variable in ColdFusion 8. Since we have an uploaded file, we can create the Image variable like so:</p>
+<code>
+&lt;cfset cfImage = imageNew(newfile)&gt;
+</code>
+<p>(You can also use imageNew() by itself to create blank images.) So now that we have an Image variable, we can then use the imageInfo() function to get information about the image:</p>
+<code>
+&lt;cfset imageData = imageInfo(cfImage)&gt;
+</code>
+<p>This returns a structure that includes information about the image, including:</p>
+<ul>
+<li>colormodel - This is a structure with data about the colors of the image, including things like color depth, transparency, etc.
+<li>width, height - The width and height of course.
+<li>source - The filename of the image.
+</ul>
+<p>So once we have this structure, it is trivial to check the height and width:</p>
+<code>
+&lt;cfif imageData.width gt 100 or imageData.height gt 100&gt;
+    &lt;cfset errors = errors & "Avast Ye! Image cannot be more than 100 pixels wide or tall!&lt;br /&gt;"&gt;
+&lt;/cfif&gt;
+</code>
+<p>As before - I've included the full template below. Enjoy.</p>
+<code>
+&lt;cfset errors = ""&gt;
+&lt;cfparam name="form.name" default=""&gt;
+&lt;cfparam name="form.picture" default=""&gt;
+<p>&lt;cfif structKeyExists(form, &quot;save&quot;)&gt;
+&lt;cfif not len(trim(form.name))&gt;
+&lt;cfset errors = errors &amp; &quot;Avast Ye! Include a name or walk the plank!&lt;br /&gt;&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfif not len(trim(form.picture))&gt;
+&lt;cfset errors = errors &amp; &quot;Avast Ye! Include a picture or walk the plank!&lt;br /&gt;&quot;&gt;
+&lt;cfelse&gt;
+&lt;cffile action=&quot;upload&quot; destination=&quot;#expandPath('./images')#&quot; nameConflict=&quot;makeunique&quot; filefield=&quot;picture&quot; result=&quot;fileupload&quot;&gt;
+&lt;cfif fileupload.fileWasSaved&gt;
+&lt;cfset newfile = fileupload.serverdirectory &amp; &quot;/&quot; &amp; fileupload.serverfile&gt;
+&lt;cfif not isImageFile(newfile)&gt;
+&lt;cfset errors = errors &amp; &quot;Avast Ye! Include a VALID picture or walk the plank!&lt;br /&gt;&quot;&gt;
+&lt;!--- clean up ---&gt;
+&lt;cffile action=&quot;delete&quot; file=&quot;#newfile#&quot;&gt;
+&lt;cfelseif fileupload.filesize gt 50000&gt;
+&lt;cfset errors = errors &amp; &quot;Avast Ye! Your image cannot be larger than 50k!&lt;br /&gt;&quot;&gt;		
+&lt;cfelse&gt;
+&lt;!--- check the dimensions ---&gt;
+&lt;cfset cfImage = imageNew(newfile)&gt;
+&lt;cfset imageData = imageInfo(cfImage)&gt;
+&lt;cfif imageData.width gt 100 or imageData.height gt 100&gt;
+&lt;cfset errors = errors &amp; &quot;Avast Ye! Image cannot be more than 100 pixels wide or tall!&lt;br /&gt;&quot;&gt;
+&lt;/cfif&gt;
+&lt;/cfif&gt;<br>
+&lt;/cfif&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfif errors is &quot;&quot;&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+Here is where we would update the database and send the user away...
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfif errors neq &quot;&quot;&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+&lt;b&gt;Please correct the following error(s):&lt;br /&gt;
+#errors#
+&lt;/b&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;form action=&quot;imageuploadform.cfm&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;Your Name:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;#form.name#&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Your Picture:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;file&quot; name=&quot;picture&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt; &lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;submit&quot; name=&quot;save&quot; value=&quot;Save&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;
+</code></p>
+}

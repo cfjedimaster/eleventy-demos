@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>A reader asks:</p>
+<blockquote>
+My question for you is how can we track the country name or country code from IP Address using Coldfusion?
+</blockquote>
+<p>There are a variety of ways of solving this problem (and I know that my readers, as always, will chime in), so I'll focus on how I solved it for a recent client of ours. We used a product called <a href="http://www.sustainablegis.com/projects/geoLocator/">geoLocator</a>, created by the ColdFusion King of International Issues, Paul Hastings. The geoLocator CFC will return a wealth of information about the user's country, all based on IP, which means it is <b>not</b> perfect, but works &quot;close enough&quot; I'd say for most uses. I had no trouble integrating it into our site, and you can't beat the price (free).</p>
+}

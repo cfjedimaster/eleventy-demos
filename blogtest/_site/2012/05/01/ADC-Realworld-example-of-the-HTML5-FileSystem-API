@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Yesterday my latest Adobe Developer Connection (*) article was posted - I hope you guys think it is cool: <a href="http://www.adobe.com/devnet/html5/articles/real-world-example-html5-filesystem-api.html">Real-world Example of the HTML5 FileSystem API</a>. As I learn new things, I strive to find real-world (if sometimes contrived) uses for features. This article represents my exploration of the FileSystem API and my attempt to create a real use case for it.</p>
+<ul>
+<li>Not to sound like a broken record (ok, I <i>love</i> to repeat myself, ask my kids), but I'll remind folks again about how awesome the <a href="http://www.adobe.com/devnet.html">Adobe Developer Connection</a> is. If you haven't got it bookmarked, you are missing out on some truly stellar content!</li>
+</ul>
+}

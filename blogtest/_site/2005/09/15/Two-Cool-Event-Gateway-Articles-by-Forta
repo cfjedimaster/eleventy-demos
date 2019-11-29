@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>I don't normally waste an entry just pointing to another blog, but I thought I'd point out two cool entries by Ben Forta:</p>
+<p><a href="http://www.forta.com/blog/index.cfm?mode=e&entry=1737">Building an IM Bot - Part 1</a><br>
+<a href="http://www.forta.com/blog/index.cfm?mode=e&entry=1738">Building an IM Bot - Part 2</a></p>
+<p>I read this articles and had a bot up and running in less than five minutes. The only problem is that there is one typo in part 2 of his article. Change this line:</p>
+<p>&lt;cfset var originatorID=CFEvent.data.originatorID&gt;</p>
+<p>to</p>
+<p>&lt;cfset var originatorID=CFEvent.originatorID&gt;</p>
+<p>I've registered &quot;CFLibbot&quot; and will be hooking up UDF lookup to it. I'm also considering hooking up <a href="http://www.rsswatcher.com">RSSWatcher.com</a> to it - so you can get notifications via IM instead of email.</p>
+}

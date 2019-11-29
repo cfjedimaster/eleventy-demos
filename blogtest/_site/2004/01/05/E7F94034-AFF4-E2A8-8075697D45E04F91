@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>So, as you may or may not know, when calling a UDF, you normally use this syntax:</p>
+<p>x = foo(a,b,c)</p>
+<p>However, imagine a UDF with 6 arguments, all optional, and you only want to pass the <i>last</i> argument? Using the syntax above, you must define and pass the first five arguments before you pass in the sixth argument. However, in MX, you can use a new format:</p>
+<p>x = foo(sixtharg=whatever)</p>
+<p>You can do this multiple times as well:</p>
+<p>x = foo(onearg=blah,anotherarg=ack)</p>
+<p>However, there is one drawback to this approach. If you copy the UDF to any of the builtin scopes (like Request), you will get an error stating that you can't call the UDF using this format. Hopefully this will be fixed in Blackstone.</p>
+}

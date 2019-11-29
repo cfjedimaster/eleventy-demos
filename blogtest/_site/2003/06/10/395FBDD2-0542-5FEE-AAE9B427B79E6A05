@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>A new site by my company, <a href="http://www.mindseye.com">Mindseye</a>, was launched today: <a href="http://www.cfcfoundation.org/">Celebrities for Charity</a>. This is the first JSP site I worked on, and I have to say I was quite impressed by how powerful the language is. I know some Java developers frown on JSP, but I found it quite nice. I also liked how easy it was to build my own class files and use them from within the application. Tomcat was a bit difficult to understand at first, but for a free application server, I'm very impressed.</p>
+}

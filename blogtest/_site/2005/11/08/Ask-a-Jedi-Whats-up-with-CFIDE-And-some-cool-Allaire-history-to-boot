@@ -1,0 +1,48 @@
+<h1>Post</h1>
+
+<p>So here is a fun question:</p>
+<blockquote>
+Why is the CFIDE directory called CFIDE?
+</blockquote>
+<p>To be honest, I had no idea. I pinged <a href="http://www.dcooper.org">Damon Cooper</a> and got a <i>very</i> interesting response:</p>
+<blockquote>
+Good one :)  
+<p>Tom Jordahl and I did a quick comparison of mental notes, and to the
+best of our &quot;collective recollection&quot;, here's a bit of the history
+behind it:</p>
+<p>Back before Allaire acquired the Homesite product from Nick Bradbury, a
+fully web-based ColdFusion administration AND development experience was
+envisioned.  It was to use a combination of client-side Java and
+ColdFusion server-side code.  The &quot;/CFIDE&quot; (or &quot;ColdFusion Integrated
+Development Environment&quot;) directory was the designated location for this
+administrator and development environment.</p>
+<p>Around ColdFusion 3.0, the CF Administrator shipped as a CF-based
+application for the first time, and RDS support came a bit later.</p>
+<p>There was actually a prototype around somewhere, apparently (that was
+rumored to be tucked away in Patrick Muzila's desk drawer by the time I
+joined in Jan 1998) of the Java applet-based development environment,
+but it never shipped with the product.  The RDS-based file browser Java
+applet, however, did ship as part of the Administrator, and is still
+used in the Administrator (for better or worse!) even today, using the
+&quot;/CFIDE&quot; directory.</p>
+<p>For a number of reasons (not the least of which was the fact that
+client-side Java had it's share of issues), the web-based development
+environment was dropped in favor of what became ColdFusion Studio, based
+on the Bradbury Homesite product and code-base, which made a lot more
+sense, as a native desktop IDE with built-in RDS support.</p>
+<p>This was a good call (IMO), but since those days the &quot;/CFIDE&quot; directory
+has persisted, and has become the default web-accessible location for
+Flash Form styles and themes, CF7 XML Form &quot;skins&quot; and layouts, Admin
+API, CFC Utils, debugging templates, Getting Started base (if
+installed), etc.</p>
+<p>It has caused a bit of grief along the way, being case-sensitive on
+Unix, needs to be web-accessible in hosted environments for Flash Forms
+and the old CFFORM applets to work, etc, etc, but it's likely there to
+stay now, I think :)</p>
+<p>(HINT: For a little &quot;blast from the distant past&quot;, check out the
+contents of your {webroot}\CFIDE\classes\images directory, especially
+&quot;cflogo.gif&quot;)</p>
+<p>Damon</p>
+</blockquote>
+<p>Cool story! For those who are curious, here is cflogo.gif (copyrighted by Macromedia, yada yada yada):</p>
+<img src="http://ray.camdenfamily.com/images/cflogo.gif">}

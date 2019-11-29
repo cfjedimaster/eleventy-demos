@@ -1,0 +1,374 @@
+<h1>Post</h1>
+
+<p>For today's &quot;Can I build <em>that</em> with Vue.js?&quot; blog post, I'm sharing a simple quiz system I've built with Vue.js. The idea was to see if I could write Vue code that would handle a dynamic set of questions, present them to the user one at a time, and then report a grade at the end. I had fun building this, and it went through a few iterations, so let's get started!</p>
+<h1>Version One</h1>
+<p>In my initial design, I wanted to support the following:</p>
+<ul>
+<li>First, the quiz needed to have three different stages. An initial &quot;you are about to take a quiz&quot; view, a &quot;answer this question&quot; view that will cycle through all the questions, and a final &quot;you finished and here is your score&quot; view.</li>
+<li>For the questions, I decided to just support two types: true/false and multiple choice with one answer. Of course, this could get much more complex. I built a dynamic survey system in ColdFusion a few years back (<a href="https://github.com/cfjedimaster/Soundings">Soundings</a>), and supporting every type of question took quite a bit of work.</li>
+<li>Finally, I wanted the actual quiz data to be loaded via JSON, so that any set of questions could be used. (Again though, as long as they matched the criteria defined above.)</li>
+</ul>
+<p>Before getting into the code, let's take a look at the JSON structure of the quiz data first.</p>
+<pre><code class="language-js">{
+  &quot;title&quot;: &quot;Quiz about Foo&quot;,
+  &quot;questions&quot;: [
+    {
+      &quot;text&quot;: &quot;Is true true?&quot;,
+      &quot;type&quot;: &quot;tf&quot;,
+      &quot;answer&quot;: &quot;t&quot;
+    },
+    {
+      &quot;text&quot;: &quot;Is false true?&quot;,
+      &quot;type&quot;: &quot;tf&quot;,
+      &quot;answer&quot;: &quot;f&quot;
+    },
+    {
+      &quot;text&quot;: &quot;What is the best beer?&quot;,
+      &quot;type&quot;: &quot;mc&quot;,
+      &quot;answers&quot;: [
+        &quot;Coors&quot;,
+        &quot;Miller&quot;,
+        &quot;Bud&quot;,
+        &quot;Anchor Steam&quot;
+      ],
+      &quot;answer&quot;: &quot;Anchor Steam&quot;
+    },
+    {
+      &quot;text&quot;: &quot;What is the best cookie?&quot;,
+      &quot;type&quot;: &quot;mc&quot;,
+      &quot;answers&quot;: [
+        &quot;Chocolate Chip&quot;,
+        &quot;Sugar&quot;,
+        &quot;Beer&quot;
+      ],
+      &quot;answer&quot;: &quot;Sugar&quot;
+    }
+  ]
+}
+</code></pre>
+<p>My JSON structure has 2 top level keys, title and questions. The title property simply gives the quiz a name. The questions property is an array of questions. Each question has a text value (the actual question text), a type (either &quot;tf&quot; for true/false or &quot;mc&quot; for multiple choice), and an answer property indicating the right answer. Questions of type mc also have an answers property which is an array of options for the multiple choices.</p>
+<p>To host my quiz, I used <a href="http://myjson.com/">myjson.com</a>, which is a cool little service that acts like a pastebin for JSON. It also turns on CORS which makes it easy to use the JSON packets in client-side applications.</p>
+<p>Ok, so how did I solve this with Vue? First, let's look at the HTML.</p>
+<pre><code class="language-markup">&lt;div id=&quot;quiz&quot;&gt;
+  
+  &lt;div v-if=&quot;introStage&quot;&gt;
+    &lt;h1&gt;Welcome to the Quiz: {{title}}&lt;/h1&gt;
+    &lt;p&gt;
+      Some kind of text here. Blah blah.
+    &lt;/p&gt;
+    
+    &lt;button @click=&quot;startQuiz&quot;&gt;START!&lt;/button&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;questionStage&quot;&gt;
+    &lt;question 
+              :question=&quot;questions[currentQuestion]&quot;
+              v-on:answer=&quot;handleAnswer&quot;
+              :question-number=&quot;currentQuestion+1&quot;
+    &gt;&lt;/question&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;resultsStage&quot;&gt;
+    You got {{correct}} right out of {{questions.length}} questions. Your percentage is {{perc}}%.
+  &lt;/div&gt;
+  
+&lt;/div&gt;
+</code></pre>
+<p>I've got three main parts. Each of the three divs represent one &quot;stage&quot; of the quiz, either before, during, or after. I could have use if/else statements here, but I like the use of a simple if to toggle on each part. The second div is using a <code>question</code> component to render the current question. Now let's look at the code.</p>
+<p>First - the main Vue app:</p>
+<pre><code class="language-js">const quizData = 'https://api.myjson.com/bins/ahn1p';
+
+const app = new Vue({
+  el:'#quiz',
+  data() {
+    return {
+      introStage:false,
+      questionStage:false,
+      resultsStage:false,
+      title:'',
+      questions:[],
+      currentQuestion:0,
+      answers:[],
+      correct:0,
+      perc:null
+    }
+  },
+  created() {
+    fetch(quizData)
+    .then(res =&gt; res.json())
+    .then(res =&gt; {
+      this.title = res.title;
+      this.questions = res.questions;
+      this.introStage = true;
+    })
+
+  },
+  methods:{
+    startQuiz() {
+      this.introStage = false;
+      this.questionStage = true;
+      console.log('test'+JSON.stringify(this.questions[this.currentQuestion]));
+    },
+    handleAnswer(e) {
+      console.log('answer event ftw',e);
+      this.answers[this.currentQuestion]=e.answer;
+      if((this.currentQuestion+1) === this.questions.length) {
+        this.handleResults();
+        this.questionStage = false;
+        this.resultsStage = true;
+      } else {
+        this.currentQuestion++;
+      }
+    },
+    handleResults() {
+      console.log('handle results');
+      this.questions.forEach((a, index) =&gt; {
+        if(this.answers[index] === a.answer) this.correct++;        
+      });
+      this.perc = ((this.correct / this.questions.length)*100).toFixed(2);
+      console.log(this.correct+' '+this.perc);
+    }
+  }
+})
+</code></pre>
+<p>So from the beginning, my <code>data</code> block handles created flags for each of the three stages as well as storing questions, answer data, and other parts of the quiz. The <code>created</code> block loads the JSON package of my quiz data and then begins the quiz by showing the initial view. Note we use the proper title of the quiz in the first view.</p>
+<p>After the user clicks the button to start the quiz, they can begin answering questions. This is where things get a bit complex. Let's look at the question component.</p>
+<pre><code class="language-js">Vue.component('question', {
+	template:`
+&lt;div&gt;
+  &lt;strong&gt;Question {{ questionNumber }}:&lt;/strong&gt;&lt;br/&gt;
+  &lt;strong&gt;{{ question.text }} &lt;/strong&gt;
+
+  &lt;div v-if=&quot;question.type === 'tf'&quot;&gt;
+    &lt;input type=&quot;radio&quot; name=&quot;currentQuestion&quot; id=&quot;trueAnswer&quot; v-model=&quot;answer&quot; value=&quot;t&quot;&gt;&lt;label for=&quot;trueAnswer&quot;&gt;True&lt;/label&gt;&lt;br/&gt;
+    &lt;input type=&quot;radio&quot; name=&quot;currentQuestion&quot; id=&quot;falseAnswer&quot; v-model=&quot;answer&quot; value=&quot;f&quot;&gt;&lt;label for=&quot;falseAnswer&quot;&gt;False&lt;/label&gt;&lt;br/&gt;
+  &lt;/div&gt;
+
+  &lt;div v-if=&quot;question.type === 'mc'&quot;&gt;
+    &lt;div v-for=&quot;(mcanswer,index) in question.answers&quot;&gt;
+    &lt;input type=&quot;radio&quot; :id=&quot;'answer'+index&quot; name=&quot;currentQuestion&quot; v-model=&quot;answer&quot; :value=&quot;mcanswer&quot;&gt;&lt;label :for=&quot;'answer'+index&quot;&gt;{{mcanswer}}&lt;/label&gt;&lt;br/&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;button @click=&quot;submitAnswer&quot;&gt;Answer&lt;/button&gt;
+&lt;/div&gt;
+`,
+  data() {
+     return {
+       answer:''
+     }
+  },
+	props:['question','question-number'],
+	methods:{
+		submitAnswer:function() {
+			this.$emit('answer', {answer:this.answer});
+      this.answer = null;
+		}
+	}
+});
+</code></pre>
+<p>I've got a template that handles rendering the question (both the question number and text) and then uses simple branching to handle the two types of questions. In theory, this is where you could start adding support for additional question types if you wanted. Make note of how the button fires an event handled by the component, but also then &quot;emitted&quot; out to the parent component. The parent component can then store the answer and update the current question number. This is how you advance throughout the quiz. Note that it also detects when you've answered the last question and fires <code>handleResults</code> to - well - handle the results. The code calculates how many questions you got correct, creates a percentage, and then sets the flag to render the final view.</p>
+<p>You can take the quiz (and see all the code) below:</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="rpoboy" data-default-tab="result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Vue Quiz (v1)" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/rpoboy/">Vue Quiz (v1)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<h1>Round Two</h1>
+<p>After getting my initial version working, I started to think about some improvements I could make to the code. The first one I thought of was simply moving the quiz itself into a component. This would better abstract out the logic and make it more usable. So one of the coolest parts of this update was how my front end code changed. Now it's this:</p>
+<pre><code class="language-markup">&lt;div id=&quot;quiz&quot;&gt;
+  
+  &lt;quiz url=&quot;https://api.myjson.com/bins/ahn1p&quot;&gt;&lt;/quiz&gt;
+ 
+&lt;/div&gt;
+</code></pre>
+<p>That's freaking cool. Here is the JavaScript. The main changes here is the creation of the <code>quiz</code> component.</p>
+<pre><code class="language-javascript">Vue.component('quiz', {
+  template:`
+&lt;div&gt;
+  &lt;div v-if=&quot;introStage&quot;&gt;
+    &lt;h1&gt;Welcome to the Quiz: {{title}}&lt;/h1&gt;
+    &lt;p&gt;
+      Some kind of text here. Blah blah.
+    &lt;/p&gt;
+    
+    &lt;button @click=&quot;startQuiz&quot;&gt;START!&lt;/button&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;questionStage&quot;&gt;
+    &lt;question 
+              :question=&quot;questions[currentQuestion]&quot;
+              v-on:answer=&quot;handleAnswer&quot;
+              :question-number=&quot;currentQuestion+1&quot;
+    &gt;&lt;/question&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;resultsStage&quot;&gt;
+    You got {{correct}} right out of {{questions.length}} questions. Your percentage is {{perc}}%.
+  &lt;/div&gt;
+&lt;/div&gt;
+`,
+  props:['url'],
+  data() {
+    return {
+      introStage:false,
+      questionStage:false,
+      resultsStage:false,
+      title:'',
+      questions:[],
+      currentQuestion:0,
+      answers:[],
+      correct:0,
+      perc:null
+    }
+  },
+  created() {    
+    fetch(this.url)
+    .then(res =&gt; res.json())
+    .then(res =&gt; {
+      this.title = res.title;
+      this.questions = res.questions;
+      this.introStage = true;
+    })
+  
+  },
+  methods:{
+    startQuiz() {
+      this.introStage = false;
+      this.questionStage = true;
+      console.log('test'+JSON.stringify(this.questions[this.currentQuestion]));
+    },
+    handleAnswer(e) {
+      console.log('answer event ftw',e);
+      this.answers[this.currentQuestion]=e.answer;
+      if((this.currentQuestion+1) === this.questions.length) {
+        this.handleResults();
+        this.questionStage = false;
+        this.resultsStage = true;
+      } else {
+        this.currentQuestion++;
+      }
+    },
+    handleResults() {
+      console.log('handle results');
+      this.questions.forEach((a, index) =&gt; {
+        if(this.answers[index] === a.answer) this.correct++;        
+      });
+      this.perc = ((this.correct / this.questions.length)*100).toFixed(2);
+      console.log(this.correct+' '+this.perc);
+    }
+  }
+  
+});
+
+Vue.component('question', {
+	template:`
+&lt;div&gt;
+  &lt;strong&gt;Question {{ questionNumber }}:&lt;/strong&gt;&lt;br/&gt;
+  &lt;strong&gt;{{ question.text }} &lt;/strong&gt;
+
+  &lt;div v-if=&quot;question.type === 'tf'&quot;&gt;
+    &lt;input type=&quot;radio&quot; name=&quot;currentQuestion&quot; id=&quot;trueAnswer&quot; v-model=&quot;answer&quot; value=&quot;t&quot;&gt;&lt;label for=&quot;trueAnswer&quot;&gt;True&lt;/label&gt;&lt;br/&gt;
+    &lt;input type=&quot;radio&quot; name=&quot;currentQuestion&quot; id=&quot;falseAnswer&quot; v-model=&quot;answer&quot; value=&quot;f&quot;&gt;&lt;label for=&quot;falseAnswer&quot;&gt;False&lt;/label&gt;&lt;br/&gt;
+  &lt;/div&gt;
+
+  &lt;div v-if=&quot;question.type === 'mc'&quot;&gt;
+    &lt;div v-for=&quot;(mcanswer,index) in question.answers&quot;&gt;
+    &lt;input type=&quot;radio&quot; :id=&quot;'answer'+index&quot; name=&quot;currentQuestion&quot; v-model=&quot;answer&quot; :value=&quot;mcanswer&quot;&gt;&lt;label :for=&quot;'answer'+index&quot;&gt;{{mcanswer}}&lt;/label&gt;&lt;br/&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;button @click=&quot;submitAnswer&quot;&gt;Answer&lt;/button&gt;
+&lt;/div&gt;
+`,
+  data() {
+     return {
+       answer:''
+     }
+  },
+	props:['question','question-number'],
+	methods:{
+		submitAnswer:function() {
+			this.$emit('answer', {answer:this.answer});
+      this.answer = null;
+		}
+	}
+});
+
+const app = new Vue({
+  el:'#quiz',
+  data() {
+    return {
+    }
+  }
+})
+</code></pre>
+<p>And while it doesn't look any different, you can see the complete app here:</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="opmBzg" data-default-tab="html" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Vue Quiz (v2)" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/opmBzg/">Vue Quiz (v2)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<h1>Version the Third</h1>
+<p>For the third version, I decided to add something that I think is <em>really</em> cool. Vue has a feature for components called <a href="https://vuejs.org/v2/guide/components.html#Content-Distribution-with-Slots">slots</a>. They allow you to pass markup to a component while actually <em>inside</em> a component. It's a bit complex, but imagine this. You've got a component that allows you to pass in a property for a &quot;thank you&quot; message. Ie, a simple string to use to thank the user. One option would be to pass it to the component:</p>
+<pre><code class="language-markup">&lt;mything thankyou=&quot;Hey buddy, thank you for doing that thing. I appreciate it. Here's a kitten.&quot;&gt;&lt;/mything&gt;
+</code></pre>
+<p>While that works, if the string gets large, as has markup in it, it can become unwieldy within a property. So Vue allows us to pass in the value inside the component like so:</p>
+<pre><code class="language-markup">&lt;mything&gt;
+
+   &lt;div slot=&quot;thankyou&quot;&gt;
+   Hey, I want to &lt;i&gt;really&lt;/i&gt; thank you for taking
+   the time to do whatever. We here at Mega Corp truly
+   care that you took the time. Oh, and here, please
+   take a kitten!
+   &lt;/div&gt;
+
+&lt;/mything&gt;
+</code></pre>
+<p>Your Vue component can map the content of that div by using the slot attribute. Your component can even provide it's own default text. It's a pretty cool feature so be sure to <a href="https://vuejs.org/v2/guide/components.html#Content-Distribution-with-Slots">read the docs</a> to get it, but how did I use it for my quiz? I used it as a way to let you customize the beginning and end states of the quiz. So check out this version:</p>
+<pre><code class="language-markup">&lt;div id=&quot;quiz&quot;&gt;
+  
+  &lt;quiz url=&quot;https://api.myjson.com/bins/ahn1p&quot;&gt;
+
+    &lt;div slot=&quot;intro&quot; slot-scope=&quot;props&quot;&gt;
+      This is my custom quiz header for {{props.title}}.
+    &lt;/div&gt;
+  
+    &lt;div slot=&quot;results&quot; slot-scope=&quot;props&quot;&gt;
+      &lt;h1&gt;WOWOWOW!&lt;/h1&gt; 
+        You got {{props.correct}} right out of 
+        {{props.length}} questions. 
+      Your percentage is {{props.perc}}%.
+    &lt;/div&gt;
+  
+  &lt;/quiz&gt;
+ 
+  
+&lt;/div&gt;
+</code></pre>
+<p>I've got two slots inside my quiz component now. Note the use of <code>slot-scope</code>. This allows me to access values set in the component itself. A &quot;good&quot; component that is shared with the public will document all of this so developers can easily make use of it. Here is the updated quiz component with this new support added in (I'm just sharing the template portion below):</p>
+<pre><code class="language-markup">&lt;div&gt;
+  &lt;div v-if=&quot;introStage&quot;&gt;
+    &lt;slot name=&quot;intro&quot; :title=&quot;title&quot;&gt;
+    &lt;h1&gt;Welcome to the Quiz: {{title}}&lt;/h1&gt;
+    &lt;p&gt;
+      Some kind of text here. Blah blah.
+    &lt;/p&gt;    
+    &lt;/slot&gt;
+    &lt;button @click=&quot;startQuiz&quot;&gt;START!&lt;/button&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;questionStage&quot;&gt;
+    &lt;question 
+              :question=&quot;questions[currentQuestion]&quot;
+              v-on:answer=&quot;handleAnswer&quot;
+              :question-number=&quot;currentQuestion+1&quot;
+    &gt;&lt;/question&gt;
+  &lt;/div&gt;
+  
+  &lt;div v-if=&quot;resultsStage&quot;&gt;
+    &lt;slot name=&quot;results&quot; :length=&quot;questions.length&quot; :perc=&quot;perc&quot; :correct=&quot;correct&quot;&gt;
+    You got {{correct}} right out of {{questions.length}} questions. Your percentage is {{perc}}%.
+    &lt;/slot&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Note that I've got text defined for both slots. This will be used as a default so the front end code can choose to customize one or the other, or both, or none. You can find a demo of this, and the complete code, below:</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="zpeNwX" data-default-tab="result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Vue Quiz (v3)" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/zpeNwX/">Vue Quiz (v3)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>So in theory - I could copy question and quiz into a file by itself and anyone could make use of it in their Vue apps. I want to research that a bit more as I assume that I'd probably want to minify it too. Any Vue experts want to chime in on how they would do that? Leave me a comment below!</p>
+}

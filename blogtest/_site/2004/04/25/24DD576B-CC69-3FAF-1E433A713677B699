@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I decided to give up on the original machine. I uninstall CF and reinstalled. No luck. For the heck of it I tried the jrun-web.xml alias thing again and this time it worked. How frustrating. On one system I can hit host/foo.cfc?WSDL, but on the original system I have to use host/ALIAS/foo.cfc?WSDL.</p>
+<p>I'm going to keep at it though. I would certainly think that if host/foo.cfc works, host/foo.cfc?WSDL should work as well.</p>
+}

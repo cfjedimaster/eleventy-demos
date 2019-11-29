@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>As I <a href="http://ray.camdenfamily.com/index.cfm/2007/5/6/Framework-explorer-ready-for-CFEclipse">mentioned</a> earlier today, Mark Drew has released  the CF Frameworks Explorer for CFEclipse. One feature I couldn't get working right was the &quot;Open Include&quot; option for my views in my ModelGlue XML.</p>
+<p>The problem was that the explorer couldn't translate my ColdSpring view mapping (/adobeopen/views) to a proper folder.</p>
+<p>All it took was right clicking on my project in Eclipse, selecting <b>Set CF Mapping</b>, and naming it adobeopen.</p>
+<p>I was then able to immediately open my views from the explorer. It's amazing how easy it is to get support when you can walk up to Mark and bug him. ;)</p>
+}

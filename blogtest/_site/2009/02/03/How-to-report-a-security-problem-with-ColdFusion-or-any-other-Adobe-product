@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I've mentioned before about the go/wish form at Adobe for reporting bugs and making enhancements requests: <a href="http://www.adobe.com/go/wish">http://www.adobe.com/go/wish</a></p>
+<p>Adobe is pretty strict about this. You can blog all day about your never-ending desire for the cfcowbell tag, but unless you make a 'formal' request, you are less likely to get the cowbell you think ColdFusion so desperately needs.</p>
+<p>What I didn't know until today (thank you Jeremy Prevost!) is that the go/wish page also makes mention of how to report security problems.</p>
+<p>You can report a security problem with any Adobe product here: <a href="http://www.adobe.com/support/security/alertus.html">http://www.adobe.com/support/security/alertus.html</a></p>
+}

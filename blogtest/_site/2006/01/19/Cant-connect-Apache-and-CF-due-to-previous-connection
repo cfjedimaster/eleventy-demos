@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>My box was running ColdFusion under JRun, but I decided to switch back to a &quot;simple&quot; server setup. During the install, however, the connection to Apache wasn't updated. It continued to point to the JRun server instead of my new server. When I tried to run the connector though, I was told that Apache was already configured for JRun.</p>
+<p>So - at first I simply went into my httpd.conf file and removed any mention of JRun. This didn't help. I then ran the bat file to remove all connections. This didn't work either.</p>
+<p>At this point I wasn't sure what to do. It seemed like ColdFusion was convinced that Apache was already configured. I even reinstalled Apache and it didn't change.</p>
+<p>Thankfully I got some help from Stephen Dupre and Bill Sahlas. Turns out there is a wsconfig.properties file under the wsconfig file in the CFMX folder. This had a set of properties that marked CF as connected to Apache. I simply removed them - and the /1 folder, and this time the connection script worked great.</p>
+}

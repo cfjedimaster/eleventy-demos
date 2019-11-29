@@ -1,0 +1,26 @@
+<h1>Post</h1>
+
+<p>A few weeks back Ben Nadel <a href="http://www.bennadel.com/blog/2505-JsonSerializer-cfc-A-Data-Serialization-Utility-For-ColdFusion.htm">released</a> a nice utility that does JSON serialization with ColdFusion data. As you know, ColdFusion has this feature baked in, but it doesn't always serialize your data in the form you need. Ben's library gives you greater control over JSON serialization and can be helpful in cases where the built-in support isn't working right for you. I wanted to share a quick example of how you could possibly use this in a real CFC.</p>
+<!--more-->
+<p>First, let's consider a simple CFC built to return an array of data in JSON:</p>
+<script src="https://gist.github.com/cfjedimaster/6435445.js"></script>
+<p>Nothing too fancy here, right? I've got an array of structs where each element in the array is a structure with three keys. There's a name, an age, and a favorite color key. You would typically retrieve this data by calling the CFC and passing the method and returnformat URL keys:</p>
+<p>http://localhost/test.cfc?method=demo&amp;returnformat=json</p>
+<p>And here is the result:</p>
+<p>[{&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 1&quot;,&quot;AGE&quot;:29}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 2&quot;,&quot;AGE&quot;:48}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 3&quot;,&quot;AGE&quot;:41}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 4&quot;,&quot;AGE&quot;:68}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 5&quot;,&quot;AGE&quot;:21}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 6&quot;,&quot;AGE&quot;:31}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 7&quot;,&quot;AGE&quot;:32}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 8&quot;,&quot;AGE&quot;:78}, {&quot;FAVCOLOR&quot;:333333,&quot;NAME&quot;:&quot;Ray 9&quot;,&quot;AGE&quot;:94}]</p>
+<p>There are two problems with this result. First, the keys are uppercased. That isn't too difficult to fix nor is it too difficult to handle on the client-side. Secondly, the &quot;favcolor&quot; value was transformed into a number. This is definitely not desirable. Unfortunately you can't fix this easily unless you mess with your data a bit.</p>
+<p>So how would you fix this with Ben's utility? Consider this updated version:</p>
+<script src="https://gist.github.com/cfjedimaster/6435471.js"></script>
+<p>Let's go over the changes here one by one.</p>
+<ul>
+<li>First, note we have to change the return type of the method from array to string. While we are still working with an array, the actual return now will be a JSON string, not the original array.
+<li>The next change isn't necessarily required, but it helps. We override the return format value and set it to plain. The value "plain" tells ColdFusion to <strong>not</strong> do anything with the result. I.e., leave it be and don't touch it. In theory the end user could just pass this in the URL, but we can make things even easier by just setting the format in the CFC. 
+<li>After the existing business logic, we then simply instantiate Ben's CFC and serialize the data. We can then return that string.
+</ul>
+<p>Now we can call our logic like so:</p>
+<p>http://localhost/test.cfc?method=demo2</p>
+<p>And get this in response:</p>
+<p>[{&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 1&quot;,&quot;age&quot;:&quot;37&quot;}, {&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 2&quot;,&quot;age&quot;:&quot;88&quot;}, {&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 3&quot;,&quot;age&quot;:&quot;86&quot;},{&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 4&quot;,&quot;age&quot;:&quot;25&quot;}, {&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 5&quot;,&quot;age&quot;:&quot;72&quot;}, {&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 6&quot;,&quot;age&quot;:&quot;97&quot;}, {&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 7&quot;,&quot;age&quot;:&quot;32&quot;}, {&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 8&quot;,&quot;age&quot;:&quot;56&quot;}, {&quot;favcolor&quot;:&quot;333333&quot;,&quot;name&quot;:&quot;Ray 9&quot;,&quot;age&quot;:&quot;57&quot;}]</p>
+<p>Note that by default the keys were lowercased, which is pretty darn cool. Also note that age was transformed into a string. If you don't like this, you can fix it like so:</p>
+<p>var serializer = new JsonSerializer().asString(&quot;favcolor&quot;).asInteger(&quot;age&quot;);</p>
+}

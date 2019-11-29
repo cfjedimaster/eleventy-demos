@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>I'm definitely <b>not</b> the first person to do this - but I've been itching to do drop shadows ever since I started playing with ColdFusion 8's new image functionality. My UDF is rather simple. It takes an image and duplicates it. It fills the canvas with white - and than adds an offset black square the same size as the original image. It does a blur, and then pastes on the original image.</p>
+<p>That by itself isn't too interesting, but what was interesting is why I had to duplicate the original image. When I first wrote the code, I simply used imageNew. However, whenever I tried to imageOverlay the original image onto the new one, I got:</p>
+<h2>Overlay operation requires the two sources to match in number of bands and data type.</h2>
+<p>Stumped - I dumped imageInfo on both. I wasn't sure what bands meant - but colormode_type on my original image was &quot;ComponentColorModel&quot; ,and the value in my new image made from scratch was &quot;PackedColorModel&quot;. That made as much sense to me as arithmetic would make to Paris Hilton. So for the heck of it, I just tried imageNew using ARGB. I figured grayscale wouldn't work. Using ARGB didn't help at all.</p>
+<p>So does anyone know how you would make an image from scratch that would work with a (as far as I know) average JPG?</p>
+<p>The code is pasted at the very bottom. Let me show some examples of the output. First the original image.</p>
+<p align="center">
+<img src="https://static.raymondcamden.com/images/s1.PNG"><br>
+<b>Writing PHP is hard!</b>
+</p>
+<p>Now to make the drop shadow:</p>
+<code>
+&lt;cfset myimage=makeShadow("sadgirl.jpg",5,5)&gt;
+&lt;cfimage action="writeToBrowser" source="#myimage#"&gt;
+</code>
+<p align="center">
+<img src="https://static.raymondcamden.com/images/cfjedi/s2.PNG"><br>
+<b>.Net makes Mommy and Daddy fight.</b>
+</p>
+<p>And finally an example with what I call the blood red shadow:</p>
+<code>
+&lt;cfset myimage=makeShadow("sadgirl.jpg",5,5, "90,0,0")&gt;
+&lt;cfimage action="writeToBrowser" source="#myimage#"&gt;
+</code>
+<p align="center">
+<img src="https://static.raymondcamden.com/images/cfjedi//s3.PNG"><br>
+<b>Rails broke all my toys and Ruby killed my dog!</b>
+</p>
+<p>And finally - the UDF. Enjoy:</p>
+<code>
+&lt;cffunction name="makeShadow" returnType="any" output="false"&gt;
+	&lt;cfargument name="image" type="any" required="true"&gt;
+	&lt;cfargument name="offset" type="numeric" required="true"&gt;
+	&lt;cfargument name="blur" type="numeric" required="true"&gt;
+	&lt;cfargument name="shadowcol" type="string" required="false" default="145,145,145"&gt;
+	&lt;cfargument name="backgroundcol" type="string" required="false" default="white"&gt;
+<pre><code>&amp;lt;cfset var newwidth = &quot;&quot;&amp;gt;
+&amp;lt;cfset var newheight = &quot;&quot;&amp;gt;
+&amp;lt;cfset var shadow = &quot;&quot;&amp;gt;
+
+&amp;lt;!--- if not image, assume path ---&amp;gt;
+&amp;lt;cfif not isImage(arguments.image) and not isImageFile(arguments.image)&amp;gt;
+	&amp;lt;cfthrow message=&quot;The value passed to makeShadow was not an image.&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif isImageFile(arguments.image)&amp;gt;
+	&amp;lt;cfset arguments.image = imageRead(arguments.image)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfset newwidth = arguments.image.width + (2*offset)&amp;gt;
+&amp;lt;cfset newheight = arguments.image.height + (2*offset)&amp;gt;
+
+&amp;lt;!--- make a black image the same size as orig ---&amp;gt;
+&amp;lt;cfset shadow = duplicate(arguments.image)&amp;gt;
+&amp;lt;cfset imageResize(shadow, newwidth, newheight)&amp;gt;
+&amp;lt;cfset imageSetDrawingColor(shadow,arguments.backgroundcol)&amp;gt;
+&amp;lt;cfset imageDrawRect(shadow, 0, 0, newwidth, newheight, true)&amp;gt;
+&amp;lt;cfset imageSetDrawingColor(shadow,arguments.shadowcol)&amp;gt;
+&amp;lt;cfset imageDrawRect(shadow, arguments.offset, arguments.offset, arguments.image.width, arguments.image.height, true)&amp;gt;
+
+&amp;lt;cfset imageBlur(shadow, arguments.blur)&amp;gt;
+
+&amp;lt;!--- copy orig ---&amp;gt;
+&amp;lt;cfset imagePaste(shadow,arguments.image,0,0)&amp;gt;
+
+&amp;lt;cfreturn shadow&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+}

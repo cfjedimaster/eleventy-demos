@@ -1,0 +1,50 @@
+<h1>Post</h1>
+
+<p>This is something I've known for a while but tend to forget until it slaps me across the face. A reader wrote in with something odd she saw on her web site. She had a basic search site where some of the content was a bit slow to render. Instead of delaying the search results she simply used an Ajax call to update the results in real time. I think this is a great idea. Even if the &quot;total&quot; time remains the same (or close to it), the &quot;perceived&quot; time is <b>much</b> lower for the end user. However, in her testing she noticed something odd. She thought she was running N ajax based calls all at once but in her network tools they appeared to come in &quot;chained&quot;, ie one after another. She had expected that if each call took about 1 second and she made 30 of them, they should run asynchronously and completely run within 1 second. (Or within a second or two given network latency randomness.) I whipped up a quick example of this so I could see this in action.</p>
+<!--more-->
+<p>
+<p>First, I began with a simple front end client that uses jQuery. This topic isn't jQuery specific of course but all good Ajax posts should mention jQuery at least once.</p>
+<p>
+<code>
+&lt;script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+	for(var i=1; i&lt;= 20; i++) {
+		runCall(i);
+	}
+})
+<p>function runCall(x) {
+console.log('doing call '+x);
+$.post(&quot;slow.cfm&quot;,{&quot;id&quot;:x}, function(res,code) {
+$(&quot;#show&quot;+x).html(&quot;Result was &quot;+res);
+console.log(&quot;back and res=&quot;+res);
+});
+}
+&lt;/script&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;20&quot;&gt;
+&lt;cfoutput&gt;
+&lt;div id=&quot;show#x#&quot;&quot;&gt;&lt;/div&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>My template has 20 divs, representing search results, and on document load will run 20 calls to fetch data for each div. Warning - I'm using console.log for debugging. This is not a bug. When you click my demo, please do not report this as a bug. <b>Ajax developers should use a browser (or browser+plugin) that supports console!</b> All in all, pretty simple, right? Technically this is not &quot;20 at once&quot; since I have a loop, but I think we agree that it is close enough for our testing.</p>
+<p>
+<p>For the back end I wrote a quick ColdFusion script to simulate a slow process and result. It's hard to write slow ColdFusion code so I made use of the sleep command.</p>
+<p>
+<code>
+&lt;cfset sleep(2000)&gt;
+&lt;cfparam name="form.id" default="1"&gt;
+&lt;cfoutput&gt;#form.id#=#randRange(1,100)#&lt;/cfoutput&gt;
+</code>
+<p>
+<p>Running this in the browser shows some interesting results. I tested in both Chrome and Firefox. While I prefer Chrome, I thought Firefox (plus Firebug) had the best graphic result:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip30.png" />
+<p>
+<p>I think you can clearly see that the results are staggered. You can test this yourself by clicking the button below - but have Firebug or Chrome Dev Tools ready to go:</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/feb232011/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<p>For me, I clearly see &quot;spurts&quot; of loading. Typically I saw 2 or 4 results pop in at once. This is not a bug though and is completely normal. The browser has set limits on how many network requests can be made to a server. This is both good for the client as well as the server. We see this every day when loading a web page, especially over mobile. Things 'pop' into view over time. However on a broadband connection it can sometimes be easy to forget. In this very clear cut example we ask the browser to quickly make a bunch of network requests at once and we can see the 'throttle' more clearly.</p>
+}

@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Today I am <b>very</b> proud to announce that <a href="http://www.cflib.org">CFLib</a>, the 100% open source and free collection of ColdFusion User Defined Functions, has released its 1000 UDF.</p>
+<p>I started this site along with <a href="http://www.brooks-bilson.com/blogs/rob/">Rob Brooks-Bilson</a> <i>way</i> back in 2001. The very first UDF released (according to the database) was <a href="http://www.cflib.org/udf.cfm/formatssn">FormatSSN</a>. Since then 999 other UDFs have been released, thanks to the participation and help of the community (that's you guys).</p>
+<p>In case folks are curious - the &quot;2.0&quot; site I've been talking about since 2004 is <i>still</i> in development, and I honestly think I might be able to get it done this year. It will support CFCs and Custom Tags and a be a one stop shop for all your CF extensions. (And you will always know that they will be free and open source.)</p>
+<p>In the more immediate future, CFLib will be moving (along with my other sites) to a new server that will provide better performance and stability.</p>
+}

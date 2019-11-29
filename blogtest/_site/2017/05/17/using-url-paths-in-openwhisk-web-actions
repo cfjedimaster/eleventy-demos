@@ -1,0 +1,70 @@
+<h1>Post</h1>
+
+<p>Time for another quick OpenWhisk tip. As you know (or may know!), when you create an OpenWhisk <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_webactions.html#openwhisk_webactions">web action</a>, you can pass parameters via the query string or via a form post. So consider the following trivial action:</p>
+<pre><code class="language-javascript">function main(args) {
+
+    if(!args.name) args.name = 'Nameless';
+	let result = {
+		string:'Hello '+args.name
+	}
+
+	return {
+		headers: { 
+			'Access-Control-Allow-Origin':'*',
+			'Content-Type':'application/json'
+		}, 
+		statusCode:200,
+		body: new Buffer(JSON.stringify(result)).toString('base64')
+	}
+
+}
+</code></pre>
+<p>All this action does is say hello to a name that comes from the arguments passed to the function. After creating the action (and enabling web support), you can then hit it at your URL like so:</p>
+<a href="https://openwhisk.ng.bluemix.net/api/v1/web/rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest">
+https://<span></span>openwhisk.ng.bluemix.net/api/v1/web/<br/>rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest</a>
+<p>And pass a name like so:</p>
+<a href="https://openwhisk.ng.bluemix.net/api/v1/web/rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest?name=Raymond+Camden">
+https://<span></span>openwhisk.ng.bluemix.net/api/v1/web/<br/>rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest?name=Raymond+Camden</a>
+<p>Cool. But what if you want to use the URL path instead of query parameters? Perhaps something like so:</p>
+<a href="https://openwhisk.ng.bluemix.net/api/v1/web/rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest/name/Raymond+Camden">
+https://<span></span>openwhisk.ng.bluemix.net/api/v1/web/<br/>rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest/name/Raymond+Camden</a>
+<p>The good news is that this is pretty simple to support. OpenWhish will pass this information to your action as <code>args.__ow_path</code>. OpenWhisk actually passes a bunch of things you can read about <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_webactions.html#http-context">here</a>, but for our purposes, the __ow_path value is all we need. So consider this new version:</p>
+<pre><code class="language-javascript">function main(args) {
+
+	if(args.__ow_path && args.__ow_path.length) {
+		/*
+		support /name/X only
+		*/
+		let parts = args.__ow_path.split('/');
+		if(parts.length === 3 && parts[1].toLowerCase() === 'name') {
+			args.name = decodeURIComponent(parts[2]);
+		}
+	}
+
+    if(!args.name) args.name = 'Nameless';
+	let result = {
+		string:'Hello '+args.name
+	}
+
+
+	return {
+		headers: { 
+			'Access-Control-Allow-Origin':'*',
+			'Content-Type':'application/json'
+		}, 
+		statusCode:200,
+		body: new Buffer(JSON.stringify(result)).toString('base64')
+	}
+
+}
+</code></pre>
+<p>All I've done is look for the path, see if it has length, and then I parse it. Now - in my particular case I'm assuming only one valid path: <code>/name/X</code>. Obviously you could write the code to be a bit more generic, perhaps in the form of: <code>/name/value/name/value</code> etc. But to keep it simple I just look for <code>/name/X</code> and if that matches, set args.name to it. The result works perfectly:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/5/owpath1.png" alt="This is fine"></p>
+<p>Heh, oops. Almost. So you may have noticed I used <code>decodeURIComponent</code> above, and it works correctly if you encode spaces with %20:</p>
+<a href="https://openwhisk.ng.bluemix.net/api/v1/web/rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest/name/Raymond%20Camden">
+https://<span></span>openwhisk.ng.bluemix.net/api/v1/web/<br/>rcamden@us.ibm.com_My%20Space/safeToDelete/pathTest/name/Raymond%20Camden</a>
+<p><img src="https://static.raymondcamden.com/images/2017/5/owpath2.png" alt="This is ok"></p>
+<p>So from what I've seen in my research, the plus sign is <em>not</em> meant to be decoded, and it may actually be part of the original string. So what you do here is up to you really. In this <em>particular use case</em> where I'm working with names, it would probably be safe to go ahead and replace plus signs with spaces:</p>
+<pre><code class="language-javascript">args.name = decodeURIComponent(parts[2]).replace(/\+/g, ' ');</code></pre>
+<p>I hope this helps! As a quick aside, the URL in my tests includes <code>safeToDelete</code>. That has <em>nothing</em> to do with the post. I'm just trying to use that package as a way to flag to myself actions I can safely delete later. (As you can imagine, I've got a <em>bunch</em> of crap up now on OpenWhisk and I'm starting to feel like I need to clean up a bit!)</p>
+}

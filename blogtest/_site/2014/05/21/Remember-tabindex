@@ -1,0 +1,46 @@
+<h1>Post</h1>
+
+<p>
+A quick tip. I just ran into a form that looked, a bit, like this:
+</p>
+<!--more-->
+<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Demo&lt;&#x2F;title&gt;
+&lt;&#x2F;head&gt;
+<p>&lt;body&gt;</p>
+<p>&lt;form method=&quot;post&quot;&gt;
+&lt;p&gt;
+&lt;label for=&quot;username&quot;&gt;username&lt;/label&gt;
+&lt;input type=&quot;text&quot; name=&quot;username&quot; id=&quot;username&quot;&gt;
+&lt;/p&gt;</p>
+<pre><code>&amp;lt;p&amp;gt;
+&amp;lt;label for=&amp;quot;password&amp;quot;&amp;gt;password&amp;lt;&amp;#x2F;label&amp;gt;
+&amp;lt;input type=&amp;quot;password&amp;quot; name=&amp;quot;password&amp;quot; id=&amp;quot;password&amp;quot;&amp;gt;&amp;lt;br&amp;#x2F;&amp;gt;
+&amp;lt;a href=&amp;quot;&amp;quot;&amp;gt;Learn about secure passwords!&amp;lt;&amp;#x2F;a&amp;gt;	
+&amp;lt;&amp;#x2F;p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;label for=&amp;quot;password2&amp;quot;&amp;gt;confirm password&amp;lt;&amp;#x2F;label&amp;gt;
+&amp;lt;input type=&amp;quot;password&amp;quot; name=&amp;quot;password2&amp;quot; id=&amp;quot;password2&amp;quot;&amp;gt;
+&amp;lt;&amp;#x2F;p&amp;gt;
+</code></pre>
+<p>&lt;/form&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></p>
+<p>
+Nothing special - but notice the link after the password? If you use the tab button to move through the form, you end up on the link itself after entering the password.
+</p>
+<p>
+<img src="https://static.raymondcamden.com/images/Demo.png" />
+</p>
+<p>
+If you are a fast typist like me, it is easy to miss. Don't forget that HTML has a handy attribute for this, <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes#tabindex">tabindex</a>. Fixing it is actually pretty easy. In the past I knew I could use consecutive numbers in my form fields to direct the tabbing, but apparently just using a negative value on the field you don't like is enough to fix it... like so:
+</p>
+<pre><code class="language-markup">&lt;a href=&quot;&quot; tabindex=&quot;-1&quot;&gt;Learn about secure passwords!&lt;&#x2F;a&gt;
+</code></pre>
+<p>
+So yeah - don't forget it. (As a certain site I just visited did. ;)
+</p>}

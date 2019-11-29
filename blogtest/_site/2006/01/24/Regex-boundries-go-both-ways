@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>So I was working on the <a href="http://ray.camdenfamily.com/index.cfm/2006/1/24/Cookbook-Update">update</a> to the <a href="http://www.coldfusioncookbook.com">cookbook</a> site to allow for auto-hyperlinking of tags and functions. I began my work by simply trying to get createUUID() to hyperlink.</p>
+<p>So my initial regex simply looked for &quot;createUUID()&quot;. One of the first things I realized is that the parens were special in regex. Therefore, I changed the regex to: &quot;createUUID()&quot;. This worked beautifully so I began to put in the rest of the data. When I tested the display however, I noticed a problem. parseDateTime() was matching inside of lsParseDateTime().</p>
+<p>Luckily regex makes this easy to solve. You can surround a regex with \b characters. What does this mean? Let me steal from the docs:</p>
+<blockquote>
+Specifies a boundary defined by a transition from an alphanumeric character to a nonalphanumeric character, or from a nonalphanumeric character to an alphanumeric character.
+<p>For example, the string &quot; Big&quot; contains boundary defined by the space (nonalphanumeric character) and the &quot;B&quot; (alphanumeric character).</p>
+<p>The following example uses the \b escape sequence in a regular expression to locate the string &quot;Big&quot; at the end of the search string and not the fragment &quot;big&quot; inside the word &quot;ambiguous&quot;.</p>
+<p>reFindNoCase(&quot;\bBig\b&quot;, &quot;Don't be ambiguous about Big.&quot;)</p>
+<p>&lt;!--- The value of IndexOfOccurrence is 26 ---&gt;</p>
+<p>When used inside of a character set (e.g. [\b]), it specifies a backspace</p>
+</blockquote>
+<p>This didn't quite work for me, and I couldn't figure out why. Then someone on IRC (I think it was my friend Boyzoid) suggested getting rid of the \b characters. I pointed out that this would result in a bad match - but then something occured to me. Read the docs again, this time notice the emphasis I added:</p>
+<blockquote>
+Specifies a boundary defined by a transition from an alphanumeric character to a nonalphanumeric character, <i>or from a nonalphanumeric character to an alphanumeric character.</i>
+</blockquote>
+<p>My regex was now &quot;\bcreateUUID()\b&quot;. Notice that my last character was a ). Therefore, the \b there was trying to go the other way - from nonalphanumeric to alphanumeric. I simply dropped the \b from the end of the regex and everything (so far) worked fine.</p>
+<p>Later on I'll write a blog entry about the replacement system and how you can add one to your site.</p>
+}

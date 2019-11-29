@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>So, I've been fighting a bug with onSessionEnd that didn't seem to make much sense. Even though I was doing everything right (as far as I knew), my onSessionEnd event would never fire. Turns out there is a bug. If you do not specify a session timeout in your THIS scope in the App.cfc file, onSessionEnd will never fire, even though CF supports a default session timeout. This has been logged as a bug. Thanks to Steven Erat for confirming this for me.</p>
+<p>I'm writing an article for HouseOfFusion that will detail all the little details like this for the Application.cfc feature of CFMX7. I hope to have this done someday soon.</p>
+}

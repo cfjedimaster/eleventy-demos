@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>Minor Blog update:
+Modified the CSS a bit and added a 'media' section to the right hand corner. Unfortunately it's hard coded now. I'm going to use my getMisc/saveMisc tool for it to make it editable. (More on that later - but basically - it's a way to quickly add a 'region' to a page so you can edit the text - like the News section on the front page of cflib.org.)</p>
+<p>Comments no longer display your email address, but I still ask for it so I can ping you on thread updates.</p>
+<p>I didn't update the zip because these are both client updates, not core CFC updates.</p>
+<p>Rob Brooks-Bilson has done some nice extending of my blog, and I plan on <strike>stealing</strike>borrowing from him for the next big update. The updates will improve the generateRSS method. I'll also be adding the ability to get <i>full</i> articles from my blog. That means you can read my blog from an aggregator and not have to worry about actually coming to the site.</p>
+}

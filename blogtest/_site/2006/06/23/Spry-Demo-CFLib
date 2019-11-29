@@ -1,0 +1,38 @@
+<h1>Post</h1>
+
+<p>Ok, so I bet folks may be tired of hearing me rave about <a href="http://labs.adobe.com/technologies/spry/">Spry</a>, but I wanted to share another demo I created this morning:</p>
+<blockquote>
+<a href="http://www.cflib.org/spry/">http://www.cflib.org/spry/</a>
+</blockquote>
+<p>This is pretty much a clone of my <a href="http://ray.camdenfamily.com/spry/blog3.cfm">blog demo</a>, but I did add two interesting things here.</p>
+<p>First - note the use of the filter. This is pretty easy to do in Spry. You create a filter function, and then assign it to the data set. You can do both destructive and non-destructive filtering. I did non-destructive so folks could remove the filter as well. Here is the code behind the filter. I cribbed a bit from Simon Horwith's <a href="http://www.aboutweb.com/jobs.cfm">example</a> and the Spry demos.</p>
+<code>
+function MyFilterFunc(ds, row, rowNumber) {
+	if(document.filterForm != null) {
+		if(document.filterForm.filter.value == '') return row;
+		else {
+<pre><code>		var regExpStr = document.filterForm.filter.value;				
+		var regExp = new RegExp(regExpStr, &quot;i&quot;);
+		if (row[&quot;NAME&quot;].search(regExp) != -1) return row;                   	
+		else return null;
+	}
+} else return row;
+</code></pre>
+<p>}</p>
+<p>dsUDFs.filter(MyFilterFunc);
+</code></p>
+<p>As you can see, I don't do anything too complex. The filter function is passed the ds, row, and rownumber attributes, and I just examine the row and compare it to my form data. Pretty easy, eh? I had more trouble with the regex stuff (which is why I ... 'borrowed' a bit from Simon) then I did with the Spry stuff.</p>
+<p>The second change was to add a simple loading message. I did this by using an observer function. This function waits for changes from the dataset. I don't actually check the result, which is kind of bad, but it does clear the &quot;Loading&quot; message. Here is the code behind the notification logic:</p>
+<code>
+var myObserver = new Object;
+myObserver.onDataChanged = function(dataSet, notificationType) {
+	setNote('');
+};
+<p>dsUDFs.addDataChangedObserver(&quot;myObserverName&quot;, myObserver);</p>
+<p>function setNote(str) {
+var noteRegion = document.getElementById('notification');
+noteRegion.innerHTML = str;	
+}
+</code></p>
+<p>As with the other Spry demos, if you want to see the full code behind it, just view source. The CFLib proxy CFC isn't anything different from the BlogCFC one, just different methods. I'm going to break out my Spry &quot;helper&quot; methods into it's own CFC so that next time, my proxy can be even more light weight.</p>
+}

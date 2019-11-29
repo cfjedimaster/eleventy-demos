@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>As a follow up to my <a href="http://www.raymondcamden.com/index.cfm/2007/11/20/Quick-and-simple-Tip-Deleting-old-files">earlier post</a> on cleaning up old files, here is a modified version that zips and deletes. This would be very handy for log directories.</p>
+<!--more-->
+<code>
+&lt;cfset logdir = "/Applications/ColdFusion8/logs"&gt;
+<p>&lt;cfdirectory action=&quot;list&quot; directory=&quot;#logdir#&quot; name=&quot;files&quot; type=&quot;file&quot;&gt;</p>
+<p>&lt;cfset thirtydaysago = dateAdd(&quot;d&quot;, -50, now())&gt;</p>
+<p>&lt;!--- get older files ---&gt;
+&lt;cfquery name=&quot;oldfiles&quot; dbtype=&quot;query&quot;&gt;
+select	name
+from	files
+where	datelastmodified &lt; &lt;cfqueryparam cfsqltype=&quot;cf_sql_timestamp&quot; value=&quot;#thirtydaysago#&quot;&gt;
+and		upper(name) not like '%.ZIP'
+&lt;/cfquery&gt;</p>
+<p>&lt;cfoutput&gt;Out of #files.recordCount# files, there are #oldfiles.recordCount# to zip.&lt;/cfoutput&gt;</p>
+<p>&lt;cfif oldfiles.recordCount&gt;
+&lt;cfloop query=&quot;oldfiles&quot;&gt;
+&lt;cfzip file=&quot;#logdir#/#name#.zip&quot; source=&quot;#logdir#/#name#&quot; action=&quot;zip&quot;&gt;
+&lt;cffile action=&quot;delete&quot; file=&quot;#logdir#/#name#&quot;&gt;
+&lt;/cfloop&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>This code is the exact same as the last version except for:</p>
+<ul>
+<li>I switched the thirtydaysago variable to actually be 50 days ago. This was just to give me a good dataset in my log directory. The date really isn't critical.
+<li>My query of queries to get old files now also filters out any zips. Notice the use of upper. This ensures the case doesn't matter.
+<li>I added the cfzip tag, a new feature of ColdFusion 8. Nice and easy, right?
+</ul>}

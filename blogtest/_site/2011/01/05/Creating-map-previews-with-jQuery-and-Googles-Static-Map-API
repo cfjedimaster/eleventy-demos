@@ -1,0 +1,41 @@
+<h1>Post</h1>
+
+<p>I've blogged before about Google's <a href="http://code.google.com/apis/maps/documentation/staticmaps">Static Map API</a> (see the related blog entries below). Essentially it is a simple way to quickly embed maps on your site by just using query parameters. While not as powerful as the &quot;real&quot; JavaScript Map API, it's a darn nice feature and about as simple to use as you can get. Today on a phone conversation I mentioned how this API could be used to provide previews for address information. Take for example the <a href="http://groups.adobe.com/index.cfm?event=page.maps">maps</a> page for Adobe Groups. This is driven by address information entered by user group managers. It would be cool if we could provide a way for the UGMs to see exactly where on the map their address will fall. Here is a quick and dirty I whipped up with jQuery.</p>
+<!--more-->
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+var baseURL = &quot;http://maps.google.com/maps/api/staticmap?zoom=12&amp;size=400x400&amp;maptype=roadmap&amp;sensor=false&amp;center=&quot;;</p>
+<pre><code>$(&quot;#address&quot;).keyup(function() {
+	var address = $(this).val();
+	if(address.length &amp;lt; 5) $(&quot;#mapPreview&quot;).attr(&quot;src&quot;, &quot;spacer.gif&quot;);
+	else $(&quot;#mapPreview&quot;).attr(&quot;src&quot;, baseURL + escape(address));
+});
+</code></pre>
+<p>})
+&lt;/script&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;p&gt;
+Enter your address:&lt;br/&gt;
+&lt;textarea cols=&quot;30&quot; rows=&quot;2&quot; id=&quot;address&quot;&gt;&lt;/textarea&gt;
+&lt;/p&gt;</p>
+<p>&lt;p&gt;
+&lt;img src=&quot;spacer.gif&quot; id=&quot;mapPreview&quot; width=&quot;400&quot; height=&quot;400&quot; title=&quot;Map Preview&quot;&gt;
+&lt;/p&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>So let's start at the bottom. I've got a simple form with a textarea. This is where you enter your address. Below that is an img tag that will store the preview. Now let's go up to the JavaScript.</p>
+<p>
+<p>I begin by creating a bind to &quot;keyup&quot; event on the textarea. I get the value, and if it is too short (I chose less than five after many hours of research - really) we set the image's source to a blank image. If not, we point to the static map API and pass your value as the address. Try it below.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/jan52011/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<p>For an interesting test, try typing &quot;lafayette, la&quot;, then remove the &quot;la&quot; and change it to &quot;in&quot;.</p>
+}

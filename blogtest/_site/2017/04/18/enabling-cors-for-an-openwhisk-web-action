@@ -1,0 +1,33 @@
+<h1>Post</h1>
+
+<p>Here's a quick tip for you. If you are building an OpenWhisk action you plan on exposing as a <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_webactions.html#openwhisk_webactions">web action</a>, most likely you'll want to look into enabling CORS so you can call your code from JavaScript on the front-end. Since Web Actions can return both a result and headers, this is trivial to do. Here is a simple example.</p>
+<pre><code class="language-javascript">function main(args) {
+
+    if(!args.name) args.name = 'Nameless';
+	let result = {
+		string:'Hello '+args.name
+	}
+
+	return {
+		headers: { 
+			'Access-Control-Allow-Origin':'*',
+			'Content-Type':'application/json'
+		}, 
+		statusCode:200,
+		body: new Buffer(JSON.stringify(result)).toString('base64')
+	}
+
+}
+</code></pre>
+<p>There's two things to make note of here. First, obviously, is the <code>Access-Control-Allow-Origin</code> header. I'm using <code>*</code> which means it can be called from anywhere, but I could lock that down if I chose.</p>
+<p>Finally, when you return your data you have to base64 encode it. So the body key handles doing all of that after I've created my <code>result</code> value as I like.</p>
+<p>The end result then is a simple endpoint I can hit from some client-side code:</p>
+<pre><code class="language-javascript">
+$.getJSON('https://openwhisk.ng.bluemix.net/api/v1/web/rcamden@us.ibm.com_My%20Space/corstest/corstest.http?name=ray')
+.then(function(res) {
+	console.log(res);
+});
+</code></pre>
+<p>I also think it would be valid to build this as a sequence. So you could have webFoo being the action, comprised of a sequence of foo + webify (or some such) where foo represents the real business logic and webify handles the 'complex' output required to return the result.</p>
+<p>Thank you to <a href="https://akrabat.com/">@akrabat</a> on the <a href="http://openwhisk-team.slack.com">OpenWhisk Slack</a> for helping me figure this out!</p>
+}

@@ -1,0 +1,77 @@
+<h1>Post</h1>
+
+<p>Devon asks:</p>
+<blockquote>
+<p>
+I am using custom tags to do my layout and thought this would be great for creating printable pages easily by being
+able to just include a different stylesheet if boolean print is true. Then I thought after reading the reporting chapter in WACK 1 why not cfdocument ...well because it moans about unclosed tags and I kinda saw that coming once I opened
+my 1st if statement.
+<p>So I'll sit this evening and give Ch 25 from WACK 2 a
+proper read but I was wondering if it would be possible to print out the content of a custom layout tag using cfdocument and maybe a content variable?</p>
+</p>
+</blockquote>
+<!--more-->
+So first off - let's make sure we understand the issue Devon found. You cannot open a cfdocument block inside a cfif. What he tried was probably something like this:
+<p><b>layout.cfm</b>
+<code>
+&lt;cfif thisTag.executionMode is &quot;start&quot;&gt;
+&lt;cfif structKeyExists(url, &quot;print&quot;)&gt;
+&lt;cfdocument format=&quot;pdf&quot;&gt;
+&lt;/cfif&gt;
+&lt;cfelse&gt;
+&lt;cfif structKeyExists(url, &quot;print&quot;)&gt;
+&lt;/cfdocument&gt;
+&lt;/cfif&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>If you try to run this, you will get an immediate error. So what to do?</p>
+<p>One option is to not worry about changing the custom tag. This is a perfect example of when onRequest would be useful. The onRequest method of Application.cfc would run after the entire request is done, and before anything is sent to the user. You could easily when wrap the output in cfdocument tags. But don't forget that onRequest has the bad side effect of breaking flash remoting/web service calls unless you hack around it.</p>
+<p>You can get it to work inside a custom tag - but it feels a bit hackish to me. Here is an example. First, let's start with a super simple layout custom tag:</p>
+<p><b>layout.cfm</b>
+<code>
+&lt;cfif thisTag.executionMode is &quot;start&quot;&gt;
+&lt;h2&gt;Header&lt;/h2&gt;
+&lt;cfelse&gt;
+&lt;p&gt;
+Footer
+&lt;/p&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>And now let's look at a modified version:</p>
+<p><b>layout_withprint.cfm</b>
+<code>
+&lt;cfif thisTag.executionMode is &quot;start&quot;&gt;
+&lt;cfsavecontent variable=&quot;header&quot;&gt;
+&lt;h2&gt;Header&lt;/h2&gt;
+&lt;/cfsavecontent&gt;
+&lt;cfelse&gt;
+&lt;cfset content = thisTag.generatedContent&gt;
+&lt;cfset thisTag.generatedContent = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfsavecontent variable=&quot;footer&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+Footer
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfsavecontent&amp;gt;
+
+&amp;lt;cfif not structKeyExists(url, &quot;print&quot;)&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	#header#
+	#content#
+	#footer#
+	&amp;lt;/cfoutput&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfheader name=&quot;Content-Disposition&quot; value=&quot;inline; filename=print.pdf&quot;&amp;gt;
+	&amp;lt;cfdocument format=&quot;pdf&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	#header#
+	#content#
+	#footer#
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/cfdocument&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>So what did I change? First look at the top half of the code. Notice I no longer output the header. Instead I save it to a variable. In the next part of the custom tag - I first take everything that happened between the first and ending tags, which exists in thisTag.generatedContent, and save it to a variable. I then erase the thisTag value. This will essentially save and remove any output that occurred. I then create a variable for the footer. Lastly, I do one of two things. I check to see if a url.print variable exists. If it doesn't, I simply output my values. Note the header, which was made in the beginning of the custom tag, still exists, even though technically I'm in the second call of the tag now. If url.print does exist, I output the same thing but wrap it with cfdocument tags.</p>
+<p>I think perhaps this could be a bit nicer, but hopefully it gives you some ideas.</p>
+}

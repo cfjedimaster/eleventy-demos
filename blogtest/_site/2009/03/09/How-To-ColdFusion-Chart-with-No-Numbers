@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>This question came in via my <a href="http://www.raymondcamden.com/forums">forums</a>, but I thought it would make a nice blog post. wolfee asks:</p>
+<blockquote>
+<p>
+Is it possible to show a cfchart with bars but exclude the values (both on the verticle axis and on rollover? I'd like to give a visual indication of scores but not reveal the actual scores. Thankyou for any tips offered!
+</p>
+</blockquote>
+<p>The answer is - of course - yes - since everything is possible with ColdFusion. (Ok, maybe not everything, but darn close!)</p>
+<!--more-->
+<p>As always, the answer is in the chart editor. I opened it up and simply disabled the Y-Axis. I then disabled Popup. That's it. Done. Here is a simple example:</p>
+<code>
+&lt;cfsavecontent variable="style"&gt;
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;frameChart is3D="false"&gt;
+&lt;frame xDepth="12" yDepth="11"/&gt;
+&lt;yAxis isVisible="false" scaleMin="0" /&gt; 
+&lt;popup showOn="Disabled"/&gt;
+&lt;/frameChart&gt;
+&lt;/cfsavecontent&gt;
+<p>&lt;cfchart format=&quot;flash&quot; xaxistitle=&quot;Fleet&quot; yaxistitle=&quot;numbers&quot; style=&quot;#style#&quot;&gt;</p>
+<p>&lt;cfchartseries type=&quot;bar&quot; serieslabel=&quot;result&quot;&gt;
+&lt;cfchartdata item=&quot;Cylons&quot; value=&quot;75&quot;&gt;
+&lt;cfchartdata item=&quot;Colonials&quot; value=&quot;80&quot;&gt;
+&lt;/cfchartseries&gt;</p>
+<p>&lt;/cfchart&gt;
+</code></p>
+<p>Note - I stripped the XML down to the bare minimum to get it working, but you get the idea. The visual result is:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 143.png">
+<p>Just pretend you can mouse over that and nothing shows up. Trust me - it works. ;) I'm not convinced this is 100% safe though. I bet you could get the SWF, decompile it, and see the numbers. Anyone want to try?</p>
+}

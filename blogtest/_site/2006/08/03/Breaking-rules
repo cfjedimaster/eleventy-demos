@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>If you read my blog regularly, you know that I have certain &quot;rules&quot; I tend to harp on. Always var scope. Always check your input scopes. Etc. However, one thing to keep in mind is that there <i>are</i> perfectly good times to break the rules. Development rules and processes are there to ensure your code works well, is secure, and can be easily updated. When the rules get in the way of those things, it's time to reconsider.</p>
+<!--more-->
+<p>Here is a good example. In my <a href="http://www.blogcfc.com">blogware</a>, I support localization of the blog by use of a &quot;resource bundle&quot;. This is basically an INI file with translations. So instead of having:</p>
+<code>
+&lt;input type="submit" name="cancel" value="Cancel"&gt;
+</code>
+<p>I have:</p>
+<code>
+&lt;input type="submit" name="cancel" value="#application.resourceBundle.getResource("cancel")#"&gt;
+</code>
+<p>What this does is look up in a translation file for a key named 'cancel' and returns the value. So one translation file exists for English, one for French, etc. (Actually, I don't ship a French file, but BlogCFC users can write their own.)</p>
+<p>So this works great. But it is a <b><u>major</u></b> pain in the rear to type. So, I just added this to my application.cfm file:</p>
+<code>
+&lt;cfset rb = application.resourceBundleData&gt;
+</code>
+<p>Application.resouceBundleData is a struct of keys and pairs. I can now do this in my cancel example:</p>
+<code>
+&lt;input type="submit" name="cancel" value="#rb["cancel"]#"&gt;
+</code>
+<p>This bugs me. First, the variable name is way too short. Secondly, there is no method call, so if the key doesn't exist I get an error. The &quot;old&quot; way would return a nice <strong>UNKNOWNTRANSLATION</strong> string to let you know. Third - I don't like setting Variables (note the cap) in the Application.cfm file, and when I do, I at least use the full scope.</p>
+<p>So I don't like it. But I'm over it. My code is now a heck of a slot easier to read and work with. How do folks feel about things like this? I tend to be pragmatic so it doesn't <i>really</i> bug me much.</p>
+}

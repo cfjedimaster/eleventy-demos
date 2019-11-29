@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>I've updated <a href="http://ray.camdenfamily.com/projects/googlecal/">GoogleCal</a> - my ColdFusion API for Google's Calendar service. It now &quot;officially&quot; supports adding events. I also added code to retrieve all the calendars for a user.</p>
+<p>Let me take this opportunity to once again complain about Google's API. I've already <a href="http://ray.camdenfamily.com/index.cfm/2006/9/28/GoogleCal-beta">complained</a> about their Add Entry API (it requires 3 HTTP calls).</p>
+<p>Today I discovered yet another issue. To get a calendar, let's say calendar A, you have a URL X. This URL does not require authentication, which by itself is a cool idea. It means you can share the URL with others. However - that is the <b>only</b> URL you have. There is no option to use a URL that requires authentication.</p>
+<p>So guess what - the URL to add an entry does not have the authentication token in it. You use it along with a username/password value to add your data.</p>
+<p>So in case it isn't clear - what this means is that for one calendar you have 2 different URLs. One for reading and one for adding. What is even better is that you can't get the &quot;Add Entry&quot; URL yourself unless you manually modify the &quot;Read&quot; URL.</p>
+<p>Total. Pain. In. The. Rear.</p>
+<p>Anyway - enjoy the updated version. I'll be happily switching back to more Yahoo demos this week.</p>
+}

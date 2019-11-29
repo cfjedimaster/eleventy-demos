@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>This weekend a user <a href="http://www.raymondcamden.com/forums/messages.cfm?threadid=0ED97496-19B9-E658-9D38816867345019">posted</a> an interesting question to my forums. He wanted to know if there was a way (in ColdFusion of course) to determine how many seconds a user spent on a page. I decided to give this a try myself to see what I could come up with. Before we look at the code though, there are two things you should consider.</p>
+<!--more-->
+<p>Number one - there is no ironclad way to actually determine the <b>real</b> amount of time a user spends looking at a web page. Yes, you can estimate it, but if I open your web page and than alt-tab over to my World of Warcraft session, then obviously the stats for my time on that page aren't accurate. So keep in mind that <b>any</b> numbers you get here will simply be estimates.</p>
+<p>Number two - when it comes to web stats in general, I've found that it's almost always easier to let someone else worry about it - specifically Google. I remember parsing DeathClock.com logs and waiting 12+ hours for a report. The day I stopped parsing log files and just used Google Analytics was a good day indeed. GA does indeed provide this stat. (By the way, you guys spend, on average, one minute and forty-nine seconds on my site.)</p>
+<p>So with that said, how can we track this in ColdFusion? There are many ways, but here is one simple method. I began by creating a session variable to store the data:</p>
+<code>
+&lt;cffunction name="onSessionStart" returnType="void" output="false"&gt;
+	&lt;cfset session.pages = []&gt;
+&lt;/cffunction&gt;
+</code>
+<p>The pages array will store the information I'm tracking. I decided on the Session scope as opposed to the Application scope as I wanted to keep it simple and just provide a report for the current user.</p>
+<p>Next, in every onRequestStart, I look at the array. For each page request I'm going to log the URL and the current time. I'll then look at your <i>last</i> page and store a duration:</p>
+<code>
+&lt;!--- Run before the request is processed ---&gt;
+&lt;cffunction name="onRequestStart" returnType="boolean" output="false"&gt;
+	&lt;cfargument name="thePage" type="string" required="true"&gt;
+	&lt;cfset var data = ""&gt;
+<pre><code>&amp;lt;!--- determine if we have a last page. ---&amp;gt;
+&amp;lt;cfif arrayLen(session.pages)&amp;gt;
+	&amp;lt;!--- the last page's value is the timestamp, update it with the diff ---&amp;gt;
+	&amp;lt;cfset session.pages[arrayLen(session.pages)].duration = dateDiff(&quot;s&quot;, session.pages[arrayLen(session.pages)].timestamp, now())&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfset data = {page=getCurrentURL(),timestamp=now()}&amp;gt;
+&amp;lt;cfset arrayAppend(session.pages,data)&amp;gt;
+
+&amp;lt;cfreturn true&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>Nothing too complex here really. If my session.pages array has <i>any</i> data, I must be on the second (or higher) page request. I do a quick dateDiff and store the result in the duration field. Outside the cfif I do a quick array append of a structure containing the current page url and time. The function getCurrentURL comes from <a href="http://www.cflib.org/udf/getcurrenturl">CFLib</a>.</p>
+<p>The last thing I do with the data is to serialize it and store it when the session end:</p>
+<code>
+&lt;!--- Runs when session ends ---&gt;
+&lt;cffunction name="onSessionEnd" returnType="void" output="false"&gt;
+	&lt;cfargument name="sessionScope" type="struct" required="true"&gt;
+	&lt;cfargument name="appScope" type="struct" required="false"&gt;
+<pre><code>&amp;lt;cfset var data = &quot;&quot;&amp;gt;
+&amp;lt;cfset var filename = &quot;&quot;&amp;gt;
+
+&amp;lt;!--- serialize ---&amp;gt;
+&amp;lt;cfwddx action=&quot;cfml2wddx&quot; input=&quot;#arguments.sessionScope.pages#&quot; output=&quot;data&quot;&amp;gt;
+
+&amp;lt;!--- save it based on the sessionid value ---&amp;gt;
+&amp;lt;cfset filename = expandPath(&quot;./&quot; &amp; replace(createUUID(),&quot;-&quot;,&quot;_&quot;,&quot;all&quot;) &amp; &quot;.txt&quot;)&amp;gt;
+
+&amp;lt;cfset fileWrite(filename, data)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>That's it. There are a few things I'd probably do differently if I were to really deploy this code. First I'd use the database to store the updates. With a nice stored procedure it should run rather quickly. Even if I didn't do a DB call on each page update I'd at least change onSessionEnd. Notice that that you will have a 'hanging' page at the end with no duration. You could simply delete that from the array. Or you could use that last page and store it as another stat - the exit page.</p>
+<p>I whipped up a real simple index page that dumps the session data and lists a few quick stats:</p>
+<code>
+&lt;cfdump var="#session#"&gt;
+<p>&lt;cfset times = []&gt;
+&lt;cfloop index=&quot;p&quot; array=&quot;#session.pages#&quot;&gt;
+&lt;cfif structKeyExists(p, &quot;duration&quot;)&gt;
+&lt;cfset arrayAppend(times, p.duration)&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;cfif arrayLen(times)&gt;
+Average duration: #arrayAvg(times)# seconds.&lt;br/&gt;
+&lt;/cfif&gt;
+Total number of pages visited: #arrayLen(session.pages)#
+&lt;/cfoutput&gt;
+</code></p>
+<p>And here is some sample output:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 134.png">
+<p>I've attached the code to the blog entry. Not sure how useful this is, but it's not like I've cared about usefulness in my other posts! ;)<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fsecondtest%2Ezip'>Download attached file.</a></p></p>
+}

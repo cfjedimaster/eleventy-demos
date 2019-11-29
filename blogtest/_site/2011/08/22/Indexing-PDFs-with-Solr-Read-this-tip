@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>Have you noticed that indexed PDFs don't seem to contain all the content they should? Turns out this is a performance setting in Solr. The tip below is credit Uday Ogra of Adobe:</p>
+<p>Solr has a default upper limit of 10000 on max number of words which can be indexed in documents which approximately defaults to 20-40 pages.</p>
+<p>We can change this default value for each collection. Suppose collection's name is newcollection.</p>
+<p>Open file COLDFUSION_COLLECTIONS_PATH/newcollection/conf/solrconfig.xml</p>
+<p>Here COLDFUSION_COLLECTIONS_PATH is the path you would have configured while creating the collection.</p>
+<p>Here search &lt;mainindex&gt; tag. Inside this tag there would be a sub-tag &lt;maxFieldLength&gt; which has a default value of 10000.</p>
+<p>You can change it to a value which will suit your indexing.</p>
+<p>(There is one more &lt;maxFieldLength&gt;  tag directly under &lt;indexDefaults&gt; tag, do not change it)</p>
+<p>In your case I would recommend to change it to 100000.</p>
+<p>By the way on an average a single pdf page has around 200-500 words. So for a pdf with 100 pages setting this value to 100000 should be safe enough.</p>
+}

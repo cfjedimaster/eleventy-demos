@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>A user asked me if it was possible to backup and restore a MySQL database from ColdFusion. There are multiple ways of doing this, but the basic answer is that you can do this very easily. MySQL ships with a set of utilities that ColdFusion can run via CFEXECUTE to perform various tasks.</p>
+<!--more-->
+<p>So for example, to backup a database you can use the MySQL dump command:</p>
+<code>
+mysqldump --user=USER --password=PASSWORD dbname &gt; filename
+</code>
+<p>From ColdFusion this would look look like so (username, passwords, and database names changed to protect the innocent):</p>
+<code>
+&lt;cfexecute name="c:\program files\mysql\mysql server 4.1\bin\mysqldump" arguments="--user=xxx --password=yyy dharma" outputfile="#expandPath("./ao.sql")#" timeout="30"/&gt;
+</code>
+<p>This creates a nice file that contains not only the SQL needed to create your database but all the data as well. You could then use a <a href="http://www.cflib.org/udf.cfm?ID=744">zip</a> utility and move/mail/do whatever with the file.</p>
+<p>Restoring is a bit trickier. You have to do different things based on if your database exists or not. If your database does exist, then the restore will overwrite the existing tables, but not remove tables that don't exist in the backup file. If this doesn't concern you, you can do it with this command:</p>
+<code>
+mysql --user=USER --password=PASSWORD dbname &lt; filename
+</code>
+<p>Now I had a lot of trouble getting this to run from CFEXECUTE. I believe because of the &lt;. So I used a bat file instead that looked like so:</p>
+<code>
+"c:\program files\mysql\mysql server 4.1\bin\mysql.exe" --user=xxx --password=yyy somebackup &lt; "c:\apache2\htdocs\testingzone\ao.sql"
+</code>
+<p>I then ran the bat file from ColdFusion:</p>
+<code>
+&lt;cfexecute name="#expandPath("./restore.bat")#" timeout="30" variable="result"/&gt;
+</code>
+<p>Obviously you could make the bat file a bit more dynamic instead of hard coding everything.</p>
+<p>For more information, check the <a href="http://dev.mysql.com/doc/refman/5.0/en/disaster-prevention.html">MySQL 5 doc</a> on backup and restoring databases.</p>
+<p>Would folks be interested in a MySQL CFC wrapper? You know - in my spare time.</p>
+}

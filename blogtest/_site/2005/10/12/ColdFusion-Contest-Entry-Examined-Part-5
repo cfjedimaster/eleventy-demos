@@ -1,0 +1,116 @@
+<h1>Post</h1>
+
+<p>ColdFusion Contest Entry Examined - Part 5
+Welcome to (yet another) entry in the <a href="http://ray.camdenfamily.com/index.cfm/2005/9/20/Contest-Shall-We-Play-a-Game">ColdFusion contest</a>. This is turning into a much bigger series than I imagined, but there is so much to learn from looking at how people solve problems. Are people getting bored yet? Check out the <a href="http://ray.camdenfamily.com/index.cfm/2005/10/10/ColdFusion-Contest-Entry-Examined--Part-4">last entry</a> which also contains links to all the old entries as well.</p>
+<!--more-->
+<p>Our new entry can be viewed <a href="http://ray.camdenfamily.com/demos/contest1/entry5/contest1.cfm">here</a>. The code consists of two files.</p>
+<p><b>contest1.cfm:</b>
+<code>
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=iso-8859-1&quot;&gt;
+&lt;title&gt;Guess My Number Contest&lt;/title&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;cfoutput&gt;
+&lt;form action=&quot;contest2.cfm&quot; method=&quot;post&quot;&gt;
+Please, pick a number between 1 and 100 &lt;BR&gt;
+Your number: &lt;input size=&quot;3&quot; maxlength=&quot;3&quot; type=&quot;text&quot; name=&quot;test_number&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;right_number&quot; value=&quot;#RandRange(1,100)#&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;total_times&quot; value=&quot;1&quot;&gt;
+&lt;input type=&quot;submit&quot; name=&quot;GO&quot; value=&quot;GO&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p><b>contest2.cfm:</b>
+<code>
+&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=iso-8859-1&quot;&gt;
+&lt;title&gt;Guess My Number Contest&lt;/title&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;!-- Is this the number in the good range--&gt;
+&lt;cfif #form.test_number# GT 100 OR #form.test_number# LT 1&gt;
+&lt;cfoutput&gt;
+Your number is not within 1 and 100&lt;BR&gt;
+&lt;cfset total_times_added = #form.total_times#&gt;
+&lt;form action=&quot;contest2.cfm&quot; method=&quot;post&quot;&gt;
+Please, pick a number between 1 and 100 &lt;BR&gt;
+Your number: &lt;input size=&quot;3&quot; maxlength=&quot;3&quot; type=&quot;text&quot; name=&quot;test_number&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;right_number&quot; value=&quot;#form.right_number#&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;total_times&quot; value=&quot;#total_times_added#&quot;&gt;
+&lt;input type=&quot;submit&quot; name=&quot;GO&quot; value=&quot;GO&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;
+&lt;cfelse&gt;</p>
+<p>&lt;!-- Is this the right number --&gt;
+&lt;cfif form.test_number IS form.right_number&gt;
+You got it in &lt;cfoutput&gt; #form.total_times# &lt;/cfoutput&gt;times. Congratulations!&lt;BR&gt;
+Wanna play &lt;a href=&quot;contest1.cfm&quot;&gt;again&lt;/a&gt; ???
+&lt;/cfif&gt;</p>
+<p>&lt;!-- Is this the number too high--&gt;
+&lt;cfif #form.test_number# GT #form.right_number#&gt;
+&lt;cfoutput&gt;
+#form.test_number# is too high, please try again&lt;BR&gt;
+&lt;cfset total_times_added = #form.total_times# + 1&gt;
+&lt;form action=&quot;contest2.cfm&quot; method=&quot;post&quot;&gt;
+Your number: &lt;input size=&quot;3&quot; maxlength=&quot;3&quot; type=&quot;text&quot; name=&quot;test_number&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;right_number&quot; value=&quot;#form.right_number#&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;total_times&quot; value=&quot;#total_times_added#&quot;&gt;
+&lt;input type=&quot;submit&quot; name=&quot;GO&quot; value=&quot;GO&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;!-- Is this the number too low--&gt;
+&lt;cfif form.test_number LT form.right_number&gt;
+&lt;cfoutput&gt;
+#form.test_number# is too low, please try again&lt;BR&gt;
+&lt;cfset total_times_added = #form.total_times# + 1&gt;
+&lt;form action=&quot;contest2.cfm&quot; method=&quot;post&quot;&gt;
+Your number: &lt;input size=&quot;3&quot; maxlength=&quot;3&quot; type=&quot;text&quot; name=&quot;test_number&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;right_number&quot; value=&quot;#form.right_number#&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;total_times&quot; value=&quot;#total_times_added#&quot;&gt;
+&lt;input type=&quot;submit&quot; name=&quot;GO&quot; value=&quot;GO&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;
+&lt;/cfif&gt;
+&lt;/cfif&gt;
+&lt;/body&gt;</p>
+<p>&lt;/html&gt;
+</code></p>
+<p>I think this code sample is an excellent example of a topic I wanted to bring up at a later time - organization, specifically, organization of a form. ColdFusion is a simple language. One of the primary examples of how easy it is can be demonstrated by examining a simple form. What <i>isn't</i> so obvious is how one should set up a form to handle the display of the form, the validation of the form, and finally the result of the successful completion of the form.</p>
+<p>Not to be too mean, but I think this code sample shows a perfect example of how <i>not</i> to do things. Let's start with contest1.cfm. This file displays the initial form and posts to contest2. After that, the file isn't used again until you finish the game.</p>
+<p>Now look in contest2.cfm. Notice that for the scenario where the user guesses too high or too low, the entire form is duplicated. The same applies for a case where the number was below 1 or above 100. Taken together, the same form is written four times. As you can imagine, when the designer comes in and hands you the spec sheet, you are in trouble.</p>
+<p>The primary solution for this is self-posting forms. All this is means is that your form posts to itself, instead of some other file. Here is a <b>pseudo-code</b> example of what I mean:</p>
+<code>
+if(form was submitted) {
+  do a bunch of processing
+  was the form ok?
+    email someone, or store to db, or both
+ }
+<p>was there an error?
+show it</p>
+<p>show the form
+</code></p>
+<p>This isn't terribly complex, but does prevent a lot of the problems the submission above creates. It also makes it a bit simpler to handle since you are dealing with one file, not two. (Of course, some validation may be in outside sources, like CFCs, but let's not worry about that right now.)</p>
+<p>Outside of that - there isn't much else to complain about. He does forget to go all the way with validation, but I've made that complaint about all the other entries (and I make that mistake myself). I did notice a few extra uses of # signs where he didn't need them:</p>
+<code>
+&lt;cfif #form.test_number# GT 100 OR #form.test_number# LT 1&gt;
+</code>
+<p>This could be:</p>
+<code>
+&lt;cfif form.test_number GT 100 OR form.test_number LT 1&gt;
+</code>
+<p>The basic rule to remember is - if you aren't in a cfoutput, you typically don't need the pound signs. The only other time you will need them is inside quotes, for example:</p>
+<code>
+&lt;cfset formalName = "Mr. #form.name#"&gt;
+</code>
+<p>But even that could be:</p>
+<code>
+&lt;cfset formalName = "Mr. " & form.name&gt;
+</code>}

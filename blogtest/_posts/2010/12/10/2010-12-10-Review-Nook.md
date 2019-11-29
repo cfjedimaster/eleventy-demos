@@ -1,0 +1,36 @@
+---
+layout: post
+title: "Review: NOOKcolor"
+date: "2010-12-10T14:12:00+06:00"
+categories: [misc]
+tags: []
+banner_image: 
+permalink: /2010/12/10/Review-Nook
+guid: 4050
+---
+
+<img src="https://static.raymondcamden.com/images/cfjedi/screen53.png" align="left" /> About a week or so I was lucky enough to be given a NOOKcolor (thanks Ted!) and I thought I'd give my opinion on it. I started using the Nook with some initial assumptions.
+
+1) While I <i>really</i> like what's going on with tablets lately, I'm probably not the ideal customer for one. I've got a killer desktop for my 9-5 and at night I sit next to a killer laptop. I do a lot of nighttime work (mostly for fun and mostly because TV is crap) and want a 'real' machine at my disposal at all times.
+2) I love books. But I've been blessed by readers visiting my wishlist to the point now where I've got - approximately - two years worth of books. I never buy books anymore. I will, from time to time, pick up the latest book in a series that I'm really into (most recently that was <a href="http://www.amazon.com/After-America-John-Birmingham/dp/0345502914/ref=sr_1_1?s=books&ie=UTF8&qid=1292011476&sr=1-1">After America</a>), but for the most part, I just don't buy books. 
+
+So over all I figured - I'll like this device but I'll put it aside after a week or so. I was completely wrong.
+<!--more-->
+First off - the screen on this thing is amazing. I stare at computer screens probably 90% of my day and get used to my eyes feeling a bit strained by the time I hit the sack. But this thing is like butter for the eyes. Crystal clear, warm (not sure if "warm" is appropriate, but it seems to fit), and bright, I could almost read the text from a few feet away. It weighs a bit more than you would think by looking at it, but nothing that would really impact a normal session of reading. The Nook comes preloaded with two children's books (more on that in a minute) which are simply gorgeous. I also tried an 'adult' book (Stephen King's latest) and the text was both crisp and easy to navigate. I do wish the Nook shipped with one less "baby" book and had selected a more adult item. Perhaps a classic work of literature. I'm not quite sure why two kids books were necessary. That being said, it's easy enough to purchase books and magazines (some of which come with free trials) and every bit of written work I've seen so far looks beautiful on the display. I also tested a few PDFs, including the ColdFusion documentation and the new, and very excellent, Flex 4 in Action. Both rendered perfectly. I mean - it looked exactly as it would have on my computer screen. The text was a bit small, but you can pinch and zoom to get rid of any margins on the side.
+
+Of course, it isn't just a reader. The Nook comes with extras including a few games (the Sudoku game seems brutal), a music app, a contacts thing (not quite sure how I'd use it - the Nook can tie into your Facebook, Twitter, and Google accounts, but it has yet to read in any of my Google contacts), and even Pandora. Pandora is a bit buggy though. Once you start the application you can't stop it unless you log out. To be clear, you can stop the music, but the application continues to run in the background. There should be a way to stop the application without having to log back in. There is also support for music and video. The music player acts like pretty much any other - you get basic audio controls and the album cover is displayed - but it looked <i>really</i> nice on the Nook. Video is... incredible. I've been using my phone for the past few years to watch movies and TV on airplanes. It's gotten to a point now where I look forward to flights as a way to catch up with stuff I haven't had a chance to see yet. Sure it's not as good as a big screen TV but it's a great way to make time pass on a flight. I loaded up Handbrake (see my tip at the end) and converted Empire Strikes Back. I copied it over to the Nook (one other little oddity is that when you connect the Nook to a PC, it <b>must</b> be in USB mode and cannot be used for anything else - that doesn't make sense) and played it. Wow. I cannot describe how fracking good the video looked. While still not as good as a 'real' TV, I can see completely skipping my phone for movies on the next trip and just using this. Not only was the video extremely clear, it was easy to zip back and forth within the file as well. 
+
+The Nook has a built in browser that works pretty good as well. It does not support Flash but I've been told this will be corrected in an update in 2011. I tried my web site, Slashdot, and a few others. GMail's mobile reader works very good as well. I found the standard Gmail a bit small but their mobile version worked perfectly. Unfortunately you have to 'fake' you way into it. Google doesn't provide a nice way to load the mobile version. If you try to hit it via the mobile URL you basically get an ad telling you to hit the page with your mobile browser. I googled a bit and found the right URL. Once I had that I simply bookmarked it. I mentioned above that I've got a laptop by me at night. I'm now using the Nook more for email than the laptop. The keyboard is very responsive and works great. 
+
+All of the above is great and all - but one thing impressed me more than anything else. I had my daughter give the Nook a try. She is 9 years old and has a few intellectual challenges. I loaded up one of the kids books and handed the Nook to her. I didn't tell her how to use it at all. Immediately she put her fingers on it and dragged to change the page. Now of course this is pretty similar to what you would do in real life, but it still impressed me that the Nook was usable by a child with no training at all. I think that was what sealed the deal for me. What's even more interesting is that the Nook has a development platform. From what I know the market - when it does launch - will not be open like on an Android mobile device. Barnes and Noble are really positioning this as a <i>reading</i> device and not 'just' a tablet. Therefore applications will be focused more on reading and books and less on irritated birds. That being said the fact that you can build for the device turns this already incredible device into something even more useful. I'm very curious to see what ends up becoming available.
+
+So as I said - I went into this process thinking I wouldn't like it nearly as much as I did. I also had memories of my Kindle. To be fair - that was from 2 years ago. But this device simply blew me away. I can say that I will definitely be purchasing my books on it going forward. 
+
+So now - some links/tips:
+
+<ul>
+<li><a href="http://www.barnesandnoble.com/nookcolor/features/techspecs/index.asp?cds2Pid=35607">Official specs and pretty pictures</a></li>
+<li><a href="http://reviewhorizon.com/2010/12/how-to-take-nook-color-screenshots-tips-tricks-shortcuts-and-hacks/">Tips</a> for the Nook including how to take screen shots.</li>
+<li><a href="http://bookclubs.barnesandnoble.com/t5/NOOK-and-NOOKcolor-General/bd-p/Nook">Support forums</a> - this is for the consumer side</li>
+<li><a href="http://nookdeveloper.barnesandnoble.com">Nook Developer</a> site.</li>
+</ul>

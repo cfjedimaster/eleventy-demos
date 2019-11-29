@@ -1,0 +1,149 @@
+<h1>Post</h1>
+
+<p>Welcome to my third entry for my (what was at first) simple PhoneGap RSS reader. If you haven't yet, please be sure to read <a href="http://www.raymondcamden.com/index.cfm/2011/10/11/PhoneGap-RSS-Reader">part 1</a> and <a href="http://www.raymondcamden.com/index.cfm/2011/12/19/PhoneGap-RSS-Reader--Part-2">part 2</a> so you have some context about how this application works. In this part, I'm going to tackle two enhancements suggested to me by my readers:</p>
+<!--more-->
+<p/>
+<ol>
+<li>First - support rendering the entries if the user is offline.
+<li>Second - clean up the UX a bit so that when a user views an entry, leaves, and then comes back to another entry, they don't see the old text there for a split second.
+</ol>
+<p/>
+<p>Let's tackle the offline question first. I spent some time thinking about this and tried a few things that didn't quite work out the way I wanted. The first thing I tried was checking navigator.onLine. (See this <a href="http://stackoverflow.com/questions/2384167/check-if-internet-connection-exists-with-javascript">Stackoverflow entry</a> for details.) This did not work well for me. When I switched my device to airplane mode it still reported me as online. I then looked into PhoneGap's <a href="http://docs.phonegap.com/en/1.3.0/phonegap_connection_connection.md.html#Connection">Connection</a> API. This <i>kinda</i> worked. It didn't seem to grok my Airplane mode at all. It certainly didn't report it as online (it returned a null actually) and I could have handled it, but I then had the issue of how I was going to handle coordinating the deviceready event along with the jQuery Mobile pageinit method.</p>
+<p/>
+<p>Then I realized something. I already had an Ajax error handler. And it worked. That's obvious of course, but it occurred to me. Why not use this error handler? It would not only support offline mode, but any error on the remote server as well. At the end of the day, if I can't get the RSS feed, who cares if I'm offline or if the server is down. I <i>could</i> see caring, and if so, you would obviously want to use the PhoneGap Connection value, but I figured, why not go with the simple route.</p>
+<p/>
+<p>As for storage - that turned out to be trivial - LocalStorage. Have you guys figured out yet that I <b>really love HTML5 LocalStorage</b>?</p>
+<p/>
+<p>So, I decided to get rid of AjaxSetup. I only have one Ajax call in the entire application, so why not tie it to that call. So I switched from a $.get to a $.ajax:</p>
+<p/>
+<code>
+$.ajax({
+	url:RSS,
+	success:function(res,code) {
+		entries = [];
+		var xml = $(res);
+		var items = xml.find("item");
+		$.each(items, function(i, v) {
+			entry = { 
+				title:$(v).find("title").text(), 
+				link:$(v).find("link").text(), 
+				description:$.trim($(v).find("description").text())
+			};
+			entries.push(entry);
+		});
+		//store entries
+		localStorage["entries"] = JSON.stringify(entries);
+		renderEntries(entries);
+	},
+	error:function(jqXHR,status,error) {
+		//try to use cache
+		if(localStorage["entries"]) {
+			$("#status").html("Using cached version...");
+			entries = JSON.parse(localStorage["entries"])
+			renderEntries(entries);				
+		} else {
+			$("#status").html("Sorry, we are unable to get the RSS and there is no cache.");
+		}
+	}
+})
+</code>
+<p/>
+<p>This is - for the most part, the same code as before, just using the core $.ajax method. You can see where the error function will look into LocalStorage for the cached copy, and where the success function always stores a copy. The renderEntries function is simply an abstracted out version of the display code:</p>
+<p/>
+<code>
+function renderEntries(entries) {
+    var s = '';
+    $.each(entries, function(i, v) {
+        s += '&lt;li&gt;&lt;a href="#contentPage" class="contentLink" data-entryid="'+i+'"&gt;' + v.title + '&lt;/a&gt;&lt;/li&gt;';
+    });
+    $("#linksList").html(s);
+    $("#linksList").listview("refresh");		
+}
+</code>
+<p/>
+<p>Woot. That works. Now for the next request. We want to ensure that users don't see the old content when loading in the RSS entry detail page. This turned out to be a bit weird. jQuery Mobile has logic to say, &quot;Do this when a page is hiding, or before it hides&quot;, but for the life of me (and <b>please</b> correct me if I'm wrong) there doesn't seem to be a good way to get the page that is leaving. You get passed the page you are going to, but not the <i>current</i> page. I really feel like I'm missing something here, so please note this may get corrected later. For me though I simply added an event listener to the main page. It now sees if a previous page exists, and if so, clears out the text:</p>
+<p/>
+<code>
+$("#mainPage").live("pagebeforeshow", function(event,data) {
+	if(data.prevPage.length) {
+		$("h1", data.prevPage).text("");
+		$("#entryText", data.prevPage).html("");
+	};
+});
+</code>
+<p/>
+<p>And that's it. I've included the entire JavaScript file below (the HTML hasn't changed from the previous entry) and a zip of the entire project may be downloaded for the low cost of free.</p>
+<p/>
+<code>
+<p>//EDIT THESE LINES
+//Title of the blog
+var TITLE = &quot;ColdFusion Jedi&quot;;
+//RSS url
+var RSS = &quot;http://feedproxy.google.com/RaymondCamdensColdfusionBlog&quot;;
+//Stores entries
+var entries = [];
+var selectedEntry = &quot;&quot;;</p>
+<p>//listen for detail links
+$(&quot;.contentLink&quot;).live(&quot;click&quot;, function() {
+selectedEntry = $(this).data(&quot;entryid&quot;);
+});</p>
+<p>function renderEntries(entries) {
+var s = '';
+$.each(entries, function(i, v) {
+s += '&lt;li&gt;&lt;a href=&quot;#contentPage&quot; class=&quot;contentLink&quot; data-entryid=&quot;'+i+'&quot;&gt;' + v.title + '&lt;/a&gt;&lt;/li&gt;';
+});
+$(&quot;#linksList&quot;).html(s);
+$(&quot;#linksList&quot;).listview(&quot;refresh&quot;);		
+}</p>
+<p>//Listen for main page
+$(&quot;#mainPage&quot;).live(&quot;pageinit&quot;, function() {
+//Set the title
+$(&quot;h1&quot;, this).text(TITLE);</p>
+<pre><code>$.ajax({
+	url:RSS,
+	success:function(res,code) {
+		entries = [];
+		var xml = $(res);
+		var items = xml.find(&quot;item&quot;);
+		$.each(items, function(i, v) {
+			entry = { 
+				title:$(v).find(&quot;title&quot;).text(), 
+				link:$(v).find(&quot;link&quot;).text(), 
+				description:$.trim($(v).find(&quot;description&quot;).text())
+			};
+			entries.push(entry);
+		});
+		//store entries
+		localStorage[&quot;entries&quot;] = JSON.stringify(entries);
+		renderEntries(entries);
+	},
+	error:function(jqXHR,status,error) {
+		//try to use cache
+		if(localStorage[&quot;entries&quot;]) {
+			$(&quot;#status&quot;).html(&quot;Using cached version...&quot;);
+			entries = JSON.parse(localStorage[&quot;entries&quot;])
+			renderEntries(entries);				
+		} else {
+			$(&quot;#status&quot;).html(&quot;Sorry, we are unable to get the RSS and there is no cache.&quot;);
+		}
+	}
+});
+</code></pre>
+<p>});</p>
+<p>$(&quot;#mainPage&quot;).live(&quot;pagebeforeshow&quot;, function(event,data) {
+if(data.prevPage.length) {
+$(&quot;h1&quot;, data.prevPage).text(&quot;&quot;);
+$(&quot;#entryText&quot;, data.prevPage).html(&quot;&quot;);
+};
+});</p>
+<p>//Listen for the content page to load
+$(&quot;#contentPage&quot;).live(&quot;pageshow&quot;, function(prepage) {
+//Set the title
+$(&quot;h1&quot;, this).text(entries[selectedEntry].title);
+var contentHTML = &quot;&quot;;
+contentHTML += entries[selectedEntry].description;
+contentHTML += '&lt;p/&gt;&lt;a href=&quot;'+entries[selectedEntry].link + '&quot;&gt;Read Entry on Site&lt;/a&gt;';
+$(&quot;#entryText&quot;,this).html(contentHTML);
+});
+</code><p><a href='/enclosures/RSSDemo1.zip'>Download attached file.</a></p></p>
+}

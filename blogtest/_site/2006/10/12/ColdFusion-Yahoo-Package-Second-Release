@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>I've attached the second release of the ColdFusion Yahoo Package. It now includes APIs for Traffic and Weather data. Here is a few examples.</p>
+<h2>Traffic</h2>
+<code>
+&lt;cfset trafficAPI = createObject("component", "org.camden.yahoo.traffic")&gt;
+<p>&lt;cfinvoke component=&quot;#trafficAPI#&quot; method=&quot;trafficSearch&quot; returnVariable=&quot;result&quot;&gt;
+&lt;cfinvokeargument name=&quot;zip&quot; value=&quot;90210&quot;&gt;
+&lt;/cfinvoke&gt;</p>
+<p>&lt;cfdump var=&quot;#result#&quot; label=&quot;Zip search for 90210&quot;&gt;
+</code></p>
+<h2>Weather</h2>
+<p>Weather is a tiny bit more complex. It has 2 public methods.  One to get the current weather and one to get the forecast.</p>
+<code>
+&lt;cfset weatherAPI = createObject("component", "org.camden.yahoo.weather")&gt;
+<p>&lt;cfinvoke component=&quot;#weatherAPI#&quot; method=&quot;getWeather&quot; returnVariable=&quot;result&quot;&gt;
+&lt;cfinvokeargument name=&quot;location&quot; value=&quot;70508&quot;&gt;
+&lt;cfinvokeargument name=&quot;units&quot; value=&quot;F&quot;&gt;
+&lt;/cfinvoke&gt;</p>
+<p>&lt;cfdump var=&quot;#result#&quot; label=&quot;Weather for Lafayette, LA&quot;&gt;</p>
+<p>&lt;cfinvoke component=&quot;#weatherAPI#&quot; method=&quot;getForecast&quot; returnVariable=&quot;result&quot;&gt;
+&lt;cfinvokeargument name=&quot;location&quot; value=&quot;70508&quot;&gt;
+&lt;cfinvokeargument name=&quot;units&quot; value=&quot;F&quot;&gt;
+&lt;/cfinvoke&gt;</p>
+<p>&lt;cfdump var=&quot;#result#&quot; label=&quot;Forecast for Lafayette, LA&quot;&gt;
+</code><p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Fyahoo1%2Ezip'>Download attached file.</a></p></p>
+}

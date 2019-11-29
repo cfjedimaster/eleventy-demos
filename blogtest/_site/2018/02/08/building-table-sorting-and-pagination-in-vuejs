@@ -1,0 +1,149 @@
+<h1>Post</h1>
+
+<p>Earlier this week I was talking to a good friend of mine (who is also a recent convert to the School of Vue) and he was talking about the troubles he went through in adding table sorting and pagination to a table. He was making use of a particular Vue component that was - to be nice - &quot;undocumented&quot;. While I was reasonable certain that other solutions existed, I thought it would be fun to take a stab at writing my own support for table sorting and pagination. Not a generic solution, but just a solution for a particular set of data.</p>
+<p>I began with a Vue app that loaded in data via an Ajax call and rendered a table. This initial version has no sorting or pagination, it just loads data and dumps it in the view. Here's the layout:</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot;&gt;
+  
+  &lt;table&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;Name&lt;/th&gt;
+        &lt;th&gt;Age&lt;/th&gt;
+        &lt;th&gt;Breed&lt;/th&gt;
+        &lt;th&gt;Gender&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr v-for=&quot;cat in cats&quot;&gt;
+        &lt;td&gt;{{cat.name}}&lt;/td&gt;
+        &lt;td&gt;{{cat.age}}&lt;/td&gt;
+        &lt;td&gt;{{cat.breed}}&lt;/td&gt;
+        &lt;td&gt;{{cat.gender}}&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+  
+&lt;/div&gt;
+</code></pre>
+<p>I've got a table with four columns: Name, Age, Breed, and Gender. And then I simply loop over my cats to render each row. The JavaScript is simple:</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data:{
+    cats:[]
+  },
+  created:function() {
+    fetch('https://api.myjson.com/bins/s9lux')
+    .then(res =&gt; res.json())
+    .then(res =&gt; {
+      this.cats = res;
+    })
+  }
+})
+</code></pre>
+<p>(As an aside, I say it's simple, but as always, if anything here doesn't make sense, just ask me in the comments below!) While it isn't too exciting, you can see this running below.</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="PQWErq" data-default-tab="html,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Vue - Sortable Table" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/PQWErq/">Vue - Sortable Table</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>Alright, so for the first update, I decided to add sorting. I made two changes to the view. First, I added click handlers to my headers so I could do sorting. Secondly, I switched my loop to use <code>sortedCats</code>, which I'm going to set up as a Vue computed property. Here's the new HTML:</p>
+<pre><code class="language-markup">&lt;div id=&quot;app&quot;&gt;
+  
+  &lt;table&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th @click=&quot;sort('name')&quot;&gt;Name&lt;/th&gt;
+        &lt;th @click=&quot;sort('age')&quot;&gt;Age&lt;/th&gt;
+        &lt;th @click=&quot;sort('breed')&quot;&gt;Breed&lt;/th&gt;
+        &lt;th @click=&quot;sort('gender')&quot;&gt;Gender&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr v-for=&quot;cat in sortedCats&quot;&gt;
+        &lt;td&gt;{{cat.name}}&lt;/td&gt;
+        &lt;td&gt;{{cat.age}}&lt;/td&gt;
+        &lt;td&gt;{{cat.breed}}&lt;/td&gt;
+        &lt;td&gt;{{cat.gender}}&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+  
+  debug: sort={{currentSort}}, dir={{currentSortDir}}
+&lt;/div&gt;
+</code></pre>
+<p>On the JavaScript side, I had to do a few things. First, I added properties to keep track of what I was sorting by and in what direction:</p>
+<pre><code class="language-js">data:{
+  cats:[],
+  currentSort:'name',
+  currentSortDir:'asc'
+}
+</code></pre>
+<p>Next, I added the <code>sort</code> method. It has to recognize when we are sorting by the same column and flip the direction:</p>
+<pre><code class="language-js">methods:{
+  sort:function(s) {
+    //if s == current sort, reverse
+    if(s === this.currentSort) {
+      this.currentSortDir = this.currentSortDir==='asc'?'desc':'asc';
+    }
+    this.currentSort = s;
+  }
+}
+</code></pre>
+<p>Finally, I added my computed property, <code>sortedCats</code>:</p>
+<pre><code class="language-js">computed:{
+  sortedCats:function() {
+    return this.cats.sort((a,b) =&gt; {
+      let modifier = 1;
+      if(this.currentSortDir === 'desc') modifier = -1;
+      if(a[this.currentSort] &lt; b[this.currentSort]) return -1 * modifier;
+      if(a[this.currentSort] &gt; b[this.currentSort]) return 1 * modifier;
+      return 0;
+    });
+  }
+}
+</code></pre>
+<p>I'm just using the <code>sort</code> method of my array with the property being dynamic. The <code>modifier</code> bit just handles reversing the numbers based on the direction of the sort. You can test this version below:</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="BYpJgj" data-default-tab="html,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Vue - Sortable Table (2)" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/BYpJgj/">Vue - Sortable Table (2)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>By the way, you'll notice some debug data at the bottom of the view. In a real application I'd remove that, but I used that as a handy way to track values while I was clicking. I could have used Vue DevTools for that, although I'm not certain how well they work with CodePens.</p>
+<p>Woot! Almost there! For the final version I added pagination. I didn't want to add more cats to my JSON data set, so I used a relatively small &quot;page size&quot; of 3. I began by adding buttons to the front end for pagination:</p>
+<pre><code class="language-markup">&lt;p&gt;
+&lt;button @click=&quot;prevPage&quot;&gt;Previous&lt;/button&gt; 
+&lt;button @click=&quot;nextPage&quot;&gt;Next&lt;/button&gt;
+&lt;/p&gt;
+</code></pre>
+<p>In the JavaScript I made the following changes. First, I added values to track the page size and current page:</p>
+<pre><code class="language-js">data:{
+  cats:[],
+  currentSort:'name',
+  currentSortDir:'asc',
+  pageSize:3,
+  currentPage:1
+},
+</code></pre>
+<p>Next, I added the <code>prevPage</code> and <code>nextPage</code> methods, which were pretty simple:</p>
+<pre><code class="language-js">nextPage:function() {
+  if((this.currentPage*this.pageSize) &lt; this.cats.length) this.currentPage++;
+},
+prevPage:function() {
+  if(this.currentPage &gt; 1) this.currentPage--;
+}
+</code></pre>
+<p>Finally, I modified my computed property to check the page size and current page values when returning data. I did this via a <code>filter</code> call:</p>
+<pre><code class="language-js">sortedCats:function() {
+	return this.cats.sort((a,b) =&gt; {
+		let modifier = 1;
+		if(this.currentSortDir === 'desc') modifier = -1;
+		if(a[this.currentSort] &lt; b[this.currentSort]) return -1 * modifier;
+		if(a[this.currentSort] &gt; b[this.currentSort]) return 1 * modifier;
+		return 0;
+	}).filter((row, index) =&gt; {
+		let start = (this.currentPage-1)*this.pageSize;
+		let end = this.currentPage*this.pageSize;
+		if(index &gt;= start &amp;&amp; index &lt; end) return true;
+	});
+}
+</code></pre>
+<p>Note the creation of a <code>start</code> and <code>end</code> value. I almost always screw this up so I created variables instead of a super complex <code>if</code> statement. While my code seems to work I'm still not 100% sure that math is right. And here is that final version:</p>
+<p data-height="400" data-theme-id="dark" data-slug-hash="yvgvMK" data-default-tab="js,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Vue - Sortable Table (3)" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/yvgvMK/">Vue - Sortable Table (3)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>So that's it. There is definitely room for improvement. I'd like to add <code>disabled</code> to the buttons when they are at the 'edge' and I'd like to highlight, somehow, the table headers when sorting, but I'll leave that as an exercise to my readers. ;) (Don't forget you can fork my CodePens and add your own edits!)</p>
+<p><i>Header Photo by <a href="https://unsplash.com/photos/u54GUxav9Hc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Hannes Egler</a> on Unsplash</i></p>
+}

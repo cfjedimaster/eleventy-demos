@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>So, I've been talking about the 3.0 version for at least four or five months now and I'm finally happy to say that the <a href="http://www.camdenfamily.com/morpheus/blog/blog3.zip">RC</a> is here. For those of you still running 2.x, the major new features in 3.0 are:</p>
+<ul>
+<li>Support for colored code and summary/detail blog entries.
+<li>Support for MySQL/MS Access along with SQL Server.
+<li>30% less carbs.
+<li>Page caching.
+<li>"Pod" abstracted layout for right hand content.
+<li>Internationalization. 
+</ul>
+<p>Please download the blog <a href="http://www.camdenfamily.com/morpheus/blog/blog3.zip">here</a> and email me with any bug reports.</p>
+}

@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Anyone seen this before? Whenever I try to turn on the &quot;Use Admin Password&quot; for CFMX, it gives me an Unable to set admin password error. This page refreshes and I'm brought to a screen where I need to enter the password. The password doesn't work. (No surprise there.) When I examine the neo-security.xml file, I see that admin.security.enabled is still false. Restarting CF makes the error go away... but there is no password protection for the server.</p>
+<p>I googled, and all I could find was a mention of ZoneAlarm in a <a href="http://www.houseoffusion.com/cf_lists/index.cfm/method=messages&threadid=20702&forumid=4">cf-talk thread</a>. Anyone else encounter this?</p>
+}

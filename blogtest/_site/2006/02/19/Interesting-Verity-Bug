@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>I ran into an interesting issue with Verity today. I was working on the <a href="http://www.coldfusioncookbook.com">ColdFusion Cookbook</a> today and noticed something odd. When I did a search for file, one of the entries had this for a title: Cached File Example</p>
+<p>I knew that couldn't be right. A quick click on the link took me <a href="http://www.coldfusioncookbook.com/entry/56/Cached-File-Example">here</a>, where I saw the real title: &quot;How can I generate static HTML from a dynamic ColdFusion page?&quot;</p>
+<p>I looked over my code and saw that I was passing the right information. (Obviously or my search results would have been real crazy. I then noticed something odd about this <a href="http://www.coldfusioncookbook.com/entry/56/Cached-File-Example">entry</a>, inside the body was a set of html title tags. On a whim, I created a quick test:</p>
+<code>
+&lt;cfsavecontent variable="body"&gt;
+hi world, how do you do today
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Not the right title&lt;/title&gt;
+&lt;/head&gt;
+<p>&lt;/cfsavecontent&gt;</p>
+<p>&lt;cfindex collection=&quot;test&quot;
+type=&quot;custom&quot;
+action=&quot;update&quot;
+key=&quot;#createUUID()#&quot;
+title=&quot;The Title&quot;
+body=&quot;#body#&quot;
+&gt;</p>
+<p>&lt;cfsearch collection=&quot;test&quot; criteria=&quot;*&quot; name=&quot;foo&quot; status=&quot;status&quot;&gt;
+&lt;cfdump var=&quot;#foo#&quot;&gt;
+&lt;cfdump var=&quot;#status#&quot;&gt;
+</code></p>
+<p>My first few tests simply had &quot;hi world, how do you do today&quot; in the body.  My search results showed my hard coded title. When I added the text you see above, my hard coded title was ignored, and the title from the content was used.</p>
+<p>A quick check of the docs for cfindex say this about the title attribute (emphasis mine):</p>
+<blockquote>
+Provides a title for the document <i><u>if one cannot be extracted</u></i> from the document.
+</blockquote>
+<p>So maybe this isn't a bug at all. The title is only a hint. But I can see - especially for custom data - where this would be very undesirable. For the cookbook I'm going to have to resort to using one of the custom fields, so it won't be a big deal to get around, but it is certainly something to keep in mind.</p>
+}

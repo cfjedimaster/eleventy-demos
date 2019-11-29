@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I ran across a bug today when I tried to make a CFC method called &quot;notify&quot;. The error said that notify was already defined. This seemed odd since I was certain that notify wasn't already defined in the CFC.</p>
+<p>Turns out that you can't name UDFs, or methods, with the same name as public methods in the underlying Java class hierarchy.</p>
+}

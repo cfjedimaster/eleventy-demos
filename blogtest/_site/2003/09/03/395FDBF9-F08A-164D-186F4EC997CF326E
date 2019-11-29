@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>So, I'm going to try something new - random postings about CFMX tags/functions that you may not be too familiar with. If you like this, please post a comment and I'll continue.</p>
+<p>structGet() is an interesting function. Basically, it allows you to create a N-deep structure simply by defining a path. So, for example, structGet(&quot;grandparent.parent.child.grandchild&quot;) will (may, see below) create four structures. It will first create a structure called grandparent. It will then create a structure called parent and set it inside of grandparent. It will continue doing this until it reaches the end, the grandchild structure.</p>
+<p>What's nice about structGet is that it's smart enough to see if a structure already exists. Using the same code as above, if grandparent.parent already existed, it would only create two structures, child and grandchild.</p>
+<p>When you run structGet, it returns a pointer/reference to the structure created. This is useful if the path is dynamic:</p>
+<p>path = &quot;foo.goo.zoo.moo&quot;;<br>
+ptr = structGet(path);</p>
+<p>The variable, ptr, is actually a reference to foo.goo.zoo.moo. Here is an example of structGet in action:</p>
+<p>&lt;cfscript&gt;<br>
+ptr = structGet(&quot;server.cache.nav.menu&quot;);<br>
+dump(var=ptr);<br>
+ptr.value = 9;<br>
+dump(var=server.cache);<br>
+&lt;/cfscript&gt;</p>
+<p>In case you are wondering, no, you can't call &lt;cfdump&gt; from within cfscript - unless you take two seconds and write a cffunction based version of dump.</p>
+<p>When you run this code, structGet will obviously not need to create the server structure since it already exists. However, &quot;cache.nav.menu&quot; will be created as three linked structures. If you then modify ptr, you will see it reflected when you dump server.cache.</p>
+<p>Another interesting aspect of structGet is that it will create arrays as well. Consider the following line of code:</p>
+<p>ptr2 = structGet(&quot;server.pageRanks[3].data&quot;);</p>
+<p>This will create the server struct, if need be, which it never will, and then an array pageRanks if it doesn't exist. It will populate the third array element with a structure and set a key called data. The value of this will be a structure itself.</p>
+<p>One thing to watch out for. If pageRanks does NOT exist yet, then array elements 1-2 will be null. ColdFusion doesn't really like null array items. You can only check for them using try/catch. Again, there is a UDF at cflib.org just for stuff like this.</p>
+<p>Sorry for being so long winded. If you found this item useful, please let me know!</p>
+}

@@ -1,0 +1,79 @@
+<h1>Post</h1>
+
+<p>Many months ago I <a href="http://www.raymondcamden.com/index.cfm/2009/9/18/Using-jQuery-to-convert-text-into-form-fields#c10564176-B748-CDC1-1EA6C99B367722E5">posted</a> a blog entry describing how to use jQuery to turn a text item into a drop down. Read the older entry for more information on what I mean, but the basic gist is - you click an edit link and a piece of text turns into a drop down. This worked fine but a user asked about converting the drop down back into plain text. I worked on it a bit and it turns out it isn't that difficult.</p>
+<!--more-->
+<p/>
+To begin with, I added a new event listener to handle the change event in my drop down. Because the drop downs were created after the document was loaded, I had to use the live() feature. <b>Note</b> - before jQuery 1.4 it was not possible to use live with the change event. If you plan on using my code, be sure you are using the latest jQuery build. Here is the event handler I used:
+<p/>
+<code>
+$(".selector").live("change", function() {
+	//first get the value
+	var val = $(this).val()
+	var name = $(this).attr("name")
+	var s = "&lt;input type=\"hidden\" name=\"" + name + "\" value=\"" + val +"\"&gt;"
+	s += labels[val-1] + " - "
+	s += "&lt;a href=\"\" class=\"edit\"&gt;edit&lt;/a&gt;"
+	$(this).parent().html(s)
+})
+</code>
+<p/>
+As you can see, I simply grab the value and name from the drop down and recreate the text that was there originally. I had to make one more tweak. Since I was now generating edit links on the fly as well, I changed my original click listener for them to a live as well. So basically, I've got two live events. One to listen for "Edit" clicks, one to listen for "Change" events. You can play with a demo of this <a href="http://www.coldfusionjedi.com/demos/march192010/test2.cfm">here</a>. Here is the complete source.
+<p/>
+<code>
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>$(document).ready(function() {</p>
+<pre><code>//used for our drop downs
+var values = [1,2,3,4]
+var labels = [&quot;Hated It&quot;,&quot;Disliked It&quot;,&quot;Liked It&quot;,&quot;Loved It&quot;]
+
+$(&quot;.changeable a.edit&quot;).live(&quot;click&quot;,function() {
+	//find the hidden item
+	var hiddenItem = $(&quot;input:hidden&quot;, $(this).parent())
+	//get the current val
+	var currentVal = hiddenItem.val()
+	//get the name
+	var currentName = hiddenItem.attr(&quot;name&quot;);
+	//now we can draw our drop down and select the right val
+	var s = &quot;&amp;lt;select class=\&quot;selector\&quot; name=\&quot;&quot;+currentName+&quot;\&quot;&amp;gt;&quot;;
+	//hard coded values for our drop down
+	for(var i=0;i&amp;lt;values.length;i++) {
+		s+= &quot;&amp;lt;option value=\&quot;&quot; + values[i] + &quot;\&quot;&quot;
+		if(currentVal == values[i]) s+= &quot; selected&quot;
+		s+= &quot;&amp;gt;&quot; + labels[i] + &quot;&amp;lt;/option&amp;gt;&quot;
+	}
+	s += &quot;&amp;lt;/select&amp;gt;&quot;
+	//now replace
+	$(this).parent().html(s)
+	
+	return false	
+})
+
+$(&quot;.selector&quot;).live(&quot;change&quot;, function() {
+	//first get the value
+	var val = $(this).val()
+	var name = $(this).attr(&quot;name&quot;)
+	var s = &quot;&amp;lt;input type=\&quot;hidden\&quot; name=\&quot;&quot; + name + &quot;\&quot; value=\&quot;&quot; + val +&quot;\&quot;&amp;gt;&quot;
+	s += labels[val-1] + &quot; - &quot;
+	s += &quot;&amp;lt;a href=\&quot;\&quot; class=\&quot;edit\&quot;&amp;gt;edit&amp;lt;/a&amp;gt;&quot;
+	$(this).parent().html(s)
+})
+</code></pre>
+<p>})</p>
+<p>&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form method=&quot;post&quot;&gt;</p>
+<p>star wars: &lt;span class=&quot;changeable&quot;&gt;&lt;input type=&quot;hidden&quot; name=&quot;starwars&quot; value=&quot;4&quot;&gt;Loved It - &lt;a href=&quot;&quot; class=&quot;edit&quot;&gt;edit&lt;/a&gt;&lt;/span&gt;&lt;br/&gt;
+star trek: &lt;span class=&quot;changeable&quot;&gt;&lt;input type=&quot;hidden&quot; name=&quot;startrek&quot; value=&quot;3&quot;&gt;Liked It - &lt;a href=&quot;&quot; class=&quot;edit&quot;&gt;edit&lt;/a&gt;&lt;/span&gt;&lt;br/&gt;</p>
+<p>&lt;input type=&quot;submit&quot; value=&quot;click me like you mean it&quot;&gt;
+&lt;/form&gt;</p>
+<p>&lt;cfif not structIsEmpty(form)&gt;
+&lt;cfdump var=&quot;#form#&quot; label=&quot;form&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

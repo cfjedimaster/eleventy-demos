@@ -1,0 +1,21 @@
+<h1>Post</h1>
+
+<p>This will be a quick post and credit for the idea goes to <a href="https://twitter.com/gigastacey/">Stacey Higgenbotham</a> and her post from last year, <a href="https://staceyoniot.com/how-to-trigger-custom-alexa-notifications-from-a-smart-home-event/">&quot;How to trigger custom Alexa notifications from a smart home event&quot;</a>.</p>
+<p>In her post, she describes how to use the <a href="https://www.amazon.com/Thomptronics-Notify-Me/dp/B07BB2FYFS/ref=sr_1_1">Notify Me</a> skill on Alexa to allow for custom notifications. When you add the &quot;Notify Me&quot; skill to Alexa, you get an email with a unique access code. You can then head over to the web site, <a href="https://www.thomptronics.com/about/notify-me">https://www.thomptronics.com/about/notify-me</a>, and check out the docs. At the simplest level, you can just hit a URL like so:</p>
+<p>https://api.notifymyecho.com/v1/NotifyMe?notification=Hello%20World!&amp;accessCode=ACCESS_CODE</p>
+<p>That's the entire API, seriously. You can pass an additional title attribute and the API is flexible in terms of accepting GET, POST, or PUT. Here's an example of how it looks on my Echo Spot.</p>
+<img src="https://static.raymondcamden.com/images/2019/09/notification1.png" alt="Example of Alexa notification being shown" class="imgborder imgcenter">
+<p>In this case, the text of the notification is not visible, just the title, but if I ask her for my notifications, I'll hear the full text.</p>
+<p>Given that you've enabled the skill and gotten your access code, then how would you set it up to get notifications on builds?</p>
+<p>Log in to Netlify, go to your site, Settings, &quot;Build &amp; deploy&quot;, and then finally &quot;Deploy notifications&quot;:</p>
+<img src="https://static.raymondcamden.com/images/2019/09/notification2.png" alt="Netlify's list of notifications" class="imgborder imgcenter">
+<p>Click the &quot;Add notification&quot; button and select &quot;Outgoing webhook&quot;:</p>
+<img src="https://static.raymondcamden.com/images/2019/09/notification3.png" alt="Menu for notification optins" class="imgborder imgcenter">
+<p>First figure out what you want to be notified on, most likely &quot;Deploy succeeded&quot;, and in the URL enter the URL in the form I shared above. Perhaps something like this:</p>
+<pre><code>https://api.notifymyecho.com/v1/NotifyMe?notification=Build%20Done&amp;title=Build%20Done!&amp;accessCode=ACCESS_CODE
+</code></pre>
+<p>Remember that only the title will be visible, but you could include more information in the notification part to provide context, perhaps the name of the site that was deployed.</p>
+<img src="https://static.raymondcamden.com/images/2019/09/notification4.png" alt="Example webhook value" class="imgborder imgcenter">
+<p>And that's it! If you want you can go to the &quot;Deploys&quot; menu and hit &quot;Trigger deploy&quot; to force a new build. I wish there was a bit more control over the UI of the notification, but for a free service I'll take it.</p>
+<p><i>Header photo by <a href="https://unsplash.com/@prateekkatyal?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Prateek Katyal</a> on Unsplash</i></p>
+}

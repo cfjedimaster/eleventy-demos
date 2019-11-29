@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>So, I answer a lot of questions here - can I abuse the relationship with you readers and ask for your help? I finally have some folks using <a href="http://ray.camdenfamily.com/projects/canvas">Canvas</a>, my ColdFusion Wiki, and because of this, bugs are cropping up.</p>
+<p>The main bug involves the fact that some Wiki commands, like +...+ for bold, intefere with other commands, like the URL generator. I use [[url]] to create URLs, but if you do [[http://www.cnn.com/foo_mon]] then the parser will find the _ in the URL. If another _ exists later on, then a match is found.</p>
+<p>What I need is to find matches that are not inside HTML. Apparently this is possible using negative lookbehind, which ColdFusion doesn't support.</p>
+<p>Does anyone have any bright ideas? I've noticed other Wikis seem to get around this by using tokens that can't appear in URLs.</p>
+<p>The other problem is that you can't use + and _ in normal text either. So this  &quot;5+5 = 2&quot; would be a problem. I'm thinking for that I may just ask people to escape, i.e., use 5++5=2. That seem ok to folks?</p>
+}

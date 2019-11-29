@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>So, today's puzzle isn't really a code challenge, but more of a trivia contest. The first person to both answer my question, and explain the answer, wins, um, respect and Kudo(tm) points, but nothing else. Ready?</p>
+<p>By default, CFML tags will either look like this, &lt;cffoo&gt; or like this, &lt;cf_foo&gt;. However, there is one more format that works as well. Tell me what the format is, how it works, and why it exists.</p>
+}

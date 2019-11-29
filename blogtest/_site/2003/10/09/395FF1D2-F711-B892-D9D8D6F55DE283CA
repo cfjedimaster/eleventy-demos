@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Those of you who read my blog know that I tend to complain alot about stupid UI choices made in software (ok, so I complain about other stuff as well). Just to add more fuel to the fire, I'd love to hear from Microsoft on the file browser. Someone explain to me why when I browse a folder over VPN, a remote folder of course, why it makes the window act like a drugged out mental patient. For example, you open up \foo. A window pops up. Now, I don't expect the files to show up immidiately, but why is that while I'm waiting for the file list, the window refuses to move or respond at all? In fact, if your VPN is too slow, your only real choice is to kill the window which will normally kill other windows.</p>
+<p>Hey, here is a crazy idea. Why not simply put a message that reads, &quot;Please stand by, fetching remote folders...&quot; Or, lord forbid, copy an idea from your browser and have a stop button. There is no good reason for a window to become unusable just because it's waiting for a remote network.</p>
+<p>Do Macs act this way?</p>
+}

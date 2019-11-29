@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>A few days ago I talked about a rarely used function called <a href="http://www.camdenfamily.com/morpheus/blog/index.cfm?mode=entry&entry=395FF1B3-F9B6-75D2-B5EDCBB1FE225FD1">structSort</a>. Today I'm going to talk about a related set of functions, structFindValue and structFindKey.</p>
+<p>As you can imagine, these two functions will search a structure for either a particular value, or a particular key. Here is a simple example of structFindValue:</p>
+<p>&lt;cfscript&gt;<br>
+s = structNew();<br>
+s[&quot;Jacob&quot;] = structNew();<br>
+s[&quot;Jacob&quot;].gender = &quot;male&quot;;<br>
+s[&quot;Jacob&quot;].age = &quot;3&quot;;<br>
+s[&quot;Lynn&quot;] = structNew();<br>
+s[&quot;Lynn&quot;].gender = &quot;female&quot;;<br>
+s[&quot;Lynn&quot;].age = &quot;2&quot;;<br>
+s[&quot;Noah&quot;] = structNew();<br>
+s[&quot;Noah&quot;].gender = &quot;male&quot;;<br>
+s[&quot;Noah&quot;].age = &quot;1&quot;;<br>
+<br>
+males = structFindValue(s,&quot;male&quot;,&quot;all&quot;);<br>
+writeOutput(&quot;There are #arraylen(males)# male children.&quot;);<br>
+&lt;/cfscript&gt;<br></p>
+<p>We define a simple structure, s, then a set of children under it. Then we use the structFindValue function to search the structure. We pass it &quot;male&quot; as the value to look for, and &quot;all&quot; to make it return all matches. The result is an array of matches. Each element of the array contains three keys: The key where the value matched. The &quot;owner&quot;, which is a pointer to the parent structure of the key. Lastly, it returns path, which is the specific path from the root structure to the key matched. structFindKey pretty much works the same way, except that &quot;value&quot; is returned instead of key, and obviously value is the value of the matched key.</p>
+<p>So, obviously these functions would be useful to search complex structures. If you have any questions, please post them in the comments field.</p>
+}

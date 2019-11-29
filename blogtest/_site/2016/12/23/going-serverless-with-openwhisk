@@ -1,0 +1,173 @@
+<h1>Post</h1>
+
+<p>Like I assume most of you have, I've been hearing a lot about &quot;serverless&quot; recently and while I had a passing
+understanding of what it was, I had not actually spent any time playing around with it. This week I got a chance
+to play with <a href="https://developer.ibm.com/openwhisk/">OpenWhisk</a>, IBM's open source offering in this area and I have
+to say I'm pretty blown away by how cool it is. What follows is a brief explanation of what serverless means to me, why
+I think it is something to check out, and, of course, some sample code as well. Please remember that I am <em>incredibly</em>
+new to this space. What I write may be completely wrong, so take with a grain of salt. And as always, I highly
+encourage folks to chime in with their own thoughts, corrections, and questions.</p>
+<h2>What is it?</h2>
+<p>First off - what the hell is it? I mean, everything runs on a server, so the name doesn't make sense, right? I agree.
+I hate the name. &quot;The Cloud&quot; isn't necessarily accurate either, but &quot;Serverless&quot; feels like the complete opposite of the truth
+as opposed to a fluffy (get it) marketing term like the cloud. That being said, you can think of it like this.</p>
+<p>A typical web site, or app, or API, will run on a server. This is built in some app server tech like PHP, ColdFusion, or Node. In this code,
+you'll do something to set up <em>how</em> the data is accessed (&quot;A GET request to path so and so will execute this code&quot;) and then
+obviously write the code to actually do what the request is meant to do.</p>
+<p>In something lightweight like Node, it may look like this:</p>
+<pre><code class="language-javascript">
+var express = require('express');
+var app = express();
+
+
+app.set('port', process.env.PORT || 3000);
+
+app.get('/cats', function(req, res) {
+	// talk to some DB or whatevs and get a list of cats
+	// then return it, what follows is pseudo-code:
+
+	dbServer.getCats().then(function(cats) {
+		res.send(cats);
+	});
+});
+
+app.listen(app.get('port'), function() {
+    console.log('Express running on http://localhost:' + app.get('port'));
+});
+</code></pre>
+<p>That's fairly simple, but of course, there's a lot going on behind the scenes. That very first line which loads
+in Express is doing a lot behind the scenes. I don't necessarily have to worry about it, and this is why Express was
+my gateway drug to Node, but it's still there of course. Also, the actual setup of running a server and specifying
+the route isn't much work either - just a few lines. But here's where serverless can make things more interesting. Imagine
+if my code was just this:</p>
+<pre><code class="language-javascript">
+dbServer.getCats().then(function(cats) {
+	send(cats);
+});
+</code></pre>
+<p>That's <em>hella</em> simple, right? Of course, I need some infrastructure to specify &quot;On /cats, do this&quot;, but that's
+where the serverless platform comes into play.</p>
+<p>It reminds me a lot of switching to static site generators. You may end up with similar complexity, but where that
+complexity lies has moved from code to the platform I'm using to host my code. If I can trust IBM, or Amazon, or Microsoft, to
+be able to handle HTTP routing (and I'm pretty sure I can), then I can focus on just my implementation, which has become
+smaller and simpler, which is pretty much always a good thing.</p>
+<p>That's my take, the more formal, intelligent answer can be found on the OpenWhisk site: <a href="https://developer.ibm.com/openwhisk/what-is-serverless-computing/">What is Serverless Computing</a> Here is the part I think makes the most sense:</p>
+<blockquote>
+Serverless computing refers to a model where the existence of servers is simply hidden from developers. 
+I.e. that even though servers still exist developers are relieved from the need to care about their operation. 
+They are relieved from the need to worry about low-level infrastructural and operational details such as 
+scalability, high-availability, infrastructure-security, and so forth. 
+</blockquote>
+<p><img src="https://static.raymondcamden.com/images/2016/12/ow1.jpg" alt="I like that word..."></p>
+<h2>What's in it?</h2>
+<p>The <a href="https://developer.ibm.com/openwhisk/">OpenWhisk</a> site goes into more detail, but again, here's my take:</p>
+<ul>
+<li>An &quot;action&quot; - this is the actual code of what I'm trying to do.</li>
+<li>&quot;Triggers&quot; that let you specify outside sources as a way to kick off an action.</li>
+<li>&quot;Rules&quot; that simply map triggers to actions.</li>
+<li>&quot;Packages&quot; which - yeah, that's just packages. It's a combination of other actions/triggers/rules that you can link to your own stuff.</li>
+</ul>
+<p>And most recently - a new feature is an API gateway to all of the above. This is still in beta, but it lets you define
+an API path that points to my action.</p>
+<p>To start using OpenWhisk, you'll want to download and install the <a href="https://github.com/openwhisk/openwhisk/tree/master/tools/cli">CLI</a>. You can then
+start playing. Now let's say you want to build an action. I'll use JavaScript because it is perfect and has
+no oddities at all. (OpenWhisk also supports Python, Swift, and even Java.)</p>
+<pre><code class="language-javascript">
+function main() {
+	
+	return {
+		payload: 'Meow!'
+	};
+
+}
+</code></pre>
+<p>You need to have a main() function and you have to return an object containing a payload key. I can then upload this like so:</p>
+<pre><code>wsk action create cat cat.js
+</code></pre>
+<p>In the line above, <code>wsk</code> is the CLI and <code>action create</code> is what you are doing. The next arg, <code>cat</code>, is the name of the
+action and <code>cat.js</code> is the file to use. This will deploy the file. You can then run it like so:</p>
+<pre><code>wsk action invoke --blocking cat
+</code></pre>
+<p>The <code>--blocking</code> part simply tells the CLI to wait for a response. You do not need to do that if you don't want to. (And you can still get
+the response later.)</p>
+<p><img src="https://static.raymondcamden.com/images/2016/12/ow2.png" alt="Output"></p>
+<p>The last bit, exposing it via a REST API, is done like so:</p>
+<pre><code>wsk api-experimental create /blogapi /meow get cat
+</code></pre>
+<p>In the call above, <code>/blogapi</code> is a root path and <code>/meow</code> is the path for this specific call. <code>get</code> is the HTTP method and <code>cat</code> is the action. The result is a URL:</p>
+<p>https://3b1fd5b1-e8cc-4871-a7d8-cc599e3ef852-gws.api-gw.mybluemix.net/blogapi/meow</p>
+<p>Go ahead and click it - awesome, right? A small meow, but it feels more like...</p>
+<p><img title="Image credit: http://s699.photobucket.com/user/oak1_2009/media/godzillacat.jpg.html"
+src="https://static.raymondcamden.com/images/2016/12/godzillacat.jpg"></p>
+<p>Actions can get more complex, and obviously take arguments. You can also import packages to add more functionality. (I'll be linking to docs about all this at the end.) One of the coolest packages
+is the Cloudant one. How easy was it to use?</p>
+<ul>
+<li>First - I made a new Cloudant service on Bluemix.</li>
+<li>OpenWhisk (since it is tied to my account, the CLI makes you do that in
+the beginning) was able to pick up on this and recognize it with one command.</li>
+<li>I opened the Cloudant portal, made a database, and added a few documents.</li>
+<li>At this point, I'm already mostly done. Since OpenWhisk has a Cloudant package and since it includes the ability to list documents, I could call an action
+on that package to get all the documents from my database. But to make it even more complete, I added a REST API path.</li>
+<li>And then I'm really done. I had an API to list documents from my database. Done. Like, done. I could pass any query as well.</li>
+</ul>
+<p>That was cool, but I wanted to know if I could bypass some of those arguments. You <em>can</em> specify parameters for a package at a global level, and <code>dbname</code> would make sense
+for that, but I didn't want the <code>include_docs</code> to be global for everything. I got some great help from fellow IBMer <a href="http://jamesthom.as/blog">James Thomas</a> and he
+pointed out that I could include the OpenWhisk code itself in my action. So consider this action I built:</p>
+<pre><code class="language-javascript">
+var openWhisk = require('openwhisk');
+var ow = openWhisk({
+	api_key:'im really a host'
+});
+
+function main() {
+
+	return new Promise(function(resolve, reject) {
+		ow.actions.invoke({
+			actionName:"/rcamden@us.ibm.com_My Space/Bluemix_CatService_Credentials-1/list-documents",
+			blocking:true,
+			params:{
+				"dbname":"cats",
+				"params":
+					{
+						"include_docs":true
+					}
+			}
+		}).then(function(res) {
+			//get the raw result
+			var raw = res.response.result.rows;
+			//lets make a new one
+			var result = [];
+			raw.forEach(function(c) {
+				result.push({name:c.doc.name, age:c.doc.age, gender:c.doc.gender});
+			});
+			resolve({result:result});
+		});
+	});
+
+
+}
+</code></pre>
+<p>I begin by getting the <a href="https://www.npmjs.com/package/openwhisk">openwhisk</a> package which lets me do the same stuff
+the CLI was doing. (Note that I was told that the api_key <em>should</em> have been picked up by an environment variable so that
+may not be necesary.) I then simply call my action with params. What's cool is that I can then massage the response
+a bit. I then set up a new API route for this here:</p>
+<p>https://3b1fd5b1-e8cc-4871-a7d8-cc599e3ef852-gws.api-gw.mybluemix.net/catapi/allcats</p>
+<p>Now I can use this in a mobile app and not worry about the server itself. I freaking love this. No Node.js server to
+configure with memory and the like, which, admittedly, is easy, but the less I have to worry about the happier I am. I could integrate
+this into an Ionic app fairly simply since it's just REST.</p>
+<p>Obviously there's a lot more to learn, but I'm pretty excited about this.  To be clear, just like static
+sites don't make sense for everyone, I don't think serverless makes sense for everyone (every project) either. But it
+does provide an incredibly compelling path to simplifying your deployment and that makes it something to check
+out.</p>
+<h2>More Resources</h2>
+<p>Here are some resources to get you started.</p>
+<ul>
+<li>First, an article by my buddy Andy Trice. This is what got me started! <a href="https://medium.com/openwhisk/exploring-the-new-openwhisk-api-gateway-4a72c132bff5#.novikve8x">Exploring the new OpenWhisk API Gateway</a></li>
+<li>The <a href="https://console.ng.bluemix.net/openwhisk/">Getting Started</a> experience is pretty cool, and
+even better, has a browser-based version where you can write code and skip the CLI.</li>
+<li>The <a href="https://console.ng.bluemix.net/docs/openwhisk/index.html?pos=2">main docs</a> are a wealth of
+information as well.</li>
+<li>There is a <a href="https://groups.google.com/forum/#!forum/openwhisk">Google group</a> and <a href="http://stackoverflow.com/questions/tagged/openwhisk">Stack Overflow</a> tag as well.</li>
+<li>Finally, the home for the open source project itself is: http://openwhisk.org</li>
+</ul>
+}

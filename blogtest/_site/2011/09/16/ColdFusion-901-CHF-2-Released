@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Subject says it all. Our second CHF for ColdFusion 9.0.1 has been released. You can find details here:</p>
+<p><a href="http://kb2.adobe.com/cps/918/cpsid_91836.html">http://kb2.adobe.com/cps/918/cpsid_91836.html</a></p>
+<p>Some good fixes here, including:</p>
+<ul>
+<li>ColdFusion does not resolve the CFC's fully qualified name correctly when a relative path is used in the application mapping.
+<li>ColdFusion throws "java.lang.IllegalStateException: Session is invalid" exception randomly.
+<li>serializeJSON converts integer to string.
+<li>serializeJSON incorrectly serializes nested objects. Also, in the case of circular references, for example, when handling bidirectional ORM relationship, repeating entities are represented as empty strings instead of empty objects.
+</ul>}

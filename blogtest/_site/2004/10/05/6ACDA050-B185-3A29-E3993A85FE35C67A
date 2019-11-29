@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<ol>
+<li>
+<p>Fixes the layout issue in the Calendar pod that Corfield found. Doh!</p>
+</li>
+<li>
+<p>Adds the Firefox-specific RSS link in the layout custom tag.</p>
+</li>
+<li>
+<p>So, when you post a comment to a thread, an email is sent to everyone in the thread. It was pointed out that some folks may not like that. You can now specify in the blog.ini file if a specific email address should override the FROM on emails sent out for thread comments. If this value is blank, the FROM address of the poster will be used.</p>
+</li>
+<li>
+<p>Someone, anyone, please help me find a better design for this blog. It is really showing it's age, and as more and more people use my Blog, I'd like to have a new color scheme (or at least a new header).</p>
+</li>
+</ol>
+}

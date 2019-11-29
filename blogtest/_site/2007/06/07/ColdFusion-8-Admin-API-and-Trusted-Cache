@@ -1,0 +1,48 @@
+<h1>Post</h1>
+
+<p>Along with cool tags and functions added in ColdFusion 8, there have also been some neat updates to the Admin API. If you don't know what the Admin API is - it is a set of CFCs that give you programmatic access to various administrator type functions. One example is being able to list and create datasources. Today I want to show one of the new features in the Admin API under ColdFusion 8 - being able to clear individual files from the trusted cache.</p>
+<more />
+<p>One of the caching settings you can use within ColdFusion is the trusted cache. By turning this on, ColdFusion will parse your file one time, and will never parse it again. If you change the file, even to fix something small like a typo, you have to login to the Admin and hit the &quot;Clear Template Cache&quot; button.</p>
+<p>Well the Admin API lets us do this directly from code. This existed even back in ColdFusion 7. But the problem is - when you just fix one file, why do you have to clear the entire cache?</p>
+<p>ColdFusion 8 updates the API so you can pass in a list of files. If you do, only those files are updated. This can be pretty darn useful. Here is a sample application I built that demonstrates this new API:</p>
+<code>
+<p>&lt;cfoutput&gt;
+&lt;form action=&quot;#cgi.script_name#&quot; method=&quot;post&quot;&gt;
+Enter file name or directory: &lt;input type=&quot;text&quot; name=&quot;cachefile&quot;&gt; &lt;input type=&quot;submit&quot; value=&quot;Clear File/Folder from Template Cache&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;cachefile&quot;) and len(trim(form.cachefile))&gt;
+&lt;cfset form.cachefile = trim(form.cachefile)&gt;
+&lt;!--- detect folder versus file ---&gt;
+&lt;cfset filelist = &quot;&quot;&gt;
+&lt;cfif directoryExists(form.cachefile)&gt;
+&lt;cfdirectory directory=&quot;#form.cachefile#&quot; name=&quot;files&quot;&gt;
+&lt;cfloop query=&quot;files&quot;&gt;
+&lt;cfset filelist = listAppend(filelist, form.cachefile &amp; &quot;/&quot; &amp; name)&gt;
+&lt;/cfloop&gt;
+&lt;cfelseif fileExists(form.cachefile)&gt;
+&lt;cfset filelist = form.cachefile&gt;
+&lt;cfelse&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+&lt;b&gt;You entered a file or folder (#form.cachefile#) that did not exist.&lt;/b&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;</p>
+<pre><code>&amp;lt;cfoutput&amp;gt;
+&amp;lt;p&amp;gt;
+Going to clear the following file(s) from the template cache:&amp;lt;br /&amp;gt;
+&amp;lt;cfdump var=&quot;#listToArray(filelist)#&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfinvoke component=&quot;cfide.adminapi.administrator&quot; method=&quot;login&quot; adminPassword=&quot;admin&quot;&amp;gt;
+&amp;lt;cfinvoke component=&quot;cfide.adminapi.runtime&quot; method=&quot;clearTrustedCache&quot; templateList=&quot;#fileList#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>It begins with a simple form asking you to name a file or a directory. One submitted, I check and see if you entered a folder. If you did, I do a cfdirectory to get the files in the folder. Once I have the files ready, I simply login to the Admin (note that I have hard coded the password here) and then run the clearTrustedCache function.</p>
+<p>Pretty simple, right? There are a few updates I could do to this. I could make the cfdirectory tag recurse. I could also  ask you for the ColdFusion admin password instead of hard coding it. I could even use Ben Forta's cool <a href="http://www.forta.com/blog/index.cfm/2007/6/5/ColdFusion-Ajax-Tutorial-5-File-System-Browsing-With-The-Tree-Control">file browser</a>.</p>
+<p>If I were to package up this as something you could include in the ColdFusion admin (like <a href="http://spoolmail.riaforge.org">SpoolMail</a>), would folks use it?</p>
+}

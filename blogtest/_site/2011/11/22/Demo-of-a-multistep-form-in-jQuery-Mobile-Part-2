@@ -1,0 +1,227 @@
+<h1>Post</h1>
+
+<p>A few days ago I wrote a <a href="http://www.raymondcamden.com/index.cfm/2011/11/18/Demo-of-a-multistep-form-in-jQuery-Mobile">blog entry</a> demonstrating how one could do a multi-step form in a jQuery Mobile application. This worked by simply breaking up the forms into multiple files and having a 'controller' file load in the right one via an include as you progressed through the process. I got some feedback that it would be interesting (and perhaps better) if the process was done completely client-side. Today I worked up a small demo of this as an alternative.</p>
+<!--more-->
+<p>
+<p>While working on this demo I discovered two things about jQuery Mobile:</p>
+<p>
+<ol>
+<li>I knew that jQuery Mobile "took over" forms and when you submitted them it converted the action into an Ajax-based post. I thought, however, if you wrote your own code to handle the form submit, and used e.preventDefault(), it would, well, prevent that. Nope. And this is what weirded me out. My form handler <b>was</b> called when I submitted the form. But I couldn't prevent jQuery Mobile from submitting the data anyway. This to me feels like a bug. You have to <i>completely</i> disable jQuery Mobile's form handling by adding data-ajax="false" to the form tag. Not a big deal - just not expected. 
+<li>You can include more than one "page" inside an HTML page. This is useful for times when you may have a few simple static pages you want immediately available. I thought it would be a good way to handle my multistep form. But - here's the rub. You cannot have a "multipage" page loaded via jQuery Mobile's Ajax page loads. I don't think that's clear, so let me back up. Normally when you link to a page, like foo.html, jQuery Mobile hijacks the link and will load the contents of foo.html via Ajax. jQuery Mobile will look for a "page" div and render just that. If you do this, and link to a file with N pages inside it, jQuery Mobile will destroy the other pages. You can't use them. So if you want to use a multipage html, you have to either ensure it is the first page loaded, or ensure the link <b>to</b> to the page does not use ajax - again using data-ajax="false". This is documented <a href="http://jquerymobile.com/demos/1.0/docs/pages/page-links.html">here</a>, and I want to thank Robert Bak for helping me find that detail.
+</ol>
+<p>
+<p>So given the above, let's take a look. First I have my index page. This is merely meant to reflect the fact that our demo is part of a &quot;real&quot; site. So the first link is just some random other page and the second link is the form we want to actually demo.</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt; 
+&lt;html&gt; 
+	&lt;head&gt; 
+	&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;	
+	&lt;title&gt;Page Title&lt;/title&gt; 
+	&lt;link rel="stylesheet" href="http://code.jquery.com/mobile/latest/jquery.mobile.min.css" /&gt;
+	&lt;script src="http://code.jquery.com/jquery-1.6.4.min.js"&gt;&lt;/script&gt;
+	&lt;script src="http://code.jquery.com/mobile/latest/jquery.mobile.min.js"&gt;&lt;/script&gt;
+	&lt;script src="main.js"&gt;&lt;/script&gt;
+&lt;/head&gt; 
+&lt;body&gt; 
+<p>&lt;div data-role=&quot;page&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Page Title&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+
+	&amp;lt;ul data-role=&quot;listview&quot; data-inset=&quot;true&quot;&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;foo.html&quot; data-ajax=&quot;false&quot;&amp;gt;Something&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;someform.html&quot; data-ajax=&quot;false&quot;&amp;gt;The Form&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+	&amp;lt;/ul&amp;gt;
+
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Note the use of data-ajax=&quot;false&quot; in the link to my form. <b>This is critical since someform.html is a multipage file.</b> Ok, now let's look at someform.html. This one is a bit big.</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt; 
+&lt;html&gt; 
+	&lt;head&gt; 
+	&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;	
+	&lt;title&gt;Some Form&lt;/title&gt; 
+	&lt;link rel="stylesheet" href="http://code.jquery.com/mobile/latest/jquery.mobile.min.css" /&gt;
+	&lt;script src="http://code.jquery.com/jquery-1.6.4.min.js"&gt;&lt;/script&gt;
+	&lt;script src="http://code.jquery.com/mobile/latest/jquery.mobile.min.js"&gt;&lt;/script&gt;
+	&lt;script src="main.js"&gt;&lt;/script&gt;
+&lt;/head&gt; 
+&lt;body&gt; 
+<p>&lt;!-- Step One --&gt;
+&lt;div data-role=&quot;page&quot; id=&quot;step1&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;a href=&quot;index.html&quot; data-icon=&quot;home&quot;&amp;gt;Home&amp;lt;/a&amp;gt;
+	&amp;lt;h1&amp;gt;Reg Form&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+
+	&amp;lt;form method=&quot;post&quot; class=&quot;msform&quot; data-ajax=&quot;false&quot;&amp;gt;
+		&amp;lt;input type=&quot;hidden&quot; name=&quot;nextStep&quot; value=&quot;step2&quot;&amp;gt;
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;        
+		    &amp;lt;label for=&quot;name&quot;&amp;gt;Name:&amp;lt;/label&amp;gt;        
+	    	&amp;lt;input type=&quot;text&quot; name=&quot;name&quot; id=&quot;name&quot; value=&quot;&quot;  /&amp;gt;        
+		&amp;lt;/div&amp;gt;	
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;        
+		    &amp;lt;label for=&quot;email&quot;&amp;gt;Email:&amp;lt;/label&amp;gt;        
+		    &amp;lt;input type=&quot;email&quot; name=&quot;email&quot; id=&quot;email&quot; value=&quot;&quot;  /&amp;gt;        
+		&amp;lt;/div&amp;gt;	
+	
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;        
+		    &amp;lt;input type=&quot;submit&quot; name=&quot;submit1&quot; value=&quot;Send&quot;  /&amp;gt;        
+		&amp;lt;/div&amp;gt;	
+	&amp;lt;/form&amp;gt;
+
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;!-- Step Two --&gt;
+&lt;div data-role=&quot;page&quot; id=&quot;step2&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;a href=&quot;index.html&quot; data-icon=&quot;home&quot;&amp;gt;Home&amp;lt;/a&amp;gt;
+	&amp;lt;h1&amp;gt;Reg Form&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+
+	&amp;lt;form method=&quot;post&quot; class=&quot;msform&quot; data-ajax=&quot;false&quot;&amp;gt;
+		&amp;lt;input type=&quot;hidden&quot; name=&quot;nextStep&quot; value=&quot;step3&quot;&amp;gt;
+	
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;
+			&amp;lt;fieldset data-role=&quot;controlgroup&quot;&amp;gt;
+				&amp;lt;legend&amp;gt;Gender:&amp;lt;/legend&amp;gt;
+			     	&amp;lt;input type=&quot;radio&quot; name=&quot;gender&quot; id=&quot;male&quot; value=&quot;male&quot; checked=&quot;checked&quot; /&amp;gt;
+			     	&amp;lt;label for=&quot;male&quot;&amp;gt;Male&amp;lt;/label&amp;gt;
+			
+			     	&amp;lt;input type=&quot;radio&quot; name=&quot;gender&quot; id=&quot;female&quot; value=&quot;female&quot;  /&amp;gt;
+			     	&amp;lt;label for=&quot;female&quot;&amp;gt;Female&amp;lt;/label&amp;gt;		
+			&amp;lt;/fieldset&amp;gt;
+		&amp;lt;/div&amp;gt;
+		
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;
+		   &amp;lt;label for=&quot;coolness&quot;&amp;gt;Coolness:&amp;lt;/label&amp;gt;
+		   &amp;lt;input type=&quot;range&quot; name=&quot;coolness&quot; id=&quot;coolness&quot; value=&quot;25&quot; min=&quot;0&quot; max=&quot;100&quot;  /&amp;gt;
+		&amp;lt;/div&amp;gt;
+	
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;        
+	        &amp;lt;input type=&quot;submit&quot; name=&quot;submit2&quot; value=&quot;Send&quot;  /&amp;gt;        
+	    &amp;lt;/div&amp;gt;	
+	&amp;lt;/form&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;!-- Step Three --&gt;
+&lt;div data-role=&quot;page&quot; id=&quot;step3&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;a href=&quot;index.html&quot; data-icon=&quot;home&quot;&amp;gt;Home&amp;lt;/a&amp;gt;
+	&amp;lt;h1&amp;gt;Reg Form&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+
+	&amp;lt;form method=&quot;post&quot; class=&quot;msform&quot; data-ajax=&quot;false&quot;&amp;gt;
+	&amp;lt;input type=&quot;hidden&quot; name=&quot;nextStep&quot; value=&quot;echo.cfm&quot;&amp;gt;
+
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;
+		    &amp;lt;fieldset data-role=&quot;controlgroup&quot;&amp;gt;
+	
+			   &amp;lt;legend&amp;gt;Stuff I like:&amp;lt;/legend&amp;gt;
+	
+			   &amp;lt;input type=&quot;checkbox&quot; name=&quot;stuffilike&quot; id=&quot;checkbox-1&quot; value=&quot;Star Wars&quot;  /&amp;gt;
+			   &amp;lt;label for=&quot;checkbox-1&quot;&amp;gt;Star Wars&amp;lt;/label&amp;gt;
+	
+			   &amp;lt;input type=&quot;checkbox&quot; name=&quot;stuffilike&quot; id=&quot;checkbox-2&quot; value=&quot;BSG&quot; /&amp;gt;
+			   &amp;lt;label for=&quot;checkbox-2&quot;&amp;gt;BSG&amp;lt;/label&amp;gt;
+	
+			   &amp;lt;input type=&quot;checkbox&quot; name=&quot;stuffilike&quot; id=&quot;checkbox-3&quot; value=&quot;Beer&quot;  /&amp;gt;
+			   &amp;lt;label for=&quot;checkbox-3&quot;&amp;gt;Beer&amp;lt;/label&amp;gt;
+	
+		    &amp;lt;/fieldset&amp;gt;
+		&amp;lt;/div&amp;gt;
+	
+		&amp;lt;div data-role=&quot;fieldcontain&quot;&amp;gt;        
+	        &amp;lt;input type=&quot;submit&quot; name=&quot;submit3&quot; value=&quot;Send&quot;  /&amp;gt;        
+	    &amp;lt;/div&amp;gt;	
+
+
+	&amp;lt;/form&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;script&gt;
+$(&quot;#step1&quot;).live(&quot;pageinit&quot;, function() {
+$(&quot;form.msform&quot;).live(&quot;submit&quot;, handleMSForm);	
+});
+&lt;/script&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Holy smokes - that's a big template. Basically what I've done here is put every form into it's own &quot;Page&quot; object. The actual form fields aren't really that important. Do note though the use of hidden form fields. That's going to come into play real soon now. Finally, note at the end I've registered a pageinit handler. I'm asking it to notice the submit of <i>any</i> form using the class &quot;msform&quot;. handleMSForm is defined in main.js:</p>
+<p>
+<code>
+var formData = {};
+<p>function handleMSForm(e) {
+var next = &quot;&quot;;</p>
+<pre><code>	//gather the fields
+	var data = $(this).serializeArray();
+
+	//store them - assumes unique names
+	for(var i=0; i&amp;lt;data.length; i++) {
+		//If nextStep, it's our metadata, don't store it in formdata
+		if(data[i].name==&quot;nextStep&quot;) { next=data[i].value;  continue; }
+		//if we have it, add it to a list. This is not &quot;comma&quot; safe.
+		if(formData.hasOwnProperty(data[i].name)) formData[data[i].name] += &quot;,&quot;+data[i].value;
+		else formData[data[i].name] = data[i].value;
+	}
+
+	//now - we need to go the next page...
+	//if next step isn't a full url, we assume internal link
+	//logic will be, if something.something, do a post
+	if(next.indexOf(&quot;.&quot;) == -1) {
+		var nextPage = &quot;#&quot; + next;
+		$.mobile.changePage(nextPage);
+	} else {
+		$.mobile.changePage(next, {type:&quot;post&quot;,data:formData});
+	}
+	e.preventDefault();
+</code></pre>
+<p>};
+</code></p>
+<p>
+<p>So - what's going on here? My basic idea here is that on every form submit, I want to gather, and store, the form data. When done I can send the entire thing at once to the server. I begin with an object, formData. That's going to store name/value pairs of form information. Next is handleMSForm. It begins by calling serializeArray() on the form. This is a jQuery utility that will gather up all the form fields and return them as an array. I then just have to loop over them. Remember I said those hidden form fields would come into play? I'm using them for a bit of logic, so if I encounter them, I store the value separately and then continue looping over the data. I do a bit of logic to see if a value already exists, and if so, I append it. (This is important for checkboxes.)</p>
+<p>
+<p>After storing the data, I then look at the &quot;next&quot; variable. Remember this stored the value from the hidden form field. I decided that any simple value, like &quot;foo&quot;, implied the ID of a page to load. Therefore, if the value does not have a dot in it, I simply load the next page. If it <i>does</i> have a dot, I'm assuming something.cfm, or .php, you get the idea, and I switch to a post operation.</p>
+<p>
+<p>All in all - it works ok. You can see my note about commas and values, but for the most part, you can probably not worry about that. (And if it does concern you, just store it as an array and JSON-encode the value.) You can try this code yourself via the link below.</p>
+<p>
+<p><a href="http://coldfusionjedi.com/demos/2011/nov/22/draft5/"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

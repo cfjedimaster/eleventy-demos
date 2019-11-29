@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p><img src="https://static.raymondcamden.com/images/cfjedi/pbp1.png" title="Performance Brief - the sexiest brief you will read today." style="float:left;margin-right:5px" />I just twittered this, but figured I'd share it here as well. Adobe has released a ColdFusion 9 Performance Brief. You can download the PDF here:</p>
+<p><a href="http://bit.ly/CFFast">http://bit.ly/CFFast</a></p>
+<p>If all you care about is overall server performance, then the numbers are impressive. ColdFusion 9 comes in at 40% faster than ColdFusion 8. Compared to ColdFusion 7 (sorry, &quot;MX&quot; 7), ColdFusion 9 is <b>six times</b> faster.</p>
+<p>I'd suggest digging into the brief though as it goes into details about what features were worked on. CFC object creation is a big one - clocking in at <b>8</b> times after than ColdFusion 8. I've already talked about the createUUID() improvements, which probably don't matter quite so much, but it's cool to see a <b>10,000%</b> improvement there anyway. I <i>really</i> like the 800% Flash Remoting improvement. Flash Remoting is already a great way to seed data to your RIA and that type of improvement just makes it even better.</p>
+<p>You should also make note of the <i>new</i> caching features. The brief calls them out separately. For example, using &quot;Cache Template in Request&quot; can improve performance by 50X. I need to dig into that a bit more but it seems like that plus &quot;Trusted Cache&quot; could be pure gold for a production server.
+<br clear="all"></p>
+}

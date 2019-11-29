@@ -1,0 +1,89 @@
+<h1>Post</h1>
+
+<p><strong>As always, try to read the entire post before leaving. I edited the end to add a cool update!</strong></p>
+<p>I first blogged about <a href="https://www.raymondcamden.com/2017/01/06/an-example-of-an-openwhisk-sequence">OpenWhisk sequences</a> a few months ago, but if you didn't read that post, you can think of them as a general way of connecting multiple different actions together to form a new, grouped action. As an example, and this is something I'm actually working on, I may have an action that gets the latest tweets from an account as well as an action that performs tone analysis. I can then combine the two into one sequence that returns the tone for a Twitter account. (Technically I may need a third action in the middle to 'massage' the data between them.) This morning I was a bit curious about how errors are handled in sequences. I had my assumptions, but I wanted to test them out to be sure. Here is what I found.</p>
+<p>I began by creating three simple actions, alpha, beta, and gamma. Here is the source for all three:</p>
+<pre><code class="language-javascript">//Alpha
+function main(args) {
+	return {result:1};
+}
+
+//beta
+function main(args) {
+	if(!args.result) args.result=0; 
+	return {result:args.result+1};
+}
+
+//gamma
+function main(args) {
+	if(!args.result) args.result=0; 
+	return {result:args.result+1};
+}
+</code></pre>
+<p>I called my sequence, testSequence1, because I'm a very creative individual. I then ran it to be sure I got the right result, 3. Cool.</p>
+<p>Alright, so first, I broke beta:</p>
+<pre><code class="language-javascript">function main(args) {
+	if(!args.result) args.result=0; 
+	doBad();
+	return {result:args.result+1};
+}
+</code></pre>
+<p>When run, I got an error I pretty much expected:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/4/ows1.png" alt="Error"></p>
+<p>Cool. So next I converted Beta to use promises:</p>
+<pre><code class="language-javascript">function main(args) {
+
+	return new Promise( (resolve, reject) =&gt; {
+		if(!args.result) args.result=0; 
+		//doBad();
+		resolve({result:args.result+1});
+	});
+}
+</code></pre>
+<p>I didn't include an error this time, I just made sure it worked as expected, and it did. Cool. So first I added back in my <code>doBad</code> call:</p>
+<pre><code class="language-javascript">function main(args) {
+
+	return new Promise( (resolve, reject) =&gt; {
+		if(!args.result) args.result=0; 
+		doBad();
+		//resolve({result:args.result+1});
+	});
+}
+</code></pre>
+<p>The result was a bit less helpful:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/4/ows2.png" alt="Error?"></p>
+<p>While not helpful, it is kind of expected. If you work with promises and don't look for an error, they tend to get swollowed up. (I believe Chrome recently adding support for noticing unhandled exceptions, but again, I think that was a recent change.)</p>
+<p>I then switched to this version:</p>
+<pre><code class="language-javascript">function main(args) {
+
+	return new Promise( (resolve, reject) =&gt; {
+		if(!args.result) args.result=0; 
+		//doBad();
+		//resolve({result:args.result+1});
+		reject(new Error("Because the sky is blue."));
+	});
+}
+</code></pre>
+<p>And the result was the exact same. I had thought the more formal <code>reject</code> would have - possibly - be handled better, but it was not.</p>
+<p>But - the good news - is that in every case where I tested my error, the metadata did correctly return a false result for the success key. While the verbosity/reason of the error was lost in the promise, the fact that an error was thrown was still something that could be recorded.</p>
+<p>All in all - this really speaks to using good testing, and properly handling code that can throw exceptions. This falls into the &quot;obvious&quot; category, but as easy as OpenWhisk and serverless is in general, it is absolutely not a blank check to skip best practices when it comes to handling potential errors.</p>
+<p><strong>Edit:</strong> Once again, my good buddy <a href="https://twitter.com/csantanapr">Carlos Santana</a> comes to the rescue with a good fix. If you reject a plain JavaScript object, and not an Error object, you get a better handled result. Here is an updated beta.js:</p>
+<pre><code class="language-javascript">function main(args) {
+
+	return new Promise( (resolve, reject) =&gt; {
+		if(!args.result) args.result=0; 
+		//doBad();
+		//resolve({result:args.result+1});
+		let e = new Error("Because the sky is blue.");
+		reject({
+			name:e.name,
+			message: e.message,
+			stack:e.stack
+		});
+	});
+}
+</code></pre>
+<p>And here is the result:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/4/ows3.png" alt="Better error"></p>
+<p>Nice! The use of &quot;error like&quot; keys is arbitrary of course. I modified the reject to include <code>howBlue:&quot;very&quot;</code> and it was available in the result. It probably makes sense to follow a pattern like Carlos used above, just remember you can include additional stuff if you want as well.</p>
+}

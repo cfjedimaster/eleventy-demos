@@ -1,0 +1,58 @@
+<h1>Post</h1>
+
+<p>I've done a few blog entries recently showing simple examples of connecting to a ColdFusion CFC via Flex. My <a href="http://www.raymondcamden.com/index.cfm/2009/6/8/Simple-example-of-accessing-ColdFusion-data-with-Flex-now-with-Flash-Builder-4">last blog entry</a> demonstrated this using Flash Builder 4. A reader there asked me to create an example of this in AIR. It just took a few minutes, so let me walk you through the process (and please forgive me but let me give the normal disclaimer, I'm new to Flex, blah blah blah).</p>
+<!--more-->
+<p>First, when creating the new Flex project, be sure to select AIR (Desktop):</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 163.png">
+<p>After that, follow the same directions from the last blog post, specifically ensuring you select ColdFusion and Flash Remoting in the Server Technology part.</p>
+<p>Once I had the file, I pasted in the same MXML I had used previously:</p>
+<code>
+&lt;s:layout&gt;
+	&lt;s:VerticalLayout/&gt;
+&lt;/s:layout&gt;
+<p>&lt;mx:Button label=&quot;Talk to ColdFusion&quot; /&gt;
+&lt;mx:TextArea id=&quot;resultBox&quot;  /&gt;
+</code></p>
+<p>I had reinstalled Flash Builder 4, so I quickly went to my Data Services panel and added my CFC. <b>An important note:</b> I'm testing locally, so I used the same CFC as before, testa. Once I went through the process of adding the CFC and defining the return types, I then switched to Design mode. I dragged my method onto the Button, and then dragged it onto the TextArea and selected the response. (Again, this is detailed in my <a href="http://www.coldfusionjedi.com/index.cfm/2009/6/8/Simple-example-of-accessing-ColdFusion-data-with-Flex-now-with-Flash-Builder-4">last post</a>.)</p>
+<p>At this point I had the following code - remember - I had just typed the layout and initial components, Flash Builder 4 did all the rest:</p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/halo" xmlns:cfservice="services.cfservice.*"&gt;
+	&lt;fx:Script&gt;
+		&lt;![CDATA[
+			import mx.controls.Alert;
+<pre><code>		protected function button_clickHandler(event:MouseEvent):void
+		{
+			echotestResult.token = cfservice.echotest();
+		}
+
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:layout&amp;gt;
+  &amp;lt;s:VerticalLayout/&amp;gt;
+</code></pre>
+<p>&lt;/s:layout&gt;
+&lt;fx:Declarations&gt;
+&lt;s:CallResponder id=&quot;echotestResult&quot;/&gt;
+&lt;cfservice:Cfservice id=&quot;cfservice&quot; destination=&quot;ColdFusion&quot; endpoint=&quot;http://localhost:80/flex2gateway/&quot; fault=&quot;Alert.show(event.fault.faultString)&quot; showBusyCursor=&quot;true&quot; source=&quot;testa&quot;/&gt;
+&lt;/fx:Declarations&gt;</p>
+<pre><code>&amp;lt;mx:Button label=&quot;Talk to ColdFusion&quot;  id=&quot;button&quot; click=&quot;button_clickHandler(event)&quot;/&amp;gt;
+&amp;lt;mx:TextArea id=&quot;resultBox&quot;  text=&quot;{echotestResult.lastResult}&quot;/&amp;gt;
+</code></pre>
+<p>&lt;/s:WindowedApplication&gt;
+</code></p>
+<p>I did a quick test to ensure it ran, and it did just fine. Ok, now for the fun part. I modified my CFC to make the echotest a bit different:</p>
+<code>
+&lt;cffunction name="echotest" access="remote" returnType="string"&gt;
+	&lt;cfreturn "CFJ: The time is #timeFormat(now())#"&gt;
+&lt;/cffunction&gt;
+</code>
+<p>Notice the CFJ? I uploaded this to www.coldfusionjedi.com/demos. Back in Flash Builder I modified the service tag:</p>
+<code>
+&lt;cfservice:Cfservice id="cfservice" destination="ColdFusion" endpoint="http://www.coldfusionjedi.com/flex2gateway/" fault="Alert.show(event.fault.faultString)" showBusyCursor="true" source="demos.testa"/&gt;
+</code>
+<p>Notice I changed the endpoint to point to my service, and I had to tweak source a bit. Whereas before testa.cfc was in web root, now it's in the demos folder. Once again I clicked the little run button and it worked like a charm:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 239.png">
+<p>Woot. Just call me an Experience Designer! If you want to confirm this works, I've placed the AIR file online <a href="http://www.coldfusionjedi.com/demos/TestCFC.air">here</a>. I also included the source. (Easily one of the coolest features of Flex Builder 3/Flash Builder 4 is the ability to include the source code in your apps!)</p>
+}

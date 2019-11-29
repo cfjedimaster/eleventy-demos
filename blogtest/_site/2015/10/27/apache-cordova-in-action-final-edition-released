@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>Well, this took a bit longer than I expected, but the <strong>final</strong> version of my <a href="https://www.manning.com/books/apache-cordova-in-action">Apache Cordova in Action</a> book is for sale!</p>
+<p><a href="https://www.manning.com/books/apache-cordova-in-action"><img src="https://static.raymondcamden.com/images/wp-content/uploads/2015/10/Camden-Apache-HI.jpg" alt="Camden-Apache-HI" width="255" height="320" class="aligncenter size-full wp-image-7007 imgborder" /></a></p>
+<p>This book was incredibly difficult to write at times. I really hope that it helps people learn (and love) Apache Cordova. Please check it out and let me know what you think!</p>
+<p>For folks curious, here is the table of contents:</p>
+<p>PART 1: GETTING STARTED WITH APACHE CORDOVA</p>
+<ol>
+<li>What is Cordova?</li>
+<li>Installing Cordova and the Android SDK
+PART 2: CORE CONCEPTS</li>
+<li>Creating Cordova projects</li>
+<li>Using plugins to access device features</li>
+<li>Mobile design and user experience</li>
+<li>Considerations when building mobile apps</li>
+<li>Tools for debugging Cordova and other hybrid apps</li>
+<li>Creating custom plugins</li>
+<li>Packing options for Cordova projects</li>
+<li>Using PhoneGap tools
+PART 3: APPLICATION RELEASE</li>
+<li>Submitting your app</li>
+<li>Building an RSS reader app with Ionic</li>
+</ol>
+}

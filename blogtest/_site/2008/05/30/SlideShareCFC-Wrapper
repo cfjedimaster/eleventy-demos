@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I just <a href="http://slidesharecfc.riaforge.org/">released</a> a wrapper for <a href="http://www.slideshare.net">SlideShare</a>, a slide show hosting service. (Although I'm hoping folks use <a href="http://slidesix.com">slidesix.com</a>!) The CFC wraps all the 'read' style actions and is just missing the upload command.</p>
+<p>I want to thank my employer, <a href="http://www.broadchoice.com">Broadchoice</a>, for letting me open source this. I know I'm going to sound like I'm kissing up, but the attitude of this company is a large part of why I joined. There was absolutely no reservation to me sharing this code with the world, so again, thank you Broadchoice!</p>
+<p>Speaking of 'Share', I was told by a user today that my <a href="http://sharecfc.riaforge.org/">Adobe Share API</a> CFC is now broken. It's what I get for releasing a wrapper for a beta API. ;) I hope to have this fixed asap.</p>
+}

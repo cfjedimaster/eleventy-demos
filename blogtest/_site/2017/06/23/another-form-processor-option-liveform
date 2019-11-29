@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>As a proponent of static site generators, one of the things I keep an eye out for are services that work well with them and provide functionality you lose after going static. Probably the most important of these are form handlers. Just being able to build a simple contact form can be incredibly helpful. On my site I use <a href="https://formspree.io/">Formspree</a> and in the past I've used <a href="https://formkeep.com/">FormKeep</a>. Today I'm going to quickly review another new service, <a href="https://liveformhq.com/">LiveForm</a>.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/6/lf1.jpg" alt="LiveForm"></p>
+<p>LiveForm has a pretty impressive set of features:</p>
+<ul>
+<li>reCAPTCHA support</li>
+<li>Webhooks</li>
+<li>The ability to notify multiple people at once (ie, don't just email X)</li>
+<li>Askismet</li>
+<li>A read-only API</li>
+<li>CSV export</li>
+</ul>
+<p>And best of all - file uploads.</p>
+<p>About the only thing really missing (compared to Formspree/FormKeep) is the ability to specify a custom subject for the message.</p>
+<p>To begin using it, you have to register first, but then you simply create a new form. This is done by just giving it a name.</p>
+<img src="https://static.raymondcamden.com/images/2017/6/lf2.jpg" class="imgborder" title="LiveForm">
+<p>You're then dropped into a simple admin for the form that begins with boilerplate text you can copy for a new form or just the form tag itself if you have an existing form.</p>
+<img src="https://static.raymondcamden.com/images/2017/6/lf3.jpg" class="imgborder" title="LiveForm">
+<p>At that point, things pretty much work as expected. You can specify a redirect URL by using a hidden form field, otherwise you end up on a generic LiveForm page. The UI to view messages is nice and provides a bit of metadata about the submission (browser, IP, and time).</p>
+<img src="https://static.raymondcamden.com/images/2017/6/lf4.jpg" class="imgborder" title="LiveForm">
+<p>The email reports are nicely formatted too:</p>
+<img src="https://static.raymondcamden.com/images/2017/6/lf5.jpg" class="imgborder" title="LiveForm">
+<p>Notice that this submission had a file attached to it, and LiveForm treats images differently (it displays them). If you upload something else, like a .exe (yes, I tried), you get a link to the file on S3.</p>
+<p>And that's basically it. Like I said, I think the killer feature here is file uploads. The API is real cool as well. Their blog has a <a href="http://blog.liveformhq.com/2016/11/27/creating-an-imgur-clone-using-github-pages-and-liveform/">great example</a> of using it along with image uploads.</p>
+<p><a href="https://liveformhq.com/pricing">Pricing</a> seems pretty reasonable, and best of all, <em>nothing</em> is removed on the lower plans. All you get is fewer forms. The highest tier, at 19 bucks a month, gives you 50 of them. The lowest tier ($3), gives you 5. But in all cases, there are no limits on the number of submissions or your use of the features. That's really darn compelling.</p>
+<p>Anyway - check it out - and as always - if you have any experience with the product, let me know in a comment below.</p>
+}

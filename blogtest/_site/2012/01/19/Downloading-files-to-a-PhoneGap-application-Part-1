@@ -1,0 +1,186 @@
+<h1>Post</h1>
+
+<p>For the past week or so I've been looking at file system access and downloads with PhoneGap. Before going any further, I want to warn folks that I'm still a bit fuzzy on the details here. It was a bit of a struggle to get this working right, and I plan to follow this entry up with a look at iOS and also how to get all platforms working right, but for now, consider this a first draft. I also want to give thanks to <a href="http://hi.im/simonmacdonald">Simon Mac Donald</a> for his help. Anything right here is thanks to him and anything wrong is my fault.</p>
+<!--more-->
+<p/>
+<p>Ok, with that out of the way. Let's talk about file downloads. A reader pinged me recently to ask about how to support offline PhoneGap applications. Specifically, he wanted to work with images that were remote and make them available to the application when the device was offline. I decided to work on a simple application that would fetch images from a server and store them locally.</p>
+<p/>
+<p>I began by looking over the <a href="http://docs.phonegap.com/en/1.3.0/phonegap_file_file.md.html#File">File</a> docs at PhoneGap. This is - for the most part - a wrapper for the <a href="http://www.w3.org/TR/file-system-api/">W3C File API</a>. I had a real hard time grokking this API. My gut take on it is this:</p>
+<p/>
+<ul>
+<li>You begin by requesting a file system. This request is either for a persistent or temporary storage. Obviously which you pick depends on what your needs are. For my demo application, I need the persistent storage.
+<li>What you get back is a file system object. From what I see in the <a href="http://www.w3.org/TR/file-system-api/#idl-def-FileSystem">spec</a>, the object contains a few properties, but your primary usage of this is to get a directory entry.
+<li>Once you have a directory object, you can enumerate files, read them, whatever.
+</ul>
+<p/>
+<p>Based on what I learned from Simon, in Android, the place you want to store your files is:</p>
+<p/>
+<p><b>Android/data/X</b></p>
+<p/>
+<p>Where X is the identify of your application. For my demo, this was com.camden.imagedownloaddemo. For the first iteration of my demo, I requested the file system, the directory, and then a list of files:</p>
+<p/>
+<code>
+<p>&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=320; user-scalable=no&quot; /&gt;
+&lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+&lt;title&gt;Image Download Demo&lt;/title&gt;</p>
+<p>&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;phonegap-1.3.0.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;
+//Global instance of DirectoryEntry for our data
+var DATADIR;</p>
+<p>//Loaded my file system, now let's get a directory entry for where I'll store my crap	
+function onFSSuccess(fileSystem) {
+fileSystem.root.getDirectory(&quot;Android/data/com.camden.imagedownloaddemo&quot;,{create:true},gotDir,onError);
+}</p>
+<p>//The directory entry callback
+function gotDir(d){
+DATADIR = d;
+var reader = DATADIR.createReader();
+reader.readEntries(gotFiles,onError);
+}</p>
+<p>//Result of reading my directory
+function gotFiles(entries) {
+console.log(&quot;The dir has &quot;+entries.length+&quot; entries.&quot;);
+for (var i=0; i&lt;entries.length; i++) {
+console.log(entries[i].name+' '+entries[i].isDirectory);
+}
+}</p>
+<p>function onError(e){
+console.log(&quot;ERROR&quot;);
+console.log(JSON.stringify(e));
+}</p>
+<p>function onDeviceReady() {
+window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, null);	
+}</p>
+<p>function init() {
+document.addEventListener(&quot;deviceready&quot;, onDeviceReady, true);
+}<br>
+&lt;/script&gt;</p>
+<p>&lt;/head&gt;
+&lt;body onload=&quot;init();&quot; &gt;
+&lt;h2&gt;Image Download Demo&lt;/h2&gt;</p>
+<p>&lt;div id=&quot;status&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p/>
+<p>As everything is async, the code gets a bit complex, but I begin by requesting the file system, requesting the directory (and notice, you can pass an optional argument to automatically create it, which is useful), and then the files.</p>
+<p/>
+<p>Ok - so that seemed to work. It was then time to look into the file sync aspects. To keep things simple, my sync logic would just ask a remote server for a list of images. Every image the remote server had that I did not, I downloaded. Obviously this means I can be left with images locally I don'rt need, but I wanted to keep things as basic as possible. Here's the new version:</p>
+<p/>
+<code>
+<p>&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=320; user-scalable=no&quot; /&gt;
+&lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+&lt;title&gt;Image Download Demo&lt;/title&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;phonegap-1.3.0.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;
+//Global instance of DirectoryEntry for our data
+var DATADIR;
+var knownfiles = [];</p>
+<p>//Loaded my file system, now let's get a directory entry for where I'll store my crap	
+function onFSSuccess(fileSystem) {
+fileSystem.root.getDirectory(&quot;Android/data/com.camden.imagedownloaddemo&quot;,{create:true},gotDir,onError);
+}</p>
+<p>//The directory entry callback
+function gotDir(d){
+console.log(&quot;got dir&quot;);
+DATADIR = d;
+var reader = DATADIR.createReader();
+reader.readEntries(function(d){
+gotFiles(d);
+appReady();
+},onError);
+}</p>
+<p>//Result of reading my directory
+function gotFiles(entries) {
+console.log(&quot;The dir has &quot;+entries.length+&quot; entries.&quot;);
+for (var i=0; i&lt;entries.length; i++) {
+console.log(entries[i].name+' dir? '+entries[i].isDirectory);
+knownfiles.push(entries[i].name);
+renderPicture(entries[i].fullPath);
+}
+}</p>
+<p>function renderPicture(path){
+$(&quot;#photos&quot;).append(&quot;&lt;img src='file://&quot;+path+&quot;'&gt;&quot;);
+console.log(&quot;&lt;img src='file://&quot;+path+&quot;'&gt;&quot;);
+}</p>
+<p>function onError(e){
+console.log(&quot;ERROR&quot;);
+console.log(JSON.stringify(e));
+}</p>
+<p>function onDeviceReady() {
+//what do we have in cache already?
+$(&quot;#status&quot;).html(&quot;Checking your local cache....&quot;);	
+window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, null);	
+}</p>
+<p>function appReady(){
+$(&quot;#status&quot;).html(&quot;Ready to check remote files...&quot;);
+$.get(&quot;http://www.raymondcamden.com/demos/2012/jan/17/imagelister.cfc?method=listimages&quot;, {}, function(res) {
+if (res.length &gt; 0) {
+$(&quot;#status&quot;).html(&quot;Going to sync some images...&quot;);
+for (var i = 0; i &lt; res.length; i++) {
+if (knownfiles.indexOf(res[i]) == -1) {
+console.log(&quot;need to download &quot; + res[i]);
+var ft = new FileTransfer();
+var dlPath = DATADIR.fullPath + &quot;/&quot; + res[i];
+console.log(&quot;downloading crap to &quot; + dlPath);
+ft.download(&quot;http://www.raymondcamden.com/demos/2012/jan/17/&quot; + escape(res[i]), dlPath, function(){
+renderPicture(dlPath);
+console.log(&quot;Successful download&quot;);
+}, onError);
+}
+}
+}
+$(&quot;#status&quot;).html(&quot;&quot;);
+}, &quot;json&quot;);</p>
+<p>}</p>
+<p>function init() {
+document.addEventListener(&quot;deviceready&quot;, onDeviceReady, true);
+}<br>
+&lt;/script&gt;<br>
+&lt;style&gt;
+img {
+max-width: 200px;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body onload=&quot;init();&quot; &gt;
+&lt;h2&gt;Image Download Demo&lt;/h2&gt;</p>
+<p>&lt;div id=&quot;status&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;div id=&quot;photos&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p/>
+<p>Ok, it's a bit much, but let's work through the various events. You can still see the file system request as well as the directory list. I do two new things now once I have the files. I remember them (storing them in knownfiles), and I render them using a simple utility function. Yes - you can pass a path to an image source and it works just fine.</p>
+<p/>
+<p>Now - take a look at appReady. This handles my remote call. I'll share the ColdFusion code if folks want, but all it's doing is returning a JSON-encoded array of images. For each result, I see if I already have it, and if not, use the download method of the FileTransfer object. <b>Note:</b> One of my images had a space in the file name. This causes all kinds of problems until I simply escaped it:</p>
+<p/>
+<code>
+ft.download("http://www.raymondcamden.com/demos/2012/jan/17/" + escape(res[i]), dlPath, function(){
+</code>
+<p/>
+<p>Here's a quick screen shot. Obviously it is static so you can't see it working, but in my testing, when I pushed up a new image remotely, and reran the application, it immediately noticed it was missing one and grabbed it.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/device-2012-01-19-091324.png" />
+<p/>
+<p>So - what's next? As I said, this is currently Android specific, and that's bad. I'm next going to test on iOS, and then get <b>one</b> application that can handle both. Also, I didn't actually bother checking to see if the device was online. That would be trivial via the <a href="http://docs.phonegap.com/en/1.3.0/phonegap_connection_connection.md.html#Connection">Connection</a> API and should be done. (I'll remember to do it for the final, &quot;combined&quot; demo.)</p>
+<p/>
+<p>Does this make sense? Any questions?</p>
+<p/>
+<p><b>Edit on January 20, 2012:</b> Note that I made a mistake in my fileTransfer callback. I talk about this mistake <a href="http://www.raymondcamden.com/index.cfm/2012/1/20/Downloading-files-to-a-PhoneGap-application--Part-2">here</a>, but the critical fix is right here:</p>
+<p/>
+<code>
+var dlPath = DATADIR.fullPath + "/" + res[i];
+console.log("downloading crap to " + dlPath);
+ft.download("http://www.raymondcamden.com/demos/2012/jan/17/" + escape(res[i]), dlPath, function(e){
+    renderPicture(e.fullPath);
+    console.log("Successful download of "+e.fullPath);
+}, onError);
+</code>}

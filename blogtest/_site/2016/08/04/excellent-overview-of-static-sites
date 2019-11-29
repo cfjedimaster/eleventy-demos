@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>As folks know, I've been <em>really</em> into the concept of static sites the past few years. I've given numerous presentations on the topic, I turned my blog into a static site, and I'm working on a <a href="https://www.raymondcamden.com/2016/07/21/my-next-book-working-with-static-sites/">book</a> on the topic right now. When speaking about static sites, I generally focus on the technology behind them. Today I watched an incredibly good video by Phil Hawksworth:</p>
+<!--more--> 
+<iframe width="640" height="360" src="https://www.youtube.com/embed/_cuZcnJIjls?rel=0" frameborder="0" allowfullscreen></iframe>
+<p>He does a great job of introducing the concept of static sites and explaining the benefits, as well as some of the negatives. Even if you already have a good idea of what static sites can do, this is a great video you could share with your boss, or client, to help convince them to make the switch.</p>
+<p>One of the best points he makes about 20 minutes in is that sometimes the complexity isn't necessarily removed, but simply shifted. That's been my experience with this blog. I went from a system that was easy to use, but complex to manage in production, to one that is complex locally, but super easy to handle in production. To me, that's a big improvement, and I was happy to see him bring this up in the video.</p>
+<p>Obviously you should leave feedback about the presentation on the Youtube video itself, but I'd be happy to see any comments here about how useful (or not) you thought the video was.</p>
+}

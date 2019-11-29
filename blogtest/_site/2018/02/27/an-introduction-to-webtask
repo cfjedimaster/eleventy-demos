@@ -1,0 +1,64 @@
+<h1>Post</h1>
+
+<p>Welcome to my first post on <a href="https://webtask.io/">Webtask</a>! Webtask is the serverless platform from <a href="https://auth0.com/">Auth0</a>. It powers extensibility behind our identity product as well as <a href="https://auth0.com/extend">Extend</a>. I'm assuming by now most of my readers have a basic grip on what serverless implies in general, so instead I'd like to focus on some of the coolest aspects of Webtask.</p>
+<h1>Online Editor</h1>
+<p>First, while it has a CLI and you can use it to do everything, it also has a really nice online editor. As a dedicated koolaid drinking Visual Studio Code person I'll always default to my own editor, but this past weekend I needed to use the online editor (I had forgotten to commit a file to source control before leaving home) and found it really well done.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/2/wt1.jpg" alt="Online editor"></p>
+<p>It isn't obvious from a static screenshot, but like any other modern editor you get intellisense, keyboard shortcuts, and more. You can also run tests directly from the editor as well.</p>
+<h1>Source Options</h1>
+<p>Ok, this may not be something you would use very often, but on top of being able to source your webtask from a file locally, you can also source it from a URL. So at first blush that may not sound too interesting, it's just copying from a URL versus a local file. But you can set it up so that the source is read from the URL every time the webtask is executed. What this means is that you can use GitHub to host the code for the webtask and know that whenever you commit your code, the webtask will be updated as well.</p>
+<h1>Express Support</h1>
+<p>So I've seen Express run on serverless platforms before and I'm still not sold on <em>why</em> you would do that. But after seeing it working with webtask... I'm kinda intrigued. I can see why folks may want to consider doing that.</p>
+<h1>Storage</h1>
+<p>This is easily my favorite feature. Webtask supports a lightweight <a href="https://webtask.io/docs/storage">storage</a> system. This is absolutely not meant to replace a proper persistence system, but for small, lightweight data operations, you can make use of it to store data between executions. (I'll show an example in a bit.) So for example, maybe you just want to remember the last time a webtask ran and what the result was. This would support that very easily. It also supports handling write conflicts, both allowing you to handle them dynamically or letting you set a &quot;just write and screw conflicts&quot; mode.</p>
+<h1>Show Me Some Darn Code</h1>
+<p>The basic structure of a webtask looks like so:</p>
+<pre><code class="language-js">module.exports = function (context,cb) {
+	// do stuff here
+	cb(null, {message:'hello world'});
+}
+</code></pre>
+<p>The <a href="https://webtask.io/docs/context">context</a> argument contains things like parameters and secret keys whereas the cb argument is your callback to return results. If you aren't using the online editor, you deploy it like so:</p>
+<pre><code>wt create test1.js
+</code></pre>
+<p>Webtask will automatically name your task based on the filename, but you can change that with a flag.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/2/wt2.jpg" alt="CLI output"></p>
+<p>You can copy that URL and open it up in your browser of course: https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.run.webtask.io/test1</p>
+<p>Returning non-JSON results is also pretty simple:</p>
+<pre><code class="language-js">'use strict';
+module.exports = function (context, req, res) {
+    res.writeHead(200, { 'Content-Type': 'text/html '});
+    // https://www.placecage.com/c/200/300
+    let w = getRandomInt(100, 600);
+    let h = getRandomInt(100, 600);
+    let img = `https://www.placecage.com/c/${w}/${h}`;
+    res.end(`&lt;img src=&quot;${img}&quot;&gt;`);
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+function getRandomInt(min, max) {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+</code></pre>
+<p>You can try this one here: https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.run.webtask.io/test2</p>
+<p>As an example of the storage support, here is a simple counter:</p>
+<pre><code class="language-js">module.exports = function (context,cb) {
+
+	context.storage.get((error,data) =&gt; {
+		data = data || { hits:0 };
+		data.hits++;
+
+		context.storage.set(data, {force:1}, error =&gt; {
+			if(error) return cb(error);
+			cb(null, {hits:data.hits});
+		});
+	});
+}
+</code></pre>
+<p>As I said above, remember that you can handle write conflicts manually instead of ignoring it as I did here. While not as exciting as the previous demo, you can test this one here: https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.run.webtask.io/counter</p>
+<h1>Wrap Up</h1>
+<p>So this was just a very quick look at Webtask and there is a heck of a lot more you can do. Take a look at the <a href="https://webtask.io/docs/101">docs</a> and let me know what you think. My plan is to migrate some of my OpenWhisk actions (specifically the Serverless Superman and RandomComicBook twitter bots) and I'll share how that process goes. I'll also be sharing more general How To stuff in the future.</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/woE3oGb8kDs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Christian Battaglia</a> on Unsplash</i></p>
+}

@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>After some common-sense advice from Sean, I've upgraded the iCal CFC. It now uses an init method to load in the original string. It also caches the parsed events in case you need to run it again.</p>
+<p>As an example:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfset ical = createObject(<FONT COLOR=BLUE>"component"</FONT>,<FONT COLOR=BLUE>"ical"</FONT>).init(data)&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfset results = ical.getEvents()&gt;</FONT></div>
+<p>The download is in the My Tools pod.</p>
+}

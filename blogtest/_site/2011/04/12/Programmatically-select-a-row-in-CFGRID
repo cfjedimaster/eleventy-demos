@@ -1,0 +1,53 @@
+<h1>Post</h1>
+
+<p>Ernie asked me if it was possible to select a row in CFGRID via JavaScript. I coulda sworn I had covered this before, but my search-fu failed to turn it up. Anyway, here is a super quick example of how to do it. It's works with ColdFusion 9 only - not ColdFusion 8. (Not as far as I know since the Ext API changed.)</p>
+<!--more-->
+<p>
+<code>
+&lt;cfform name="test"&gt;
+&lt;cfgrid autowidth="true" name="entries" format="html"  width="600"
+bind="url:getentries.cfm?page={cfgridpage}&pagesize={cfgridpagesize}&sort={cfgridsortcolumn}&dir={cfgridsortdirection}"
+height="150"&gt;
+  &lt;cfgridcolumn name="id" display="false"&gt;
+  &lt;cfgridcolumn name="body" display="false"&gt;
+<p>&lt;cfgridcolumn name=&quot;title&quot; header=&quot;Title&quot;&gt;
+&lt;cfgridcolumn name=&quot;posted&quot; header=&quot;Posted&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>
+<p>This is a code sample from an old presentation I did on CF Ajax features. It uses a BlogCFC database on the back end and a file that serves up blog entry data to the grid. Since the data isn't relevant to the discussion I'm going to skip posting that. I began by adding a button and whipped up some code to select a row:</p>
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script&gt;
+function pickrow() {
+console.log(&quot;ran&quot;);
+g = ColdFusion.Grid.getGridObject(&quot;entries&quot;);
+console.dir(g);
+var sm = g.getSelectionModel();
+console.dir(sm);
+sm.selectRow(2);
+console.log(&quot;done&quot;);
+}
+&lt;/script&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;entries&quot; format=&quot;html&quot;  width=&quot;600&quot;
+bind=&quot;url:getentries.cfm?page={cfgridpage}&amp;pagesize={cfgridpagesize}&amp;sort={cfgridsortcolumn}&amp;dir={cfgridsortdirection}&quot;
+height=&quot;150&quot;&gt;
+&lt;cfgridcolumn name=&quot;id&quot; display=&quot;false&quot;&gt;
+&lt;cfgridcolumn name=&quot;body&quot; display=&quot;false&quot;&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;title&quot; header=&quot;Title&quot;&gt;
+&lt;cfgridcolumn name=&quot;posted&quot; header=&quot;Posted&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;input type=&quot;button&quot; onclick=&quot;pickrow()&quot; value=&quot;pickrow&quot;&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>The button is at the bottom and runs pickrow up top. pickrow simply grabs the Grid object, grabs the &quot;SelectionModel&quot; (think of it as an API to get/modify selections in the grid), and then just runs selectRow. I've hard coded it to 2 which will be the 3rd row. As a reminder - don't forget you can always check the Ext docs for deeper integration into ColdFusion's UI objects. Just be sure to check the version # of the API versus what ColdFusion is using natively.</p>
+}

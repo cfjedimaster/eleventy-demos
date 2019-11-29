@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>So a friend of mine dared to say I had a bit of OCD. Personally I don't think so. I'm just... organized. Why did he say I had OCD? I tend to get really ticked off by CFCs that don't alphabetize their methods. All of my CFCs use alphabetical methods, except for the init method which is always first (if the CFC needs one).</p>
+<p>So here is your challenge. Write a UDF/custom tag/snippet that will take as an argument the path to a CFC. Your code will read in the file and:</p>
+<ul>
+<li>Organize all methods in alphabetical order
+<li>Keep a method named "init" as the first method
+<li>And for bonus points - ensure that any "constructor code" (lines outside of any method) are grouped above the init method.
+</ul>
+<p>Being that it is not only Friday but Friday afternoon, bonus points if you've been.... &quot;celebrating&quot; the weekend a bit early. (But then again we have to be able to actually read your code!)</p>
+}

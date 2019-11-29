@@ -1,0 +1,65 @@
+<h1>Post</h1>
+
+<p>This was a simple request, but I thought I'd share the code in case any other beginners would find it interesting. Joe asks:</p>
+<blockquote>
+<p>
+I was after a method of being able to select results from a
+cfdirectory query using a form check box, then once a "delete selected" button is pressed it will then go on to delete them from the directory.
+</p>
+<p>
+I currently have a page displaying all the files and folders now I just need a way so delete the selected records could you please help?
+</p>
+</blockquote>
+<!--more-->
+So as Joe pointed out, it's rather simple to use cfdirectory to create a list of files. Joe mentioned checkboxes and a simple form, so let's look at that part of the script first:
+<code>
+&lt;cfset directory="#expandPath('.')#"&gt;
+<p>&lt;cfdirectory action=&quot;list&quot; directory=&quot;#directory#&quot; name=&quot;entries&quot; type=&quot;file&quot;&gt;</p>
+<p>&lt;cfoutput&gt;&lt;form action=&quot;#cgi.script_name#&quot; method=&quot;post&quot;&gt;&lt;/cfoutput&gt;
+&lt;table&gt;
+&lt;cfoutput query=&quot;entries&quot;&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;input type=&quot;checkbox&quot; name=&quot;files&quot; value=&quot;#name#&quot; /&gt;&lt;/td&gt;
+&lt;td&gt;#name#&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/table&gt;
+&lt;input type=&quot;submit&quot; value=&quot;DELETE&quot; /&gt;
+&lt;/form&gt;
+</code></p>
+<p>Normally the directory variable would point to some other folder instead of the current folder. This script would actually let you delete the script itself, which is probably <i>not</i> a good idea. Notice that I filtered by files. You can actually perform a recursive delete on a directory, but since Joe mentioned files I figured I'd keep it at that.</p>
+<p>Notice next to each file we use a checkbox with the name files. When the form is submitted, each and every file will exist in the form value, files. If the user selects multiple files, then the values will be a list. Here is how I processed the form submission:</p>
+<code>
+&lt;cfif structKeyExists(form, "files") and len(form.files)&gt;
+	&lt;cfloop index="f" list="#form.files#"&gt;
+		&lt;cfif fileExists(directory & "/" & getFileFromPath(f))&gt;
+			&lt;cffile action="delete" file="#directory#/#getFileFromPath(f)#"&gt;
+		&lt;/cfif&gt; 
+	&lt;/cfloop&gt;
+&lt;/cfif&gt;
+</code>
+<p>Nothing crazy here. Note though that I go the extra step to ensure the file exists before I delete it. In theory it is possible someone else could have deleted the file. (And to be <i>real</i> anal, I should use a cflock as well.)</p>
+<p>As I said - easy stuff, but hopefully this example will help Joe. I'll print the entire sample below. Before doing so, don't forget that any web based application that lets you delete files is a risky. <b>Please be sure</b> you know what your doing before deploy code like this.</p>
+<code>
+&lt;cfset directory="#expandPath('.')#"&gt;
+<p>&lt;cfif structKeyExists(form, &quot;files&quot;) and len(form.files)&gt;
+&lt;cfloop index=&quot;f&quot; list=&quot;#form.files#&quot;&gt;
+&lt;cfif fileExists(directory &amp; &quot;/&quot; &amp; getFileFromPath(f))&gt;
+&lt;cffile action=&quot;delete&quot; file=&quot;#directory#/#getFileFromPath(f)#&quot;&gt;
+&lt;/cfif&gt;
+&lt;/cfloop&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfdirectory action=&quot;list&quot; directory=&quot;#directory#&quot; name=&quot;entries&quot; type=&quot;file&quot;&gt;</p>
+<p>&lt;cfoutput&gt;&lt;form action=&quot;#cgi.script_name#&quot; method=&quot;post&quot;&gt;&lt;/cfoutput&gt;
+&lt;table&gt;
+&lt;cfoutput query=&quot;entries&quot;&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;input type=&quot;checkbox&quot; name=&quot;files&quot; value=&quot;#name#&quot; /&gt;&lt;/td&gt;
+&lt;td&gt;#name#&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/table&gt;
+&lt;input type=&quot;submit&quot; value=&quot;DELETE&quot; /&gt;
+&lt;/form&gt;
+</code></p>
+}

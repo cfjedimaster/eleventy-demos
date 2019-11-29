@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>So, for a long time I was a SourceSafe devotee. There is nothing I would recommend more to a person to use, and always use, a good source control tool. However, my new job uses CVS pretty religously, so I needed to figure it out. It is defintely not as easy as SS, but, the more I use it, the more I like it. Plus, you can't beat the price (in other words, it's free.) For more information, see <a href="http://www.cvshome.org/">http://www.cvshome.org/</a>.</p>
+<p>My boss, David An, shared this tip today and I thought I'd pass it on...</p>
+<p>CVS has the ability to auto-expand variables as files are committed.  Thus, you can put the variable $Id$ (for instance) into a comment within your code, and it will be automatically expanded upon committing that file.  This is great for quickly knowing which version of a particular file is in place.</p>
+<p>So, my first file looked like this (it was a JavaScript file, should work for anything):</p>
+<p>// here's a comment</p>
+<p>I added the variable:</p>
+<p>// here's a comment<br>
+// version info from CVS: $Id$</p>
+<p>and committed it ... my file suddenly became:</p>
+<p>// here's a comment<br>
+// version info from CVS: $Id: gotolink.js,v 1.5 2003/03/19 17:56:03 davida Exp $</p>
+<p>and committed it again, to get:</p>
+<p>// here's a comment<br>
+// version info from CVS: $Id: gotolink.js,v 1.6 2003/03/19 17:56:58 davida Exp $</p>
+}

@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>So why should I ruin a fine tradition of updates followed by fixes within 24 hours? The update to <a href="http://ray.camdenfamily.com/projects/lhp">Lighthouse Pro</a> had a full URL to my dev server in the code. This has been corrected. I had also forgotten to update the version number in the defaults.cfm file. This has been as well.</p>
+}

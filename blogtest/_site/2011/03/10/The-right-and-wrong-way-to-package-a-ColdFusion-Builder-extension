@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>This has tripped up a lot of people, myself included, and impacts both extension writers and extension users. Have you ever tried to install a ColdFusion Builder extension and gotten this error?</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip43.png" />
+<p>If you get this, it means the extension writer incorrectly zipped his or her extension. When you create a zip file from an extension folder, it is critical that you zip <b>from the directory itself</b> and not from the parent. Does that make sense? Probably not. Here is the right way to zip an extension in Windows - it should be similar for fruity machines:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip44.png" />
+<p>It may be a bit hard to see in this screen shot, but I'm <b>inside</b> the extension folder itself. This will create a zip where ide_config.xml is in the root.</p>
+<p>The wrong way is to create the zip from above the folder. This is how I <b>always</b> make my zips which I think is pretty natural for folks too. It's also why you keep seeing this mistake happen:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip45.png" />
+<p>Here is another way to see the difference. I opened both up in WinRAR. You can see the one on the left has ide_config.xml in root, while the other has the folder itself.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip46.png" />}

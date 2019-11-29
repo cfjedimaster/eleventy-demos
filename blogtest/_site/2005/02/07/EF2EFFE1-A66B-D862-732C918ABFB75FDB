@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>If you do some advanced work with Flash Forms, sometimes you may notice that the entire form just disappears when you reload. This is due to an Action Script error. If you go to your CF Administrator, Debugging and Logging, you will see a new option labelled: Flash Form Compile Errors and Messages.</p>
+}

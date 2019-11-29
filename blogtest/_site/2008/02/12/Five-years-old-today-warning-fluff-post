@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p><img src="https://static.raymondcamden.com/images/cfjedi//happy-birthday-cake.gif" align="left" style="margin-right: 10px"> On February 12, 2003, I wrote my <a href="http://www.raymondcamden.com/index.cfm?mode=entry&entry=395FA384-CC01-17D6-AE9B36479350D784">first blog entry</a>. Back then, BlogCFC wasn't released, as I said in that first entry:</p>
+<blockquote>
+<p>
+FYI, most of this blog is run via a CFC. I plan on sharing the code sometime tomorrow - after I get done adding a search method. 
+</p>
+</blockquote>
+<p>I guess using a CFC was kind of a cool thing. ;) A lot has changed since that first post. We've had a few new versions of ColdFusion, quite a few open source applications released, and I've passed through more than one job since then as well. I hope the next five years are just as enjoyable for everyone else as they were for me.</p>
+}

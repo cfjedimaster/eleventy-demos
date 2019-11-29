@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>If you are DISPLAYING the variable, use pounds:</p>
+<p>&lt;cfoutput&gt;<br>
+Hi #name#<br>
+&lt;/cfoutput&gt;</p>
+<p>If you are working the variable, don't:</p>
+<p>&lt;cfset shortName = left(name,6)&gt;</p>
+<p>If you are using the variable in a string, you must use pounds:</p>
+<p>&lt;cfset fullname = &quot;#firstname# #lastname#&quot;&gt;</p>
+<p>Of course, you could also write the above as:</p>
+<p>&lt;cfset fullname = firstname &amp; &quot; &quot; &amp; lastname&gt;</p>
+}

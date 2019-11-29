@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>So I've blogged about this a few times already, but now the final, <em>really</em> final release of my book on Static Sites is available for purchase. I co-authored this with Brian Rinaldi and I think it is fair to say this is a great introduction to the topic with multiple real world (ish ;) examples.</p>
+<p><a href="http://shop.oreilly.com/product/0636920051879.do"><img src="https://static.raymondcamden.com/images/2017/3/ssglrg.jpg" title="The Book!"></a></p>
+<p>For folks curious, here is the table of contents:</p>
+<ul>
+<li>Chapter 1 - Why Static Sites?</li>
+<li>Chapter 2 - Building a Basic Static Site</li>
+<li>Chapter 3 - Building a Blog</li>
+<li>Chapter 4 - Building a Documentation Site</li>
+<li>Chapter 5 - Adding Dynamic Elements</li>
+<li>Chapter 6 - Adding a CMS</li>
+<li>Chapter 7 - Deployment</li>
+<li>Chapter 8 - Migrating to a Static Site</li>
+</ul>
+}

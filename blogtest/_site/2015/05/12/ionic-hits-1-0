@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>The title says it all - and I assume most folks heard about this on Twitter or via the Ionic blog, but on the wild chance you did not, today <a href="http://blog.ionic.io/announcing-ionic-1-0/">Ionic 1.0</a> was announced.</p>
+<p><a href="http://www.raymondcamden.com/wp-content/uploads/2015/05/ionic1.png"><img src="https://static.raymondcamden.com/images/wp-content/uploads/2015/05/ionic1.png" alt="ionic1" width="600" height="280" class="aligncenter size-full wp-image-6133" /></a></p>
+<p>Don't forget you can easily update an existing Ionic project using <code>ionic lib update</code>. Check out this real example:</p>
+<p><a href="http://www.raymondcamden.com/wp-content/uploads/2015/05/shot11.png"><img src="https://static.raymondcamden.com/images/wp-content/uploads/2015/05/shot11.png" alt="shot1" width="650" height="189" class="aligncenter size-full wp-image-6134" /></a></p>
+<p>Be sure to read to the end of the <a href="http://blog.ionic.io/announcing-ionic-1-0/">announcement post</a> as they go into detail about what the future holds for the Ionic framework and platform.</p>
+<p>Finally, if you want an introduction to Ionic, you can always check out my presentation tomorrow at <a href="http://www.devobjective.com/">devObjective</a>, or watch the recording of my ORA presentation here: <a href="http://www.oreilly.com/pub/e/3407">http://www.oreilly.com/pub/e/3407</a></p>
+}

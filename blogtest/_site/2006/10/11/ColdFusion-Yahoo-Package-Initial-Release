@@ -1,0 +1,21 @@
+<h1>Post</h1>
+
+<p>Ok, &quot;ColdFusion Yahoo Package&quot; is kind of a dumb name, but I'm sharing my initial release of the API I've built for Yahoo's various web services. Right now I only support Search and Answers. Here is an example of using the Search API:</p>
+<code>
+&lt;cfset searchAPI = createObject("component", "org.camden.yahoo.search")&gt;
+<p>&lt;cfinvoke component=&quot;#searchAPI#&quot; method=&quot;search&quot; returnVariable=&quot;result&quot;&gt;
+&lt;cfinvokeargument name=&quot;query&quot; value=&quot;coldfusion blog&quot;&gt;
+&lt;/cfinvoke&gt;</p>
+<p>&lt;cfdump var=&quot;#result#&quot; label=&quot;Search for 'coldfusion blog'&quot;&gt;
+</code></p>
+<p>And here is an example that searches for resolved questions about ColdFusion:</p>
+<code>
+&lt;cfset answerAPI = createObject("component", "org.camden.yahoo.answers")&gt;
+<p>&lt;cfinvoke component=&quot;#answerAPI#&quot; method=&quot;questionSearch&quot; returnVariable=&quot;result&quot;&gt;
+&lt;cfinvokeargument name=&quot;query&quot; value=&quot;coldfusion&quot;&gt;
+&lt;cfinvokeargument name=&quot;type&quot; value=&quot;resolved&quot;&gt;
+&lt;/cfinvoke&gt;</p>
+<p>&lt;cfdump var=&quot;#result#&quot; label=&quot;Question search for 'coldfusion', type=resolved&quot;&gt;
+</code></p>
+<p>This code is <b>not</b> heavily tested, nor did I include a license just yet (it will be the same license as the rest of my code). The idea though is to create a very simple API for your ColdFusion applications to work with Yahoo. Feedback is appreciated.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Fyahoo%2Ezip'>Download attached file.</a></p></p>
+}

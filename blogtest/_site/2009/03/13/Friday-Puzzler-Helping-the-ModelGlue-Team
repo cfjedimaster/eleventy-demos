@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>For today's Friday Puzzler (yes, I know it's been a while), I have something of a doozy. It may not be a 5 minute puzzle, but it could still be fun, and most of all, it will be helpful to the Model-Glue team. The Model-Glue docs (<a href="http://docs.model-glue.com/">http://docs.model-glue.com/</a>) were written using Robohelp, and unfortunately, the original files are missing. We need to get an &quot;export&quot; of the docs so that they can be republished in a new format. Your task, if you choose to accept it, is to write a scraper for the docs that can download and store each page from the documentation. This needs to keep the HTML for layout purposes, so it can't be just plain text.</p>
+<p>Anyone up for that challenge?</p>
+}

@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>A user on cf-talk reported an interesting bug last week. While talking to her, I discovered what may be her bug, or at least another bug. If a user has a password that includes a tilde (~), then the second through N hits will fail as CF is unable to decrypt the hashed value of their username, password, roles combo.</p>
+<p>p.s. The poll on the right hand side of the blog was broken. It should be ok now.</p>
+}

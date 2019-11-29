@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Ok, not a very deep post, but my buddy Tai over at <a href="http://www.luxanimals.com/">Luxurious Animals</a> just told me a story on IM I couldn't resist sharing.</p>
+<p>He built a nice animation of birds in flight, and after implementing a fix, someone reported that the birds no longer moved.</p>
+<p>That user went home and this morning, reported that the birds were in their final position.</p>
+<p>Why?</p>
+<p>Turns out that someone swapped out a JavaScript library and the duration value went from milliseconds to seconds. The animation now takes almost 28 hours to complete. (But hey, it still works, right?)</p>
+<p>Woot. This is why I love client-side development. ;)</p>
+}

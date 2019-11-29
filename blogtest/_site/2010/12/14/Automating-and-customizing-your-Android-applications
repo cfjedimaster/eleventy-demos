@@ -1,0 +1,157 @@
+<h1>Post</h1>
+
+<p>A few days ago I blogged about the creation of a <a href="http://www.raymondcamden.com/index.cfm/2010/12/8/Simple-RSS-Reader-built-in-AIR-for-Mobile">simple RSS reader</a> for the Android platform. It certainly wasn't complex, but it was good practice to get my feet wet with the Hero SDK and mobile Flex development. I'm a big fan of trying small, simple applications as a way to get experience with a platform. When I built this application though, I have to admit I had something a bit more interesting in mind. Today I'll show you what I built. I think it's pretty cool and it is a testament to the power of the tools Adobe has provided.</p>
+<!--more-->
+<p/>
+<p>Whenever I present on Adobe AIR, I always take pains to mention that the SDK is 100% free. You don't have to buy any tools at all to work with AIR. Certainly Flash Builder is a damn fine tool (if you are doing Flex-based AIR development) and I recommend it, but if you don't have the money, or don't like the editor, you can use your own editor and compile both Flex and your AIR applications by hand. There are a set of command line tools that cover the entire process. To make things even easier, you can automate all of this with ANT. Terry Ryan just did a great blog post on this: <a href="http://www.terrenceryan.com/blog/post.cfm/using-ant-to-package-the-same-air-app-to-multiple-devices">Using ANT to package the same AIR app to Multiple Devices</a>. In his post, Terry describes not only compiling the Flex application but also building the installers for both Android and the Playbook. This works great. But did you know that one of the coolest features in ANT is the ability to do replacements in text files? I didn't know this till I saw the ANT file for Model-Glue. If you combine the fact that we can make replacements in our source code with the ability to build/compile the application via ANT, you can provide a &quot;Create your own RSS Android App&quot; application via the web. Consider the following walkthrough:</p>
+<p/>
+<p>User hits a form on your site:</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/screen54.png" />
+<p/>
+<p>They enter a site name, a URL, and a RSS URL and then hit submit. Next they see:</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/screen55.png" />
+<p/>
+<p>At this point, the APK could be emailed to them (on an Android phone you can install applications sent via email), it could be stored on the file system for download later, or any other number of possibilities. The point is - they now have a 100% customized Android application delivered completely dynamically via ColdFusion and the AIR/Flex command line tools.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/device.png" />
+<p/>
+<p>Here is the code I used for the ColdFusion side. <b>This is a proof of concept. It will fail horribly if run by multiple users. That's fixable, but beyond the scope of this blog entry.</b></p>
+<p/>
+<code>
+<p>&lt;cfif structKeyExists(form, &quot;submit&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset pathToAnt = &quot;C:\apache-ant-1.8.1\bin\ant.bat&quot;&amp;gt;
+&amp;lt;cfset pathToBuild = &quot;&quot;&quot;C:/Users/Raymond/Documents/My Dropbox/projects/SimpleRSS/build.xml&quot;&quot;&quot;&amp;gt;
+
+&amp;lt;cfexecute name=&quot;#pathToAnt#&quot; arguments=&quot;-buildfile #pathToBuild# -verbose -Dcompany=#form.company# -Durl=#form.companyurl# -Drssurl=#form.rssurl#&quot; variable=&quot;result&quot; errorvariable=&quot;error&quot; timeout=&quot;60&quot; /&amp;gt;
+
+&amp;lt;cfif not len(error)&amp;gt;
+    &amp;lt;h2&amp;gt;Done!&amp;lt;/h2&amp;gt;
+	Your APK has been created.
+	&amp;lt;cfabort/&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;!--- no error handling yet - too bad ---&amp;gt;		
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;h2&gt;Make me an Android App&lt;/h2&gt;</p>
+<p>&lt;form method=&quot;post&quot;&gt;
+Enter company name: &lt;input type=&quot;text&quot; name=&quot;company&quot; value=&quot;test&quot;&gt;&lt;br/&gt;
+Enter company URL: &lt;input type=&quot;text&quot; name=&quot;companyurl&quot; value=&quot;http://www.androidgator.com&quot;&gt;&lt;br/&gt;
+Enter RSS URL: &lt;input type=&quot;text&quot; name=&quot;rssurl&quot; value=&quot;http://feeds.feedburner.com/AndroidgatorcomFeed&quot;&gt;&lt;br/&gt;
+&lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Make it so...&quot;&gt;
+&lt;/form&gt;
+</code></p>
+<p/>
+<p>And here is a modified form of the build script Terry did. I removed the Playbook support, made it copy to a temp dir, and added replacements in.</p>
+<p/>
+<code>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project name="SimpleRSS" default="main" basedir="."&gt;
+<pre><code>&amp;lt;property file=&quot;settings.properties&quot;/&amp;gt;
+
+&amp;lt;!-- path to the flex task libraries. --&amp;gt;
+&amp;lt;path id=&quot;flextasks.classpath&quot;&amp;gt;
+	&amp;lt;fileset dir=&quot;${FLEX_HOME}/ant/lib&quot;&amp;gt;
+		&amp;lt;include name=&quot;*.jar&quot;/&amp;gt;
+	&amp;lt;/fileset&amp;gt;
+&amp;lt;/path&amp;gt;  
+
+&amp;lt;typedef resource=&quot;flexTasks.tasks&quot; classpathref=&quot;flextasks.classpath&quot; /&amp;gt;
+
+&amp;lt;target name=&quot;main&quot; depends=&quot;prepPackage, package.android, install.android&quot; /&amp;gt;
+
+&amp;lt;target name=&quot;clean&quot;&amp;gt;
+	&amp;lt;echo message=&quot;Cleaning Build Space&quot;/&amp;gt;
+	&amp;lt;delete dir=&quot;${build.dir}&quot;/&amp;gt;
+&amp;lt;/target&amp;gt;
+
+&amp;lt;target name=&quot;prepPackage&quot; depends=&quot;compile,handleDevices&quot; /&amp;gt;
+
+&amp;lt;target name=&quot;compile&quot; depends=&quot;clean&quot;&amp;gt; 
+	&amp;lt;echo message=&quot;Copying to temp dir&quot; /&amp;gt;
+
+	&amp;lt;copy todir=&quot;${temp.dir}&quot;&amp;gt;
+		&amp;lt;fileset dir=&quot;${dev.dir}&quot; /&amp;gt;
+	&amp;lt;/copy&amp;gt;
+
+	&amp;lt;echo message=&quot;Doing replacements... &quot; /&amp;gt;
+	&amp;lt;echo message=&quot;Replacing company with ${company}&quot; /&amp;gt;
+	&amp;lt;echo message=&quot;Replacing url with ${url}&quot; /&amp;gt;
+	&amp;lt;echo message=&quot;Replacing rss url with ${rssurl}&quot; /&amp;gt;
+
+	&amp;lt;replace dir=&quot;${temp.dir}&quot; failOnNoReplacements=&quot;true&quot;&amp;gt;
+		&amp;lt;include name=&quot;**/*.mxml&quot; /&amp;gt;
+		&amp;lt;replacefilter token=&quot;@@@companyText@@@&quot; value=&quot;${company}&quot; /&amp;gt;
+		&amp;lt;replacefilter token=&quot;@@@url@@@&quot; value=&quot;${url}&quot; /&amp;gt;
+		&amp;lt;replacefilter token=&quot;@@@rssurl@@@&quot; value=&quot;${rssurl}&quot; /&amp;gt;
+	&amp;lt;/replace&amp;gt;
+
+	&amp;lt;echo message=&quot;Compiling swf&quot;/&amp;gt;
+
+	&amp;lt;!-- hack one - had to add full path --&amp;gt;
+	&amp;lt;mxmlc file=&quot;C:/Users/Raymond/Documents/My Dropbox/projects/SimpleRSS/${projectFile}&quot; output=&quot;${swfFile}&quot;&amp;gt; 
+        &amp;lt;load-config filename=&quot;${FLEX_HOME}/frameworks/airmobile-config.xml&quot;/&amp;gt; 
+        &amp;lt;source-path path-element=&quot;${FLEX_HOME}/frameworks&quot;/&amp;gt;
+		&amp;lt;static-link-runtime-shared-libraries /&amp;gt;
+
+		&amp;lt;compiler.library-path dir=&quot;${FLEX_HOME}/frameworks&quot; append=&quot;true&quot;&amp;gt;
+            &amp;lt;include name=&quot;libs/*&quot; /&amp;gt;
+        &amp;lt;/compiler.library-path&amp;gt;
+
+		&amp;lt;compiler.library-path dir=&quot;.&quot; append=&quot;true&quot;&amp;gt;
+            &amp;lt;include name=&quot;libs/*&quot; /&amp;gt;
+        &amp;lt;/compiler.library-path&amp;gt;
+
+	&amp;lt;/mxmlc&amp;gt;
+
+	&amp;lt;delete dir=&quot;${temp.dir}&quot; /&amp;gt;
+
+&amp;lt;/target&amp;gt;
+
+
+&amp;lt;target name=&quot;collect.android&quot;&amp;gt;
+	&amp;lt;echo message=&quot;Creating Device Folder for Android&quot;/&amp;gt;
+	&amp;lt;mkdir dir=&quot;${build.dir}/android&quot;/&amp;gt;
+	&amp;lt;echo message=&quot;Copying SWF for Android&quot;/&amp;gt;
+	&amp;lt;copy file=&quot;${swfFile}&quot; todir=&quot;${build.dir}/android&quot;  /&amp;gt;
+	&amp;lt;echo message=&quot;Copying Application Description File for Android&quot;/&amp;gt;
+	&amp;lt;copy file=&quot;${dev.dir}/${app.name}-app.xml&quot; 
+		todir=&quot;${build.dir}/android&quot; preservelastmodified=&quot;true&quot; /&amp;gt;
+	&amp;lt;echo message=&quot;Modifying Application Description File&quot;/&amp;gt;
+	&amp;lt;replace file=&quot;${build.dir}/android/${app.name}-app.xml&quot;&amp;gt;
+		&amp;lt;replacefilter token=&quot;${contentText}&quot; value=&quot;${app.name}.swf&quot; /&amp;gt;
+	&amp;lt;/replace&amp;gt;
+&amp;lt;/target&amp;gt;
+
+&amp;lt;target name=&quot;handleDevices&quot; depends=&quot;collect.android&quot;/&amp;gt;
+
+
+&amp;lt;target name=&quot;package.android&quot;&amp;gt;
+	&amp;lt;echo message=&quot;Packaging for Android&quot;/&amp;gt;
+	&amp;lt;exec executable=&quot;${ADT}&quot; dir=&quot;${build.dir}/android&quot; failonerror=&quot;true&quot;&amp;gt;
+		&amp;lt;arg value=&quot;-package&quot;/&amp;gt;
+		&amp;lt;arg line=&quot;-target apk&quot;/&amp;gt;
+		&amp;lt;arg line=&quot;-storetype pkcs12&quot;/&amp;gt;
+		&amp;lt;arg line=&quot;-keystore ${cert}&quot; /&amp;gt;
+		&amp;lt;arg line=&quot;-storepass ${cert.password}&quot; /&amp;gt;
+		&amp;lt;arg value=&quot;${app.name}&quot;/&amp;gt;
+		&amp;lt;arg value=&quot;${app.name}-app.xml&quot;/&amp;gt;
+		&amp;lt;arg value=&quot;${app.name}.swf&quot;/&amp;gt;
+	&amp;lt;/exec&amp;gt;
+&amp;lt;/target&amp;gt;
+
+&amp;lt;target name=&quot;install.android&quot;&amp;gt;
+		&amp;lt;echo message=&quot;Installing onto attached Android Device&quot;/&amp;gt;
+		&amp;lt;exec executable=&quot;${ADB}&quot;&amp;gt;
+			&amp;lt;arg value=&quot;install&quot;/&amp;gt;
+			&amp;lt;arg value=&quot;-r&quot;/&amp;gt;
+			&amp;lt;arg value=&quot;${build.dir}/android/${app.name}.apk&quot;/&amp;gt;
+		&amp;lt;/exec&amp;gt;	
+	&amp;lt;/target&amp;gt;
+</code></pre>
+<p>&lt;/project&gt;	
+</code></p>
+<p/>
+<p>Thoughts?</p>
+}

@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Did you know that when you call a tag based UDF it generates whitespace? You can control this by simply adding output=false to your cffunction tag. Of course, this also means you can't cfoutput from the UDF, but in general, UDFs should return results, not directly output them.</p>
+<p>You do not have this worry with cfscript based UDFs. They can also use writeOutput to directly output from the function, even though they have an implied output=false.</p>
+}

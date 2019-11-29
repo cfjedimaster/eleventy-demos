@@ -1,0 +1,68 @@
+<h1>Post</h1>
+
+<p>A few days ago I asked on the <a href="http://www.blogcfc.com/index.cfm/2006/4/29/Changes-on-Saturday-Morning">BlogCFC blog</a> about a way to display a report from Subversion. I knew how to get a report of the latest updates for one file, but not for a project as a whole. A few people recommended Trac, but being the kind of guy I am, I wanted to build something myself.</p>
+<p>Scott P (who has contributed some good changes to BlogCFC) told me what the SVN command was:</p>
+<blockquote>
+svn log -v svn://199.231.128.19:8000/blogcfc5 --limit 10
+</blockquote>
+<p>This command will give you a nice report of the last ten changes to the subversion repository. I was about to hook this up to CFEXECUTE and start writing a string parser when I had the brilliant idea of actually checking the documentation. Turns out if you add --xml to the command, you actually get the report back in XML:</p>
+<blockquote>
+svn log -v svn://199.231.128.19:8000/blogcfc5 --limit 10 --xml
+</blockquote>
+<p>No string parsing necessary! So I quickly whipped up some code (included below) and added the report to BlogCFC. You can find the SVN info here:</p>
+<blockquote>
+<a href="http://www.blogcfc.com/blogcfcsvn.cfm">http://www.blogcfc.com/blogcfcsvn.cfm</a>
+</blockquote>
+<p>Nice design, eh? Hard to believe I'm just a developer. The code is a work in progress, and not encapsulated into a CFC, but for those who want to add this to your site, I've included it below. Some notes:</p>
+<ul>
+<li>I'm not parsing the dates yet. It's UTC, so I just need to add the offset which I can get from getTimeZoneInfo(). 
+<li>You could make the files linkable if you wanted, but you always need to be extra-super-anal-etc when writing code that will dump another file live on the web. In fact, I'd probably just not recommend doing this unless the entire application is very secure.
+<li>SVN also reports what happened to the file. So for example, I think it uses M to signify that the file was modified. I bet it uses A for Add and D for Delete, but I haven't confirmed this. I'd like to update my code to not just show the files but what the change was. 
+<li>And as I said above, this should be rewritten into a little UDF or CFC.
+</ul>
+<code>
+&lt;!--- path to svn ---&gt;
+&lt;cfset svnPath = "svn"&gt;
+<p>&lt;!--- whats the url? ---&gt;
+&lt;cfset svnURL = &quot;svn://199.231.128.19:8000&quot;&gt;</p>
+<p>&lt;!--- how many entries ---&gt;
+&lt;cfset top = 10&gt;</p>
+<p>&lt;!--- args ---&gt;
+&lt;cfset args = &quot;log -v #svnURL# --limit #top# --xml&quot;&gt;</p>
+<p>&lt;!--- run it ---&gt;
+&lt;cfexecute name=&quot;#svnPath#&quot; arguments=&quot;#args#&quot; variable=&quot;result&quot; timeout=&quot;30&quot; /&gt;</p>
+<p>&lt;!--- parse to xml ---&gt;
+&lt;cfset data = xmlparse(result)&gt;</p>
+<p>&lt;!--- get entries ---&gt;
+&lt;cfset entries = xmlSearch(data, &quot;//logentry&quot;)&gt;</p>
+<p>&lt;cfset logEntries = arrayNew(1)&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(entries)#&quot;&gt;
+&lt;cfset entry = entries[x]&gt;
+&lt;cfset logEntry = structNew()&gt;
+&lt;cfset logEntry.revision = entry.xmlAttributes.revision&gt;
+&lt;cfset logEntry.files = arrayNew(1)&gt;
+&lt;cfloop index=&quot;y&quot; from=&quot;1&quot; to=&quot;#arrayLen(entry.xmlChildren)#&quot;&gt;
+&lt;cfset xmlChild = entry.xmlChildren[y]&gt;</p>
+<pre><code>	&amp;lt;cfswitch expression=&quot;#xmlChild.xmlName#&quot;&amp;gt;
+		
+		&amp;lt;cfcase value=&quot;author,msg,date&quot;&amp;gt;
+			&amp;lt;cfset logEntry[xmlChild.xmlName] = xmlChild.xmlText&amp;gt;
+		&amp;lt;/cfcase&amp;gt;
+
+		&amp;lt;cfcase value=&quot;paths&quot;&amp;gt;
+			&amp;lt;cfloop index=&quot;z&quot; from=&quot;1&quot; to=&quot;#arrayLen(xmlChild.xmlChildren)#&quot;&amp;gt;
+				&amp;lt;cfset thisFile = xmlChild.xmlChildren[z].xmlText&amp;gt;
+				&amp;lt;cfset arrayAppend(logEntry.files, thisFile)&amp;gt;
+			&amp;lt;/cfloop&amp;gt;
+		&amp;lt;/cfcase&amp;gt;
+				
+	&amp;lt;/cfswitch&amp;gt;
+	
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfset arrayAppend(logEntries, logEntry)&amp;gt;	
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;cfdump var=&quot;#logEntries#&quot;&gt;
+</code></p>
+}

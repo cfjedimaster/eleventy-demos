@@ -1,0 +1,89 @@
+<h1>Post</h1>
+
+<p>Welcome to the third entry on my series about creating a mailing list application in ColdFusion. The previous entries are linked to at the bottom of this article. In this entry I'm going to talk about the actual mail tool (and it's about time). In general, this is a pretty simple tool, but I do have one neat trick in it I think you will like. As with the <a href="http://ray.camdenfamily.com/index.cfm/2006/5/23/Creating-a-Mailing-List-in-ColdFusion-Part-2">previous entry</a>, this script should be considered an &quot;Admin Only&quot; tool and should be placed behind a protected folder. Here is the script:</p>
+<!--more-->
+<code>
+&lt;!--- Just used to tell admin how many people will get the email ---&gt;
+&lt;cfset members = application.maillist.getMembers()&gt;
+<p>&lt;cfif members.recordCount is 0&gt;
+&lt;p&gt;
+Sorry, but your mailing list does not have any subscribers. It is sad to be lonely.
+&lt;/p&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfparam name=&quot;form.subject&quot; default=&quot;&quot;&gt;
+&lt;cfparam name=&quot;form.body&quot; default=&quot;&quot;&gt;
+&lt;cfset errors = &quot;&quot;&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;send&quot;)&gt;</p>
+<pre><code>&amp;lt;cfif not len(trim(form.subject))&amp;gt;
+	&amp;lt;cfset errors = errors &amp; &quot;You must include a subject.&amp;lt;br /&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif not len(trim(form.body))&amp;gt;
+	&amp;lt;cfset errors = errors &amp; &quot;You must include a body.&amp;lt;br /&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif errors is &quot;&quot;&amp;gt;
+	&amp;lt;cfloop query=&quot;members&quot;&amp;gt;
+		&amp;lt;cfset theBody = form.body&amp;gt;
+		&amp;lt;!--- replace columns ---&amp;gt;
+		&amp;lt;cfloop index=&quot;col&quot; list=&quot;#members.columnList#&quot;&amp;gt;
+			&amp;lt;cfset theBody = replaceNoCase(theBody, &quot;%&quot; &amp; col &amp; &quot;%&quot;, members[col][currentRow], &quot;all&quot;)&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;cfmail to=&quot;#email#&quot; from=&quot;#application.maillistfrom#&quot; subject=&quot;#form.subject#&quot;&amp;gt;#theBody#&amp;lt;/cfmail&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+
+	&amp;lt;!--- remove values ---&amp;gt;
+	&amp;lt;cfset form.subject = &quot;&quot;&amp;gt;
+	&amp;lt;cfset form.body = &quot;&quot;&amp;gt;
+	&amp;lt;!--- show confirmation ---&amp;gt;
+	&amp;lt;p&amp;gt;
+	&amp;lt;b&amp;gt;Your email has been sent.&amp;lt;/b&amp;gt;
+	&amp;lt;/p&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+Please enter your mail in the form below. It will be mailed to #members.recordCount# member(s).
+&lt;/p&gt;</p>
+<p>&lt;cfif errors is not &quot;&quot;&gt;
+&lt;p&gt;
+&lt;b&gt;#errors#&lt;/b&gt;
+&lt;/p&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;form action=&quot;sendmail.cfm&quot; method=&quot;post&quot;&gt;
+&lt;b&gt;Subject:&lt;/b&gt; &lt;input type=&quot;text&quot; name=&quot;subject&quot; value=&quot;#form.subject#&quot;&gt; &lt;br /&gt;
+&lt;textarea name=&quot;body&quot; cols=&quot;40&quot; rows=&quot;10&quot;&gt;#form.body#&lt;/textarea&gt;&lt;br /&gt;
+&lt;input type=&quot;submit&quot; name=&quot;send&quot; value=&quot;Send Message&quot;&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>A majority of this page is a simple form, so let me focus on the parts that are interesting. First off - it makes sense to add a simple sanity check before allowing the administrator to send the mail. This is done here:</p>
+<code>
+&lt;cfset members = application.maillist.getMembers()&gt;
+<p>&lt;cfif members.recordCount is 0&gt;
+&lt;p&gt;
+Sorry, but your mailing list does not have any subscribers. It is sad to be lonely.
+&lt;/p&gt;
+&lt;cfabort&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>You can't always rely on the common sense of your users, even your administrator users.</p>
+<p>So outside of this, everything else is a simple form. But pay attention to how I send the email. Here is the relevant code portion:</p>
+<code>
+&lt;cfloop query="members"&gt;
+	&lt;cfset theBody = form.body&gt;
+	&lt;!--- replace columns ---&gt;
+	&lt;cfloop index="col" list="#members.columnList#"&gt;
+		&lt;cfset theBody = replaceNoCase(theBody, "%" & col & "%", members[col][currentRow], "all")&gt;
+	&lt;/cfloop&gt;
+	&lt;cfmail to="#email#" from="#application.maillistfrom#" subject="#form.subject#"&gt;#theBody#&lt;/cfmail&gt;
+&lt;/cfloop&gt;
+</code>
+<p>So what is going on here? I'm looping over every record from the members query. If you remember, this is the record set containing all my subscribers. This is a query that contains, right now, an email and token field. As I mentioned back in the <a href="http://ray.camdenfamily.com/index.cfm/2006/5/22/Creating-a-Mailing-List-in-ColdFusion-Part-1">first entry</a>, a &quot;real&quot; site may have more fields, like name, age, etc. What I've done is built code to let the admin use &quot;tokens&quot; in the email. If the admin enters something like this:</p>
+<blockquote>
+Hi, %name%
+</blockquote>
+<p>And name exists as a column in the query, it will automatically be replaced with the value from the members query. This lets the administrator write a more personalized email. It will also let us set up the unsusbscribe functionality that I'll be talking about in the next entry. As before, you can find the code attached to the entry.<p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fmailinglist2%2Ezip'>Download attached file.</a></p></p>
+}

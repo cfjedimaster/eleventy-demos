@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>I've never been shy about my feelings about the Jade templating language. I absolutely hate it. I think it is weird. I think it leads to moral depravity. I just really, really don't like it. Mainly I think because I find HTML already succinct enough. I mean I get that this:</p>
+<pre><code>h1 Foo
+</code></pre>
+<p>is less code than</p>
+<pre><code>&lt;h1&gt;Foo&lt;/h1&gt;
+</code></pre>
+<p>but my brain just has issues mapping the Jade version to the output. So yeah, I hate Jade. But a while back, due to some legal issues, the Jade folks had to rename to <a href="https://pugjs.org">Pug</a>, and who can hate a project called Pug?</p>
+<img src="https://static.raymondcamden.com/images/2016/11/pug.png">
+<p>To be honest, even before this rename, I'd been slightly warming up to Jade. I still prefer <a href="http://handlebarsjs.com/">Handlebars</a> but I've moved past &quot;hate&quot; and am slowly warming up to &quot;Mild Distate.&quot;</p>
+<p>I noticed today that there wasn't a quick testing tool for Pug. The web site says you can open up dev tools and test right there, which is cool and all, but as I had a few hours in the Denver airport, I thought I'd whip up a quick tool. Here's a screen shot of it in action. It lets you input a Pug template and supply JSON data.</p>
+<img src="https://static.raymondcamden.com/images/2016/11/pug2.png">
+<p>You can test this yourself here: <a href="https://cfjedimaster.github.io/webdemos/pugclient/">https://cfjedimaster.github.io/webdemos/pugclient/</a></p>
+}

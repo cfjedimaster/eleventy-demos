@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>Yesterday I was reading an article on Ben Forta's blog, <a href="http://forta.com/blog/index.cfm/2009/6/20/Look-No-Datasource">Look, No Datasource</a>, where he described how in ColdFusion 9, we can specify a default datasource at the application level that can then be used with all tags that use a datasource attribute. So instead of doing:</p>
+<code>
+&lt;cfquery name="getShots" datasource="#application.dsn#"&gt;
+</code>
+<p>we can instead just do:</p>
+<code>
+&lt;cfquery name="getShots"&gt;
+</code>
+<p>This is cool and all, but a reader commented that it would be nice if we could also supply default mail settings at the server level. I agree with him, it would be nice. Things like datasources, mail settings, etc, are typically high level things that individual tags should not need to worry about.</p>
+<p>It occurred to me that he may not be aware of a feature, added in ColdFusion 8, which <i>kind of</i> allows for this right now. For a long time custom tags have supported an attributeCollection argument. This is a structure that acts like passed in arguments. So if a custom tag takes two arguments, num1 and num2, I could actually pass them in like so:</p>
+<code>
+&lt;cfset s = {num1="2",num2="67"}&gt;
+&lt;cf_foo attributeCollection="#s#"&gt;
+</code>
+<p>That's not a great example as it didn't save me any keystrokes, but I think you get the idea. ColdFusion 8 simply expanded this to built in tags. So taking the reader's comment about mail, you could, if you wanted, do this in your Application.cfc file:</p>
+<code>
+&lt;cfset application.mail = {server="127.0.0.1",username="mail",password="pass"}&gt;
+</code>
+<p>and then pass it to your cfmail tags:</p>
+<code>
+&lt;cfmail to="some@where.com" from="admin@foo.com" subject="Your Email" attributeCollection="#application.mail#"&gt;
+foo
+&lt;/cfmail&gt;
+</code>
+<p>Ok, so again, there isn't a huge savings in keystrokes, but it does allow you to change your mail tags from one central structure. Mail server doesn't require a password anymore? Just remove it from the struct. Want to supply a failto attribute? Add it to the struct and every cfmail tag uses the struct will be updated.</p>
+<p>I've got to be honest and say that I've not yet used this in production (mainly because I keep forgetting about it!) but it's pretty powerful stuff. Anyone out there using it?</p>
+}

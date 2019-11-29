@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>Two tags related to CFCs (and tag based UDFs) let you specify a type value: cffunction and cfarguments. The type values can be one from this list:</p>
+<p>any<br>
+array<br>
+boolean<br>
+date<br>
+GUID<br>
+numeric<br>
+query<br>
+string<br>
+struct<br>
+UUID<br>
+variableName<br></p>
+<p>However - what happens if you pass something else? If CFMX encounters any other value, it assumes you are using the name of a CFC. For example, if you said type=&quot;person&quot;, it would assume a value of type person.</p>
+<p>This often confuses people. For example, I've seen people use &quot;integer&quot; for type, assuming the CFC will expect a number, but instead it will expect an instance of the integer cfc. So - if you forget what the valid types are, just check your docs, or your right-click-edit vtm in HomeSite+.</p>
+}

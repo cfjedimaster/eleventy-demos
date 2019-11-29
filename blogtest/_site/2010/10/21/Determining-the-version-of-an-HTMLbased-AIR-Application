@@ -1,0 +1,40 @@
+<h1>Post</h1>
+
+<p>Earlier today a subscriber on the <a href="http://groups.google.com/group/air-html-js">AIR with HTML and JS</a> listserv asked about how one could get the current version of an AIR application from within the application itself. AIR stores the version number in the application.xml file. This is a free-form value that can be anything (number, string, etc.) A quick Google search turned out this perfect tip: <a href="http://inflagrantedelicto.memoryspiral.com/2009/02/quick-tip-display-application-version-in-your-air-app/">Quick Tip: Display Application Version in your AIR App</a> This worked, but I wanted to mock up a quick HTML version. Unfortunately dealing with XML in JavaScript kind of makes me want to throw up a little. I think ColdFusion has got me spoiled. But once I figured out the syntax (thank you again <a href="http://www.w3schools.com/Xml/xml_dom.asp">W3 Schools</a>) I was able to whip up the following demo.</p>
+<!--more-->
+<p/>
+<code>
+<p>&lt;!--
+Credit goes to Joseph Labrecque: http://inflagrantedelicto.memoryspiral.com/2009/02/quick-tip-display-application-version-in-your-air-app/
+--&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;New Adobe AIR Project&lt;/title&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;lib/air/AIRAliases.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+function init() {
+var appdesc = air.NativeApplication.nativeApplication.applicationDescriptor;			
+parser=new DOMParser();
+xmlDoc=parser.parseFromString(appdesc,&quot;text/xml&quot;);
+version = xmlDoc.getElementsByTagName(&quot;version&quot;)[0];
+air.trace(version.textContent);
+document.getElementById(&quot;version&quot;).innerText = version.textContent;
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body onload=&quot;init()&quot;&gt;</p>
+<pre><code>&amp;lt;h1&amp;gt;KnowThyself&amp;lt;/h1&amp;gt;
+
+&amp;lt;p&amp;gt;
+Hello, you are running version &amp;lt;span id=&quot;version&quot;&amp;gt;&amp;lt;/span&amp;gt; of the application.
+&amp;lt;/p&amp;gt;
+
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p/>
+<p>The application simply loads up the XML via the NativeApplication object. This is a string, and while we could parse it using regex, I went ahead and did it the &quot;XML&quot; way and converted it to a proper object. Once done it is pretty trivial to get the version. (Again, once you remind yourself how XML stuff is manipulated in JavaScript.) When the application loads, whatever you have in your application.xml for version will show up in the span.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/screen21.png" />
+<p/>}

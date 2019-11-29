@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>Once again I'm going to try to cover a few Ask a Jedi questions at once. Here is the first one:</p>
+<blockquote>
+I'm trying to set a "double dynamic" variable. It is currently:
+<p>&lt;cfset myXMLDoc.feed.newsletterpubs.file[#LoopCount#].description.XmlText  = &quot;Hello&quot;&gt;</p>
+<p>However, the &quot;newsletterpubs&quot; portion is also dynamic (variable is &quot;#ftp_select&quot;). How can I incorporate 2 dynamic portions into this cfset statement?</p>
+</blockquote>
+<p>You already had half the solution. Bracket notation can be used as many times as you want. So to replace the newsletterpubs with a var, just use another bracket:</p>
+<code>
+&lt;cfset myXMLDoc.feed[ftp_select].file[LoopCount].description.XmlText  = "Hello"&gt;
+</code>
+<p>You will also notice I got rid of the # sign in loopCount, it isn't necessary. Next question:</p>
+<blockquote>
+Can you do a article explaining how to use the application.cfc? I can't figure out how the request method works for the life of me...it'd be great if you could help me out!
+</blockquote>
+<p>Funny you ask that - as I'm presenting on it at MAX next week. I'll be doing an hour long session on it, and Simon Horwith is doing a 90 minute workshop on it, so you will have two places to learn about the new feature. Kind of a non-answer I realize, sorry. Let's hit another one:</p>
+<blockquote>
+How do I embed a PDF in a HTML document?
+</blockquote>
+<p>I assume you may have missed it, but CFMX7 added support for PDF generation with the cfdocument tag. If you don't have CFMX7, there are other options as well. <a href="http://www.activepdf.com/">ActivePDF</a> has been around for quite some time. I've never used them, but they are an alternative. Another option is <a href="http://www.lowagie.com/iText/">iText</a>, a free Java-based PDF generator. I haven't used it either so I can't comment on how well it works.</p>
+<p>Lastly, a BlogCFC question:</p>
+<blockquote>
+Kudos on your BlogCFC code.  Maybe I missed something, but how are you adding pictures to your posts in BlogCFC?
+</blockquote>
+<p>I'm not doing anything special. I'm just adding IMG html tags. I am looking into ways to make it easier, but it will be after the 4.0 release.</p>
+}

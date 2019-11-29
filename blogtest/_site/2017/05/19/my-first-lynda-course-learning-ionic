@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>So this kinda snuck up on me (in terms of how quickly it got produced I mean ;), but I'm happy to announce my first course for Lynda.com (AKA LinkedIn Learning):</p>
+<p><a href="https://www.lynda.com/Ionic-tutorials/Learning-Ionic-Basics/562925-2.html">Learning Ionic</a></p>
+<p>It's a short course meant to introduce folks to Ionic 2 (but will work just fine with Ionic 3/X) and I think it's a rather 'gentle' introduction for folks who have only seen Ionic 1 so far and are a bit worried about the jump to Ionic/Angular 2. Here are topics covered:</p>
+<ul>
+<li>Making a default application</li>
+<li>Exploring application files</li>
+<li>Adding navigation and UI components</li>
+<li>Theming</li>
+<li>Using a hard-coded detail view</li>
+<li>Adding the SW provider via CLI</li>
+<li>Making a list and a details page</li>
+<li>Adding a loading widget</li>
+<li>Using native and market Ionic resources</li>
+</ul>
+<p>Anyway, I think it's good. But obviously I'm biased. ;) As always, check it out, let me know what you think (positive or negative), and enjoy. I know I've been laser focused on serverless lately, and that certainly isn't because I'm done with Ionic!</p>
+}

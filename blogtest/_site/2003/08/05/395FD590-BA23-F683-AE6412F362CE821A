@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>One question I see asked often is if you can use CFML tags in CFSCRIPT blocks. The technical answer is no. However, if you have CFMX, you can write wrapper UDFs for those tags and then call them from cfscript. This allows you to do stuff like:</p>
+<p>&lt;cfscript&gt;<br>
+if(foo) location(newURL);<br>
+else {<br>
+    mail(toAddress,fromAddress,subject,body);<br>
+}<br></p>
+<p>For a set of example UDFs in this area, see the <a href="http://www.cflib.org/library.cfm?ID=17">CFMLLib</a> at CFLib.</p>
+}

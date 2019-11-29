@@ -1,0 +1,123 @@
+<h1>Post</h1>
+
+<p>Ok, so I'm starting off this tutorial with something of a lie. By every <em>practical</em> definition of an API, we really can't create one on a static site. An API typically involves a complete CRUD cycle (reading data, creating and updating data, and deleting) process for content and since a static site doesn't have an app server, than that's just not going to happen. However, if we can stretch our point of a view a bit, there's room for a bit of interpretation here.</p>
+<!--more-->
+<p><img src="https://static.raymondcamden.com/images/2016/03/obi.jpg" alt="Obi knows best"></p>
+<p>If you consider just the <em>read</em> aspect of an API, it is possible to create such a thing for a static site, but only if you ignore things like searching, filtering, or otherwise manipulating the data.</p>
+<p>That certainly sounds like a heck of a lot to give up, but it doesn't mean your site is completely devoid of any way of sharing data. Consider for a moment that static site generators (SSGs) all have some way of outputting RSS. Folks don't tend to think of it because it &quot;just works&quot;, but RSS is a data-friendly format for your blog and is - barely - an API for your site.</p>
+<p>Let's consider a real example. You've got a site for your e-commerce shop and you've set up various products. We'll use <a href="https://jekyllrb.com">Jekyll</a> for the demo but any SSG would be fine. I created a new Jekyll site and then added a <code>_data</code> folder. Within that folder I created a file called products.json. It was a simple array of products.</p>
+<pre><code class="language-javascript">
+[
+	{
+		"name":"Apple",
+		"description":"This is the Apple product.",
+		"price":9.99,
+		"qty":13409
+	},	
+	{
+		"name":"Banana",
+		"description":"This is the Banana product.",
+		"price":4.99,
+		"qty":1409
+	},	
+	{
+		"name":"Cherry",
+		"description":"This is the Cherry product.",
+		"price":9.99,
+		"qty":0
+	},	
+	{
+		"name":"Donut",
+		"description":"This is the Donut product.",
+		"price":19.99,
+		"qty":923
+	}
+]
+</code></pre>
+<p>This is the standard way by which you can provide generic data for a Jekyll site. See the <a href="https://jekyllrb.com/docs/datafiles/">docs</a> on this feature for more examples. At this point I can add product information to my site in HTML. I edited the main home page and just added a simple list. I decided to list the name and price - this was completely arbitrary.</p>
+<pre><code class="language-javascript">
+&lt;h1 class=&quot;page-heading&quot;&gt;Products&lt;&#x2F;h1&gt;
+&lt;ul class=&quot;post-list&quot;&gt;
+	{% for p in site.data.products %}
+	&lt;li&gt;{{ p.name }} at {{p.price}}&lt;&#x2F;li&gt;
+	{% endfor %}	  
+&lt;&#x2F;ul&gt;
+</code></pre>
+<p>And here it is on the site:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ssg1.png" class="imgborder">
+<p>Yeah, not terribly pretty, but for a demo it will suffice. I could also create HTML pages for my products so you can click to view more information. (For Jekyll, that could be done by hand, or by using a generator to read the JSON file and automatically create the various detail pages.)</p>
+<p>So let's create a JSON version of our products. Technically, we already have the file, but it isn't accessible. In order to make this public, we need to create a file outside of <code>_data</code>. I chose to make a folder called <code>api</code> and a file named <code>products.json</code>. Here is how I made that file dynamically output the products in JSON format.</p>
+<h2><pre><code class="language-javascript"></h2>
+<h2>layout: null</h2>
+<p>{{ site.data.products |{% endraw %} jsonify }}
+</code></pre></p>
+<p>Yeah, that's it. So a few things. In order to have anything dynamic in a random page in Jekyll, you must use front matter. For me that was just fine as I wanted to ensure no layout was used for the file anyway. Jekyll also supports a <code>jsonify</code> filter that turns data into JSON. So basically I went from JSON to real data to JSON again, and it outputs just fine in my browser:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ssg2.png" class="imgborder">
+<p>Of course, this assumes that my core data file matches, 100%, to what I want to expose to my &quot;API&quot;. That may not work for every case. I could manually output the JSON by looping over my site data and picking and choosing what properties to output. Heck, I could even make new properties on the fly. For an example of this, see this Jekyll snippet: <a href="http://jekyllsnippets.com/excluding-jsonify-your-site/">JSONify your Jekyll Site</a>.</p>
+<p>Cool! But what about sorting, filtering, etc? Well, we could do it manually. For example, I made a new file, <code>products.qty.json</code>, that supports a sorted by qty list, with highest first:</p>
+<h2><pre><code class="language-javascript"></h2>
+<h2>layout: null</h2>
+<p>{% raw %}{{ site.data.products |{% endraw %} sort: &quot;qty&quot; {% raw %}| reverse |{% endraw %} jsonify }}
+</code></pre></p>
+<p>This resulted in this JSON:</p>
+<pre><code class="language-javascript">
+[{% raw %}{"name":"Apple","description":"This is the Apple product.","price":9.99,"qty":13409},{"name":"Banana","description":"This is the Banana product.","price":4.99,"qty":1409},{"name":"Donut","description":"This is the Donut product.","price":19.99,"qty":923},{"name":"Cherry","description":"This is the Cherry product.","price":9.99,"qty":0}]
+</code></pre>
+<p>I could do similar sorts for price or name. How about filtering? I built a new file, <code>products.instock.json</code>, to represent products that have a <code>qty</code> value over zero. I had hoped to do this in one line like in the example above, and Liquid (the template language behind Jekyll) does support a where filter, but from what I could see, it did not support a where filter based on a &quot;greater than&quot; or &quot;not equal&quot; status. I could be wrong. I just used the tip from the Jekyll snippet above.</p>
+<h2><pre><code class="language-javascript"></h2>
+<h2>layout: null</h2>
+<p>[
+{% for p in site.data.products %}	
+{% if p.qty &gt; 0 %}
+{
+&quot;name&quot;:&quot;{{p.name}}&quot;,
+&quot;description&quot;:&quot;{{p.description |{% endraw %} escape}}&quot;,
+&quot;price&quot;:{% raw %}{{p.price}},
+&quot;qty&quot;:{{p.qty}},</p>
+<pre><code>}
+{% endif %}
+</code></pre>
+<p>{% endfor %}
+]
+</code></pre></p>
+<p>And the result. Note the white space is a bit fatter. I could fix that by manipulating my source code a bit.</p>
+<pre><code class="language-javascript">
+[
+	
+	
+	{
+		"name":"Apple",
+		"description":"This is the Apple product.",
+		"price":9.99,
+		"qty":13409,
+			
+	}
+	
+	
+	
+	{
+		"name":"Banana",
+		"description":"This is the Banana product.",
+		"price":4.99,
+		"qty":1409,
+			
+	}
+	
+	
+	
+	
+	
+	{
+		"name":"Donut",
+		"description":"This is the Donut product.",
+		"price":19.99,
+		"qty":923,
+			
+	}
+	
+
+]
+</code></pre>
+<p>So I think you get the idea. If I wanted to, I could add any number of possible combinations (in stock, sorted by name, but with a price less than 100). It is definitely a manual process, and I'm not supporting dynamic sorting and filtering, but it is certainly something, and it may be useful to your site users.</p>
+<p>I'd love to know what you think of this technique, and if you are making use of a SSG and have done something like this, please share an example in the comments below!</p>
+}

@@ -1,0 +1,220 @@
+<h1>Post</h1>
+
+<p>A little over <em>five</em> years ago (omg, really?) I wrote a <a href="https://www.raymondcamden.com/2012/01/13/Demo-of-Color-Palettes-and-PhoneGap/">PhoneGap demo</a> that made use of a JavaScript library called <a href="http://lokeshdhakar.com/projects/color-thief/">Color Thief</a>. Color Thief (by <a href="http://lokeshdhakar.com/">Lokesh Dhakar</a>) is a library that can inspect an image for dominent colors. My PhoneGap demo was simple. It accessed the device camera to let the user take a picture and then used Dhakar's library to get the dominant colors. Here's a screen shot from the ancient demo:</p>
+<img src="https://static.raymondcamden.com/images/shot3.png" class="imgborder">
+<p>A little over a year later, I followed up that initial post with a new version that was 100% web standards based: <a href="https://www.raymondcamden.com/2013/05/20/capturing-camerapicture-data-without-phonegap/">Capturing camera/picture data without PhoneGap</a>.</p>
+<p>Then, four years later, I updated it <em>yet again</em> using the <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices">MediaDevices</a> API: <a href="https://www.raymondcamden.com/2017/01/24/new-camera-hotness-from-chrome">New Camera Hotness from Chrome</a>. Unfortunately that API still isn't available in iOS.</p>
+<p>I was thinking about this app last night and thought it would be a good use case for a progressive web app (PWA). It is fairly simple, but adding &quot;add to homescreen&quot; and offline support should be trivial, right? To be clear, there's more to PWA than that, but I thought those two features alone would be a great use case for the Color Thief app.</p>
+<p>I began by updating the code from years ago which meant I had a chance to add Vue. (Woot!) Here is the HTML:</p>
+<pre><code class="language-markup">&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+	&lt;head&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=320, user-scalable=no&quot; /&gt;
+	&lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+	&lt;title&gt;ColorThief Demo&lt;/title&gt;
+	&lt;link rel=&quot;stylesheet&quot; href=&quot;app.css&quot;&gt;
+	&lt;/head&gt;
+
+	&lt;body&gt;
+
+		&lt;div id=&quot;app&quot; v-cloak&gt;
+
+			&lt;input type=&quot;file&quot; capture=&quot;camera&quot; accept=&quot;image/*&quot; @change=&quot;gotPic&quot;&gt;
+			&lt;div v-if=&quot;imageSrc&quot;&gt;
+			&lt;img id=&quot;yourimage&quot; :src=&quot;imageSrc&quot; @load=&quot;getSwatches&quot; ref=&quot;theImage&quot;&gt;
+			&lt;/div&gt;&lt;div v-else&gt;
+				&lt;h2&gt;Welcome to Color Thief&lt;/h2&gt;
+				&lt;p&gt;
+					Select an image using the button above and Color Thief will find the 5 most prominent colors.
+				&lt;/p&gt;
+				&lt;p&gt;
+					Awesome &lt;a href=&quot;http://lokeshdhakar.com/projects/color-thief/&quot;&gt;Color Thief&lt;/a&gt; library by &lt;a href=&quot;http://lokeshdhakar.com/&quot;&gt;Kokesh Dhakar&lt;/a&gt;.
+				&lt;/p&gt;
+			&lt;/div&gt;
+			&lt;div id=&quot;swatches&quot;&gt;
+				&lt;div v-for=&quot;swatch in swatches&quot; class=&quot;swatch&quot; :style=&quot;swatch.style&quot;&gt;&lt;/div&gt;
+			&lt;/div&gt;
+		
+		&lt;/div&gt;
+
+		&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;color-thief.js&quot;&gt;&lt;/script&gt;
+		&lt;script src=&quot;vue.min.js&quot;&gt;&lt;/script&gt;
+		&lt;script src=&quot;app.js&quot;&gt;&lt;/script&gt;
+
+	&lt;/body&gt;
+
+&lt;/html&gt;
+</code></pre>
+<p>I've got the file input on top to allow for camera access. On desktop this will still work nicely by letting me select a file. I've got some intro text that goes away once the app runs with an image. Now let's look at the JavaScript:</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data() {
+		return {
+			imageSrc:null,
+			swatches:[]
+		}
+	},
+	methods:{
+		gotPic(event) {
+			this.imageSrc = URL.createObjectURL(event.target.files[0]);
+		},
+		getSwatches() {
+	
+			let colorThief = new ColorThief();
+			let colorArr = colorThief.getPalette(this.$refs.theImage,5);
+			//reset
+			this.swatches = [];	
+			colorArr.forEach(c =&gt; {
+				let style = {
+					backgroundColor:&quot;rgb(&quot; + c[0] + &quot;,&quot; + c[1] + &quot;,&quot; + c[2] +&quot;)&quot;
+				}
+				this.swatches.push({style});			
+			});
+		}
+	}
+});
+</code></pre>
+<p>It basically comes down to two functions. One to set an image source to the location of a file you select or picture you take with your device. THe second simply calls the Color Thief library. You can run this yourself here:</p>
+<p>https://cfjedimaster.github.io/webdemos/pwa_colorthief/</p>
+<p>In case you don't want to - here's the initial view:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/pwact.jpg" alt="Screen shot"></p>
+<p>and here it is with an image selected:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/pwact2.jpg" alt="Screen shot 2"></p>
+<p>I ran the Progressive Web App Ligthouse audit in Chrome devtools and got...</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/pwact3.jpg" alt="Lighthouse report for the initial version"></p>
+<p>Ok. All those issues make sense and aren't a surprise. So let me walk through the changes I made to turn this into a simple PWA. (And again, I'm not doing everything, and I'm fine with that. I'm making improvements and that's <em>always</em> a good thing!)</p>
+<h1>Add to Homescreen</h1>
+<p>In order to improve the &quot;add to homescreen&quot; support, and allow for an automatic prompt (remember, that's two different things, ask me in the comments below if you don't know what I mean), I began by adding an app manifest. Here's the one I used:</p>
+<pre><code class="language-js">{
+	&quot;short_name&quot;:&quot;Color Thief&quot;,
+	&quot;name&quot;:&quot;Color Thief&quot;,
+	&quot;description&quot;:&quot;Lets you get prominent colors from a picture taken with your camera.&quot;,
+	&quot;display&quot;:&quot;fullscreen&quot;,
+	&quot;icons&quot;:[
+		{
+			&quot;src&quot;: &quot;img/icon192.png&quot;,
+			&quot;sizes&quot;: &quot;192x192&quot;,
+			&quot;type&quot;: &quot;image/png&quot;
+		},
+		{
+			&quot;src&quot;: &quot;img/icon512.png&quot;,
+			&quot;sizes&quot;: &quot;512x512&quot;,
+			&quot;type&quot;: &quot;image/png&quot;
+		}
+	],
+	&quot;orientation&quot;:&quot;portrait&quot;,
+	&quot;start_url&quot;:&quot;./index.html&quot;,
+	&quot;background_color&quot;:&quot;#fff&quot;,
+	&quot;theme_color&quot;:&quot;#fff&quot;
+}
+</code></pre>
+<p>I initially started off with just the first 7 items you see above. The Lighthouse audit dinged me for not having <code>background_color</code> and <code>theme_color</code> so I added them as white just to shut it up. For the icons, I fired up paint.net, made an image with the right size, and typed. Not very artistic, but it worked:</p>
+<img src="https://cfjedimaster.github.io/webdemos/pwa_colorthief_2/img/icon512.png">
+<p>Notice how I put the text a bit off center. That's design.</p>
+<p>On the HTML side, I had to add in a link to the manifest:</p>
+<pre><code class="language-markup">&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, user-scalable=no&quot; /&gt;
+&lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+&lt;title&gt;ColorThief Demo&lt;/title&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;app.css&quot;&gt;
+&lt;link rel=&quot;manifest&quot; href=&quot;manifest.json&quot;&gt;
+&lt;meta name=&quot;theme-color&quot; content=&quot;#ffffff&quot;&gt;
+</code></pre>
+<p>I also did two other fixes. First, my viewport wasn't correct. Secondly, the Lighthouse audit wanted a <code>theme-color</code> meta tag. Not sure why as it's specified in the manifest, but there ya go. I should also point out that I did <em>not</em> add in the additional meta tags to support iOS. This won't prevent folks on iOS from adding to their home screen, they just won't get the nice icon. The good news is that iOS 11.3 is adding PWA support, and in general, folks upgrade on iOS very quickly. (In general - apparently that is going a bit slower than normal for iOS 11.)</p>
+<p>At this point, I have what I need for a better &quot;add to homescreen&quot; experience. Android/Chrome Desktop users won't get an automatic prompt though because I don't have a service worker, so let's fix that.</p>
+<h1>The Service Worker</h1>
+<p>My service worker will be fairly simple. I want to cache, and use the cache, for the resources of my app. This will allow it to work offline. That's fairly boilerplate code and I was able to use the same service worker file I've used for my previous demos. All I changed was the list of files to cache:</p>
+<pre><code class="language-js">var CACHE_NAME = 'my-site-cache-v1';
+var urlsToCache = [
+	'./',
+	'./index.html?utm_source=homescreen',
+	'./js/color-thief.js',
+	'./js/vue.min.js',
+  	'./js/app.js',
+	'./app.css',
+  	'./manifest.json'
+];
+
+self.addEventListener('install', function(event) {
+	// Perform install steps
+	event.waitUntil(
+		caches.open(CACHE_NAME)
+		.then(function(cache) {
+			console.log('Opened cache');
+			return cache.addAll(urlsToCache);
+		})
+		.catch(function(e) {
+			console.log('Error from caches open', e);
+		})
+	)
+});
+
+self.addEventListener('fetch', function(event) {
+	event.respondWith(
+	  caches.match(event.request)
+		.then(function(response) {
+		  // Cache hit - return response
+		  if (response) {
+				console.log('got it from cache', event.request);
+				return response;
+		  }
+		  return fetch(event.request);
+		}
+	  )
+	);
+  });
+  
+</code></pre>
+<p>This service worker will always use the cache if it exists. Caching strategies is a <em>very</em> complex topic, but just know that you have many different options in this area and can get very precise about how you would like your app to use the cache.</p>
+<p>The final change to actually use the service worker. I added that to my main app.js:</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data() {
+		return {
+			imageSrc:null,
+			swatches:[]
+		}
+	},
+	mounted() {
+		if(&quot;serviceWorker&quot; in navigator) {
+			navigator.serviceWorker.register('./serviceworker.js')
+			.then((registration) =&gt; {
+				console.log('Service Worker installed!');
+			}).catch((err) =&gt; {
+				console.error('Service Worker failed', err);
+			});
+		}
+	},
+	methods:{
+		gotPic(event) {
+			this.imageSrc = URL.createObjectURL(event.target.files[0]);
+		},
+		getSwatches() {
+	
+			let colorThief = new ColorThief();
+			let colorArr = colorThief.getPalette(this.$refs.theImage,5);
+			//reset
+			this.swatches = [];	
+			colorArr.forEach(c =&gt; {
+				let style = {
+					backgroundColor:&quot;rgb(&quot; + c[0] + &quot;,&quot; + c[1] + &quot;,&quot; + c[2] +&quot;)&quot;
+				}
+				this.swatches.push({style});			
+			});
+		}
+	}
+});
+</code></pre>
+<p>If you can't see it - look in the <code>mounted()</code> method. Basically, if serviceworker exists as an API in the browser, register it. And that's basically it. You can run this version of the app here:</p>
+<p>https://cfjedimaster.github.io/webdemos/pwa_colorthief_2/</p>
+<p>In Chrome, both desktop and mobile, you <em>may</em> be prompted to add it to your home screen. On desktop they call it &quot;app shelf&quot; for some reason, but the icon is added to your desktop:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/pwact4.jpg" alt="Desktop icon"></p>
+<p>And the resulting Lighthouse audit:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/1/pwact5.jpg" alt="Lighthouse audit"></p>
+<p>WOOT!!! 100!! I am a JavaScript GOD! Ok, no, not really, and as I've said multiple times already in this post, building a PWA will involve more than what I've done here, but in about 30 minutes of work I:</p>
+<ul>
+<li>Dramatically improved the &quot;add to homescreen&quot; experience</li>
+<li>Made it so that Chrome will actually prompt the user to do so</li>
+<li>And made it work completely offline</li>
+</ul>
+<p>That's a win in my book! Let me know if you have any questions. The complete source code for both versions may be found here: https://github.com/cfjedimaster/webdemos. <code>pwa_colorthief</code> is the first version and <code>pwa_colorthief_2</code> is the improved one.</p>
+}

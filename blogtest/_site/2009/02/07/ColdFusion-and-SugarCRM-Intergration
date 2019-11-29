@@ -1,0 +1,36 @@
+<h1>Post</h1>
+
+<p>If you would like to integrate your ColdFusion site with SugarCRM, please see the new <a href="http://coldsugar.riaforge.org/">ColdSugar</a> project at RIAForge. This is a simple CFC that allows for complete integration with a SugarCRM account. You can get any kind of data and perform updates as well. I wish I could say there was something sexy about this code, but their API was relatively simple to work with.</p>
+<p>Some sample code:</p>
+<code>
+&lt;cfset coldsugar = createObject("component", "sugarcrm").init("http://eval.sugarondemand.com/xxx/soap.php?wsdl", "admin", "foo", true)&gt;
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Opportunities')#&quot; label=&quot;Opportunities&quot;&gt;</p>
+<p>&lt;cfset q = &quot;opportunities.name LIKE 'TI%'&quot;&gt;
+&lt;cfdump var=&quot;#coldsugar.getList(type='Opportunities',query=q)#&quot; label=&quot;query=#q#&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList(type='Opportunities',orderby='amount_usdollar')#&quot; label=&quot;sort by amount_usdollar&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList(type='Opportunities',deleted=true)#&quot; label=&quot;deleted&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList(type='Opportunities',fields='name,amount_usdollar')#&quot; label=&quot;Just name and amount_usdollar&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Contacts')#&quot; label=&quot;Contacts&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Accounts')#&quot; label=&quot;Accounts&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Documents')#&quot; label=&quot;Documents&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Calls')#&quot; label=&quot;Calls&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Meetings')#&quot; label=&quot;Meetings&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Tasks')#&quot; label=&quot;Tasks&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getList('Notes')#&quot; label=&quot;Notes&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#coldsugar.getFields('Emails')#&quot; label=&quot;Email Fields&quot;&gt;</p>
+<p>&lt;cfset emails = coldsugar.getList('Emails')&gt;
+&lt;cfdump var=&quot;#emails#&quot; label=&quot;Emails&quot;&gt;</p>
+<p>&lt;cfset email = coldsugar.get('Emails', emails.id[1])&gt;
+&lt;cfdump var=&quot;#email#&quot; label=&quot;Emails&quot;&gt;</p>
+<p>&lt;cfset email.status = 'replied'&gt;
+&lt;cfset r = coldsugar.save('Emails',email)&gt;
+&lt;p&gt;
+Result of save is #r#
+&lt;/p&gt;</p>
+<p>&lt;cfset coldsugar.logout()&gt;</p>
+<p>&lt;p&gt;
+Done with tests.
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+</code></p>
+}

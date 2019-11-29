@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>A very minor BlogCFC fix has been released. Mark Denderson noted a double closing TR tag in the calendar pod. The bug occured when the last day of the month fell on a Saturday. So... honestly... this isn't my fault. I place full blame on April.</p>
+<p>Anyway, you can download the latest build from the tools pod on the right. The only file that changed (besides the readme) is the calendar pod.</p>
+}

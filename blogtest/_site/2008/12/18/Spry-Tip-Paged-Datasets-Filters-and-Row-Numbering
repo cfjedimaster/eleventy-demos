@@ -1,0 +1,94 @@
+<h1>Post</h1>
+
+<p>A reader wrote in asking an interesting question. He was using a Spry PagedView (a nice way to present a 'paged' interface to data loaded in via Ajax) and ran into an issue when trying to display the row number. When he used {ds_RowNumberPlus1}, the row was relative to the page. So on page 2, he saw 1 instead of 11. I read over the <a href="http://labs.adobe.com/technologies/spry/samples/data_region/SpryPagedViewSample.html">docs</a> a bit and nothing seemed like it would work. I then created the following demo to help me test this.</p>
+<!--more-->
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script src=&quot;http://localhost/Spry_1_6_1/includes/xpath.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://localhost/Spry_1_6_1/includes/SpryData.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://localhost/Spry_1_6_1/includes/SpryPagedView.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+var mydata = new Spry.Data.XMLDataSet(&quot;data.cfm&quot;,&quot;/people/person&quot;);
+var pvdata = new Spry.Data.PagedView(mydata, { pageSize: 10 });</p>
+<p>var myFilterFunc = function(dataSet, row, rowNumber) {</p>
+<pre><code>if(Spry.$(&quot;keyword_filter&quot;) == null) return row;
+var regExpStr = Spry.$(&quot;keyword_filter&quot;).value;
+
+if(regExpStr == '') return row;
+var regExp = new RegExp(regExpStr, &quot;i&quot;);
+
+if(row[&quot;name&quot;].search(regExp) != -1) return row;
+return null;
+</code></pre>
+<p>}
+mydata.filter(myFilterFunc);</p>
+<p>&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form name=&quot;filterForm&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;keyword_filter&quot; id=&quot;keyword_filter&quot; onkeyup=&quot;mydata.filter(myFilterFunc);&quot;&gt;&lt;/form&gt;</p>
+<p>&lt;div spry:region=&quot;pvdata&quot;&gt;</p>
+<p>&lt;div spry:state=&quot;loading&quot;&gt;Loading - Please stand by...&lt;/div&gt;
+&lt;div spry:state=&quot;error&quot;&gt;Oh crap, something went wrong!&lt;/div&gt;
+&lt;div spry:state=&quot;ready&quot;&gt;</p>
+<p>&lt;p&gt;</p>
+<p>&lt;table width=&quot;500&quot; border=&quot;1&quot;&gt;
+&lt;tr&gt;
+&lt;th onclick=&quot;pvdata.sort('name','toggle');&quot; style=&quot;cursor: pointer;&quot;&gt;Name&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr spry:repeat=&quot;pvdata&quot;&gt;
+&lt;td style=&quot;cursor: pointer;&quot;&gt;
+ds_RowID={ds_RowID} ds_RowNumber={ds_RowNumber} ds_RowNumberPlus1={ds_RowNumberPlus1}&lt;br/&gt;
+ds_PageFirstItemNumber={ds_PageFirstItemNumber} ds_CurrentRowNumber={ds_CurrentRowNumber}&lt;br/&gt;
+&lt;b&gt;{name}&lt;/b&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;	
+&lt;/p&gt;
+&lt;/div&gt;</p>
+<p>&lt;div id=&quot;pagination&quot;&gt;
+&lt;div id=&quot;pagination&quot; class=&quot;pageNumbers&quot;&gt;
+&lt;span spry:if=&quot;{ds_UnfilteredRowCount} == 0&quot;&gt;No matching data found!&lt;/span&gt;	
+&lt;span spry:if=&quot;{ds_UnfilteredRowCount} != 0&quot; spry:content=&quot;[Page {ds_PageNumber} of {ds_PageCount}]&quot;&gt;&lt;/span&gt;
+&lt;/div&gt;
+&lt;div id = &quot;pagination&quot; class = &quot;nextPrevious&quot;&gt;
+&lt;span spry:if=&quot;{ds_UnfilteredRowCount} != 0&quot;&gt;
+&lt;a href=&quot;javaScript:pvdata.previousPage()&quot;&gt;&lt;&lt; Previous&lt;/a&gt; |
+&lt;a href=&quot;javaScript:pvdata.nextPage()&quot;&gt;Next &gt;&gt;&lt;/a&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>The code behind the XML was rather simple:</p>
+<code>
+&lt;cfsavecontent variable="str"&gt;
+&lt;people&gt;
+&lt;cfloop index="x" from="1" to="100"&gt;
+	&lt;cfif randRange(1,10) lt 3&gt;
+		&lt;cfoutput&gt;&lt;person&gt;&lt;name&gt;Sam #x#&lt;/name&gt;&lt;/person&gt;&lt;/cfoutput&gt;
+	&lt;cfelse&gt;
+		&lt;cfoutput&gt;&lt;person&gt;&lt;name&gt;Person #x#&lt;/name&gt;&lt;/person&gt;&lt;/cfoutput&gt;
+	&lt;/cfif&gt;
+&lt;/cfloop&gt;
+&lt;/people&gt;
+&lt;/cfsavecontent&gt;
+&lt;cfcontent type="text/xml" reset="true"&gt;&lt;cfoutput&gt;#str#&lt;/cfoutput&gt;
+</code>
+<p>Once this was done, I quickly ran the demo and saw that there seemed to be no built in variable that would work. The closest thing I saw was that {ds_PageFirstItemNumber} represented the first row of the current page, and if I added ds_RowNumber, together I got a proper value.</p>
+<p>Ok, so long story short, I whipped up a quick function to handle the addition:</p>
+<code>
+function FormattedRowNum(region, lookupFunc) { 
+	return parseInt(lookupFunc("{ds_PageFirstItemNumber}")) + parseInt(lookupFunc("{ds_RowNumber}"));
+}
+</code>
+<p>And then added this to my display: {function::FormattedRowNum}</p>
+<p>This worked fine, both before and after I applied a filter. However, I figured I was missing something and I pinged the Spry team. Kin wrote me back and suggested I use {ds_PageItemNumber} instead. That worked perfectly! The reason I had not tried was due to the description:</p>
+<blockquote>
+<p>
+The unfiltered item number for the current row being processed. This is the unfiltered row index of the row plus one. 
+</p>
+</blockquote>
+<p>I guess when I saw &quot;unfiltered&quot;, I figured it wouldn't work with a filtered dataset.</p>
+}

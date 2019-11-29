@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Need to upgrade your Studio 5 install to recognize CFMX tags/functions? Go here:</p>
+<p><a href="http://www.macromedia.com/software/coldfusionstudio/productinfo/resources/tag_updaters/">http://www.macromedia.com/software/coldfusionstudio/productinfo/resources/tag_updaters/</a></p>
+<p>Looking for custom extensions to Studio/HS+? You may not realize this but it is very easy to add extensions to Studio/HS+. For example, I built a browser tool that lets you browse/download UDFs from <a href="http://www.cflib.org">CFLib</a> directly in the editor. For more tools like this, go here:</p>
+<p><a href="http://scripts.hsguide.com/scripts.html"> http://scripts.hsguide.com/scripts.html</a></p>
+}

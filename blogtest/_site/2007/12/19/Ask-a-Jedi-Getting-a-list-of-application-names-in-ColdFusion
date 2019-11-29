@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>Andy asks:</p>
+<blockquote>
+<p>
+Is there a way to get a list of application names from all of  the Application.cfc running on a server. I'm trying to dynamically build a server.applicationNameArray by just dropping a web app into the web tree. Thanks for your time.
+</p>
+</blockquote>
+<p>Technically the answer to this is no, but there are two ways of doing this. The first way is to use the SeverMonitor API. There isn't a 'get a list of application names', but there is a method named getAllApplicationScopesMemoryUsed. This method returns the memory used by all application scopes on your server. The keys of the structure are your application names. Here is an example:</p>
+<code>
+&lt;cfset password = "poorspearsfamily"&gt;
+&lt;cfinvoke component="CFIDE.adminapi.administrator" method="login" adminpassword="#password#" returnVariable="result"&gt;
+<p>&lt;cfinvoke component=&quot;CFIDE.adminapi.servermonitoring&quot; method=&quot;getAllApplicationScopesMemoryUsed&quot; returnVariable=&quot;ascopes&quot;&gt;
+&lt;cfdump var=&quot;#ascopes#&quot;&gt;
+</code></p>
+<p>By the way, check out the memory usage for the model-glue app:</p>
+<img src="https://static.raymondcamden.com/images/dec18.png">
+<p>The Model-Glue app is the one in red. Model-Glue is so good it <i>gives</i> your server RAM. Yeah, that's it.</p>
+<p>So the second solution is a bit of an hack, but has been around for a while. If you define an application w/o a name, the Application scope for that unnamed application will contain a bunch of junk, including a pointer to all the applications on your server. Consider this code:</p>
+<code>
+&lt;cfapplication&gt;
+&lt;cfloop item="k" collection="#application#"&gt;
+	&lt;cfif isStruct(application[k]) and structKeyExists(application[k], "applicationname")&gt;
+		&lt;cfdump var="#application[k]#" label="#k#"&gt;
+	&lt;/cfif&gt;
+&lt;/cfloop&gt;
+</code>
+<p>This will dump each Application and all it's variables. Note the CFIF and how I check to see if the variable is an application scope. Not perfect, but in my test with both code blocks, it returned the same thing. (Well, the second code block didn't show the blank key for the unnamed application scope like the first one did.)</p>
+}

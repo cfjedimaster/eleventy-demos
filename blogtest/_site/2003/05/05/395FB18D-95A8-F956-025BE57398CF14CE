@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>There was a bug in the calendar code that prevented it from linking to items set in the first week. I also added calendar.cfm to the zip.</p>
+<p>You can now download blog.zip from the right hand menu.</p>
+<p>Another bug with lastXDays was fixed. This bug prevented you from seeing an entire category if the entries were too old. It probably also blocked 'by month' and 'by entry' if the values were too old.</p>
+<p>Note - all of the above fixes are in the <i>client</i>, if you are only using blog.cfc, then do not worry.</p>
+}

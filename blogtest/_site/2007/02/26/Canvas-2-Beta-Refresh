@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I've got a new version of the Canvas 2 Beta ready for testing. This update finally fixes the loginpath bug (thanks to a forum user for making it easy to reproduce) and adds security to file uploads.</p>
+<p>This is it. I'm only going to add one more thing before releasing this application and it is a big one. Like <a href="http://blogcfc.riaforge.org">BlogCFC</a>, Canvas is going to support multiple Wikis in one database. This will make it easier to use for folks who may have a limited amount of databases at an ISP.</p>
+<p>To make things interesting - you will be able to set the name of the Wiki (&quot;name&quot; being a string label to use in the database) in the XML, <i>or</i> do it at runtime. Why is that important? Being able to set the value at runtime means I can run multiple, virtual Wikis on the fly. Hmm, what <a href="http://www.riaforge.org">site</a> could I add that too?</p>
+<p>Lastly - a question. Canvas 2 changes the &quot;language&quot; used to markup pages. How critical is it that I ship a tool to update your old markup?</p>
+<p>The bits are attached to this blog entry.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Fcanvas3%2Ezip'>Download attached file.</a></p></p>
+}

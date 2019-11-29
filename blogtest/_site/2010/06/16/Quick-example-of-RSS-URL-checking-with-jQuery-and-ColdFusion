@@ -1,0 +1,110 @@
+<h1>Post</h1>
+
+<p>I'm working on a web site that allows people to enter RSS urls. These urls get parsed (via CFFEED) and displayed on a custom page. While I have support for handling bad RSS feeds, I wanted to create a quick demo where I'd use jQuery and ColdFusion to handle checking the RSS feeds while the user is working on the form. Here is what I came up with.</p>
+<!--more-->
+<p/>
+<p>First - let's look at the form. The first two fields aren't really relevant. I added them to show that the RSS parsing was part of a greater form. The last three fields, the RSS labeled ones, are the fields we will care about.</p>
+<p/>
+<code>
+&lt;style&gt;
+.rssfield { width: 500px; }
+.rssstatus { 
+	font-style: italic;
+}
+&lt;/style&gt;
+<p>&lt;form&gt;
+name:  &lt;input type=&quot;text&quot; name=&quot;name&quot;&gt;&lt;br/&gt;
+max num of entries:  &lt;input type=&quot;text&quot; name=&quot;maxentries&quot;&gt;&lt;br/&gt;
+rss feed:  &lt;input type=&quot;text&quot; name=&quot;rssfeed1&quot; class=&quot;rssfield&quot;&gt;&lt;br/&gt;
+rss feed:  &lt;input type=&quot;text&quot; name=&quot;rssfeed2&quot; class=&quot;rssfield&quot;&gt;&lt;br/&gt;
+rss feed:  &lt;input type=&quot;text&quot; name=&quot;rssfeed3&quot; class=&quot;rssfield&quot;&gt;&lt;br/&gt;
+&lt;input type=&quot;submit&quot;&gt;
+&lt;/form&gt;
+</code></p>
+<p/>
+<p>Note that I've made use of a class, &quot;rssfield&quot;, that is common to all the fields. This is going to come into play within our jQuery. And speaking of that - let's take a look at the JavaScript.</p>
+<p/>
+<code>
+&lt;script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+<pre><code>$(&quot;.rssfield&quot;).blur(function() {
+	var value = $(this).val()
+	var name = $(this).attr(&quot;name&quot;)
+	console.log('current value is '+value+' for field '+name)
+	value = $.trim(value)
+
+	//If blank, just quit - but clear any previous status		
+	if(value == '') {
+		if($(&quot;#status&quot;+name).length == 1)  $(&quot;#status&quot;+name).text(&quot;&quot;)
+		return
+	}
+	//create a response span - if we don't have one
+	if($(&quot;#status&quot;+name).length == 0) $(this).next().before('&amp;lt;span class=&quot;rssstatus&quot; id=&quot;status'+name+'&quot;&amp;gt;Checking RSS validity...&amp;lt;/span&amp;gt;')
+	else $(&quot;#status&quot;+name).text(&quot;Checking RSS validity...&quot;)
+
+	//call the server to check the field
+
+	$.get('checkrss.cfm', { &quot;rssurl&quot;:value}, function(data,status,eq) {
+		if(data.verified == 0) {
+			console.log('bad')
+			$(&quot;#status&quot;+name).html(&quot;RSS value not valid: &quot;+data.message)
+		} else {
+			console.log('good')
+			$(&quot;#status&quot;+name).html(&quot;RSS value valid!&quot;)
+		}
+		console.log(data)
+	})
+})
+</code></pre>
+<p>})
+&lt;/script&gt;
+</code></p>
+<p/>
+<p>So as you can see - the bulk of the code here revolves around a blur handler for any field with the rssfield class. (I should probably have filtered it INPUT tags as well.) I begin by getting the value and name. Once I have the value, I do a quick trim on it. Now the first thing I want to do is ensure the user actually typed something in. If they didn't, I might as well leave. For now ignore that first line in the clause. It will make more sense in a second.</p>
+<p/>
+<p>If the user did type something, I begin by creating a new span to handle a status message. Why did I do this? My thinking was - it would be kind of nice if I didn't add stuff to my form that was distracting. Not that a empty span would even register to a user, but I thought it would be nice if jQuery handled that as well. So essentially - I try to get a span for my particular field. If it doesn't exist, I create it. If it does exist, I set the text. I'm <b>way</b> open to being argued about this way of doing this.</p>
+<p/>
+<p>Finally we get to the AJAX call. I pass the value to a ColdFusion script and then wait around the result. I'm going to expect a structure back. That structure will have two fields: verified and message. The message field will only be used for errors. So that's it really for the client side code, now let's take a look at checkrss.cfm:</p>
+<p/>
+<code>
+&lt;cfparam name="url.rssurl" default=""&gt;
+&lt;cfif url.rssurl is ""&gt;
+	&lt;cfabort&gt;
+&lt;/cfif&gt;
+<p>&lt;!---
+Return a structure:
+verified: 0/1 (true/false)
+message: Only useful on bad results
+---&gt;
+&lt;cfset result = {}&gt;
+&lt;cfif not isValid(&quot;url&quot;, url.rssurl)&gt;
+&lt;cfset result[&quot;verified&quot;] = 0&gt;
+&lt;cfset result[&quot;message&quot;] = &quot;Value was not a valid URL.&quot;&gt;
+&lt;cfelse&gt;
+&lt;cftry&gt;
+&lt;cffeed source=&quot;#url.rssurl#&quot; query=&quot;foo&quot;&gt;
+&lt;cfset result[&quot;verified&quot;] = 1&gt;
+&lt;cfset result[&quot;message&quot;] = &quot;&quot;&gt;
+&lt;cfcatch&gt;
+&lt;cfif cfcatch.message is &quot;Unable to parse the feed: Either source specified is invalid or feed is malformed.&quot;&gt;
+&lt;cfset result[&quot;verified&quot;] = 0&gt;
+&lt;cfset result[&quot;message&quot;] = &quot;URL was not a valid RSS feed.&quot;&gt;			
+&lt;cfelse&gt;
+&lt;cfset result[&quot;verified&quot;] = 0&gt;
+&lt;cfset result[&quot;message&quot;] = &quot;Unable to verify RSS feed. Gremlins.&quot;&gt;			
+&lt;/cfif&gt;
+&lt;/cfcatch&gt;
+&lt;/cftry&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfcontent type=&quot;application/json&quot; reset=&quot;true&quot;&gt;&lt;cfoutput&gt;#serializeJSON(result)#&lt;/cfoutput&gt;
+</code></p>
+<p/>
+<p>Stepping through - we being with a quick param for url.rssurl. If it is blank, we abort the request. Then we first check to see if the URL is valid. If not, we return a struct with a message saying that it was not. Now unfortunately, cffeed does not support a way to see if a URL is a valid RSS feed. So because of that, I perform the request and simply try/catch it. I've got one catch set up for a bad feed, and another set up for &quot;everything else&quot;. Finally I serialize the response.</p>
+<p/>
+<p>All in all - a pretty simple example. I do want to point out something. The <a href="http://docs.jquery.com/Plugins/Validation">jQuery form validation plugin</a> (when I say &quot;the&quot; I obviously mean, to me, the best one) actually supports operations like this. You can easily set up validation rules that include hitting server side stuff for complex logic. I chose not to use it in this example because I'm not quite sure I'll be using the plugin for the site in question. And I wanted to write it myself for fun.</p>
+<p/>
+<p>I've got a demo set up (see big ole button below), but unfortunately, I had to hobble it a bit. Any valid URL will be converted to http://feeds.feedburner.com/RaymondCamdensColdfusionBlog, which means it will always come back as true. I will explain why later today. (Possible new bad bug in cffeed unfortunately.)</p>
+<p/>
+<p><a href="http://www.raymondcamden.com/demos/jun162010/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>I'm not covering everything here as I was a bit late, but here are the high level features:</p>
+<p>Resizing (in various ways)<br>
+Pasting images over each other<br>
+Adding text to an image<br>
+CAPTHA (of various levels of difficulty)<br>
+base64 encoding images<br>
+Works with Blogs (lets you store images in databases)<br>
+Read Exif/IPTC metadata<br>
+Basic drawing functions (line, rectangle, curves)<br></p>
+}

@@ -1,0 +1,35 @@
+<h1>Post</h1>
+
+<p>Today's post isn't going to be anything really deep, more of an &quot;A-ha&quot; moment I had while talking with my coworker <a href="https://twitter.com/csantanapr">Carlos Santana</a>. No, not that a-Ha...</p>
+<p><img src="https://static.raymondcamden.com/images/2017/2/aha.jpg" alt="Take on this!"></p>
+<p>More a &quot;adjustment of a misunderstanding&quot; of the serverless platform. One of the things I knew right away about serverless is that my code acted as a single, atomic unit, in an ephemeral form. So yes, a server is still involved with serverless, but it's created on the fly, used my code, then disappears when my code is done running. The OpenWhisk <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_reference.html#openwhisk_semantics_stateless">docs</a> have this to say:</p>
+<blockquote>
+<strong>Statelessness</strong><br/>
+<p>
+Action implementations should be stateless, or idempotent. While the system does not enforce this property, there is no guarantee that any state maintained by an action will be available across invocations.
+</p>
+<p>
+Moreover, multiple instantiations of an action might exist, with each instantiation having its own state. An action invocation might be dispatched to any of these instantiations.
+</p>
+</blockquote>
+<p>So the practical side effect of this is that you can't use non-database persistence. No file system and no memory variables. Obviously you could use a cloud-based file system like S3 and obviously you can persist in a database, but you can't do this within the action itself.</p>
+<p>Except you can.</p>
+<p>First off - when your action is fired up, OpenWhisk does <em>not</em> kill it immediately when done. Rather, it keeps the container used for your code around to see if the action will be fired again soon. You can see this yourself with a simple action:</p>
+<pre><code class="language-javascript">
+var x = 0;
+
+function main(args) {
+	x++;
+	return {x:x};
+}
+
+exports.main = main;
+</code></pre>
+<p>If you run this a few times, quickly, the variable will persist and increment:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/2/aha2.png" alt="Increment"></p>
+<p>The practical use for this would be storing the result of a database call in memory. For example, imagine if your action needs data from Cloudant in order to process. You could store that value in a global variable and check to see if it is undefined before you talk to Cloudant again. You can only do this if the data you need isn't dependent on arguments - unless you want to start caching with keys related to function parameters.</p>
+<p>The second &quot;a-Ha&quot; moment is that you absolutely do have a file system. That means your code can CRUD locally to work with binary data. You could also simply leave files there and see if they exist on the next invocation. I'd probably treat this carefully, but if you are using one, or a few, particular files, you could consider leaving them there before fetching them.</p>
+<p>So as a practical example, if you need to work with a file from S3, you could copy it locally, and keep it there. When the action is run next time, see if it exists before copying from S3.</p>
+<p>A real example of this is the <em>incredible</em> demo Daniel Krook made called <a href="https://github.com/krook/openchecks">openchecks</a>. It's an OpenWhisk sample app demonstrating how to build a serverless check scanning/depositing system. As I said, it's <em>really, really cool</em> and you should check it out.</p>
+<p>Anyway, I hope this helps. As I said, this is something that I assume most people working daily with serverless already grasp, but it was eye-opening to me and just adds another interesting level to what you can do with the platform!</p>
+}

@@ -1,0 +1,239 @@
+<h1>Post</h1>
+
+<p>When I first started learning Vue, I began hearing about <a href="https://vuex.vuejs.org/en/">Vuex</a> and try as a I might, I couldn't wrap my head around what it actually did. The <a href="https://vuex.vuejs.org/en/intro.html">docs</a> describe it like so:</p>
+<blockquote>
+Vuex is a state management pattern + library for Vue.js applications. It serves as a centralized store for all the components in an application, with rules ensuring that the state can only be mutated in a predictable fashion.
+</blockquote>
+<p>Frankly, I felt kind of stupid as I didn't quite grok what &quot;state management pattern&quot; was supposed to mean. I also found the docs and examples... difficult. It's hard to explain exactly why, and in general, the Vue docs are incredibly good, but the Vuex docs didn't make sense to me. Sarah Drasner has a good article on it (<a href="https://css-tricks.com/intro-to-vue-4-vuex/">&quot;Intro to Vue.js:Vuex&quot;</a>) but I still had difficulty wrapping my head around it.</p>
+<p>This feels wrong, but the closest mental model I have is an Angular provider. One of the things I've been missing since learning Vue is an idea of a central &quot;data source&quot; for my components to use. Typically this is a wrapper for an API service of some sort, but I love having all those calls packaged up in a provider that my Angular bits can make use of. I don't think that's a fair comparison to Vuex, but it feels like something in the same neighborhood at least.</p>
+<p>From what I can tell, Vuex is especially handy when working with multiple components. It allows you to have one central place of &quot;truth&quot; for your data in each component, and know that if your data updates, any component using it will also get updated. With that said, I'm not sure how useful it would be in a Vue app that doesn't use custom components, but it may still serve as a nice separation of concerns. Plus - you may move from a &quot;simple&quot; Vue app to a more complex one using multiple components, and if you do, your data is ready to go.</p>
+<p>Obviously I don't have a super great understanding of this yet. As always I try to be honest about what I know. But - I was able to build a demo. I've been thinking lately about text-based games. Not the old Infocom text adventures, but things like <a href="http://adarkroom.doublespeakgames.com/">A Dark Room</a> and <a href="http://www.decisionproblem.com/paperclips/index2.html">Universal Paperclips</a>. If you haven't seen those games, well, I'm sorry. Say goodbye to your productivity. My initial idea was to rebuild Taipan, but I thought I'd go simpler with a basic stock market simulation. Take a couple of stocks, have them change prices over time, and then let you buy and sell and try to become right.</p>
+<p>My idea is that the data for the game: stocks, prices, cash on hand, etc, would be handled by my data store in Vuex. The Vue app (separate from Vuex) would handle UI interactions and retrieving data from the store, as well as pushing out updates. The code here is going to get a bit hairy, so let me try to make this as gentle as possible. Let's start with the front end. Before I even show the code, here is a screen shot:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/12/vuex1.jpg" alt="Game screen shot"></p>
+<p>The top portion of the screen represents the stocks. You see the current prices as well as how much you hold of each. Below that are two simple controls - one to buy stock and one to sell. I'm using the <a href="https://bootstrap-vue.js.org/">Bootstrap + Vue</a> project to render the UI. What you can't see in the screen shot are the prices updating every 2 seconds. Here's the code.</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;meta charset=&quot;utf-8&quot;&gt;
+		&lt;title&gt;&lt;/title&gt;
+		&lt;meta name=&quot;description&quot; content=&quot;&quot;&gt;
+		&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+		&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;//unpkg.com/bootstrap@next/dist/css/bootstrap.min.css&quot;/&gt;
+		&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css&quot;/&gt;
+		&lt;style&gt;
+		#app {
+			padding-top: 20px;
+		}
+
+		[v-cloak] { 
+			display: none; 
+		}
+
+		.customBtn {
+			width: 120px;
+		}
+		&lt;/style&gt;
+
+	&lt;/head&gt;
+	&lt;body&gt;
+
+	&lt;div id=&quot;app&quot; v-cloak&gt;
+
+		&lt;b-container&gt;
+			&lt;b-row&gt;
+				&lt;b-col&gt;
+					&lt;b-card title=&quot;Stocks&quot;&gt;
+						&lt;b-list-group&gt;
+							&lt;b-list-group-item v-for=&quot;stock in stocks&quot; :key=&quot;stock.name&quot;&gt;
+								&lt;b-container&gt;
+									&lt;b-row&gt;
+										&lt;b-col&gt;{{ stock.name }}&lt;/b-col&gt;
+										&lt;b-col class=&quot;text-right&quot;&gt;{{ stock.price |{% endraw %} money}}&lt;/b-col&gt;
+									&lt;/b-row&gt;
+								&lt;/b-container&gt;
+							&lt;/b-list-group-item&gt;
+						&lt;/b-list-group&gt;
+					&lt;/b-card&gt;
+				&lt;/b-col&gt;
+				&lt;b-col&gt;
+					&lt;b-card title=&quot;Holdings&quot;&gt;
+						&lt;b-list-group&gt;
+							&lt;b-list-group-item v-for=&quot;stock in stocks&quot; :key=&quot;stock.name&quot;&gt;
+								&lt;b-container&gt;
+									&lt;b-row&gt;
+										&lt;b-col&gt;{% raw %}{{ stock.name }}&lt;/b-col&gt;
+										&lt;b-col class=&quot;text-right&quot;&gt;{{ stock.held}}&lt;/b-col&gt;
+									&lt;/b-row&gt;
+								&lt;/b-container&gt;
+							&lt;/b-list-group-item&gt;
+						&lt;/b-list-group&gt;
+						&lt;p class=&quot;card-text&quot;&gt;
+							Total value of holdings: {{ holdingValue |{% endraw %} money }}
+						&lt;/p&gt;
+					&lt;/b-card&gt;
+				&lt;/b-col&gt;
+			&lt;/b-row&gt;
+			&lt;!-- todo, add some vertical space --&gt;
+			&lt;div style=&quot;height:20px&quot;&gt;&lt;/div&gt; &lt;!-- this feels lame --&gt;
+			&lt;b-card title=&quot;Purchase and Sell Stocks&quot;&gt;
+			
+				&lt;p class=&quot;card-text&quot;&gt;
+					Buy &lt;b-form-input v-model.number=&quot;buy&quot; type=&quot;number&quot; style=&quot;width:100px;display:inline&quot;&gt;&lt;/b-form-input&gt; shares of 
+					&lt;b-form-select style=&quot;width:120px;display:inline&quot; v-model=&quot;buyStock&quot;&gt;
+						&lt;option v-for=&quot;stock in stocks&quot; :key=&quot;stock.name&quot;&gt;{% raw %}{{ stock.name }}&lt;/option&gt;
+					&lt;/b-form-select&gt;
+					&lt;b-button :variant=&quot;'success'&quot; @click=&quot;buyStocks&quot; class=&quot;customBtn&quot;&gt;Purchase&lt;/b-button&gt;
+					&lt;span v-if=&quot;buyError&quot;&gt;Not enough cash.&lt;/span&gt;
+				&lt;/p&gt;
+				&lt;p class=&quot;card-text&quot;&gt;
+					Sell &lt;b-form-input v-model.number=&quot;sell&quot; type=&quot;number&quot; style=&quot;width:100px;display:inline&quot;&gt;&lt;/b-form-input&gt; shares of 
+					&lt;b-form-select style=&quot;width:120px;display:inline&quot; v-model=&quot;sellStock&quot;&gt;
+						&lt;option v-for=&quot;stock in stocks&quot; :key=&quot;stock.name&quot;&gt;{{ stock.name }}&lt;/option&gt;
+					&lt;/b-form-select&gt;
+					&lt;b-button :variant=&quot;'success'&quot; @click=&quot;sellStocks&quot; class=&quot;customBtn&quot;&gt;Sell&lt;/b-button&gt;
+					&lt;span v-if=&quot;sellError&quot;&gt;Not enough on hand.&lt;/span&gt;
+				&lt;/p&gt;
+
+				&lt;p class=&quot;card-text&quot;&gt;
+					You currently have {{ cash |{% endraw %} money }} in cash.
+				&lt;/p&gt;
+
+			&lt;/b-card&gt;
+
+		&lt;/b-container&gt;
+
+	&lt;/div&gt;
+	
+	&lt;script src=&quot;https://unpkg.com/vue&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;https://unpkg.com/vuex&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;stockgame.js&quot;&gt;&lt;/script&gt;
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>That's probably a lot to digest, but what I want to point out is that at this layer, you aren't concerned with Vuex at all. All the data you see being used here, like with <code>v-model</code> and <code>{% raw %}{{ cash |{% endraw %} money }}</code> are integrated with the Vue app. If you're curious, the <code>| money</code> thing is a <a href="https://vuejs.org/v2/guide/filters.html">Vue filter</a>. This is the first time I've used one and it was as easy as most things are in Vue. Now let's look at the JavaScript. First the Vue app.</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	store,
+	data() {
+		return {
+			buy:0,
+			buyStock:null,
+			buyError:false,
+			sell:0,
+			sellStock:null,
+			sellError:false
+		}
+	},
+	filters:{
+		money(value) {
+			let numb = Number(value).toFixed(2);
+			return '$'+numb;
+		}
+	},
+	mounted:function() {
+		setInterval(() =&gt; {
+			console.log('running stock update');
+			store.commit('changeStocks');
+		}, STOCK_UPD*1000);	
+	},
+	computed:{
+		stocks() {
+			return store.state.stocks;
+		},
+		holdingValue() {
+			return store.getters.holdingValue;
+		},
+		cash() {
+			return store.state.cash;
+		}
+	},
+	methods:{
+		buyStocks() {
+			if(this.buy &lt; 0) this.buy = 0;
+			if(this.buy === 0) return;
+			console.log('going to buy '+this.buy +' of '+this.buyStock);
+			store.commit('buyStock', {% raw %}{ amount:this.buy, stock:this.buyStock });
+			this.buy = 0;
+			this.buyStock = null;
+		},
+		sellStocks() {
+			if(this.sell &lt; 0) this.sell = 0;
+			if(this.sell === 0) return;
+			console.log('going to sell '+this.sell +' of '+this.sellStock);
+			store.commit('sellStock', { amount:this.sell, stock:this.sellStock });
+			this.sell = 0;
+			this.sellStock = null;
+		}
+	}
+});
+</code></pre>
+<p>The first important change here is the passing in of the store object. I'll show that next, but this is how my Vue app knows how to work with the Vuex dta store.</p>
+<p>I've got a set of data that doesn't refer to game data, but more UI labels and controls and such. The &quot;meat&quot; of the data is in the store.</p>
+<p>Next you'll see the filter (love it) and a <code>mounted</code> function which handles updating my data. You'll see the first (real) use of Vuex here. My <code>store.commit</code> call basically asks the store to run a method to update itself. This method can take data too, but in this case, it's just an an event by itself.</p>
+<p>In order to render data from the store, I use 3 computed values. Both stocks and cash are returned as is. <code>holdingValue</code> requires special logic so I'm using a 'getter' on my store. I suppose you could always use getters to be consistent, but I think in cases when you know you aren't performing any logic, it's ok to use them as is. (Remember, I'm new at this.)</p>
+<p>Finally we have two methods for buying and selling stock. I do a bit of validation and then call out to the store's <code>buyStock</code> or <code>sellStock</code> methods. Note that I don't actually check if I <em>can</em> buy or sell the stocks here. The store is responsible for that. If you look at the front end code, I've got hidden (by default) error states to report that. I wasn't able to figure out how to actually get that working though. I mean, I could use a computed value for it that's bound to the store. That would work - but something felt off about it. I'll probably return to this later.</p>
+<p>Alright, so let's look at that store.</p>
+<pre><code class="language-js">const store = new Vuex.Store({
+	state:{
+		stocks:[
+			{name:&quot;IBM&quot;, price:100, held:0},
+			{name:&quot;Amazon&quot;, price:90, held:0},
+			{name:&quot;Microsoft&quot;, price:110, held:0},
+			{name:&quot;Disney&quot;, price:120, held:0},
+		],
+		cash:1000
+	},
+	getters:{
+		holdingValue(state) {
+			return state.stocks.reduce(function(current,elm) {
+				return current + (elm.price * elm.held);
+			},0); 
+		}
+	},
+	mutations:{
+		changeStocks(state) {
+			state.stocks.forEach(stock =&gt; {
+				stock.price += getRandomArbitrary(-20,20);
+				if(stock.price &lt; 0) stock.price = 0;
+			});
+		},
+		buyStock(state, order) {
+			console.log('order is '+JSON.stringify(order));
+			//first, find the stock
+			let stock = state.stocks.findIndex(elm =&gt; {
+				return elm.name === order.stock;
+			});
+			if(stock &gt;= 0) {
+				let purchasePrice = (state.stocks[stock].price * order.amount).toFixed(2);
+				if(state.cash &gt;= purchasePrice) {
+					state.stocks[stock].held += order.amount;
+					state.cash -= purchasePrice;
+				}
+			}
+		},
+		sellStock(state, order) {
+			console.log('order is '+JSON.stringify(order));
+			//first, find the stock
+			let stock = state.stocks.findIndex(elm =&gt; {
+				return elm.name === order.stock;
+			});
+			if(stock &gt;= 0) {
+				if(state.stocks[stock].held &gt;= order.amount) {
+					let sellPrice = (state.stocks[stock].price * order.amount).toFixed(2);
+					state.stocks[stock].held -= order.amount;
+					state.cash += Number(sellPrice);
+				}
+			}
+		}
+	}
+});
+</code></pre>
+<p>We begin with the data inside our <code>state</code> property. You can see the default stocks, prices, and the amount of cash you begin with. Next we've got <code>getters</code>. This is where I defined my special <code>holdingValue</code> method which handles iterating over your stock holdings and determine their current total value. Plus it uses Array.reduce which means I can maybe pass the Google coding interview now.</p>
+<p>The last portion, <code>mutations</code>, contains the code the Vue app was &quot;calling out to&quot;. I described them as events, although that's probably not the best terminology. <code>changeStocks</code> simply modifies stock prices in a random manner. <code>buyStock</code> and <code>sellStock</code> handle changing your portfolio.</p>
+<p>You can view the entire code base, and run it, in the codepen below. (It is a bit constrained width-wise, but you can view it in a new tab by hitting the &quot;Edit&quot; button - don't worry - it won't change my code.)</p>
+<p data-height="700" data-theme-id="dark" data-slug-hash="WdxZZE" data-default-tab="result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Stock Game in Vue (with Vuex)" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/WdxZZE/">Stock Game in Vue (with Vuex)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<p>I hope it is obvious that I'm not entirely sure this is the best example of Vuex, and I think it loses something without using custom components (which I may work on next), but I hope this example is useful. Let me know what you think by leaving a comment below!</p>
+}

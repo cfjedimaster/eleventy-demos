@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I consider myself something of a custom tag guru, yet I made a simple mistake in my SimpleContentEditor tag. The tag takes an attribute called name. This identifies the 'content' name for the tag. However, I forgot that when you use cfmodule (the way I call custom tags 99.99% of the time), name is a reserved word. I added &quot;scename&quot; as an attribute. It acts the same as the name attribute. The download is updated and is now available via the My Tools pod on the side (which is now using SCE to load it's content).</p>
+}

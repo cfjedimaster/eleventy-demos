@@ -1,0 +1,156 @@
+<h1>Post</h1>
+
+<p>A few weeks ago I wrote about my experience looking into Angular 2 (<a href="http://www.raymondcamden.com/2016/01/18/time-for-angular-2/">Time for Angular 2?</a>). I haven't had a chance to dig deeper into Angular 2 since then but it is still high on my list to get more familiar with over the year. About a week and a half ago I had pleasure of meeting <a href="http://mhartington.io/">Mike Hartington</a> from the Ionic team at PhoneGap Day. I sat in his Ionic 2 workshop and came out convinced it was time to give it a try as well. And of course, just a few days later the Ionic folks released the <a href="http://blog.ionic.io/announcing-ionic-framework-2-beta/">beta version of 2.0</a>. It is definitely beta, but I was able to build an <em>incredibly</em> simple app with it (after some help from Mike and others) and I thought I'd share my experience.</p>
+<!--more-->
+<p>One of the most important things to note is that you can install Ionic V2 <em>without</em> screwing up your ability to do Ionic V1 apps or work with existing projects. It may sound silly, but as easy as <code>npm</code> can be, I didn't want to have to worry about switching back and forth to work with existing projects. Heck, the CLI even defaults to V1 anyway so in case you forget, are in a rush, or whatever, it will continue to work the way you expect it to.</p>
+<p>You'll want to spend some time in the <a href="http://ionicframework.com/docs/v2/">docs</a> of course, and specifically the <a href="http://ionicframework.com/docs/v2/getting-started/">Getting Started</a> guide. Note that there are mistakes in the guide (hey, it <em>is</em> a beta) that may trip you up. Specifically it seems like some of the code samples are a bit out of date. For the most part I think you can figure it out, but these issues have been reported and may be corrected by the time you get to it.</p>
+<img src="https://static.raymondcamden.com/images/2016/02/ionic2-1.gif" class="imgborder" title="Ionic V2 Docs">
+<p>Working through the Getting Started guide gets you through a simple application and will give you a <em>super</em>
+basic idea of what's going on, but I'd strongly urge you to go through the <a href="https://angular.io/docs/ts/latest/quickstart.html">Angular 2 quickstart</a> first just so things aren't completely alien to you.</p>
+<p>You'll also want to peruse the <a href="http://ionicframework.com/docs/v2/components">components</a> docs. From my quick look through it, things look quite a bit simpler to use, but again, this is still in development. A notable missing component currently is the loading widget. Be sure to notice that the component examples
+give you a quick way to toggle between Android and iOS views, and specifically that Android now has a Material look that is <em>really</em> freaking sweet. As an example, here are tabs in iOS:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/02/ionic2-2.gif" alt="iOS Tabs Ionic 2"></p>
+<p>Now compare it to the Android version:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/02/ionic2-3.gif" alt="Android Tabs Ionic 2"></p>
+<p>That's damn spiffy.</p>
+<p>So what's the code like? As I said before, Angular 2 is different. Not bad different, just... <em>different.</em></p>
+<p><img src="https://static.raymondcamden.com/images/2016/02/pikacat.jpg" alt="Like this..."></p>
+<p>While working on my first demo, I ran into things I immediately liked. For example, I love that my &quot;page&quot; template and controller are in a folder nicely packaged together. I could have easily done that in Ionic/Angular1 too I guess, but I like the organization.</p>
+<p>I'm also really liking working with ES6. I'm barely scratching the surface of course, and probably doing it wrong, but even stuff I thought was overblown, like fat arrows, are <em>really</em> growing on me.</p>
+<p>On the other hand, some things I ran into felt... wrong. I got over it. I also know there were things like that in Angular1 as well. But sometimes I just bit my tongue and went with it. So without further ado, here is an Ionic 2 version of my RSS Reader app. I did not build it out completely like the version I have on the Ionic market (<a href="https://market.ionic.io/starters/rssviewer">RSS Reader</a>), but I built in basic list/detail support. I'll share the code, but I want to give big thanks to Mike Hartington (again), @adbella on the Ionic slack, and others.</p>
+<p><strong>Please do not treat this as good code!</strong> Treat this code like a slightly drunk cat walked over your keyboard and then had a little &quot;accident&quot;. It works - and the part that @abdella helped me with is elegant, but I'm sure I could have done things better. With that out of the way, let's first look at the home page. It simply lists items from the RSS feed. First I'll show the view:</p>
+<pre><code class="language-markup">
+&lt;ion-navbar *navbar&gt;
+&lt;ion-title&gt;
+Home
+&lt;&#x2F;ion-title&gt;
+&lt;&#x2F;ion-navbar&gt;
+
+&lt;ion-content&gt;
+&lt;ion-list inset&gt;
+&lt;ion-item *ngFor=&quot;#entry of entries&quot; (click)=&quot;openPage(entry)&quot;&gt;{{entry.title}}&lt;&#x2F;ion-item&gt;
+&lt;&#x2F;ion-list&gt;
+&lt;&#x2F;ion-content&gt;
+</code></pre>
+<p>Nothing really weird here except the new way Angular 2 does attributes/code/etc. But I'm assuming you can figure out what is happening here. Now let's look at the code for this page.</p>
+<pre><code class="language-javascript">
+import {Page,NavController} from 'ionic/ionic';
+import {RssService} from '../../providers/rss-service/rss-service';
+import {DetailPage} from '../detail-page/detail-page';
+
+@Page({
+  templateUrl: 'build/pages/home/home.html',
+  providers:[RssService]
+})
+export class HomePage {
+  constructor(public rssService:RssService, nav:NavController) {
+	  this.nav = nav;
+	  
+	  this.entries = [];
+
+	  this.rssService.load().subscribe(
+		  data =&gt; {
+			  this.entries = data;
+		  }
+	  );
+
+  }
+  
+  openPage(entry) {
+	  console.log('open page called with '+entry.title);
+	  this.nav.push(DetailPage, {selectedEntry:entry});
+  }
+
+}
+</code></pre>
+<p>So yeah - this is where things got a bit weird. One of the new things in the Angular 2 world is the idea of Observables. These replace (ok, not replace, but my understanding is that they are <em>preferred</em>) Promises and are supposed to be quite a bit more powerful. You can't really see the Observable, but see the subscribe() call? That's using it. Part of what makes them powerful is that they would support live updates. That doesn't really come into play with RSS parsing, but if it ever were added to my project, in theory it would just plain work. (Note to self - I'm going to try to make a demo of a live updating Ionic 2 app soon!)</p>
+<p>Also note the navigation in openPage. I don't have to build an app router now. I just load the page and pass data. I really, really appreciate that.</p>
+<p>Let's look at the service now.</p>
+<pre><code class="language-javascript">
+import {Injectable} from 'angular2/core';
+import {Http} from 'angular2/http';
+import {Observable} from 'rxjs/Observable';
+import 'rxjs/add/observable/from';
+import 'rxjs/add/operator/map';
+
+/*
+  Generated class for the RssService provider.
+
+  See https://angular.io/docs/ts/latest/guide/dependency-injection.html
+  for more info on providers and Angular 2 DI.
+*/
+
+//Credit for latest version is @abdella from the Ionic Slack
+@Injectable()
+export class RssService {
+
+	url = 'https://query.yahooapis.com/v1/public/yql?q=select%20title%2Clink%2Cdescription%20from%20rss%20where%20url%3D%22http%3A%2F%2Ffeeds.feedburner.com%2Fraymondcamdensblog%3Fformat%3Dxml%22&amp;format=json&amp;diagnostics=true&amp;callback=';
+	
+	constructor(http: Http) {
+		this.http = http;
+	}
+	
+	load() {
+ 
+		return this.http.get(this.url)
+  			.map(res =&gt; res.json())
+  			.map(data =&gt; data.query.results.item);
+		  
+	  /* v2
+	  return Observable.create(s =&gt; {
+
+		this.http.get('https://query.yahooapis.com/v1/public/yql?q=select%20title%2Clink%2Cdescription%20from%20rss%20where%20url%3D%22http%3A%2F%2Ffeeds.feedburner.com%2Fraymondcamdensblog%3Fformat%3Dxml%22&amp;format=json&amp;diagnostics=true&amp;callback=').subscribe(res =&gt; {
+			console.log('in sub');
+			console.dir(s);
+			var result = res.json().query.results.item;
+			result.forEach(i=&gt;s.next(i));
+			s.complete();
+			
+		});
+
+	  });
+	*/	
+
+	// Static version	  
+	//	  let data = [{title:&quot;do one&quot;},{title:&quot;do two&quot;},{title:&quot;three&quot;}];
+	//	  return Observable.from(data);
+
+	
+  }
+}
+</pre></code>
+<p>I apologize for the large blocks of commented out code, but I wanted to keep a record of my previous versions for reference later. The slick http.get().map().map() syntax is an example of Oberservables in action and is thanks to @abdella. The basic idea here is we're fetching the remote data, converting it from a JSON string into an object, and then specifying a precise part of the result to work with (data.query.results.item).</p>
+<p>The imports on top are a bit weird. Specifically the fact that we have to import specific parts of Observable. It seems to me that if I want to use a library, I don't want to have to worry about parts of it being &quot;optional&quot;, and basic functionality like I used doesn't seem like it should be optional. This is one of those parts that bugged me and I just got over for now.</p>
+<p>The detail page is pretty trivial as well. Here is the view:</p>
+<pre><code class="language-markup">
+&lt;ion-navbar *navbar&gt;
+  &lt;ion-title&gt;{{entry.title}}&lt;/ion-title&gt;
+&lt;/ion-navbar&gt;
+
+&lt;ion-content padding class=&quot;detail-page&quot;&gt;
+	&lt;div [innerHTML]=&quot;entry.description&quot;&gt;&lt;/div&gt;
+&lt;/ion-content&gt;
+</code></pre>
+<p>That last bit, <code>[innerHTML]=</code>, is how you handle rendering HTML in Angular since it is <em>still</em> a pain in the rear about it. (Yes, I know there are reasons, and yes, it still bugs me.) The code for the page just picks up the passed in data. Again - this is really super easy I think.</p>
+<pre><code class="language-javascript">
+import {Page,NavController,NavParams} from 'ionic/ionic';
+
+@Page({
+  templateUrl: 'build/pages/detail-page/detail-page.html'
+})
+export class DetailPage {
+	constructor(nav: NavController,navParams:NavParams) {
+		console.log('run');
+		this.nav = nav;
+		this.entry = navParams.get('selectedEntry');
+		console.log('my entry is '+this.entry.title);
+	}
+}
+</code></pre>
+<p>Here is the home page:</p>
+<img src="https://static.raymondcamden.com/images/2016/02/ionic2-4.png" class="imgborder" title="Home Page">
+<p>And one detail page:</p>
+<img src="https://static.raymondcamden.com/images/2016/02/ionic2-5.png" class="imgborder" title="Detail Page">
+<p>Not exactly rocket science, but you get the idea. So far, I'm digging it. I've got a lot of research to do, and I'm really looking forward to when things hit a firm release and stop changing, but I'd definitely take some time to look into it. As a reminder, you can, and should, join the <a href="http://ionicworldwide.herokuapp.com/">Ionic Slack</a> channel. It is the best place to get support and help others.</p>
+<p>If you want a copy of my app, you can find it on my GitHub repo here: <a href="https://github.com/cfjedimaster/Cordova-Examples/tree/master/rssreader_ionic_v2">https://github.com/cfjedimaster/Cordova-Examples/tree/master/rssreader_ionic_v2</a>.</p>
+}

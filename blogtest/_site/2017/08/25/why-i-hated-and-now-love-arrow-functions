@@ -1,0 +1,105 @@
+<h1>Post</h1>
+
+<p>Earlier this week I gave a presentation (I'll share the links for that in a post later today) about the changing nature of JavaScript and as part of that, I quickly mentioned a few modern features that I really dig. One of them was arrow functions. A follower on Twitter asked if I could spend a bit more time on them so I thought I'd whip up a quick blog post. Let me start though with why I absolutely hated them.</p>
+<p>Arrow functions have two main aspects. First, they are a new way of writing functions. Secondly, they handle &quot;This&quot; scope issues. The later is something I was fully behind. If you've ever seen <code>that.x = this.x</code>, then you'll recognize the issue. (And I'll share an example later.) The former though... filled me with deep and utter rage. Ok, I'm being a bit over the top, but at least to me, the syntax change in arrow functions was <em>so</em> radical that I had a mental block just trying to read them. It felt like one of those things developers do to be &quot;cute&quot;/&quot;cool&quot; without any real practical benefit.</p>
+<p>Let me share an example.</p>
+<pre><code class="language-javascript">document.addEventListener('DOMContentLoaded', e => {
+  console.log('dom loaded like a boss');
+}, false);</code></pre>
+<p>If you've never seen an arrow function before, that can be near incomprehensible. I'd see code using this form and my brain would come to an immediate stop while it attempted to &quot;rewrite&quot; it in the old school form. In order to really appreciate them, I had to start writing them, and every time I used one, I felt more and more comfortable with it and appreciated the terseness. I said earlier it felt like it was being cute for no real reason, but now it feels as natural as array shorthand (x = [1,2,]).</p>
+<p>To understand arrow functions, let's consider an sample function and then rewrite it.</p>
+<pre><code class="language-javascript">function hello(name) {
+	return "Hi, "+name;
+}
+</code></pre>
+<p>(As an aside, I normally use <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals">template literals</a> when building strings in JavaScript now, but I don't want to put too much new syntax in a sample at once.) The code sample above defines a function named hello that takes one argument and has one line of body code. Remember that a function can also be defined like so:</p>
+<pre><code class="language-javascript">hello = function(name) {
+	return "Hi, "+name;
+}
+</code></pre>
+<p>Ok, so the first thing you do when switching to an arrow function is dump the word function:</p>
+<pre><code class="language-javascript">hello = (name) {
+	return "Hi, "+name;
+}
+</code></pre>
+<p>Next, you add the arrow.</p>
+<pre><code class="language-javascript">hello = (name) => {
+	return "Hi, "+name;
+}
+</code></pre>
+<p>And you're done. But arrow functions let you go even simpler. If you only have one argument, you can drop the parens:</p>
+<pre><code class="language-javascript">hello = name => {
+	return "Hi, "+name;
+}
+</code></pre>
+<p>And if you only have one statement, you can remove the brackets:</p>
+<pre><code class="language-javascript">hello = name => "Hi, "+name;
+</code></pre>
+<p>Notice I also removed the return. The execution of <code>&quot;Hi, &quot;+name</code> returns a string and a function will automatically return the last statement result.</p>
+<p>Remember though that the only <em>required</em> aspects of an arrow function are the removal of the word function and the addition of the arrow. If that last version looks too short to you, you can add the brackets back in. Also, maybe your function has one statement now but you're pretty confident it is going to grow. For example, you have a function that returns a boolean and for now you just want to return true.</p>
+<p>Here is an example of a function that takes two arguments - both before and after:</p>
+<pre><code class="language-javascript">
+function greet(greeting, name) {
+	return greeting + " " + name;
+}
+
+greet = (greeting, name) => greeting + " " + name;
+</code></pre> 
+<p>Here is another example where the function is multiple lines:</p>
+<pre><code class="language-javascript">
+function greet(greeting, name) {
+	var tempString = greeting + " " + name;
+	if(tempString.length > 50) tempString = tempString.substr(0,50);
+	return tempString;
+}
+
+greet = (greeting, name) => {
+	var tempString = greeting + " " + name;
+	if(tempString.length > 50) tempString = tempString.substr(0,50);
+	return tempString;
+}
+</code></pre> 
+<p>I'm also ignoring another modern feature, <code>let</code>, in the code above, because I don't want to put too much in front of you at once.</p>
+<p>Arrow functions work really well, in my opinion, in call backs. The very first example I gave demonstrated this, but here it is again, along with the &quot;old&quot; version:</p>
+<pre><code class="language-javascript">
+document.addEventListener('DOMContentLoaded', function(e) {
+  console.log('dom loaded like a boss');
+}, false);
+
+document.addEventListener('DOMContentLoaded', e => {
+  console.log('dom loaded like a boss');
+}, false);
+</code></pre>
+<p>It isn't a huge change, but it feels more compact, and since callbacks like this are littered everywhere in most JavaScript files, the shorter syntax really feels like a boon.</p>
+<p>The other benefit of arrow functions are how they correct issues with <code>this</code>. If you've ever written a call back and realized that this.something inside wasn't working correctly, this is something you'll appreciate. For an example, I'm going to &quot;borrow&quot; the one MDN uses (I'll be linking to it in a moment). Consider this code:</p>
+<pre><code class="language-javascript">function Person() {
+  // The Person() constructor defines `this` as an instance of itself.
+  this.age = 0;
+
+  setInterval(function growUp() {
+    this.age++;
+  }, 1000);
+}
+
+var p = new Person();
+</code></pre>
+<p>If you run this and inspect the value of <code>p</code>, you'll see that age never increases. That's because the <code>this</code> in the callback is it's own scope, not the one for the Person function. A common fix was to simply add <code>that = this</code> and refer to <code>that.age</code>. But that's smelly. Consider the arrow function version:</p>
+<pre><code class="language-javascript">function Person(){
+  this.age = 0;
+
+  setInterval(() => {
+    this.age++; // |this| properly refers to the person object
+  }, 1000);
+}
+
+var p = new Person();
+</code></pre>
+<p>Boom - just plain works. By the way, if the <code>(() =&gt; {</code> part confuses you, remember that the <code>()</code> portion is the argument list, which in this case is empty.</p>
+<p>So yeah - I love these things now. I'll be honest - they still don't quite flow off the tongue (or off my fingers) as fast as &quot;old school&quot; functions, but they are getting more and more familiar to me. Alright, how about some resources?</p>
+<ul>
+<li>Once again, MDN has the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">best documentation</a>.</li>
+<li>Next, check out Dr. Axel's post: <a href="http://2ality.com/2012/04/arrow-functions.html">ECMAScript 6: arrow functions and method definitions</a>. Note the age of that post - 2012. Yep, these may seem new, but they've been discussed for a while.</li>
+<li>Finally, read this great article by Eric Elliott - <a href="https://medium.com/javascript-scene/familiarity-bias-is-holding-you-back-its-time-to-embrace-arrow-functions-3d37e1a9bb75">Familiarity Bias is Holding You Back: It’s Time to Embrace Arrow Functions</a></li>
+</ul>
+<p>I'd love to hear from my readers. Are you using this yet? If so, what do you think, and if not, why?</p>
+}

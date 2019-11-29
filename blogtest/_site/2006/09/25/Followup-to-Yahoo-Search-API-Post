@@ -1,0 +1,64 @@
+<h1>Post</h1>
+
+<p>Yesterday I wrote a <a href="http://ray.camdenfamily.com/index.cfm/2006/9/24/Yahoo-Search-API">quick post</a> about using Yahoo's search API. I wanted to follow it up with a slightly more useful example. On of the commenters on my last post noted that Yahoo seemed to respond pretty quickly, and I have to agree. The results take little to no time to return. Anyway, on to the example.</p>
+<!--more-->
+<p>This example once again uses the search API to return results. However, this time I'm doing something different with the results. Let me show the code first and then I'll explain.</p>
+<code>
+&lt;cfset searchTerm = "coldfusion blog"&gt;
+&lt;cfset mysite = "camdenfamily.com"&gt;
+&lt;cfset results = "100"&gt;
+&lt;cfset appid = "no_you_cant_have_this"&gt;
+<p>&lt;cfset matches = arrayNew(1)&gt;</p>
+<p>&lt;cfhttp url=&quot;http://api.search.yahoo.com/WebSearchService/V1/webSearch?appid=#appid#&amp;query=#urlEncodedFormat(searchTerm)#&amp;results=#results#&quot; result=&quot;result&quot; charset=&quot;utf-8&quot; /&gt;</p>
+<p>&lt;cfif len(result.fileContent) and isXml(result.fileContent)&gt;</p>
+<pre><code>&amp;lt;cfset xmlResult = xmlParse(result.fileContent)&amp;gt;
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#xmlResult.resultSet.xmlAttributes.totalResultsReturned#&quot;&amp;gt;
+	&amp;lt;cfset node = xmlResult.resultSet.xmlChildren[x]&amp;gt;
+	&amp;lt;cfset title = node.title.xmlText&amp;gt;
+	&amp;lt;cfset summary = node.summary.xmlText&amp;gt;
+	&amp;lt;cfset iUrl = node.url.xmlText&amp;gt;
+	&amp;lt;cfset clickurl = node.clickurl.xmlText&amp;gt;
+	
+	&amp;lt;cfif findNoCase(mysite, iURL)&amp;gt;
+		&amp;lt;cfset match = structNew()&amp;gt;
+		&amp;lt;cfset match.title = title&amp;gt;
+		&amp;lt;cfset match.summary = summary&amp;gt;
+		&amp;lt;cfset match.url = iurl&amp;gt;
+		&amp;lt;cfset match.position = x&amp;gt;
+		&amp;lt;cfset arrayAppend(matches, match)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfif arrayLen(matches)&gt;
+&lt;cfmail to=&quot;ray@camdenfamily.com&quot; from=&quot;egowatcher@egoaddict.com&quot; subject=&quot;Your daily ego check.&quot;&gt;
+Here is your daily ego match for #dateFormat(now(), &quot;long&quot;)#</p>
+<pre><code>&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(matches)#&quot;&amp;gt;
+#matches[x].title# (#matches[x].url#)
+Position: #matches[x].position#
+#matches[x].summary#	
+&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfmail&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>The code begins pretty much as yesterday's did, except I added a new variable, &quot;mysite&quot;. Yahoo lets you filter search results by site, but that is not what I'm doing. (Jeff posted a perfect example of that in <a href="http://ray.camdenfamily.com/index.cfm/2006/9/24/Yahoo-Search-API#cE56D0301-F519-34FE-FF0D97518EEEC809">this comment</a>.) Instead, scroll down to this line:</p>
+<code>
+&lt;cfif findNoCase(mysite, iURL)&gt;
+</code>
+<p>What I've done here is to say that if my site is found in the url then I consider it a match. I add the relevant data to an array of matches. The end of the code block simply checks to see if any matches were found and if so - mails it to me. Here is an example of the output:</p>
+<blockquote>
+Here is your daily ego match for September 25, 2006<br>
+<br> 	
+Raymond Camden's ColdFusion Blog: BSG spin off in the works (and a quick note) (http://ray.camdenfamily.com/index.cfm/2006/4/27/BSG-spin-off-in-the-works-and-a-quick-note)<br>
+Position: 14<br>
+A blog for ColdFusion, Java, and other topics.: BSG spin off in the works (and a ... Subscribe to Raymond Camden's ColdFusion Blog. BSG spin off in the works ...
+<p>Raymond Camden's ColdFusion Blog: BlogCFC 5 Beta Announced (http://ray.camdenfamily.com/index.cfm/2006/4/28/BlogCFC-5-Beta-Announced)<br>
+Position: 18<br>
+A blog for ColdFusion, Java, and other topics.: BlogCFC 5 Beta Announced ... Subscribe to Raymond Camden's ColdFusion Blog. BlogCFC 5 Beta Announced ...</p>
+</blockquote>
+<p>So what's the point of all this? I can set up this script to run daily and check the position of my site on Yahoo's search engine when people are searching for &quot;coldfusion blog&quot;. (And geeze - 14th? What am I doing wrong? :) This can let me monitor my marketing efforts and see what is working and what is not working.</p>
+<p>I hope this &quot;real&quot; example helps!</p>
+}

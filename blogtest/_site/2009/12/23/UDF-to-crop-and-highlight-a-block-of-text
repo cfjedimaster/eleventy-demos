@@ -1,0 +1,80 @@
+<h1>Post</h1>
+
+<p>Here is a little UDF I worked on this morning. I've had code like this in BlogCFC for a while, but I needed it in a UDF for my Picard project so I just whipped it out. The basic idea is:</p>
+<p>You have a block of text of arbitrary text.<br/>
+You had searched for something and that something is probably in the text. (I say probably because the search may have matched on another part of the content in question, like the title.)<br/>
+You want to highlight the match in the content.<br/>
+You also want to crop the content to X characters long, and <b>if</b> a match was found, center the X characters around the first match.<br/></p>
+<p>Make sense? So given a block of text, like the lyrics to Lady Gaga's &quot;Poker Face&quot; (don't ask), I can find/highlight the word poker like so:</p>
+<code>
+#highlightAndCrop(text,"poker",250,"&lt;b&gt;&lt;/b&gt;")#
+</code>
+<p>Where text is a variable containing the lyrics, poker is the word to highlight, 250 is the size of the result (which is a bit fuzzy, will explain why in a bit), and the final argument is the &quot;wrap&quot; to use around the result. Here is what the UDF will return:</p>
+<blockquote>
+... oh, oh, ohhhh, oh-oh-e-oh-oh-oh,<br/>
+I'll get him hot, show him what I've got<br/>
+<br/> 
+Can't read my,<br/>
+Can't read my<br/>
+No he can't read my <b>poker</b> face<br/>
+(she's got me like nobody)<br/>
+Can't read my<br/>
+Can't read my<br/>
+No he can't read my <b>poker</b> face<br/>
+(she's got me like nobody)<br/>
+<br/> 
+P-p-p...<br/>
+</blockquote>
+<p>So you get the basic idea. Here is the UDF (as it stands now, but there are parts of it I'd like to improve):</p>
+<code>
+&lt;cffunction name="highlightAndCrop" access="public" output="false" hint="Given an arbitrary string and a search term, find it, and return a 'cropped' set of text around the match."&gt;
+	&lt;cfargument name="string" type="string" required="true" hint="Main blob of text"&gt;
+	&lt;cfargument name="term" type="string" required="true" hint="Keyword to look for."&gt;
+	&lt;cfargument name="size" type="numeric" required="false" hint="Size of result string. Defaults to total size of string. Note this is a bit fuzzy - we split it in two and return that amount before and after the match. The size of term and wrap will therefore impact total string length."&gt;
+	&lt;cfargument name="wrap" type="string" required="false" default="&lt;b&gt;&lt;/b&gt;" hint="HTML to wrap the match. MUST be one pair of HTML tags."&gt;
+<pre><code>&amp;lt;cfset var excerpt = &quot;&quot;&amp;gt;
+
+&amp;lt;!--- clean the string ---&amp;gt;
+&amp;lt;cfset arguments.string = trim(rereplace(arguments.string, &quot;&amp;lt;.*?&amp;gt;&quot;, &quot;&quot;, &quot;all&quot;))&amp;gt;
+
+&amp;lt;!--- pad is half our total ---&amp;gt;
+&amp;lt;cfif not structKeyExists(arguments, &quot;size&quot;)&amp;gt;
+	&amp;lt;cfset arguments.size = len(arguments.string)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfset var pad = ceiling(arguments.size/2)&amp;gt;
+
+&amp;lt;cfset var match = findNoCase(arguments.term, arguments.string)&amp;gt;
+&amp;lt;cfif match lte pad&amp;gt;
+	&amp;lt;cfset match = 1&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfset var end = match + len(arguments.term) + arguments.size&amp;gt;
+
+&amp;lt;!--- now create the main string around the match ---&amp;gt;
+&amp;lt;cfif len(arguments.string) gt arguments.size&amp;gt;
+	&amp;lt;cfif match gt 1&amp;gt;
+		&amp;lt;cfset excerpt = &quot;...&quot; &amp; mid(arguments.string, match-pad, end-match)&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfset excerpt = left(arguments.string,end)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfif len(arguments.string) gt end&amp;gt;
+		&amp;lt;cfset excerpt = excerpt &amp; &quot;...&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfset excerpt = arguments.string&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- split up my wrap - I bet this can be done better... ---&amp;gt;
+&amp;lt;cfset var endInitialTag = find(&quot;&amp;gt;&quot;,arguments.wrap)&amp;gt;
+&amp;lt;cfset var beginTag = left(arguments.wrap, endInitialTag)&amp;gt;
+&amp;lt;cfset var endTag = mid(arguments.wrap, endInitialTag+1, len(arguments.wrap))&amp;gt;
+
+&amp;lt;cfset excerpt = reReplaceNoCase(excerpt, &quot;(#arguments.term#)&quot;, &quot;#beginTag#\1#endTag#&quot;,&quot;all&quot;)&amp;gt;
+
+&amp;lt;cfreturn excerpt&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>For the most part this should make sense. I attempt to find the term within the string and use that as a base to create an excerpt. I handle cases where the match isn't found and I also handle cases where the total string is smaller than the crop. Note that the wrap HTML you include will have an impact on the total length of the string, but that shouldn't matter.</p>
+<p>The main part I don't like is the wrap portion. It only supports one set of tags. I may split this into two arguments, a beginWrap and endWrap. For now though it suits my purposes.</p>
+<p>p.s. This UDF is ColdFusion 9 <i>only</i> because of the var statements intermingled within the UDF. To use this in earlier versions, simply move the var statements to the beginning of the UDF.</p>
+}

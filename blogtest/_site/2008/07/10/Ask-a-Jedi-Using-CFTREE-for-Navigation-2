@@ -1,0 +1,45 @@
+<h1>Post</h1>
+
+<p>So last night, during my CF/AJAX presentation, I mentioned that I didn't think most folks made use of cftree, so this question is perfectly poised to prove me wrong. John asks:</p>
+<blockquote>
+<p>
+I loved your <a href="http://www.raymondcamden.com/index.cfm/2007/7/31/Using-CFTREE-for-Navigation">example</a> of binding a cfdiv to a
+cftree node. I would like to use this example but only have the cfdiv bind when a child node is clicked on. I have a simple parent-child tree structure with only one level. Do you have any ideas?
+</p>
+</blockquote>
+<!--more-->
+I always have ideas, but I assume you want a <i>good</i> idea, and those are a bit more rare. The original <a href="http://www.coldfusionjedi.com/index.cfm/2007/7/31/Using-CFTREE-for-Navigation">blog entry</a> had a cfdiv that was bound to the tree. As soon as you clicked any leaf, the div was updated. In order to stop navigating on certain types of nodes, we need to change things up a bit. First, let's add a cfajaxproxy tag. This will give us more control over the binding:
+<code>
+&lt;cfajaxproxy bind="javascript:doNav({mytree.node})"&gt;
+</code>
+<p>This line says - &quot;When the tree's selected node changes, run a JavaScript function doNav and pass the node value.&quot; My JavaScript is rather simple:</p>
+<code>
+&lt;script&gt;
+function doNav(n) {
+	if(n != 'root') ColdFusion.navigate('dyn.cfm?value='+n,'content');
+}
+&lt;/script&gt;
+</code>
+<p>My original tree (the full code will be below) used root for the top level leaf. So basically I just said, if the node was root, then don't do anything, otherwise, update the div. Here is the complete file:</p>
+<code>
+&lt;cfajaxproxy bind="javascript:doNav({mytree.node})"&gt;
+<p>&lt;script&gt;
+function doNav(n) {
+if(n != 'root') ColdFusion.navigate('dyn.cfm?value='+n,'content');
+}
+&lt;/script&gt;</p>
+<p>&lt;cfform name=&quot;form&quot;&gt;
+&lt;cftree format=&quot;html&quot; name=&quot;mytree&quot;&gt;
+&lt;cftreeitem display=&quot;Navigation&quot; value=&quot;root&quot;&gt;
+&lt;cftreeitem display=&quot;Page A&quot; parent=&quot;root&quot; value=&quot;a&quot;&gt;
+&lt;cftreeitem display=&quot;Page B&quot; parent=&quot;root&quot; value=&quot;b&quot;&gt;
+&lt;/cftree&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;cfdiv id=&quot;content&quot; /&gt;
+</code></p>
+<p>The issue with this is that it only supports one root node. If you had another root node (imagine two parent leafs, Products and Services), you would need to update your JavaScript to check for both values. You could perhaps get a bit fancy and name all your root nodes like so:</p>
+<p>root_Products<br/>
+root_Services<br/></p>
+<p>And then simply use JavaScript to see if the selected node begins with root_.</p>
+<p>Anyway, I think this gives you the idea.</p>
+}

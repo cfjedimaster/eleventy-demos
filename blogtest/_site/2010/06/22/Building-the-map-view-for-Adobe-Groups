@@ -1,0 +1,73 @@
+<h1>Post</h1>
+
+<p><img src="https://static.raymondcamden.com/images/cfjedi/aug-map-4.png" align="left" style="margin-right: 5px" /> Earlier this month I pushed up a new feature to the <a href="http://groups.adobe.com">Adobe Groups</a> site - a <a href="http://groups.adobe.com/index.cfm?event=page.maps">map of all the user groups</a>. (And by all I mean those who entered geographic information.) This feature makes use of the Google Map API and the new CFMAP tag in ColdFusion 9. I thought folks might want a little explanation of the code behind this feature. I don't put this out as the most efficient maps demo or the coolest, but hopefully it will help others.</p>
+<p/>
+<p>To begin, let me talk a bit about how I handled the data portion. I knew that I would need longitude and latitude information for user group addresses. While ColdFusion's cfmap supports creating markers on addresses, if you ask Google to geocode too many of them you will get an error. (See <a href="http://www.raymondcamden.com/index.cfm/2009/12/15/Having-trouble-with-too-many-map-markers-and-CFMAP">this blog post</a> for more information.) For my solution I added three properties to my Group entity:
+<br clear="left"></p>
+<!--more-->
+<p/>
+<code>
+property name="address" ormtype="string";
+property name="longitude" ormtype="string";
+property name="latitude" ormtype="string";
+</code>
+<p/>
+<p>I then exposed a free form text field on the user group's setting pages to allow user group managers to enter any address they wanted. They could use something vague, like a zip code, or enter a full address with a specific street location. I simply suggested that UGMs first try their address on the main <a href="http://maps.google.com">Google Maps</a> site to see if they liked the result.</p>
+<p/>
+<p>Once a manager entered their address, I needed to convert this address into a longitude and latitude value. Luckily Google provides a nice API for this and you can find a <a href="http://googlegeocode.riaforge.org/">ColdFusion wrapper</a> for it on RIAForge. I made the call that even with Google providing (normally) pretty swift APIs, I'd do the geolocation in a background process. So now whenever a UGM makes a change to their address, I clear any existing longitude and latitude. I then created a simple scheduled task to handle geolocation.</p>
+<p/>
+<code>
+&lt;cfquery name="getaddresses"&gt;
+select	name, address, id
+from 	`group`
+where address is not null and address != ''
+and (longitude = '' or latitude = '' or longitude is null or latitude is null)
+&lt;/cfquery&gt;
+<p>&lt;cfoutput&gt;#getaddresses.recordCount# address to geocode.&lt;p&gt;&lt;/cfoutput&gt;</p>
+<p>&lt;cfloop query=&quot;getaddresses&quot;&gt;</p>
+<pre><code>&amp;lt;cfset geocode = new googlegeocoder3()&amp;gt;
+&amp;lt;cfset geo = geocode.googlegeocoder3(address=address)&amp;gt;
+&amp;lt;cfif geo.status is &quot;OK&quot;&amp;gt;
+	&amp;lt;cfquery&amp;gt;
+	update	`group`
+	set	longitude = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#geo.longitude#&quot;&amp;gt;,
+		latitude = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#geo.latitude#&quot;&amp;gt;
+	where id = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#id#&quot;&amp;gt;
+	&amp;lt;/cfquery&amp;gt;
+	&amp;lt;cfoutput&amp;gt;Set geo info for #name# at #address#&amp;lt;br/&amp;gt;&amp;lt;/cfoutput&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;!--- possibly set a flag to not try again ---&amp;gt;
+	&amp;lt;cfoutput&amp;gt;&amp;lt;font color='red'&amp;gt;Bad geo info for #name# at #address#&amp;lt;/font&amp;gt;&amp;lt;br/&amp;gt;&amp;lt;/cfoutput&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>Done.
+</code></p>
+<p/>
+<p>I don't think I need to go over the code above - as you can see it's rather simple. I also did <i>not</i> make use of HQL for the queries. I certainly could have but for the first draft, this worked fine. The end result is that every 30 minutes, I look for groups that need geocoding and try to do that operation.</p>
+<p/>
+<p>Ok - so now I should be done. I can just get a list of groups that have longitude and latitude information and dump them into a cfmap tag, right? Well that's what I thought at first. I then discovered that some user groups dared to share a room with other groups in the area. When Google is asked to put two or more markers in the exact same spot, only the last one will render. Barnacles. I decided to try something else. I created a structure keyed by a location. Each group will place their marker HTML into a value specified by the key. Now if two groups meet in one place, both of their sets of information will be placed on the one marker. Here is a portion of the code from the view. Assume longlatdata is an array of ORM entities for groups where they all contain a geocode information.</p>
+<p/>
+<code>
+&lt;cfset longlat = {}&gt;
+&lt;cfloop index="g" array="#longlatdata#"&gt;
+		&lt;cfset lat = g.getLatitude()&gt;
+		&lt;cfset lon = g.getLongitude()&gt;
+		&lt;cfset key = lat & " " & lon&gt;
+		&lt;cfif not structKeyExists(longlat, key)&gt;
+			&lt;cfset longlat[key] = ""&gt;
+		&lt;/cfif&gt;
+		&lt;cfset str = "&lt;img src=""#g.getAvatar()#"" align=""left"" width=""75"" height=""75"" style=""margin-right:5px""&gt; &lt;a href=""/group/#g.getId()#""&gt;" & g.getName() & "&lt;/a&gt;&lt;br/&gt;" & g.getAddress() & "&lt;br clear=""left""/&gt;&lt;br/&gt;"&gt;
+		&lt;cfset longlat[key] &= str&gt;
+&lt;/cfloop&gt;
+<p>&lt;cfmap centeraddress=&quot;St. Louis, MO, USA&quot; name=&quot;ugmMap&quot; showcentermarker=&quot;false&quot; zoomlevel=&quot;4&quot; width=&quot;900&quot; height=&quot;500&quot; type=&quot;hybrid&quot;&gt;
+&lt;cfloop item=&quot;loc&quot; collection=&quot;#longlat#&quot;&gt;
+&lt;cfset lat = listFirst(loc, &quot; &quot;)&gt;
+&lt;cfset lon = listLast(loc, &quot; &quot;)&gt;
+&lt;cfmapitem latitude=&quot;#lat#&quot; longitude=&quot;#lon#&quot; markerwindowcontent=&quot;#longlat[loc]#&quot;&gt;
+&lt;/cfloop&gt;
+&lt;/cfmap&gt;
+</code></p>
+<p/>
+<p>Again - I assume this is all pretty simple but let me know if anything needs further explanation. The choice of St. Louis to center the map was totally arbitrary. So, any comments? Right now I'm a bit worried about handling more and more groups with addresses. Luckily there is an <a href="http://code.google.com/p/gmaps-utility-library-dev/">open source MarkerManager</a> to handle large sets of markers. I plan on looking at that next.</p>
+}

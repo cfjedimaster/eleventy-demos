@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<p>This is something that's been on my mind to write up for a few weeks now. It is <em>strongly</em> in the &quot;I'm sure everyone knows this&quot; category, but I've always felt like the things everyone knows are precisely the kind of things that everyone doesn't know. This particular tip may be a bit <em>too</em> obvious, but here goes.</p>
+<p>Imagine you're working on something involving forms. Let's say a basic Ajax-based search where you take user input and on a button click, you load in remote data to render on screen.</p>
+<p>That isn't too difficult, but you may find yourself working a bit to get the layout just right, handle rendering the total number of results, and so forth.</p>
+<p>While working on this, your flow may be like this:</p>
+<ul>
+<li>Figure out what you need to fix, change.</li>
+<li>Write some code.</li>
+<li>Reload the page.</li>
+<li>Type 'foo' and hit enter.</li>
+<li>Look at results and repeat.</li>
+</ul>
+<p>You can automate that page reload thing if you want of course to make it a bit smoother, but you get the idea. Let's say that search field looks like so:</p>
+<pre><code class="language-markup">&lt;input type="search" id="search" placeholder="Search!"&gt;
+</code></pre>
+<p>Ok, so here's my tip. You can save sometime by doing this:</p>
+<pre><code class="language-markup">&lt;input type="search" id="search" placeholder="Search!"
+value="foo"
+&gt;
+</code></pre>
+<p>So... right now some people are probably shaking their heads and wondering why I even bothered to blog this. But even today I'll find myself doing a &quot;write/reload/type/hit button/test&quot; cycle for a few minutes before I remember I can set a default to speed things up a bit. I'll normally include line breaks as I did above to remind myself to remove it later.</p>
+<p>I know there's browser extensions that can also pre-fill forms, but this is quicker and simpler to set up.</p>
+<p>So there ya go. I hope this helps.</p>
+}

@@ -1,0 +1,89 @@
+<h1>Post</h1>
+
+<p>Earlier this week a user asked me to look into something odd with CF901's new multirowselect feature for cfgrid. If you haven't played with this yet, it is a way to enable multiple row selections in a grid. Unfortunately it doesn't quite work as advertised, but in this blog entry I'll tell you how to <i>make</i> it work.</p>
+<!--more-->
+<p>
+First, let's start with a simple example so you can see what the attribute does when enabled. 
+<p>
+<code>
+&lt;cfset q = queryNew("id,name")&gt;
+&lt;cfloop index="x" from="1" to="10"&gt;
+       &lt;cfset queryAddRow(q)&gt;
+       &lt;cfset querySetCell(q, "id", x)&gt;
+       &lt;cfset querySetCell(q, "name", "Name #x#")&gt;
+&lt;/cfloop&gt;
+<p>&lt;cfform name=&quot;mytest&quot; method=&quot;post&quot;&gt;
+&lt;cfgrid name=&quot;SelectStuff&quot; query=&quot;q&quot; format=&quot;html&quot; width=&quot;400&quot; height=&quot;250&quot; multirowselect=&quot;true&quot;&gt;&lt;/cfgrid&gt;
+&lt;cfinput type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Submit&quot;&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;cfdump var=&quot;#form#&quot;&gt;
+</code></p>
+<p>
+<p>My code begins with a quick fake query on top. Next I've got a cfform with my grid inside. The only thing really interesting there is the multirowselect. I also added a quick dump of the form scope to the bottom. Let's take a look at how the grid is changed. I'll first show a picture with the option turned <b>off</b>, this is the default:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/Screen shot 2010-08-28 at 7.59.52 AM.png" />
+<p>
+<p>Now let's turn the option back on, as in the code above.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2010-08-28 at 8.00.31 AM.png" />
+<p>
+<p>As you can see, there is a new column now with checkboxes. There is also a checkbox on top. Clicking that works as a Select All/Deselect All feature. So in theory, that should be it, right? Unfortunately, it completely doesn't work as shown above. If I click a few checkboxes and hit submit, I get this in the form scope.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2010-08-28 at 8.02.32 AM.png" />
+<p>
+<p>Nothing. Ugh. So I pinged Adobe on this. Turns out - the real expectation for this feature was within Ajax-based applications. You <i>can</i> get the value just fine via JavaScript, but if you don't do this, nothing will be sent to the server. I've already filed a bug report on this.</p>
+<p>
+<p>So how can you make this work? The simplest solution is to use the getSelectedRows API:</p>
+<p>
+<code>
+obj = ColdFusion.Grid.getSelectedRows('SelectStuff');
+</code>
+<p>
+<p>This returns a struct of objects. How do you send that to the server? One option would be to turn into JSON:</p>
+<p>
+<code>
+jsonbj = ColdFusion.JSON.encode(obj);
+</code>
+<p>
+<p>However, this will give you a JSON representation of the entire row. You probably only want the ID values, right? Here is the code I came up:</p>
+<p>
+<code>
+var selected = "";
+for(var i=0; i&lt;obj.length; i++) {
+	if(selected == "") selected = obj[i].ID;
+	else selected += "," + obj[i].ID;
+}
+document.getElementById('selected').value = selected;
+</code>
+<p>
+<p>Basically - create a list of IDs from the object and assign it to a new form field, in this case, a hidden one. You can try this yourself via the demo link below, and I've pasted the entire completed template below.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/aug282010/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<code>
+<p>&lt;cfset q = queryNew(&quot;id,name&quot;)&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;10&quot;&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;id&quot;, x)&gt;
+&lt;cfset querySetCell(q, &quot;name&quot;, &quot;Name #x#&quot;)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;script&gt;
+function fixMe() {
+obj = ColdFusion.Grid.getSelectedRows('SelectStuff');
+var selected = &quot;&quot;;
+for(var i=0; i&lt;obj.length; i++) {
+if(selected == &quot;&quot;) selected = obj[i].ID;
+else selected += &quot;,&quot; + obj[i].ID;
+}
+document.getElementById('selected').value = selected;
+return true;
+}
+&lt;/script&gt;</p>
+<p>&lt;cfform name=&quot;mytest&quot; method=&quot;post&quot; onSubmit=&quot;return fixMe()&quot;&gt;
+&lt;cfgrid name=&quot;SelectStuff&quot; query=&quot;q&quot; format=&quot;html&quot; width=&quot;400&quot; height=&quot;250&quot; multirowselect=&quot;true&quot;&gt;&lt;/cfgrid&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;selected&quot; id=&quot;selected&quot;&gt;
+&lt;cfinput type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Submit&quot;&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;cfdump var=&quot;#form#&quot;&gt;
+</code></p>
+}

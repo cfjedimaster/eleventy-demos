@@ -1,0 +1,61 @@
+<h1>Post</h1>
+
+<p>I wrote this in about five minutes and it doesn't support auth tokens yet, but here are two UDFs that make use of <a href="http://code.google.com/apis/urlshortener/overview.html">Google's URL Shortening API</a>. First, the shorten call:</p>
+<p>
+<code>
+&lt;cffunction name="googleURLShorten" output="false" returnType="string"&gt;
+	&lt;cfargument name="url" type="string" required="true"&gt;
+	&lt;cfset var httpResult = ""&gt;
+	&lt;cfset var result = ""&gt;
+<pre><code>&amp;lt;cfset var body = {&quot;longUrl&quot;=arguments.url}&amp;gt;
+
+&amp;lt;cfset body = serializeJson(body)&amp;gt;
+
+&amp;lt;cfhttp url=&quot;https://www.googleapis.com/urlshortener/v1/url&quot; method=&quot;post&quot; result=&quot;httpResult&quot;&amp;gt;
+	&amp;lt;cfhttpparam type=&quot;header&quot; name=&quot;Content-Type&quot; value=&quot;application/json&quot;&amp;gt;
+	&amp;lt;cfhttpparam type=&quot;body&quot; value=&quot;#body#&quot;&amp;gt;
+&amp;lt;/cfhttp&amp;gt;
+&amp;lt;cfset result = httpResult.filecontent.toString()&amp;gt;
+&amp;lt;cfreturn deserializeJSON(result).id&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>
+<p>And then the reverse:</p>
+<p>
+<code>
+&lt;cffunction name="googleURLExpand" output="false" returnType="string"&gt;
+	&lt;cfargument name="url" type="string" required="true"&gt;
+	&lt;cfset var httpResult = ""&gt;
+	&lt;cfset var result = ""&gt;
+<pre><code>&amp;lt;cfhttp url=&quot;https://www.googleapis.com/urlshortener/v1/url?shortUrl=#urlEncodedFormat(arguments.url)#&quot; method=&quot;get&quot; result=&quot;httpResult&quot;&amp;gt;&amp;lt;/cfhttp&amp;gt;
+
+&amp;lt;cfset result = httpResult.filecontent.toString()&amp;gt;
+&amp;lt;cfreturn deserializeJSON(result).longUrl&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>
+<p>And a quick test script:</p>
+<p>
+<code>
+&lt;cfset sampleURL = "http://www.raymondcamden.com/index.cfm/2011/1/10/jQuery-based-example-of-simple-shopping-cart-UI"&gt;
+&lt;cfset test = googleURLShorten(sampleURL)&gt;
+&lt;cfoutput&gt;
+I shorteneded #sampleURL# to #test#.&lt;br/&gt;
+&lt;/cfoutput&gt;
+<p>&lt;cfset reversed = googleURLExpand(test)&gt;
+&lt;cfoutput&gt;
+I expanded it to #reversed#.
+&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>When run, I get:</p>
+<p>
+<blockquote>
+I shorteneded http://www.coldfusionjedi.com/index.cfm/2011/1/10/jQuery-based-example-of-simple-shopping-cart-UI to http://goo.gl/qeDBv.
+I expanded it to http://www.coldfusionjedi.com/index.cfm/2011/1/10/jQuery-based-example-of-simple-shopping-cart-UI.
+</blockquote>
+<p>
+<p>Love that typo on the first line. Anyway, the UDFs could be improved with simple error checking and optional token support. But this is the best you get in five minutes. ;)</p>
+}

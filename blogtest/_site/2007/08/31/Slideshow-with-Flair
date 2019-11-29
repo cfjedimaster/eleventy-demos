@@ -1,0 +1,81 @@
+<h1>Post</h1>
+
+<p>A few days ago I <a href="http://www.raymondcamden.com/index.cfm/2007/8/29/Simple-image-slide-show-built-in-ColdFusion-8">blogged</a> about a simple slide show built using CFIMAGE and CFLAYOUT. While this worked ok, it wasn't very sexy. It had no flair. And as everyone knows, I'm all about the flair, so let's take a look at a cooler version. First I'll show the demo than talk about how it was built.</p>
+<!--more-->
+<p/>
+<a href="http://www.coldfusionjedi.com/demos/mooslideshow/test.cfm">Demo</a>
+<p/>
+So how was this built? First off - none of the flair comes from me. It comes from a script called <a href="http://www.phatfusion.net/slideshow/index.htm">Slide Show</a>. This code is pretty neat and I wish I could credit the guy who built it - but like <b>far</b> too many people out there, he doesn't have a "About Page". Do check out his other <a href="http://www.phatfusion.net/">demos</a> though as they are just as cool as this one. As Paris would say - that's hot.
+<p/>
+<p>The code uses <a href="http://mootools.net/">mootools</a>, an interesting JavaScript library. I haven't looked at it a lot - but it seems pretty nice. Although I will flaw them one thing - the download page nicely lets you select which libraries you want to grab. It will even compress them. But there is no &quot;get all&quot; option. As a developer, I wanted to just grab everything so I can play with it when I have time.</p>
+<p/>
+<p>The ColdFusion code behind this is not really different than what I did last time. The only change was to remove the cflayouts. I used the same HTML he did for his demo and that was pretty much it. The complete code is below. It is a bit messy as I was just playing with it, but hopefully you get the idea. I think this goes to show that if you <i>don't</i> like ColdFusion 8's built in Ajaxy-goodness, you can definitely still play well with other Ajax libraries.</p>
+<p/>
+<code>
+&lt;html&gt;
+&lt;head&gt;
+&lt;script type="text/javascript" src="mootools.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="BackgroundSlider.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="slideshow.js"&gt;&lt;/script&gt;
+&lt;link href="slideshow.css" rel="stylesheet" type="text/css" /&gt;
+&lt;style&gt;
+	body {
+    font: normal 91%/1.2 Helvetica,Arial,Verdana,Sans-serif;
+	background-color: #fff;
+	color: #999;
+	padding-top: 30px;
+	text-align: center;
+}
+&lt;/style&gt;
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<pre><code>  &amp;lt;div id=&quot;thumbnails&quot;&amp;gt;
+	  
+	  &amp;lt;cfset folderurl = &quot;images2&quot;&amp;gt;
+	  &amp;lt;cfset folder = expandPath(&quot;./images2/&quot;)&amp;gt;
+	  &amp;lt;cfdirectory action=&quot;list&quot; directory=&quot;#folder#&quot; name=&quot;images&quot;&amp;gt;
+	  
+	  &amp;lt;cfquery name=&quot;images&quot; dbtype=&quot;query&quot;&amp;gt;
+	  select	name
+	  from		images
+	  where 	(lower(name) like '%.jpg'
+	  or		lower(name) like '%.gif')
+	  and		lower(name) not like '_thumb_%'
+	  &amp;lt;/cfquery&amp;gt;
+	  
+	  &amp;lt;cfloop query=&quot;images&quot;&amp;gt;
+		&amp;lt;cfif not fileExists(folder &amp; &quot;_thumb_&quot; &amp; name)&amp;gt;
+		  &amp;lt;cfimage source=&quot;#folder##name#&quot; action=&quot;read&quot; name=&quot;newimage&quot;&amp;gt;
+		  &amp;lt;cfset imageScaleToFit(newimage, 100, 100)&amp;gt;
+		  &amp;lt;cfimage action=&quot;write&quot; source=&quot;#newimage#&quot; destination=&quot;#folder#/_thumb_#name#&quot; overwrite=&quot;true&quot;&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+		
+	  &amp;lt;cfoutput&amp;gt;&amp;lt;a href=&quot;#folderurl#/#name#&quot; class=&quot;slideshowThumbnail&quot;&amp;gt;&amp;lt;img src=&quot;#folderurl#/_thumb_#name#&quot; border=&quot;0&quot; /&amp;gt;&amp;lt;/a&amp;gt;&amp;lt;/cfoutput&amp;gt;
+	  &amp;lt;/cfloop&amp;gt;		  
+	  &amp;lt;p&amp;gt;&amp;lt;a href=&quot;#&quot; onclick=&quot;show.play(); return false;&quot;&amp;gt;Play&amp;lt;/a&amp;gt; | &amp;lt;a href=&quot;#&quot; onclick=&quot;show.stop(); return false;&quot;&amp;gt;Stop&amp;lt;/a&amp;gt; | &amp;lt;a href=&quot;#&quot; onclick=&quot;show.next(); return false;&quot;&amp;gt;Next&amp;lt;/a&amp;gt; | &amp;lt;a href=&quot;#&quot; onclick=&quot;show.previous(); return false;&quot;&amp;gt;Previous&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;
+
+	  &amp;lt;/div&amp;gt;
+	  
+	  &amp;lt;div id=&quot;slideshow&quot; class=&quot;slideshow&quot;&amp;gt;&amp;lt;/div&amp;gt;
+
+		&amp;lt;script type=&quot;text/javascript&quot;&amp;gt;
+	  	window.addEvent('domready',function(){
+			var obj = {
+				wait: 3000, 
+				effect: 'fade',
+				duration: 1000, 
+				loop: true, 
+				thumbnails: true,
+				backgroundSlider: true
+			}
+			show = new SlideShow('slideshow','slideshowThumbnail',obj);
+			show.play();
+		});
+	  &amp;lt;/script&amp;gt;
+
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

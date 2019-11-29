@@ -1,0 +1,103 @@
+<h1>Post</h1>
+
+<p>As I prepare to get on an 8+ hour flight to Amsterdam for <a href="https://nativescriptdevday.org/">NativeScript Developer Day</a>, I thought it would be nice to work on a quick little NativeScript demo. It occurred to me a few days ago that one of the things I did while learning Cordova and Ionic was to build a crap ton of simple demos that used various plugins as a way to learn the ecosystem. I've decided to try my best to repeat that process with NativeScript. What follows is the first of two articles I'm going to write on using geolocation with NativeScript. This is just a simple introduction while the next one will be a slightly more complex example.</p>
+<p>First, I want to start off with a little warning. When I Googled for geolocation and NativeScript, I ended up here: <a href="https://docs.nativescript.org/angular/ng-hardware-access/location">Location</a>. The docs here have a few issues and in my opinion, you should avoid them. (I plan on filing a bug report on the issues when I get a chance from this trip!) Instead, I'd check the core docs for the plugin at <a href="https://github.com/NativeScript/nativescript-geolocation">https://github.com/NativeScript/nativescript-geolocation</a>.</p>
+<p>Assuming you've got a NativeScript project created, you'll want to begin by adding the plugin:</p>
+<pre><code>tns plugin add nativescript-geolocation
+</code></pre>
+<p>Ok, so that's easy. Using the plugin is <em>mostly</em> easy, but you do have to handle permissions as well as handling errors from retrieving the data. In my opinion, the main readme doesn't do a great job of showing this in a complete example (although more on that in a bit), so I had to guess a bit to figure it out, but here's what I came up with as a general &quot;flow&quot;:</p>
+<pre><code class="language-js">Geolocation.enableLocationRequest(true)
+.then(() =&gt; {
+	Geolocation.isEnabled().then(isLocationEnabled =&gt; {
+		if(!isLocationEnabled) {
+			// potentially do more then just end here...
+			return;
+		}
+
+		// MUST pass empty object!!
+		Geolocation.getCurrentLocation({})
+		.then(result =&gt; {
+		})
+		.catch(e =&gt; {
+			console.log('loc error', e);
+		});
+	});
+});
+}
+</code></pre>
+<p>The code begins by enabling location access in general. On my Android this resulted in a prompt the first time but not again. Then <code>isEnabled</code> call will return true or false and how your application handles that is up to, well, your application.</p>
+<p>Next, you'll actually get the location. <strong>It is very important that even if you are fine with the defaults, you must pass an empty object!</strong> If you pass nothing than the request is never made. That seems like a small bug to me, but it's easy enough to work around.</p>
+<p>Once done, your result variable includes latitude and longitude, altitude, and more. The docs do cover this very well.</p>
+<p>So how about a complete, if simple, demo of this? I'm using <a href="https://nativescript-vue.org/">NativeScript-Vue</a> but obviously similar code would work in Angular, it just wouldn't be as cool. I built everything within one component:</p>
+<pre><code class="language-html">&lt;template&gt;
+    &lt;Page class=&quot;page&quot;&gt;
+        &lt;ActionBar class=&quot;action-bar&quot;&gt;
+            &lt;Label class=&quot;action-bar-title&quot; text=&quot;Geolocation Demo&quot;&gt;&lt;/Label&gt;
+        &lt;/ActionBar&gt;
+
+        &lt;StackLayout&gt;
+            &lt;Label v-if=&quot;needLocation&quot; text=&quot;Looking up your location...&quot; /&gt;
+            &lt;Label v-if=&quot;locationFailure&quot; text=&quot;Sorry, I failed! :(&quot; /&gt;
+            &lt;Label v-if=&quot;location&quot; :text=&quot;locationDescription&quot; textWrap=&quot;true&quot; /&gt;
+        &lt;/StackLayout&gt;
+
+    &lt;/Page&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import * as Geolocation from 'nativescript-geolocation';
+
+export default {
+    data() {
+        return {
+            needLocation:true,
+            locationFailure:false,
+            location:null
+        }
+    },
+    computed: {
+        locationDescription() {
+            return `You are at ${this.location.latitude}, ${this.location.longitude}. Your altitude is ${this.location.altitude}.`;
+        }
+    },
+    created() {
+
+        Geolocation.enableLocationRequest(true)
+        .then(() =&gt; {
+            Geolocation.isEnabled().then(isLocationEnabled =&gt; {
+                console.log('result is '+isLocationEnabled);
+                if(!isLocationEnabled) {
+                    this.needLocation = false;
+                    this.locationFailure = true;
+                    // potentially do more then just end here...
+                    return;
+                }
+
+                // MUST pass empty object!!
+                Geolocation.getCurrentLocation({})
+                .then(result =&gt; {
+                    console.log('loc result', result);
+                    this.needLocation = false;
+                    this.location = result;
+                })
+                .catch(e =&gt; {
+                    console.log('loc error', e);
+                });
+            });
+        });
+    }
+};
+&lt;/script&gt;
+
+&lt;style scoped lang=&quot;scss&quot;&gt;
+    // Start custom common variables
+    @import '../app-variables';
+    // End custom common variables
+&lt;/style&gt;
+</code></pre>
+<p>My application UI consists of three labels, each used to represent different states of the application. The initial label acts as a &quot;loading&quot; message of sorts and will go away once the location has been retrieved or an error has been thrown. The second label handles displaying an error and the the final label points to a computed property that will display our results.</p>
+<p>In my <code>created</code> event, I've got code based on the outline above. Ask for permissions, ensure I've got it, and then request my location. Once I get it I can simply store it and my Vue computed property will nicely render the result. Here's an example.</p>
+<img src="https://static.raymondcamden.com/images/2019/04/geo1.png" class="imgborder imgcenter">
+<p>And that's it. In my next post I'm going to dig a bit deeper. The plugin has some useful methods you may be familiar with already from the web API, but it also has more including a super useful distance API built in. As always, let me know if you have any questions by leaving a comment below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/D2K1UZr4vxk?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"> Sylwia Bartyzel</a> on Unsplash</i></p>
+}

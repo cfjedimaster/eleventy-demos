@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>I just helped a coworker diagnose this issue and it can be <i>incredibly</i> subtle if you aren't paying attention. Consider the following simple form:</p>
+<!--more-->
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+$(&quot;#myButton&quot;).click(function() {
+$.post(&quot;test.cfc?method=whatever&amp;returnformat=json&quot;, {}, function(res) {
+console.log('back from cfc');
+},&quot;json&quot;);
+});
+});</p>
+<p>&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<pre><code>&amp;lt;form method=&quot;post&quot;&amp;gt;	
+&amp;lt;input type=&quot;button&quot; id=&quot;myButton&quot; value=&quot;Click me like you mean it.&quot;&amp;gt;
+&amp;lt;/form&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>I've got a button that - when clicked -  will fire off an event jQuery is listening to. This event handler fires off a post to a CFC with the result then logged to the console. Works perfectly. Now let's tweak it just a tiny bit...</p>
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+$(&quot;#myButton&quot;).click(function() {
+$.post(&quot;test.cfc?method=whatever&amp;returnformat=json&quot;, {}, function(res) {
+console.log('back from cfc');
+},&quot;json&quot;);
+});
+});</p>
+<p>&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<pre><code>&amp;lt;form method=&quot;post&quot;&amp;gt;	
+&amp;lt;input type=&quot;image&quot; src=&quot;meatwork.jpg&quot; id=&quot;myButton&quot; value=&quot;Click me like you mean it.&quot; &amp;gt;
+&amp;lt;/form&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Can you guess what happened here? Try to before scrolling down...</p>
+<p>
+<p><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/></p>
+<p>
+<p>So - when clicked - if you had your network tools open in Chrome or Firefox, you would see a quick glimpse of a request and then it would go away. Why? The image input type is actually like a submit button. Unlike type=button that does - well - nothing - the image type actually works much like a submit button. What happened was that the entire form posted. Easy to miss especially if you are testing locally. A quick fix is to just prevent the default behavior:</p>
+<p>
+<code>
+$("#myButton").click(function(e) {
+	e.preventDefault();
+	$.post("test.cfc?method=whatever&returnformat=json", {}, function(res) {
+		console.log('back from cfc');
+	},"json");
+});
+</code>
+<p>
+<p>Anyone else ever get bitten by this?</p>
+}

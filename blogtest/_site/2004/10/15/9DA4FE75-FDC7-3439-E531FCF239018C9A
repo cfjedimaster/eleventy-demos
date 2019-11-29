@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>The zip has been updated to add two fixes. First was an issue when posting to a thread that had folks with null values for subscribe in their comments. (Dumb mistake, Ray!) Next I updated the db install scripts to add the admin user. Sorry about that folks! This is what happens when you code while watching crap on TV.</p>
+}

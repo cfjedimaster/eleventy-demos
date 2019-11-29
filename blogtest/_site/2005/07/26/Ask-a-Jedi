@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>After about two weeks of almost constant blog postings - I found myself with a delimma today. I couldn't think of one thing to write about. So - here's an idea. If you have any questions(*), post them here, and I'll write up the answers as blog postings.</p>
+<ul>
+<li>Now - let's be grown ups here. A &quot;good&quot; question is not you asking me to debug your code. I'm talking about generic style questions like:</li>
+</ul>
+<ul>
+<li>Why do you use CFCs in your blog code?
+<li>I want to use CF's caching feature for queries, but how do I clear the cache?
+<li>What is the best way to learn ColdFusion?
+<li>How do estimate the airspeed velocity of an unladen (African) swollow?
+</ul>}

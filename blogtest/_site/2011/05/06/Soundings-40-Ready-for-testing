@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>Soundings, available at <a href="http://soundings.riaforge.org">http://soundings.riaforge.org</a>, is a ColdFusion-based open source survey application. I'm proud to announce the 4.0 release is ready for testing. Grab the latest bits from SVN and be sure to read the readme.txt file for notes on the database change you will need to make. While I fixed a few small issues, Soundings 4 comes down to main big features.</p>
+<!--more-->
+<p>The first is conditional branching. A question can now specify two actions to take when completed:</p>
+<ol>
+<li>Go to another question if the answer is X. This option is only available for questions with firm answers, like true/false or multiple choice.</li>
+<li>Go to another question always.</li>
+</ol>
+<p>Why is number 2 helpful? If you create a branch for question 1 where one answer takes you to 3 and the default behavior takes you to 2 otherwise, you can then set up question 2 to send you to 4.</p>
+<p>This requires some planning of course, but it seems to work well so far.</p>
+<p>The other major feature is previewing. Some complex questions, like Matrix style questions, are hard to visualize. I've now added a &quot;Live Preview&quot; that renders the question <i>while you edit it</i> to give you immediate feedback on the design. Watch a vide of this here: <a href="http://www.screencast.com/t/XNOHhKbk">Preview</a></p>
+<p>Please send any bug reports here. That way I can keep them separate from the released product.</p>
+<p>I want to thank <a href="http://www.co.tulare.ca.us/">Tulare County</a>. They funded these updates and I greatly appreciate their support!</p>
+}

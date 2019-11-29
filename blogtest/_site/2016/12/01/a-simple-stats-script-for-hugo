@@ -1,0 +1,96 @@
+<h1>Post</h1>
+
+<p>I'm somewhat obsessed with stats, and one of the things I look at is my rate of publishing overtime. I've run this blog since 2003 and have gone from blogging 30+ times a month to - well - somewhat less than that. Quality is - of course - far more important than quantity. But as a general stat, I just like to know how much I'm writing.</p>
+<p>My static site generator of choice, <a href="http://gohugo.io/">Hugo</a>, doesn't have anything built in to support getting this. You can get post counts and stuff like, but I wanted something a bit deeper, and something more focused on the amount of content published over time. So with that in mind, I wrote the following script. If your Hugo site follows the same convention as mine (year/month/day folders), then in theory, it should just work for you.</p>
+<pre><code class="language-javascript">
+&#x2F;*
+Step one - read all the md files in content&#x2F;post
+We assume yyyy&#x2F;mmmm&#x2F;dd
+*&#x2F;
+
+var fs = require(&#x27;fs&#x27;);
+var path = &#x27;.&#x2F;content&#x2F;post&#x2F;&#x27;;
+console.log(&#x27;Scan &#x27;+path);
+
+var data = {
+	years:{},
+	months:[],
+	posts:0,
+	categories:{},
+	tags:{},
+	wordCount:0
+};
+
+years = fs.readdirSync(path);
+years.forEach((year) =&gt; {
+	&#x2F;&#x2F;console.log(&#x27;working on &#x27;+year);
+	data.years[year] = 0;
+	months = fs.readdirSync(path+year);
+	months.forEach((month) =&gt; {
+		let bareMonth = Number(month)-1;
+		if(!data.months[bareMonth]) data.months[bareMonth] = 0;
+
+		&#x2F;&#x2F;console.log(&#x27;working on &#x27;+month);
+		days = fs.readdirSync(path+year+&#x27;&#x2F;&#x27;+month);
+		days.forEach((day) =&gt; {
+			posts = fs.readdirSync(path+year+&#x27;&#x2F;&#x27;+month+&#x27;&#x2F;&#x27;+day);
+			data.posts += posts.length;
+			data.years[year] += posts.length;
+			data.months[bareMonth] += posts.length;
+			posts.forEach((file) =&gt; {
+				let content = fs.readFileSync(path+year+&#x27;&#x2F;&#x27;+month+&#x27;&#x2F;&#x27;+day+&#x27;&#x2F;&#x27;+file,&quot;utf8&quot;);
+				&#x2F;&#x2F; get the front matter
+				let closingBracket = content.indexOf(&quot;}&quot;, 1);
+				let fm = content.substring(0, closingBracket+1);
+				let rest = content.replace(fm, &#x27;&#x27;);
+
+				let fmData = JSON.parse(fm);
+				if(fmData.categories) {
+					fmData.categories.forEach((cat) =&gt; {
+						if(!data.categories[cat]) data.categories[cat] = 0;
+						data.categories[cat]++;
+					});
+				}
+				if(fmData.tags) {
+					fmData.tags.forEach((tag) =&gt; {
+						if(!data.tags[tag]) data.tags[tag] = 0;
+						data.tags[tag]++;
+					});
+				}
+
+				data.wordCount += rest.split(&#x27; &#x27;).length;
+			});
+		});
+	});
+
+});
+
+data.avgWordCount = data.wordCount &#x2F; data.posts;
+
+console.log(data);
+</code></pre>
+<p>Basically I just iterate over every year, month, and day, and then open up each file. Hugo stores metadata, or &quot;front matter&quot;, on top of each blog post in a JSON string. I can read that, parse it, and then figure out what categories and tags are being used. I can then strip that out and get a basic word count too.</p>
+<p>The end result is just an object containing the number of posts per year, month, tag, and category. I also store the total word count (why not?) and an average.</p>
+<p>As a reminder, you should typically avoid using sync functions in Node, but as this was a simple script just for me, I went for simplicity and I'm ok with that.</p>
+<p>Then - for the heck of it - I whipped up a simple <a href="https://www.raymondcamden.com/stats">stats</a> page to render the data. You can just click that link, but here are the four reports. For the first two, I literally copied and pasted the <a href="https://developers.google.com/chart/interactive/docs/quick_start">quick start</a> code from Google's Charting library and modified it slightly.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/12/hugos1.PNG" alt="By Year"></p>
+<p><img src="https://static.raymondcamden.com/images/2016/12/hugos2.PNG" alt="By Month"></p>
+<p>Here's the top portion of my categories and tags stats:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/12/hugos3.PNG" alt="Categories">
+<img src="https://static.raymondcamden.com/images/2016/12/hugos4.PNG" alt="Tags"></p>
+<p>And finally - a few generic stats:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/12/hugos5.PNG" alt="Generic"></p>
+<p>The only real interesting part of this page is how I'm handling number formatting - I'm using Intl - a kick ass built in standard for internationalization for the web. Here's how I make it fail gracefully:</p>
+<pre><code class="language-javascript">
+var formatter;
+if(window.Intl) {
+	formatter = new Intl.NumberFormat();
+} else {
+	formatter = {
+		format:function(x) { return x; }
+	};
+}
+</code></pre>
+<p>I can then just do <code>formatter.format(x)</code> to get my nicely formatted numbers.</p>
+<p>Anyway - is this useful to folks using Hugo? Any suggestions?</p>
+}

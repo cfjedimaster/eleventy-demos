@@ -1,0 +1,55 @@
+<h1>Post</h1>
+
+<p>So you may have noticed I didn't post a new CFPDF post last night. Problem was - well, I ran into a few problems. I'd like to describe one of them now as I'm sure other people will run into this as well.</p>
+<p>Consider the following simple code:</p>
+<code>
+&lt;cfdocument format="pdf" name="mydocument"&gt;
+<pre><code>&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;15&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+lorem upsom doloras paris hilton is my hero loreum ipsom dsoio foom an to dht end of the world
+will anyone actually read this probably not but let me put more realtext in so it flows a bit nicely
+	&amp;lt;cfloop index=&quot;y&quot; from=&quot;1&quot; to=&quot;#randRange(1,9)#&quot;&amp;gt;This sentence will appear a random amount of time.&amp;lt;/cfloop&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfdocument&gt;</p>
+<p>&lt;cfcontent type=&quot;application/pdf&quot; reset=&quot;true&quot; variable=&quot;#mydocument#&quot;&gt;
+</code></p>
+<p>This code takes some random text and simply feeds it to a cfdocument tag. Nothing special, right? But if I decide to manipulate the PDF? I'll be covering page deleting in full later on, but for now, look at this slightly modified version:</p>
+<code>
+&lt;cfdocument format="pdf" name="mydocument"&gt;
+<pre><code>&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;15&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+lorem upsom doloras paris hilton is my hero loreum ipsom dsoio foom an to dht end of the world
+will anyone actually read this probably not but let me put more realtext in so it flows a bit nicely
+	&amp;lt;cfloop index=&quot;y&quot; from=&quot;1&quot; to=&quot;#randRange(1,9)#&quot;&amp;gt;This sentence will appear a random amount of time.&amp;lt;/cfloop&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfdocument&gt;</p>
+<p>&lt;cfpdf action=&quot;deletepages&quot; pages=&quot;1&quot; source=&quot;mydocument&quot; name=&quot;mydocument&quot;&gt;</p>
+<p>&lt;cfcontent type=&quot;application/pdf&quot; reset=&quot;true&quot; variable=&quot;#mydocument#&quot;&gt;
+</code></p>
+<p>This example simply takes the PDF, removes page one, and then serves it up again. But when you run this, you will get:</p>
+<blockquote>
+coldfusion.pdf.PDFDocWrapper is not a supported variable type. The variable is expected to contain binary data.
+</blockquote>
+<p>So this kind of makes sense I guess. My initial variable was binary data. When I used CFPDF to manipulate it, ColdFusion converted it into a PDF variable (like images, PDFs are a native data type in ColdFusion), and when I tried to use it as binary data in cfcontent, it complained. Now I think it would be nice if cfcontent would give me a hand here and just deal with it, but luckily there is an easy work around - toBinary:</p>
+<code>
+&lt;cfdocument format="pdf" name="mydocument"&gt;
+<pre><code>&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;15&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+lorem upsom doloras paris hilton is my hero loreum ipsom dsoio foom an to dht end of the world
+will anyone actually read this probably not but let me put more realtext in so it flows a bit nicely
+	&amp;lt;cfloop index=&quot;y&quot; from=&quot;1&quot; to=&quot;#randRange(1,9)#&quot;&amp;gt;This sentence will appear a random amount of time.&amp;lt;/cfloop&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfdocument&gt;</p>
+<p>&lt;cfpdf action=&quot;deletepages&quot; pages=1 source=&quot;mydocument&quot; name=&quot;mydocument&quot;&gt;</p>
+<p>&lt;cfcontent type=&quot;application/pdf&quot; reset=&quot;true&quot; variable=&quot;#toBinary(mydocument)#&quot;&gt;
+</code></p>
+<p>The only change in this last version was to wrap my mydocument variable in a toBinary call.</p>
+<p>Make sense? Anyone else get tripped up by this?</p>
+<p><b>Edit</b> - I am ashamed to admit I forgot to thank the person who pointed this out to me - Greg Oberlag. This whole entry is based on what he taught me.</p>
+}

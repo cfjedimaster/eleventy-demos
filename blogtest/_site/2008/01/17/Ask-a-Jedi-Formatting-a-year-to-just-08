@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>Robert asks:</p>
+<blockquote>
+<p>
+Ok.. I'm doing :
+<p>#Year(Now())#</p>
+<p>to get just the current year. It returns 2008.. great.. How do I get it to return just 08?</p>
+<p>I've tried:</p>
+<p>#Year(Now(),&quot;yy&quot;)#
+#Year(Now(),&quot;y&quot;)#</p>
+<p>But both fail. Any suggestions for the stupid?</p>
+</p>
+</blockquote>
+<p>You aren't stupid. You just overthought it a bit. ;) Like most things in ColdFusion, you have multiple ways to do this. One way is with the simple Right() function:</p>
+<code>
+&lt;cfset thisyear = year(now())&gt;
+&lt;cfset oyear = right(thisyear,2)&gt;
+&lt;cfoutput&gt;#oyear#&lt;/cfoutput&gt;
+</code>
+<p>You could write that all in one line of course. Another way to do it with dateFormat, and that's the form I'd use:</p>
+<code>
+&lt;cfoutput&gt;#dateFormat(now(), "yy")#&lt;/cfoutput&gt;
+</code>}

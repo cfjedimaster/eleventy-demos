@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Ben announced on his blog today that Scorpio will have <a href="http://www.forta.com/blog/index.cfm/2007/4/24/Scorpio-Per-Application-Settings">per application settings</a>. Settings are defined in the This scope within your Application.cfc file. This means I can start using cf_ syntax again for custom tags!</p>
+}

@@ -1,0 +1,90 @@
+<h1>Post</h1>
+
+<p>Welcome to the very first of my ColdFusion 8 blog postings. (Well, the first since the public release.) My goal for these entries is to look at features, big and small, and show some practical examples. For my first entry, I'm going to talk about something simple - validating that a file uploaded is an image.</p>
+<!--more-->
+<p>As you probably heard, ColdFusion 8 has about 900 or so image functions. Ok, it isn't quite that much, but there are quite a few of them. (By the way, I'm <a href="http://cfunited.com/go/topics#topic-1403">speaking on image features</a> at CFUNITED.) Probably the most common thing you will need to do is simple validation on a file upload. What do I mean by that?</p>
+<p>Imagine a preferences form. It asks you things like your name, email address, and other items. It also lets you upload a picture of yourself. How do you validate that the file is an image? After the file is uploaded, it takes all of one call:</p>
+<code>
+&lt;cfif not isImageFile(newfile)&gt;
+</code>
+<p>The isImageFile function simply checks and see if a filename points to an image file that ColdFusion can work with. Here is a slightly larger example:</p>
+<code>
+&lt;cfif not len(trim(form.picture))&gt;
+	&lt;cfset errors = errors & "Avast Ye! Include a picture or walk the plank!&lt;br /&gt;"&gt;
+&lt;cfelse&gt;
+	&lt;cffile action="upload" destination="#expandPath('./images')#" nameConflict="makeunique" filefield="picture" result="fileupload"&gt;
+	&lt;cfif fileupload.fileWasSaved&gt;
+		&lt;cfset newfile = fileupload.serverdirectory & "/" & fileupload.serverfile&gt;
+<pre><code>	&amp;lt;cfif not isImageFile(newfile)&amp;gt;
+		&amp;lt;cfset errors = errors &amp; &quot;Avast Ye! Include a VALID picture or walk the plank!&amp;lt;br /&amp;gt;&quot;&amp;gt;
+		&amp;lt;!--- clean up ---&amp;gt;
+		&amp;lt;cffile action=&quot;delete&quot; file=&quot;#newfile#&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;		
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>In this code block, I not only check and see if the user selected something to upload, I also handle the upload, check to see if it is an image, and even handle the cleanup if not. Note the special &quot;Pirate&quot; mode for errors. I love that.</p>
+<p>A complete example is included below. Tomorrow I'll follow this up with a simple size check. That would be useful to for preventing users from upload 2 meg pictures or overly large wide/high pictures.</p>
+<code>
+&lt;cfset errors = ""&gt;
+&lt;cfparam name="form.name" default=""&gt;
+&lt;cfparam name="form.picture" default=""&gt;
+<p>&lt;cfif structKeyExists(form, &quot;save&quot;)&gt;
+&lt;cfif not len(trim(form.name))&gt;
+&lt;cfset errors = errors &amp; &quot;Avast Ye! Include a name or walk the plank!&lt;br /&gt;&quot;&gt;
+&lt;/cfif&gt;</p>
+<pre><code>&amp;lt;cfif not len(trim(form.picture))&amp;gt;
+	&amp;lt;cfset errors = errors &amp; &quot;Avast Ye! Include a picture or walk the plank!&amp;lt;br /&amp;gt;&quot;&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cffile action=&quot;upload&quot; destination=&quot;#expandPath('./images')#&quot; nameConflict=&quot;makeunique&quot; filefield=&quot;picture&quot; result=&quot;fileupload&quot;&amp;gt;
+	&amp;lt;cfif fileupload.fileWasSaved&amp;gt;
+		&amp;lt;cfset newfile = fileupload.serverdirectory &amp; &quot;/&quot; &amp; fileupload.serverfile&amp;gt;
+		
+		&amp;lt;cfif not isImageFile(newfile)&amp;gt;
+			&amp;lt;cfset errors = errors &amp; &quot;Avast Ye! Include a VALID picture or walk the plank!&amp;lt;br /&amp;gt;&quot;&amp;gt;
+			&amp;lt;!--- clean up ---&amp;gt;
+			&amp;lt;cffile action=&quot;delete&quot; file=&quot;#newfile#&quot;&amp;gt;
+		&amp;lt;/cfif&amp;gt;		
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;cfif errors is &quot;&quot;&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;p&amp;gt;
+	Here is where we would update the database and send the user away...
+	&amp;lt;/p&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;cfabort&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfif errors neq &quot;&quot;&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+&lt;b&gt;Please correct the following error(s):&lt;br /&gt;
+#errors#
+&lt;/b&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;form action=&quot;imageuploadform.cfm&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;Your Name:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;#form.name#&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Your Picture:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;file&quot; name=&quot;picture&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt; &lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;submit&quot; name=&quot;save&quot; value=&quot;Save&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/form&gt;
+&lt;/cfoutput&gt;
+</code></p>
+}

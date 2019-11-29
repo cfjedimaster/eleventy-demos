@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>So, I've noticed that when I import data using Enterprise Manager, it always seems to miss the primary keys and other constraints. Turns out I wasn't using the right option to import my data. I would chose:</p>
+<p>Copy table(s) and view(s) from the source database.</p>
+<p>However, what I needed to do was:</p>
+<p>Copy objects and data between SQL Server databases.</p>
+<p>Another thing to watch out for - when given a chance to &quot;Use default options&quot;, turn this off and in the Options page, deselect the security options. I'm not sure why this causes problems, but it did with my test. (Kudos to my boss, David An, for this tip!)</p>
+<p>Now for a small rant. While Enterprise Manager is a great tool for SQL Server, the interface does some things really stupid. For example - everytime you right click on a remote DB, the tool sends out a ping/request/whatever. However, if you move your mouse while the tool is waiting, you lose the right menu when it finally appears. This is even more of a pain when you are just trying to reconnect and have to wait for the right click menu option, Connect, to show up. Another thing thats a pain in the rear are wizards that don't allow you to look at the rest of the application. So, let's say I'm doing that import from db A to db B. Let's say I forget the name of db B. Once I'm in the wizard, I can't click and scroll down in the rest of Enterprise Manager to get to my db and examine it.</p>
+}

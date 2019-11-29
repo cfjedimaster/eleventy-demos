@@ -1,0 +1,84 @@
+<h1>Post</h1>
+
+<p>While jogging this morning (I won't call what I do running, at best, it's fast shambling that would probably just barely keep me ahead of the zombie horde) it occurred to me that it would probably be trivial to add basic print support to ColdFusion Builder extensions. I'm not talking about the cfprint tag, but printing on your client machine. I whipped up the following quick demo. Since extensions use a &quot;mini browser&quot;, shouldn't it be possible to just use JavaScript to print?</p>
+<p/>
+<!--more-->
+First, I created a very basic ide_config.xml. For those who have not written any CFB extensions, the ide_config.xml file dictates how your extension interacts with the IDE. I wanted to test both "XML mode" and "HTML mode" responses to see if printing would work in one and not the other. Here is my XML:
+<p>
+<code>
+&lt;application&gt;
+<pre><code>&amp;lt;name&amp;gt;TestExtention&amp;lt;/name&amp;gt;
+&amp;lt;author&amp;gt;Raymond Camden&amp;lt;/author&amp;gt;
+&amp;lt;version&amp;gt;0&amp;lt;/version&amp;gt;
+&amp;lt;email&amp;gt;ray@camdenfamily.com&amp;lt;/email&amp;gt;	
+&amp;lt;menucontributions &amp;gt;
+
+	&amp;lt;contribution target=&quot;editor&quot;&amp;gt;
+		&amp;lt;menu name=&quot;Run Test Extension&quot;&amp;gt;
+    		&amp;lt;action name=&quot;Run XML Test&quot; handlerid=&quot;xmltest&quot; showResponse=&quot;true&quot; /&amp;gt;
+    		&amp;lt;action name=&quot;Run HTML Test&quot; handlerid=&quot;htmltest&quot; showResponse=&quot;true&quot; /&amp;gt;
+		&amp;lt;/menu&amp;gt;
+	&amp;lt;/contribution&amp;gt;			
+
+&amp;lt;/menucontributions&amp;gt;	
+
+&amp;lt;handlers&amp;gt;		
+	&amp;lt;handler id=&quot;xmltest&quot; type=&quot;CFM&quot; filename=&quot;test_xml.cfm&quot; /&amp;gt;
+	&amp;lt;handler id=&quot;htmltest&quot; type=&quot;CFM&quot; filename=&quot;test_html.cfm&quot; /&amp;gt;
+&amp;lt;/handlers&amp;gt;
+</code></pre>
+<p>&lt;/application&gt;
+</code></p>
+<p>
+As you can see, I've got two tests - "Run XML Test" and "Run HTML Test". I started off with the HTML response:
+<p>
+<code>
+&lt;style&gt;
+@media print {
+	.hideforprint {
+	display:none;
+	}
+}
+&lt;/style&gt;
+<p>&lt;cfoutput&gt;
+&lt;div class=&quot;hideforprint&quot;&gt;First test - print: &lt;a href=&quot;javascript:window.print()&quot;&gt;print!&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;
+Testing!
+&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>I've got a very basic JavaScript window.print command along with some simple CSS to hide it when printing. I've got one line of HTML (&quot;Testing!&quot;) and - well, that's it. Guess what? It worked perfectly. I'm using an Adobe PDF print driver for testing. Here is a screen shot of the result:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/p1.png" />
+<p>
+<p>I then tried the exact same, but in XML mode:</p>
+<p>
+<code>
+&lt;cfheader name="Content-Type" value="text/xml"&gt;
+&lt;cfoutput&gt;
+&lt;response showresponse="true"&gt;
+&lt;ide&gt;
+&lt;dialog width="500" height="500" title="This is Handler Two" /&gt;
+&lt;body&gt;
+&lt;![CDATA[
+&lt;style&gt;
+@media print {
+	.hideforprint {
+	display:none;
+	}
+}
+&lt;/style&gt;
+&lt;div class="hideforprint"&gt;First test - print: &lt;a href="javascript:window.print()"&gt;print!&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;
+Testing: Testing!
+&lt;p/&gt;
+]]&gt;
+&lt;/body&gt;
+&lt;/ide&gt;
+&lt;/response&gt;&lt;/cfoutput&gt;
+</code>
+<p>
+<p>This too worked perfectly. For the heck of it, I quickly modified the <a href="http://varscoper.riaforge.org">varScoper CFB extension</a> to add a print link to the bottom of the report:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/vsp.PNG" />
+<p>
+<p>And not surprisingly, it worked fine as well. I've included the PDF result as an attachment to the blog entry.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fvarscoper%2Epdf'>Download attached file.</a></p></p>
+}

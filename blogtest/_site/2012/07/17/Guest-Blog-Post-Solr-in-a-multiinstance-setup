@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>Michael Dawson sent this to me and asked if I could help let others know. I rarely use multi-instances myself so I haven't run into this, but hopefully this will help others. (And if Michael is wrong, let us know!)</p>
+<p>From Michael:</p>
+<blockquote>
+This is just an observation that you might already know, but it may be worth blogging about since your site usually tops the list in search engine results.
+<p>I have two CF 10 instances running on a Windows 2008 (IIS) web server.  I have confirmed the two instances are separate.</p>
+<p>I created a Solr collection in &quot;one&quot; of the CF instances.  However, the collection appears in &quot;both&quot; of the CF instances.</p>
+<p>I originally wanted to refer to one collection name, &quot;maincontent&quot;, when moving from test to production, however, this doesn't appear possible without installing separate instances of the Solr engine.</p>
+<p>That was too much work, so my workaround was to prepend the instance name to the name of the collection: wwwdevmaincontent, for example.</p>
+<p>There is very little documentation about this particular issue other than one page I found that suggested installing multiple instances of Solr and using its web services.</p>
+<p>I hope this can be helpful to you.</p>
+</blockquote>}

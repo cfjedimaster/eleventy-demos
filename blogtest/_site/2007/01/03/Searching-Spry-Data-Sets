@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>Need to quickly search through a Spry data set? Sam Mitchell shared this little gem with me: findRowsWithColumnValues. It allows you to search a dataset for a matching set of column, or columns. So for example, to return all boys from a set that has a gender column:</p>
+<code>
+var boyRows = dsKids.findRowsWithColumnValues({"gender":"male"});
+</code>
+<p>You can even tell the function to return immediately when it finds a match. This is useful for when you are searching by a primary key. Here is an example:</p>
+<code>
+var theRow = dsKids.findRowsWithColumnValues({"id":"1"}, true);
+</code>
+<p>Lastly, you can search by any number of columns:</p>
+<code>
+var leftyBoyRows = dsKids.findRowsWithColumnValues({"gender":"male", "handiness":"left"});
+</code>
+<p>A full example may be found <a href="http://labs.adobe.com/technologies/spry/samples/data_region/SetCurrentRowByValueSample.html">here</a>.</p>
+}

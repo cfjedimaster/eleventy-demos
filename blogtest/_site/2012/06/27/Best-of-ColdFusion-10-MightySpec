@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>Welcome to the final entry in the <a href="http://www.raymondcamden.com/index.cfm/2012/2/29/Best-of-Adobe-ColdFusion-10-Beta-Contest">Best of ColdFusion 10</a> contest. I apologize for taking so long to &quot;wrap&quot; this (and technically it isn't wrapped till I announce the winners), but hopefully the utter and complete coolness of today's entry will make you forget how long it took me to actually get it posted. Our last entry comes from <a href="http://blog.mxunit.org/">Marc Esher</a> :  <a href="https://github.com/mxunit/mxunit/tree/mightyspec">MightySpec</a></p>
+<p>MightySpec is a modification to <a href="http://mxunit.org/">MXUnit</a> that aims to provide Behavior-Driven-Development support to your unit tests. Marc's work is based on <a href="http://pivotal.github.com/jasmine/">Jasmine</a>. If that doesn't mean anything to you, perhaps an example will help clear it up. Imagine your typical, simple unit test making use of an assert statement.</p>
+<script src="https://gist.github.com/3004301.js?file=gistfile1.cfm"></script>
+<p>While this works well enough, now imagine writing tests like this:</p>
+<script src="https://gist.github.com/3004312.js?file=gistfile1.cfm"></script>
+<p>Look at how descriptive the tests are. You could almost read this like a story. This friendlier output also shows up in the output, both in the browser...</p>
+<img src="https://static.raymondcamden.com/images/mightyspec_in_browser.PNG" />
+<p>And Eclipse:</p>
+<img src="https://static.raymondcamden.com/images/mightyspec_in_eclipse.PNG" />
+<p>I've <a href="http://www.raymondcamden.com/index.cfm/2012/5/25/Taking-ColdFusion-Closures-all-the-way-to-11">blogged</a> before about how impressed I am with ColdFusion 10's closure support and this just reinforces my belief that closure support may be the most important feature added to the latest version of ColdFusion.</p>
+<p>There is one small hitch though. While working on MightySpec, Marc encountered a bug with closures. I'll share with you what he had to say about it:</p>
+<blockquote>
+To get it to work, you'll need to point to a custom RemoteFacade URL
+<p>Here's what to do:</p>
+<p>with that version of MXUnit in your CFBuilder, drill down to
+mxunit/tests/mightyspec</p>
+<p>Right click, select &quot;properties&quot;, and go to the MXUnit tab.</p>
+<p>in the URL box, use this:
+http://localhost:8500/mxunit/tests/mightyspec/RemoteFacade.cfc?wsdl</p>
+<p>with the server name and port to whatever your stuff is.</p>
+<p>Hit OK.</p>
+<p>Now, when you run the Specs, it'll point to that URL and run correctly.</p>
+</blockquote>
+<p>Keep the above in mind if you plan on testing his project. So - what do you think?</p>
+}

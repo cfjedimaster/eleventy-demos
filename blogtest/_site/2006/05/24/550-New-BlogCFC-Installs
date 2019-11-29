@@ -1,0 +1,36 @@
+<h1>Post</h1>
+
+<p>Forgive me for tooting my own horn (and there is a practical side to this entry as well), but <a href="http://www.hellometro.com">HelloMetro.com</a> went live with 550 new installs of BlogCFC. The installs are all virtual for their 550 city sites. More info at the <a href="http://www.prweb.com/releases/2006/5/prweb389917.htm">press release</a>.</p>
+<p>So how was this done? Most people don't know (maybe because I never documented it) that BlogCFC supports dynamic configuration as well as the more normal blog.ini.cfm file. So for example, to make one install of BlogCFC work for all 550 blogs, I simply added code like so to the Application.cfm file:</p>
+<code>
+&lt;cfset blogName = getCities.cityName&gt;
+<p>&lt;!--- custom ---&gt;
+&lt;cfset instance = structNew()&gt;
+&lt;cfset instance.dsn = &quot;Blog&quot;&gt;
+&lt;cfset instance.owneremail=&quot;blog@hellometro.com&quot;&gt;
+&lt;cfset instance.blogurl = &quot;http://#cgi.server_name#/blog/index.cfm&quot;&gt;
+&lt;cfset instance.blogtitle = &quot;#blogName# Blog&quot;&gt;
+&lt;cfset instance.blogdescription = &quot;#blogname# Blog&quot;&gt;
+&lt;cfset instance.blogDBType=&quot;MSSQL&quot;&gt;
+&lt;cfset instance.locale=&quot;en_US&quot;&gt;
+&lt;cfset instance.users = &quot;&quot;&gt;
+&lt;cfset instance.commentsFrom  = &quot;&quot;&gt;
+&lt;cfset instance.mailServer = &quot;&quot;&gt;
+&lt;cfset instance.mailUsername = &quot;&quot;&gt;
+&lt;cfset instance.mailPassword = &quot;&quot;&gt;
+&lt;cfset instance.pingurls = &quot;&quot;&gt;
+&lt;cfset instance.offset = &quot;0&quot;&gt;
+&lt;cfset instance.allowtrackbacks = false&gt;
+&lt;cfset instance.trackbackspamlist=&quot;phentermine,MORE STUFF DELETED&quot;&gt;
+&lt;cfset instance.blogkeywords = &quot;&quot;&gt;
+&lt;cfset instance.ipblocklist = &quot;67.180.242.3&quot;&gt;
+&lt;cfset instance.maxentries = &quot;10&quot;&gt;
+&lt;cfset instance.usecaptcha = false&gt;
+</code></p>
+<p>The value, getCities, is a query containing the current city based on the host name. I got this from cfincluding custom code, but you could replace this with any other code as well.</p>
+<p>I then changed the component creation to this:</p>
+<code>
+&lt;cfset application.blog = createObject("component","org.camden.blog.blog").init(blogName, instance)&gt;
+</code>
+<p>Notice how I pass the instance struct to the init method. Anyway, that was it. I did do other mods to support their &quot;Anyone can blog&quot; functionality, and yes, I know the layout is broken in Firefox (they are working on that).</p>
+}

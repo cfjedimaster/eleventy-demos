@@ -1,0 +1,238 @@
+<h1>Post</h1>
+
+<p>A few days ago I <a href="https://www.raymondcamden.com/2017/10/09/serverless-composition-with-ibm-cloud-functions/">blogged</a> about the new Composer functionality for IBM Cloud Functions and OpenWhisk. This is a <em>incredibly</em> cool release and I'm going to try my best to demonstrate it over the next few weeks. In today's post I'm going to focus on what the process is like. By that I mean, how do I go from idea to actually using it and testing it. This won't be terribly different from the <a href="https://github.com/ibm-functions/composer/tree/master/docs">docs</a>, but I figure it may still be helpful for folks to get an idea of how I'm using it. (And of course, I expect my usage to change over time.) Note that the code I'll be using for this post will be trivial to the max because I want to focus more on the process than the actual demo. Alright, with that out of the way, let's start.</p>
+<h1>The Demo</h1>
+<p>As I said, the demo is pretty trivial, but let's cover it anyway so we have context for what's being built. The demo will convert a random Ferangi <a href="http://memory-alpha.wikia.com/wiki/Rules_of_Acquisition">Rule of Acquisition</a> into <a href="https://en.wikipedia.org/wiki/Pig_Latin">pig latin</a>. So the logic is:</p>
+<ul>
+<li>Select a random rule</li>
+<li>Take the text and convert it to pig latin.</li>
+</ul>
+<h1>Building a Serverless Application - Old Way</h1>
+<p>I'll start off by describing what the process would be prior to the introduction of Composer. To be clear, &quot;old way&quot; isn't meant to be disparaging in anyway. OpenWhisk has always let me build really cool shit and Composer just makes it even better.</p>
+<p>First, I'll build the &quot;select a random rule&quot; action. Here is the code listing with the embedded <em>very</em> long list of rules removed. (You can see the full source code on GitHub - I'll share that link at the end.)</p>
+<pre><code class="language-javascript">function main(args) {
+	/*
+	This is a very, very long string. Not a good idea.
+
+	Source: http://www.ferengirules.com
+	*/
+	let rules = ["1. Once you have their money, never give it back.", 
+	"2. You can't cheat an honest customer, but it never hurts to try.", 
+	"3. Never spend more for an acquisition than you have to.", 
+	"4. Sex and profit are the two things that never last long enough.", 
+	"5. If you can't break a contract, bend it.", 
+	"6. Never let family stand in the way of opportunity."]
+
+	let chosen = rules[Math.floor(Math.random() * rules.length)];
+
+	return {
+		rule:chosen
+	};
+
+}
+</code></pre>
+<p>I created this as an action called safeToDelete/rule. (As a reminder, I use a package called &quot;safeToDelete&quot; to store actions I build for blog posts and the such that do <em>not</em> need to stay alive.)</p>
+<pre><code>wsk action create safeToDelete/rule rules.js
+</code></pre>
+<p>I then tested to ensure it worked:</p>
+<pre><code>wsk action invoke safeToDelete/rule -b -r
+</code></pre>
+<p>And the result is:</p>
+<pre><code class="language-javascript">{
+"rule": "72. Never let the competition know, what you're thinking."
+}     
+</code></pre>
+<p>Next I created a Pig Latin rule, based on <a href="https://github.com/montanaflynn/piglatin">this repo</a> from GitHub user montanaflynn:</p>
+<pre><code class="language-javascript"> // source: https://github.com/montanaflynn/piglatin
+ function piglatin(text) {
+  var words = text.split(/\W+/)
+  var piggish = ""
+  for (var i = 0; i &lt; words.length; i++) {
+    var word = words[i]
+    var firstLetter = word.charAt(0)
+    if (word.length &gt; 2) {
+      piggish = piggish + word.substring(1) + firstLetter + "ay "
+    } else {
+      piggish = piggish + word + " "
+    }
+  }
+  return piggish.toLowerCase().trim();
+}
+
+function main(args) {
+	let result = piglatin(args.input);
+	return { result:result};
+}
+</code></pre>
+<p>I then pushed it up:</p>
+<pre><code>wsk action create safeToDelete/pig pig.js
+</code></pre>
+<p>And tested:</p>
+<pre><code> wsk action invoke safeToDelete/pig -b -r -p input &quot;My name is Ray&quot;
+</code></pre>
+<p>With this result:</p>
+<pre><code class="language-javascript">{
+    "result": "my amenay is ayray"
+}
+</code></pre>
+<p>Alrighty. So to make the sequence, I have a problem. The output of the rule action is a variable named <code>rule</code>. The input for pig requires a parameter called <code>input</code>. In order to create a sequence, I'll need a &quot;joiner&quot; action. Here's the one I built:</p>
+<pre><code class="language-javascript">function main(args) {
+
+	//remove 1.
+	let text = args.rule.replace(/[0-9]+\. /,'');
+
+	return {
+		input:text
+	}
+
+}
+</code></pre>
+<p>Note that actually this does two things. It maps the input as well as modifying the text to remove the number in front of the rule. I pushed this to OpenWhisk like so:</p>
+<pre><code>wsk action create safeToDelete/pigrule pigrule.js
+</code></pre>
+<p>Alright, so the final step is to create the sequence:</p>
+<pre><code> wsk action create --sequence safeToDelete/ruleToPig safeToDelete/rule,safeToDelete/pigrule,safeToDelete/pig --web true
+</code></pre>
+<p>That's a long command but not too bad. Typically I'd make a shell/bat script so I could automate updating each individual rule and the sequence all in one quick call. I'll grab the URL like so:</p>
+<pre><code> wsk action get safeToDelete/ruleToPig --url
+</code></pre>
+<p>Which gives me: https://openwhisk.ng.bluemix.net/api/v1/web/rcamden%40us.ibm.com_My%20Space/safeToDelete/ruleToPig</p>
+<p>To test that, just add .json to the end. You can see that <a href="https://openwhisk.ng.bluemix.net/api/v1/web/rcamden%40us.ibm.com_My%20Space/safeToDelete/ruleToPig.json">here</a>.</p>
+<p>And finally, a sample result:</p>
+<pre><code class="language-javascript">{
+result: "evernay ivegay wayaay orfay reefay hatway ancay be oldsay"
+}
+</code></pre>
+<p>I'll be honest, that's plain unreadable, but who cares. Let's move on.</p>
+<h1>Building a Serverless Application - With Composer</h1>
+<p>Alright, so I'm assuming you've followed the <a href="https://github.com/ibm-functions/composer/tree/master/docs#installing-the-shell">install instructions</a> already and can safely run <code>fsh</code> in your terminal.</p>
+<p>The first thing you'll run into is that Composer uses slightly different terminology. Instead of sequences, you'll create an app. To be fair, it isn't a 100% one to one correlation, but I think for now it's ok to mentally map the two.</p>
+<p>Next - you'll define your app in code, in a file. (You can use the graphical shell too but I don't.) So to start, I'll make a new file called - pigruleapp.js.</p>
+<p>This file will contain the instructions that make up my composition. Here's what I started with:</p>
+<pre><code class="language-javascript">composer.sequence(
+	'safeToDelete/rule',
+	'safeToDelete/pigrule',
+	'safeToDelete/pig'
+);
+</code></pre>
+<p>Notice I don't define composer. I don't have to as the system will handle that for me. All I do is define my logic. In this case, I'm using the <code>sequence</code> feature of composer and defining what to run. Essentially I've defined the exact same sequence I used before. (I'm going to make that better in a moment.)</p>
+<p>To create the app, I'll use:</p>
+<pre><code>fsh app create ruleToPigFsh ./pigruleapp.js
+</code></pre>
+<p>If I have to make any edits, I'd use <code>fsp app update</code> instead. Next I'll test it with:</p>
+<pre><code>fsh app invoke ruleToPigFsh
+</code></pre>
+<p>And - it works as expected:</p>
+<pre><code class="language-javascript">
+{
+  result: "evernay etlay a emalefay in lothescay loudcay ouryay ensesay of rofitpay"
+}
+</code></pre>
+<p>Alright, but let's kick it up a notch. First, I can visualize my app like so:</p>
+<pre><code>fsh app preview pigruleapp.js
+</code></pre>
+<p>Which gives me this:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh1.jpg" alt="Screen shot"></p>
+<p>You can ignore the &quot;not yet deployed&quot; message on top. Basically the shell is letting you know you are viewing a local file and not a deployed app instance. So yes it <em>is</em> technically deployed. Anyway, what's not visible in the screen shot is that you can mouse over the blue boxes to get details. So for example, mousing over <code>rule</code> shows me <code>action | safeToDelete\rule</code>. You can also double click an item to see the source code. This is handy in case you forget:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh2.jpg" alt="Screen shot"></p>
+<p>The JSON view is simply how Composer converts your code into JSON format. Here's what it did with my code:</p>
+<pre><code class="language-javascript">{
+    "Entry": "action_0",
+    "States": {
+        "action_0": {
+            "Type": "Task",
+            "Action": "safeToDelete/rule",
+            "Next": "action_1"
+        },
+        "action_1": {
+            "Type": "Task",
+            "Action": "safeToDelete/pigrule",
+            "Next": "action_2"
+        },
+        "action_2": {
+            "Type": "Task",
+            "Action": "safeToDelete/pig"
+        }
+    },
+    "Exit": "action_2"
+}
+</code></pre>
+<p>And the Code view is simply my file.</p>
+<p>Another change that may confuse you are sessions. Instead of an activation, invoking a Composer app creates a session. So you can use <code>fsh session list</code> to see your recent tests. Or my favorite, grab the last one with: <code>fsh session get --last</code>.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh3.jpg" alt="Screen shot"></p>
+<p>I freaking <em>love</em> this view. Do note though that the time for this test (21.5 seconds) was a fluke. There's still some performance tuning going on so this is absolutely <em>not</em> what you would expect normally. The details here are awesome and so easily readable. Here's the trace:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh4.jpg" alt="Screen shot"></p>
+<p>I love how I can see the timings of every step. I'll remind you again - the totals here are a fluke, not the norm, but you can really see how handy this would be to identify the &quot;pain points&quot; of your applications.</p>
+<p>The raw tab looks a lot like an activation report:</p>
+<pre><code class="language-javascript">{
+    "duration": 21525,
+    "name": "ruleToPigFsh",
+    "subject": "rcamden@us.ibm.com",
+    "activationId": "0f941893b60a4331941893b60a633167",
+    "publish": false,
+    "annotations": [{
+            "key": "limits",
+            "value": {
+                "timeout": 60000,
+                "memory": 256,
+                "logs": 10
+            }
+        },
+        {
+            "key": "path",
+            "value": "rcamden@us.ibm.com_My Space/ruleToPigFsh"
+        }
+    ],
+    "version": "0.0.65",
+    "response": {
+        "result": {
+            "result": "aithfay ovesmay ountainsmay of nventoryiay"
+        },
+        "success": true,
+        "status": "success"
+    },
+    "end": 1508339185192,
+    "logs": [
+        "0f941893b60a4331941893b60a633167",
+        "b44c2a1e9f4842408c2a1e9f48924084",
+        "fbd917d800ab4be69917d800ab6be6b8",
+        "0210c42b372242a090c42b372262a018",
+        "4ccd2c65559e410a8d2c65559e410a40",
+        "8504691d89f04df084691d89f0bdf072",
+        "42f3b1096f9d40edb3b1096f9da0ed53"
+    ],
+    "start": 1508339163667,
+    "namespace": "rcamden@us.ibm.com_My Space",
+    "originalActivationId": "42f3b1096f9d40edb3b1096f9da0ed53",
+    "prettyType": "session"
+}
+</code></pre>
+<p>Session Flow is where things get even more interesting. It's basically the same flow chart as you saw in the preview above, but check out what you get on mouse over:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh5.jpg" alt="Screen shot"></p>
+<p>In case it is a bit hard to read, you are seeing the output of the action. So this gives you the ability to trace the flow of data and help debug where things could have gone wrong. Also note you can click the green bubble for a more clear result. For example, if I clicked the green &quot;rule&quot; box I can see the output from the first item in the sequence:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh6.jpg" alt="Screen shot"></p>
+<p>It's a bit hard to demonstrate in still pictures, but the thing is - I can really dig into my invocation and see how things worked. This was all possible before, of course, but was definitely much more manual.</p>
+<p>I love this. No, really, I love this <em>a lot</em>.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh7.jpg" alt="Not a screen shot"></p>
+<h1>Make It Better!</h1>
+<p>Let's really improve things though by getting rid of that simple &quot;joiner&quot; action. This is the new app I built (called pigruleapp2.js):</p>
+<pre><code class="language-javascript">composer.sequence(
+	'safeToDelete/rule',
+	args => ({input: args.rule.replace(/[0-9]+\. /,'')}),
+	'safeToDelete/pig'
+);
+</code></pre>
+<p>All I've done is replace that middle action with an inline function. I then pushed it up like so:</p>
+<pre><code>fsh app create ruleToPigFsh2 pigruleapp2.js
+</code></pre>
+<p>When invoked, it runs the exact same, but now my setup is one action smaller, which is a good thing in my opinion.</p>
+<p>In case your curious, this is how the preview changes:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/fsh8.jpg" alt="Screen shot"></p>
+<p>One last note. The CLI currently does not tell you how to get the URL for your app. That's been logged as an issue. You can do so with the <code>webbify</code> command:</p>
+<pre><code>fsh webbify ruleToPigFsh2
+</code></pre>
+<p>Which spits out the URL: https://openwhisk.ng.bluemix.net/api/v1/web/rcamden@us.ibm.com_My%20Space/default/ruleToPigFsh2.json</p>
+<p>And you can click that link to test it yourself.</p>
+<h1>Wrap Up</h1>
+<p>So I hope this made sense, and if not, just leave me a comment below. I'll remind folks that the <code>fsh</code> CLI does <em>not</em> currently work in WSL (Windows Subsystem for Linux) so if you are Windows, switch to Powershell when using it. You can find the source code used for this demo here: https://github.com/cfjedimaster/Serverless-Examples/tree/master/fshruledemo</p>
+}

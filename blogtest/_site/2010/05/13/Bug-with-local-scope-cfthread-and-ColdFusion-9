@@ -1,0 +1,30 @@
+<h1>Post</h1>
+
+<p>So this is a weird one. Please note that myself (and the other guys working on this) are still digging in so we may be wrong, but it appears that the use of cfthread in a CFC method, <i>along</i> with the use of local scope, is causing a bug in ColdFusion 9. For an example, see the code below.</p>
+<p>
+<!--more-->
+<code>
+&lt;cffunction name="test"&gt;
+	&lt;cfset local = structNew()&gt;
+<pre><code>&amp;lt;cfthread name=&quot;doogus&quot; action=&quot;run&quot;&amp;gt;
+&amp;lt;/cfthread&amp;gt;
+
+&amp;lt;cfquery name=&quot;local.foo&quot; datasource=&quot;ormtest&quot;&amp;gt;
+select distinct id, name
+from [user]
+&amp;lt;/cfquery&amp;gt;
+&amp;lt;cfdump var=&quot;#local#&quot;&amp;gt;
+&amp;lt;cfreturn valueList(local.foo.id)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cfoutput&gt;#test()# #now()#&lt;/cfoutput&gt;&lt;p&gt;
+</code></p>
+<p>
+<p>As you can see, I've got a method, test, than runs a thread and then does a query. Notice I use the new local scope so I don't have to var it above. Upon running this, we are seeing an error when we try to use the valueList function. The error states that the parameter passed to valueList is invalid. Even more interesting, the dump shows only arguments.</p>
+<p>
+<p>But wait - it gets better. Both myself and Tony Nelson and others confirmed that if you run this code you will get the right result about 40% of the time. Essentially a bit less than half. On those runs, the local scope shows the query and the return runs fine.</p>
+<p>
+<p>The fix? Don't use local.whatever. If I switch to var foo = &quot;&quot; and then just use foo instead of local.foo, it works.</p>
+<p>
+<p>So.... any thoughts on this? I've filed bug <a href="http://cfbugs.adobe.com/cfbugreport/flexbugui/cfbugtracker/main.html#bugId=82861">82861</a> for this.</p>
+}

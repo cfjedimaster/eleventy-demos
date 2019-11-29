@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>The docs mention that the function, deleteClientVariable, can be used to remove a client variable. Did you also know you can treat the Client scope like a struct? This means you can use structDelete(client, &quot;x&quot;) to remove a particular client variable.</p>
+}

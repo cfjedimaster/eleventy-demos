@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>You can't bind with cfselect tags. However, you can use onChange and ActionScript to do it quite easily:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfselect name=<FONT COLOR=BLUE>"state"</FONT> required=<FONT COLOR=BLUE>"true"</FONT> <br>
+label=<FONT COLOR=BLUE>"State"</FONT><br>message=<FONT COLOR=BLUE>"Please select your state."</FONT> <br>
+onChange=<FONT COLOR=BLUE>"state_bi.selectedIndex=state.selectedIndex"</FONT>&gt;</FONT></div>}

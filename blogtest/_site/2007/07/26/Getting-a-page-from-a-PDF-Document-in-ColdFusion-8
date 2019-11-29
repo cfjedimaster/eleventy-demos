@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>Every needed to extract a page from a PDF document? Yesterday I <a href="http://www.raymondcamden.com/index.cfm/2007/7/25/Reading-text-from-a-PDF-in-ColdFusion-8">blogged</a> my new little CFC called PDFUtils. The idea was to take the power of CFPDF and wrap up some utility functions. The first function contained a simple getText() utility that would return all the text in a PDF.</p>
+<p>Today I added getPage(). As you can guess, it grabs one page from a PDF. How? Well CFPDF doesn't support getting one page, but it does support deleting pages. All I did was add logic to &quot;flip&quot; a page number into a delete order. This then lets you do:</p>
+<code>
+&lt;cfset pdf = createObject("component", "pdfutils")&gt;
+<p>&lt;cfset mypdf = expandPath(&quot;./paristoberead.pdf&quot;)&gt;</p>
+<p>&lt;cfset page2 = pdf.getPage(mypdf, 2)&gt;
+&lt;cfdump var=&quot;#page2#&quot;&gt;</p>
+<p>&lt;cfpdf action=&quot;write&quot; source=&quot;page2&quot; destination=&quot;page2.pdf&quot; overwrite=&quot;true&quot;&gt;
+</code></p>
+<p>Running this gets you a dump of the PDF object and a new file named page2.pdf that is just - you guessed it - page 2.</p>
+<p>I've reattached the code plus sample files and PDFs.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FArchive8%2Ezip'>Download attached file.</a></p></p>
+}

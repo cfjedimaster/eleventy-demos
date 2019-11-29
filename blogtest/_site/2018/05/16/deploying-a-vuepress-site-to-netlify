@@ -1,0 +1,55 @@
+<h1>Post</h1>
+
+<p>Before I begin, let me just state that what I'm covering today is already covered in the docs (<a href="https://vuepress.vuejs.org/guide/deploy.html#netlify">Deploys - Netlify</a>), but for me it wasn't quite detailed enough and I wanted to run through, and then document, the process myself. I don't know if this is helpful, and as always, I hope my readers will tell me, but I figured I'd share how it worked for me. Also note that VuePress is still early on in development, so what I describe today may not make sense in the far flung future of flying cars and jetpacks.</p>
+<p>First off - why <a href="https://netlify.com">Netlify</a>? As my regular readers will know, I've been a user of them for raymondcamden.com for quite some time. They are - without a doubt - the <em>gold standard</em> for static site hosting services. Yes you can use Amazon S3, or <a href="http://surge.sh/">Surge</a> (a service I like as well and use for quick demos), but in terms of all the additional features you get, nothing comes <em>close</em> to Netlify. Period.</p>
+<p>That being said - the feature I'm going to demonstrate setting up is their automatic build process for sites tied to GitHub. This is how my own blog works. I commit a new post to my repository, Netlify gets a ping, and then it begins a build process using Jekyll. So how does this look for VuePress?</p>
+<p>Let's begin with an incredible simple VuePress site. VuePress makes zero requirements on your default structure so to keep things simple, I built a site with just two pages. I want to be clear that this is <em>not</em> a good representation of all the cool stuff VuePress has. I just wanted a &quot;bare minimum&quot; site for the purpose of this demo.</p>
+<p>The first page is <code>index.md</code>:</p>
+<pre><code class="language-markdown">### Hello
+
+[Alpha](./alpha.html)
+</code></pre>
+<p>And the second page is <code>alpha.md</code>:</p>
+<pre><code class="language-html">### Alpha
+
+This is Alpha! Go [home](./).
+</code></pre>
+<p>And that's it. Just a two page static site. So how do we get this to Netlify?</p>
+<h3>Step One - GitHub</h3>
+<p>The first thing I did was create a GitHub repo for the site: https://github.com/cfjedimaster/netlify-vuepress-demo. That's nice and simple and no big deal.</p>
+<h3>Step Two - Netlify Site</h3>
+<p>Next - create a new Netlify site. You can do this via the CLI, but it's also pretty easy from the UI:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/vpn1.jpg" alt="Netlify new site"></p>
+<p>Select your repository, and in the next page, you need to provide build settings. Note, this is <em>not</em> going to work immediately, but we'll fix that.</p>
+<p>For the build command, you want to use <code>npm run docs:build</code>.</p>
+<p>For the publish directory, <code>.vuepress/dist</code>. The VuePress docs assume a <code>docs</code> subdirectory but our application's root is, well, the root folder itself.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/vpn2.jpg" alt="Build settings"></p>
+<p>Go ahead and click <code>Deploy Site</code>, but as I said, expect it to fail.</p>
+<h3>Step Three - Get it Netlify Ready</h3>
+<p>In order for the site to work correctly, we need to do a few things. First, we have to tell Netlify to install vuepress as part of the build process. To do this, create a package.json:</p>
+<pre><code>npm init --force
+</code></pre>
+<p>You don't have to use <code>--force</code> of course, I use that to be lazy. In the package.json, then add a new script. Here is my complete file:</p>
+<pre><code class="language-js">{
+  &quot;name&quot;: &quot;test1&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;description&quot;: &quot;&quot;,
+  &quot;main&quot;: &quot;index.js&quot;,
+  &quot;scripts&quot;: {
+    &quot;test&quot;: &quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;,
+    &quot;docs:build&quot;: &quot;vuepress build&quot;
+  },
+  &quot;keywords&quot;: [],
+  &quot;author&quot;: &quot;&quot;,
+  &quot;license&quot;: &quot;ISC&quot;,
+  &quot;dependencies&quot;: {
+    &quot;vuepress&quot;: &quot;^0.8.4&quot;
+  }
+}
+</code></pre>
+<p>I'll be honest and say I'm still kinda new to using npm scripts. I really like them - but as I said - I'm new to them. Add this file to your repo, commit, and that's it. Like seriously. Here's a build history for my first test. You can see it failing before I figured out the package.json bits.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/05/vpn3.jpg" alt="Build log"></p>
+<p>You can see this live site, I mean if you really want, here: https://tender-stonebraker-c8e749.netlify.com/. Cool part is - I edit my VuePress site and confirm it's cool locally and I can then simply commit my changes. Netlify will then pick up the change, run the build, and deploy the static site.</p>
+<p>As I said - I hope this is helpful and if you have any questions, let me know in a comment below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/mcZCoMp92dU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">rawpixel</a> on Unsplash</i></p>
+}

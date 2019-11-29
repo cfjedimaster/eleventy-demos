@@ -1,0 +1,19 @@
+<h1>Post</h1>
+
+<p>Attached to this blog entry you will find support for adding Solr support to your script based CFCs. These CFCs act like the other tag wrappers in ColdFusion 9 and should be saved to your &lt;cfintall&gt;/customtags/com/adobe/coldfusion folder. <b>Please back up your base.cfc file first!</b> The other files are new. Here's an example of how your code may look.</p>
+<p/>
+<code>
+&lt;cfscript&gt;
+c = new com.adobe.coldfusion.collection();
+c.create(collection="test2",path=server.coldfusion.rootdir & "/collections");
+<p>idx = new com.adobe.coldfusion.index();
+//q is a query I made earlier
+r = idx.refresh(collection=&quot;test2&quot;,key=&quot;id&quot;,body=&quot;body&quot;,query=q,status=true);
+writeDump(var=r,label=&quot;refresh&quot;);</p>
+<p>mysearch = new com.adobe.coldfusion.search();
+res = mysearch.search(criteria=&quot;cfabort&quot;,collection=&quot;cfdocs&quot;,maxrows=5,status=&quot;true&quot;);
+&lt;/cfscript&gt;
+</code></p>
+<p/>
+<p>This code has been submitted to the CF engineering team for a future update, but it had not yet been heavily QAed. Use with caution.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fforblog1%2Ezip'>Download attached file.</a></p></p>
+}

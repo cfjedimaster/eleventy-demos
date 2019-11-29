@@ -1,0 +1,60 @@
+<h1>Post</h1>
+
+<p>Ok, so maybe that title is just a <i>tiny</i> bit over dramatic, but if it helps get you motivated, I say go for it. Today's challenge focuses on the little known fact that UDFs in ColdFusion act just like normal variables. By that I mean you can define a UDF and than treat it like any other variable, including passing it to another UDF or CFC method. A practical example of this is the <a href="http://www.cflib.org/udf.cfm/quicksort">quickSort</a> UDF at CFLib. It is a sorting function that lets you pass in a UDF to customize how things are sorted. Today's challenge is based on that.</p>
+<!--more-->
+<p>I've created a CFC I've named SkyNet. This CFC helps manage a computer network that also happens to be tied into the military networks. Nothing wrong with that, right? Let's look at the code behind it:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<p>&lt;cffunction name=&quot;init&quot; access=&quot;public&quot; returnType=&quot;skynet&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;targetfunction&quot; required=&quot;true&quot; type=&quot;any&quot;&gt;
+&lt;cfset variables.targetfunction = arguments.targetfunction&gt;
+&lt;cfreturn this&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;pickTargets&quot; access=&quot;public&quot; returnType=&quot;array&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;targets&quot; required=&quot;true&quot; type=&quot;struct&quot;&gt;</p>
+<pre><code>&amp;lt;cfset var besttargets = variables.targetfunction(targets)&amp;gt;
+&amp;lt;cfreturn besttargets&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>As you can see - it has 2 methods. The init method takes one argument, targetfunction. The pickTargets method takes a structure argument. Notice what it does then:</p>
+<code>
+&lt;cfset var besttargets = variables.targetfunction(targets)&gt;
+</code>
+<p>It actually uses the UDF you pass in to process the data. It then returns besttargets back to the caller. Now let's switch to the front end:</p>
+<code>
+&lt;cfscript&gt;
+function milfunc(targets) {
+	var sorted = structSort(targets,"numeric","desc","militaryvalue");
+	return sorted;
+}
+<p>function popfunc(targets) {
+var sorted = structSort(targets,&quot;numeric&quot;,&quot;desc&quot;,&quot;population&quot;);
+return sorted;
+}</p>
+<p>&lt;/cfscript&gt;</p>
+<p>&lt;cfset ai = createObject(&quot;component&quot;, &quot;skynet&quot;).init(milfunc)&gt;</p>
+<p>&lt;cfset targets = structNew()&gt;
+&lt;cfset targets[1] = structNew()&gt;
+&lt;cfset targets[1].name = &quot;Lafayette, LA&quot;&gt;
+&lt;cfset targets[1].population = 90000&gt;
+&lt;cfset targets[1].militaryvalue = 0&gt;
+&lt;cfset targets[2] = structNew()&gt;
+&lt;cfset targets[2].name = &quot;Area 51, Nevada&quot;&gt;
+&lt;cfset targets[2].population = 900&gt;
+&lt;cfset targets[2].militaryvalue = 10&gt;</p>
+<p>&lt;cfset sortedtargets = ai.pickTargets(targets)&gt;</p>
+<p>&lt;cfoutput&gt;
+Best Target: #targets[sortedtargets[1]].name#&lt;br&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>So I want you to skip over the UDFs and go first to the createObject. Notice that I pass in milfunc. I'll come back to those UDFs later. I create a structure of targets where each key is also a structure with 3 keys: Name, Population, and Military Value.</p>
+<p>I pass these targets to SkyNet and ask it to return the sorted targets, and lastly I simply output the best target, which would be the first item. It is assumed that pickTargets returns an array of keys only.</p>
+<p>Ok, now go back up to those 2 UDFs. Notice I have a popfunc and milfunc. PopFunc represents sorting by population with the highest first. MilFunc represents sorting by military value.</p>
+<p>So to make SkyNet target population centers instead of military targets, I'd just switch which function I pass in.</p>
+<p>So your task, if you chose to take it, is to write a few more sample functions. It's pretty open ended today. One function that might be nice is a UDF that tries to balance population versus military value. How would you do that? I don't know. :) You could find the average population and military values and find the targets that best balance those two.</p>
+<p>You could also build a &quot;sendAMessage&quot; target function. This one would pick the <i>lowest</i> population and military value target. The idea would be to use the mushroom cloud as a policy statement. (Of course, I don't mean to imply that our current leader would do such a thing.)</p>
+<p>Feel free to add to the my datalist of targets, I was trying to keep it short and sweet.</p>
+<p>Enjoy.</p>
+}

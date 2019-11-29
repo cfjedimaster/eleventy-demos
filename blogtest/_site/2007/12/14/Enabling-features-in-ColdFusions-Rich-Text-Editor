@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>A common question is - how can I enable file upload (among other things) in ColdFusion 8's rich text editor? FCKEditor, which the code is based on, has it, so why not CF? Rakshith of the CF team has an excellent blog article demonstrating how to do this:</p>
+<p><a href="http://www.rakshith.net/blog/?p=41">ColdFusion 8: Enable File, Image and Flash upload in the rich text editor in five steps</a></p>
+}

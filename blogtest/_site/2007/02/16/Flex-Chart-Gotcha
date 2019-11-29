@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Ok, so Flex 2 charts rock. But - I ran into an issue yesterday that drove me mad. All I wanted was a simple bar chart. Yet nothing I tried would work right. Turns out that if you want a bar chart with one series of data (like sales of one product over the last few months) it won't work. You have to use a Column Chart. Silly me thinking that a bar chart was a bar chart! Turns out that BarChart is only used for <i>multiple</i> bars. Lesson learned. (And to be honest, I didn't really read the docs well - I skimmed.)</p>
+}

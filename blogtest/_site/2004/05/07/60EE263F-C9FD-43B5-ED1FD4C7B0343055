@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>So, this was a big thread today on <a href="http://www.cfczone.org/listserv.cfm">cfcdev</a> that I thought I would share:</p>
+<p>If you define a variable as a local scoped variable in a method, and then use the cfinclude tag, any variable that was VAR scoped will be copied over to the Variables scope for the CFC.</p>
+<p>So, an example:</p>
+<p><b>alpha.cfc</b></p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfcomponent&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cffunction name=<FONT COLOR=BLUE>"foo"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;Cfset var hello = <FONT COLOR=BLUE>"I am hello"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfdump var=<FONT COLOR=BLUE>"#variables#"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfinclude template=<FONT COLOR=BLUE>"include.cfm"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfreturn <FONT COLOR=BLUE>"foo was called"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cffunction&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cffunction name=<FONT COLOR=BLUE>"get"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfdump var=<FONT COLOR=BLUE>"#variables#"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cffunction&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfcomponent&gt;</FONT></div>
+<p><b>test.cfm</b></p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfscript&gt;</FONT><br>
+foo = createObject(<FONT COLOR=BLUE>"component"</FONT>,<FONT COLOR=BLUE>"alpha"</FONT>);<br>
+foo.foo();<br>
+foo.get();<br>
+<FONT COLOR=MAROON>&lt;/cfscript&gt;</FONT></div>
+<p><i>Note that it doesn't matter what is in include.cfm.</i></p>
+<p>When you run the code, you will notice that the hello variable gets copied over to the global Variable scope in the CFC. (Thanks to Nathan Dintenfass for the nice and simple example.)</p>
+<p>As you can guess, this can lead to some very subtle, hard to detect bugs.</p>
+}

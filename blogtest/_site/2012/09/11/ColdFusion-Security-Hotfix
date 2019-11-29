@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Title says it all. See the details here: <a href="http://www.adobe.com/support/security/bulletins/apsb12-21.html">Security update: Hotfix available for ColdFusion 10 and earlier</a></p>
+<p>ColdFusion 10 users should be able to see this in the updates portion of the admin.</p>
+}

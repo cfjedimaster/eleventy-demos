@@ -1,0 +1,146 @@
+<h1>Post</h1>
+
+<p>Earlier this month a reader asked about AJAX-based validation of addresses. I was able to find a few services, but none that were free. Turned out that my own CFUPS package (<a href="http://cfups.riaforge.org">riaforge link</a>) actually supported address verification. Unfortunately it was only at the city level. I discovered that UPS does support street level verification as well, but had a heck of a time getting it to work. Luckily <i>another</i> reader (and talk about coincidence), Shane Pitts, figured out the issue and sent in the new code. His modification was released to RIAForge today. At lunch, while trying not to pay attention to the iPhone(y) press conference, I wrote up a quick demo.</p>
+<!--more-->
+<p>
+<p>Before getting into the AJAXy bits, here is a quick example of how the API works. Note that for development, only addresses in New York can be tested. I picked <a href="http://www.epicenterconsulting.com/">Epicenter's</a> address, hope they don't mind.</p>
+<p>
+<code>
+&lt;cfset results = av.streetAddressVerification(address="32 E 31st Street", city="New York", state="NY",postalcode="10016")&gt;
+&lt;cfdump var="#results#" label="Results"&gt;
+</code>
+<p>
+<p>This results in a one line response that is - for the most part - the exact same address.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/av1.png" title="Results from AV" />
+<p>
+<p>In fact, for the most part I think you can assume if you get one response back, your initial response was ok. If you enter an inaccurate response though you get more responses:</p>
+<p>
+<code>
+<p>&lt;cfset results = av.streetAddressVerification(address=&quot;390902 SE 31st Street&quot;, city=&quot;New York&quot;, state=&quot;NY&quot;,postalcode=&quot;10016&quot;)&gt;
+&lt;cfdump var=&quot;#results#&quot; label=&quot;Results&quot;&gt;
+</code></p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/av2.PNG" title="Results from AV2" />
+<p>
+<p>So given a simple API where we assume 2-N results means we need to provide correction, here is a quick and ugly demo I created.</p>
+<p>
+<code>
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>function checkAddy(e) {
+console.log('running checkAddy');
+var street = $.trim($(&quot;#street&quot;).val());
+var city = $.trim($(&quot;#city&quot;).val());
+var state = $.trim($(&quot;#state&quot;).val());
+var zip = $.trim($(&quot;#zip&quot;).val());
+if(street == '' || city == '' || state == '' || zip == '') return;
+$(&quot;#avResult&quot;).html(&quot;Checking your address for validity...&quot;);</p>
+<pre><code>$.getJSON(&quot;verificationservice.cfc?method=verifyaddress&amp;returnFormat=json&quot;, {&quot;street&quot;:street, &quot;city&quot;:city, &quot;state&quot;:state, &quot;zip&quot;:zip}, function(res) {
+	if(res.ERROR) {
+		$(&quot;#avResult&quot;).html(&quot;An error occured trying to verify your address: &quot;+res.ERROR);
+	} else {
+		//Ok, we must have RESULTS. If 1, we say its good. Technically it may 'correct' a bit but we don't care
+		//If &amp;gt; 1, we create a list of results so you can pick one to auto correct
+		if(res.RESULTS.DATA.length == 1) $(&quot;#avResult&quot;).html(&quot;Your address verified.&quot;);
+		else {
+			var s = &quot;&amp;lt;p&amp;gt;The following addresses were returned as possible corrections. Click the address to correct your form.&amp;lt;/p&amp;gt;&quot;;
+			$.each(res.RESULTS.DATA, function(idx,val) {
+				s += &quot;&amp;lt;div class='addyoption'&amp;gt;&amp;lt;span class='street'&amp;gt;&quot; + val[0] + &quot;&amp;lt;/span&amp;gt;&amp;lt;br/&amp;gt; &quot;;
+				s += &quot;&amp;lt;span class='city'&amp;gt;&quot; + val[1] + &quot;&amp;lt;/span&amp;gt;, &amp;lt;span class='state'&amp;gt;&quot; + val[2] + &quot;&amp;lt;/span&amp;gt;&amp;lt;br&amp;gt;&quot; ;
+				s += &quot;&amp;lt;span class='zip'&amp;gt;&quot;+val[3]+&quot;-&quot;+val[4] +&quot;&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&quot;;
+
+			})
+
+			$(&quot;#avResult&quot;).html(s);
+		}
+	}
+})
+</code></pre>
+<p>}</p>
+<p>function fixAddy(e) {
+div = $(e.currentTarget);
+var street = $(&quot;.street&quot;, div).html();
+var city = $(&quot;.city&quot;, div).html();
+var state = $(&quot;.state&quot;, div).html();
+var zip = $(&quot;.zip&quot;, div).html();</p>
+<pre><code>$(&quot;#street&quot;).val(street);
+$(&quot;#city&quot;).val(city);
+$(&quot;#state&quot;).val(state);
+$(&quot;#zip&quot;).val(zip);
+$(&quot;#avResult&quot;).html(&quot;&quot;);
+</code></pre>
+<p>}</p>
+<p>$(document).ready(function() {</p>
+<pre><code>$(&quot;#street, #city, #state, #zip&quot;).change(checkAddy);
+$(&quot;#saveBtn&quot;).click(checkAddy);
+
+$(&quot;.addyoption&quot;).live(&quot;click&quot;, fixAddy);
+</code></pre>
+<p>})
+&lt;/script&gt;</p>
+<p>&lt;style&gt;
+.addyoption {
+width: 250px;
+padding: 5px;
+background-color: yellow;
+margin-bottom: 10px;
+}
+#avResult {
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;h2&gt;Shipping Address&lt;/h2&gt;</p>
+<p>&lt;form&gt;
+Street: &lt;input type=&quot;text&quot; name=&quot;street&quot; id=&quot;street&quot; value=&quot;32 E 31st Street&quot;&gt;&lt;br/&gt;
+City: &lt;input type=&quot;text&quot; name=&quot;city&quot; id=&quot;city&quot; value=&quot;New York&quot;&gt;&lt;br/&gt;
+State: &lt;input type=&quot;text&quot; name=&quot;state&quot; id=&quot;state&quot; size=&quot;2&quot; maxlength=&quot;2&quot; value=&quot;NY&quot;&gt;&lt;br/&gt;
+Zip: &lt;input type=&quot;text&quot; name=&quot;zip&quot; id=&quot;zip&quot; value=&quot;10016&quot;&gt;&lt;br/&gt;
+&lt;input type=&quot;button&quot; id=&quot;saveBtn&quot; value=&quot;Save&quot;&gt;
+&lt;/form&gt;</p>
+<p>&lt;div id=&quot;avResult&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Quite a bit going on here. Let's begin at the bottom. I've got a simple form that asks for street, city, state, and zip. I've got an empty div I'll use for handling results.</p>
+<p>
+<p>Now move up to the document.ready block. I added an event listener to all my form fields. My thinking here was - I want to do address verification as soon as possible. You may enter your state first, your city next, and so on. So I've bound them all (including the button, which would normally be a submit) to a function called checkAddy. Let's go there next.</p>
+<p>
+<p>checkAddy begins by getting all the values. If any are blank, we leave. If not, we call our service. Our service is going to handle calling the UPS API and dealing with any error. As you can see, if we get an ERROR key back, we will report it. Otherwise we assume an array of RESULTS. If the length of the array is one, just assume we are good. (And again, I may be wrong on that.) If the length was more than one, here is where we get fancy. I create a div for each one and output them to screen. Like so:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/av3.PNG" title="Another AV Result" />
+<p>
+<p>Now for the cool part. Back in my document.ready block I had set up a listener for clicks on these results: 	$(&quot;.addyoption&quot;).live(&quot;click&quot;, fixAddy). This live call will constantly monitor the DOM so that when the new items are added, the event listener still works. Now you can click on the div and fixAddy will run. This will grab the values from the div and automatically update the form.</p>
+<p>
+<p>How about the service I called? Pretty trivial:</p>
+<p>
+<code>
+component {
+<pre><code>remote function verifyAddress(string street, string city, string state, string zip) {
+	var result = {};
+	try {
+		var results = application.addressVerification.streetAddressVerification(address=arguments.street, city=arguments.city, state=arguments.state,postalcode=arguments.zip);
+		result.results = results;
+	} catch(any e) {
+		result.error = e.message;
+	}
+	
+	return result;
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Man, I love writing CFCs in script. It's like moving from Michelob Ultra to a fine Stone IPA.</p>
+<p>
+<p>Because UPS tends to be a huge pain in the rear with the API at times, I cannot post a demo. I can however post this cool video of me clicking around the demo. It's better than unicorns farting.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/images/ups.swf"><img src="https://static.raymondcamden.com/images/cfjedi/av4.PNG" title="Click me for cool video" /></a></p>
+<p>
+<p><b>Edited at 5:18PM:</b> I tend to forget jQuery's $.each function. Rey Bango reminded me of this utility and I updated the code to make use of it.<br/>
+<b>Edited on Saturday:</b> I made a few more improvements based on Bango's feedback. Thanks Rey!</p>
+}

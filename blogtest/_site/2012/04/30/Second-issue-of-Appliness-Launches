@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<img src="https://static.raymondcamden.com/images/ipad-cover-may.jpg" style="float:left;margin-right:5px; margin-bottom:5px" />
+<p>The second issue of <a href="http://appliness.com/">Appliness</a> has launched. Appliness is a free digital magazine available on Android and iOS (in stunning Retina graphics too). The May issue contains articles on...</p>
+<ul>
+<li>CSS Regions and CSS Exclusions, by Deepa Subramaniam
+<li>Drag and drop with jQuery UI on mobile devices, by Michaël Chaize
+<li>JavaScript Object Creation, by Keith Peters
+<li>Using Backbone with jQuery Mobile, by Christophe Coenraets
+<li>Crafting native looking iOS apps with HTML, by Christophe Coenraets
+<li>Demo of Handlebars, by me
+<li>Real-time data exchange in HTML5, by Ryan Stewart
+<li>Swipe to delete items, by Michaël Chaize
+<li>App-UI, a library by Andrew Trice
+<li>HTML5 Multimedia components, by Ian Devlin
+<li>Interview of Pamela Fox
+<li>Colour Match, Cutest Paw, Bit Timer: showcase
+<li>Which Element ? Pull quotes, comments
+<li>PhoneGap and the File API
+<li>WTFJS: False advertising
+<li>Generate color palettes from HTML5 video
+<li>CSS variables draft 
+</ul>
+<p>I way to make special note of the &quot;Generate color palettes from HTML5 video&quot; article. This is <i>not</i> something that has been on my blog before. It's a brand new WebRTC demo I made that demonstrates generating color palettes from a live web-cam video feed. It's super hot. Really. OK, it's a bit silly. But it was fun as hell to write.</p>
+<img src="https://static.raymondcamden.com/images/photo (1) (Custom).PNG" />}

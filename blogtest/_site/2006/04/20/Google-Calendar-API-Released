@@ -1,0 +1,13 @@
+<h1>Post</h1>
+
+<p>The <a href="http://code.google.com/apis/gdata/calendar.html">API</a> for Google Calendar has been released, and after a quick initial skimming of the document, I think a CFC could be built to interact with the system. I'm going to start work on a simple reader for now to allow for something like this:</p>
+<code>
+&lt;cfset gCal = createObject("component", "GoogleCalendar").init("your private url goes here")&gt;
+&lt;!--- get entries returns all. Now says only after now ---&gt;
+&lt;cfset entries = getCal.getEntries(now())&gt;
+&lt;cfloop query="entries"&gt;
+etc
+&lt;/cfloop&gt;
+</code>
+<p>Once reading is done then I'll start work on writing as well. This could be an excellent way to integrate a web site with Google calendar. Imagine allowing folks to request meetings by simply adding a form to your site.</p>
+}

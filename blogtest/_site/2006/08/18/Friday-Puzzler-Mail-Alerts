@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>This one is rather simple, but as it involves string manipulation, I thought it might be fun.</p>
+<p>Write a simple UDF that takes a mail server, username, and password, and a keyword. This script will check all the mail on the account and return a list of messages that match the keyword. It should NOT delete the mail, but just download and parse.</p>
+<p>What would this be used for? Imagine an account you do not check often but want to monitor for certain keywords (&quot;I'm going to sue you!&quot;, &quot;You stink of elderberries!&quot;). This code could be used on a scheduled basis to simply see if something important is in the queue.</p>
+}

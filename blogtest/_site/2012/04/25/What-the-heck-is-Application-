@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>I'm working on an update to <a href="http://www.cflib.org">CFLib</a>. Nothing that end users will actually see, but rather all behind the scenes. The current code base makes use of Model-Glue and Transfer. I'm rebuilding it for ColdFusion 10 and making use of Framework One and ORM. It's been a while since I've gotten to use <a href="https://github.com/seancorfield/fw1/wiki">FW/1</a> and I forgot how much of a pleasure it is to use.</p>
+<p>I did run into one issue that threw me for a loop. Whenever I work with an ORM-based site, I know I'll need to call ormReload and applicationStop on demand, so I whip up code that looks like this.</p>
+<script src="https://gist.github.com/2489907.js?file=gistfile1.cfm"></script>
+<p>Normally I put this within onRequestStart. However, in my FW/1 Application.cfc, I didn't have any of the methods I normally do. So I simply placed it as is within the file.</p>
+<p>When I added ?init to my URL to force a refresh, I got this error:</p>
+<h2>Application '' does not exist.</h2>
+<p>I had absolutely no idea why this occurred since obviously my application did have a name. I filed a bug and after exchanging a few emails with Adobe engineer Sagar H Ganatra, he discovered the issue.</p>
+<p>At the time my code ran, the application wasn't properly &quot;ready&quot; yet. When the code block is moved into onRequestStart, that's when you can run an applicationStop call properly.</p>
+<p>We both agreed that the error message wasn't helpful, and the bug has been updated to correct the message and make it more clear what the issue is.</p>
+}

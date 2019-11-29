@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>Here is another &quot;Gotcha&quot; you want to watch out for. Some of this applies to ColdFusion 7 and earlier while obviously the cfdiv reference is for ColdFusion 8 only.</p>
+<p>A friend pinged me a few days asking why her cfdiv tag wasn't working. Turns out she had written something like this:</p>
+<code>
+&lt;cfdiv source="foo.cfm" /&gt;
+</code>
+<p>When viewing the result, she noticed that the contents of foo.cfm were not being loaded in the browser. Turns out she had forgotten that cfdiv, like most of the cfform based tags, will automatically pass any unknown variable over into the HTML.</p>
+<p>This is a feature, not a bug. And I mean that. Consider the simple cfinput tag. If tomorrow Microsoft decided to add a new attribute to the HTML input tag tag, how would you use it with cfinput? All you need to do is add it to your cfinput tag like so:</p>
+<code>
+&lt;cfinput type="text" name="username" spam="true"&gt;
+</code>
+<p>ColdFusion will ignore the spam attribute except when it actually renders the input tag. Then it will simply be passed into the HTML.</p>
+<p>One way to see if you are falling victim to this is to simply view source. If you did that on cfdiv code above, you would see:</p>
+<code>
+&lt;div id="cf_div1185294152796" source="foo.cfm"&gt;&lt;/div&gt;
+</code>
+<p>A mistake I tend to make with suggestions is:</p>
+<code>
+&lt;cfinput name="foo" autusuggest="..." &gt;
+</code>
+<p>Notice the typo?</p>
+}

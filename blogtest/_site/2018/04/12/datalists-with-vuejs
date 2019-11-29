@@ -1,0 +1,68 @@
+<h1>Post</h1>
+
+<p>This isn't necessarily a very exciting post, but a few days back someone asked me about integrating Vue.js with <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist">datalist</a> tags. The datalist tag is one of my favorite HTML tags and something I've <a href="https://www.raymondcamden.com/search/?q=datalist">blogged about a few times</a> in the past. If you aren't familiar with it, it basically provides a &quot;autosuggest&quot; style experience to an input tag.</p>
+<p>The HTML is pretty simple. Here is the example used in the MDN article I linked to above:</p>
+<pre><code class="language-html">&lt;label for=&quot;myBrowser&quot;&gt;Choose a browser from this list:&lt;/label&gt;
+&lt;input list=&quot;browsers&quot; id=&quot;myBrowser&quot; name=&quot;myBrowser&quot; /&gt;
+&lt;datalist id=&quot;browsers&quot;&gt;
+  &lt;option value=&quot;Chrome&quot;&gt;
+  &lt;option value=&quot;Firefox&quot;&gt;
+  &lt;option value=&quot;Internet Explorer&quot;&gt;
+  &lt;option value=&quot;Opera&quot;&gt;
+  &lt;option value=&quot;Safari&quot;&gt;
+  &lt;option value=&quot;Microsoft Edge&quot;&gt;
+&lt;/datalist&gt;
+</code></pre>
+<p>Basically - you create a <code>&lt;datalist&gt;</code> element and supply options. You then take your input and add the <code>list=&quot;id of the list&quot;</code> attribute. Now when the user types, they will get suggestions based on the list and what they've typed in. It's pretty well supported (basically everyone but Safari and Mobile Safari, because of course) and fails gracefully (the user can still type anything they want). How would you combine this feature with Vue.js? Let's look at a static example. First, the HTML:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+  &lt;input type=&quot;text&quot; v-model=&quot;film&quot; list=&quot;films&quot;&gt;
+  &lt;datalist id=&quot;films&quot;&gt;
+    &lt;option v-for=&quot;film in films&quot;&gt;{{film}}&lt;/option&gt;
+  &lt;/datalist&gt;
+&lt;/div&gt;
+</code></pre>
+<p>You can see the input field and the list. The <code>option</code> tag is tied to a variable called <code>films</code>. Now let's look at the JavaScript:</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data() {
+    return {
+      film:'',
+      films:[
+        &quot;A Throne Too Far&quot;,
+        &quot;The Cat Wasn't Invited&quot;,
+        &quot;You Only Meow Once&quot;,
+        &quot;Catless in Seattle&quot;
+	    ]
+	}
+  }
+})
+</code></pre>
+<p>Not too exciting, but it works rather well. You can test it below:</p>
+<p data-height="400" data-theme-id="0" data-slug-hash="PRvZyG" data-default-tab="js,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Static Datalist" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/PRvZyG/">Static Datalist</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>How would you make it dynamic? Simple - just change how the data is generated. Here's an example of that:</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  data() {
+    return {
+      film:'',
+      films:[]
+    }
+  },
+  created() {
+    fetch('https://swapi.co/api/films/')
+    .then(res =&gt; res.json())
+    .then(res =&gt; {
+      this.films = res.results.map(f =&gt; {
+        return f.title;
+      })
+    })
+  }
+})
+</code></pre>
+<p>All I did was add in a <code>created</code> event handler and hit the <a href="https://swapi.co">Star Wars API</a> for my data. You can test the result below:</p>
+<p data-height="400" data-theme-id="0" data-slug-hash="KoYrrg" data-default-tab="js,result" data-user="cfjedimaster" data-embed-version="2" data-pen-title="Dynamic Datalist" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/KoYrrg/">Dynamic Datalist</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>I may be biased - but everything is better in Vue.</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/OqtafYT5kTw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Ilya Pavlov</a> on Unsplash</i></p>
+}

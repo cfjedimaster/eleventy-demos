@@ -1,0 +1,95 @@
+<h1>Post</h1>
+
+<p>So now that I'm done enjoying <a href="http://www.festivalinternational.com/site47.php">Festival International</a>, I thought I'd do a quick write up about the code behind Gameone, the POC (proof of concept) AIR/Flex/Blaze/ColdFusion multiplayer game I released last week. I want to be sure folks remember that this is probably quite far away from 'Best Practice'. It was a learning experience for me, so please keep that in mind while reviewing the code and reading my comments. I've attached the full source code to both the front end and the server side. Note that the ColdFusion code was written very quickly and would benefit from ColdSpring. Anyway, enough with the foreplay, let's get down to it.</p>
+<p>As I mentioned, the front end was built with Flex and AIR. I learned a <i>heck</i> of a lot while at <a href="http://www.broadchoice.com">Broadchoice</a>. One of the tools we used there was the <a href="http://code.google.com/p/swizframework/">Swiz</a> framework created by Chris Scott. Swiz helps solve one of the biggest issues I had with Flex - events. I don't mean stuff like click handlers for buttons, but more... communication between multiple files. Flex, then language, is pretty simple. But I found that once I got into multiple files, it became difficult for me to understand how best to have them work with even other.</p>
+<p>Swiz let me set up the application almost like a Model-Glue/ColdSpring site. I created folders for the major sections of the application (which for me was just application and authentication) and within each I set up controller, model, and view folders. Swiz let me inject (copy in) code from one part of the application into another. For example, this line of code from the file that renders the Buy/Sell portion:</p>
+<code>
+[Autowire(bean="stockController")]
+public var stockController : StockController;
+</code>
+<p>Swiz finds the controller via a Beans file that contains the stockController:</p>
+<code>
+&lt;!-- stock controller --&gt;
+&lt;stockControl:StockController id="stockController"/&gt; 
+</code>
+<p>I was also able to define my remoteObject here:</p>
+<code>
+&lt;mx:RemoteObject id="authenticationService" destination="ColdFusion" source="remoteservices.authenticationService" 
+		showBusyCursor="true" channelSet="{myAmfChannel}" /&gt;
+</code>
+<p>As for events, I can define both listeners and broadcasts as well - very much like ModelGlue. So for example, I want my register form to listen for a 'registration failed' event so it could tell people when their registration failed:</p>
+<p><code>		Swiz.addEventListener(AuthenticationController.REGISTRATION_FAILED, registrationFailed)
+</code></p>
+<p>The flip side, broadcasting an event, is also trivial:</p>
+<code>
+private function getStockPricesResult(result:ResultEvent):void {
+	var event:DynamicEvent = new DynamicEvent(StockController.STOCKS_LOADED)
+	trace('back from get stocks')
+	var stockData:ArrayCollection = result.result as ArrayCollection
+	event.stockData = stockData
+	Swiz.dispatchEvent(event);
+}
+</code>
+<p>Swiz does a heck of a lot more than what you will see in the code, but I can't describe how much of a relief it was to have this framework. It removed what was probably the biggest barrier to my Flex development.</p>
+<p>The other interesting aspect was the integration with BlazeDS. Well, not terribly interesting. The code actually is pretty trivial. The server setup was the worst part. (I talked about it more <a href="http://www.raymondcamden.com/index.cfm/2009/4/19/Have-you-installed-BlazeDS-with-ColdFusion">here</a>.) The Flex code for chatting came down to something like 10 lines of code. So for example, to tell the app to listen to and broadcast to the server begins with two declarations:</p>
+<code>
+&lt;mx:Producer id="producer" destination="ColdFusionGateway" channelSet="{myAmfPollingChannel}" fault="Alert.show(event.faultDetail)"/&gt;
+&lt;mx:Consumer id="consumer"  message="handleMessage(event)" channelSet="{myAmfPollingChannel}" destination="ColdFusionGateway" /&gt;
+</code>
+<p>Sending a chat is just:</p>
+<code>
+private function sendMessage():void {
+	if(chatMsg.text == '') return
+	var msg:AsyncMessage = new AsyncMessage();
+	msg.headers.gatewayid = 'GameOne';
+	msg.body = { msg : chatMsg.text, user : authController.currentUser.username  };
+	producer.subtopic='chat'
+	producer.send(msg);
+	chatMsg.text=''
+}
+</code>
+<p>And code to handle listening (with the consumer) is first this in the init():</p>
+<code>
+private function init():void {
+	consumer.subtopic='chat'
+ 	consumer.subscribe();
+}
+</code>
+<p>and this for handling the actual message:</p>
+<code>
+private function handleMessage(e:MessageEvent):void{
+	var body :Object = e.message.body
+	if(body.user != null) {
+		chatWindow.htmlText = '&lt;b&gt;['+fmtDate.format(body.timestamp)+'] '+body.user + ' says: ' + body.msg + '&lt;/b&gt;\n' + chatWindow.htmlText;
+	} else chatWindow.htmlText = '['+fmtDate.format(body.timestamp)+'] ' + body.msg + '\n' + chatWindow.htmlText;
+}
+</code>
+<p>Most of the code here is UI crap, and I think you can see that there really isn't a lot here. The one thing I'd point out is the subtopics. This is basically a 'filter' for the messages sent back and forth between the server. My game had 2 types of communications - stock updates and chat. So I simply used a different channel for each. The stock data view has a consumer as well:</p>
+<code>
+stockConsumer.subtopic='stockupdate'
+stockConsumer.subscribe();
+</code>
+<p>Because it uses a different subtopic, it will ignore the chat messages going back and forth.</p>
+<p>This is probably a good time to switch to the server side. The ColdFusion code is rather simple. I'll only point out the stuff specific to messaging. Stock updates are run every minute and cover both the actual price updates (which is game logic and I'll leave to those who download the code) and messaging. Here is the actual remote call invoked by the CF Scheduler.</p>
+<code>
+&lt;cfset application.stockService.updateStocks()&gt;
+&lt;cfset application.messageService.notifyStockUpdate(application.stockService.getStockPrices())&gt;
+</code>
+<p>The updateStock methods changes the prices and the messaging service will handle the broadcast.</p>
+<code>
+&lt;cffunction name="notifyStockUpdate" access="public" returnType="void" output="false"&gt;
+	&lt;cfargument name="stockdata" type="any" required="true"&gt;
+<pre><code>&amp;lt;cfset var packet = StructNew()&amp;gt; 
+&amp;lt;cfset packet.body = {}&amp;gt;
+&amp;lt;cfset packet.body[&quot;data&quot;] = arguments.stockdata&amp;gt;
+
+&amp;lt;cfset packet.destination = &quot;ColdFusionGateway&quot;&amp;gt; 
+
+&amp;lt;cfset packet[&quot;headers&quot;][&quot;DSSubtopic&quot;] = &quot;stockupdate&quot; /&amp;gt;
+&amp;lt;cfset SendGatewayMessage(&quot;GameOne&quot;, packet)&amp;gt; 
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>To be honest, I don't remember where I found the docs that said I should use &quot;DSSubtopic&quot; but it works. The last piece was the DataServicesMessaging event gateway. I set that up as a simple based on the documentation in the developer's guide.</p>
+<p>Ok, so this is going on a bit long. It may make sense to stop now and work on a simpler example for later in the week. But here is the thing. It is freaking <b>cool as surfboading ninja zombies</b> to see my ColdFusion scheduler run some code that then updated stuff on my AIR application. Let's wrap this now. Take a look at the code (please don't laugh too hard at any simple Flex mistakes I made), and let's talk again later in the week about some simpler examples (I have a few good ideas coming to me now).<p><a href='enclosures/E%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FGameOne%20Source%2Ezip'>Download attached file.</a></p></p>
+}

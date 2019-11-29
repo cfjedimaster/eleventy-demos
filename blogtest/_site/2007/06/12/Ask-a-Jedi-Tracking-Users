@@ -1,0 +1,149 @@
+<h1>Post</h1>
+
+<p>Rob sent in an interesting question this morning concerning tracking users and their activities. It is a rather long read, but please check it out and let me know what you think. (Also, I've been getting a <b>lot</b> of email from Australia lately. I knew there were a bunch of ColdFusion developers down there, but who knew there were so many! I'm going to have to buy some Coopers and fly down there some time.)</p>
+<!--more-->
+<p>First - let me paste in his question:</p>
+<blockquote>
+I've been trying to figure out is a tracking feature that allows me to track the users around the application, I'm sure you can imagine the benefits of knowing
+what the little monsters have been up to when you're not around.
+<p>This tracker should have two sides to it, firstly a 'track' for each user in the application, it logs everything they do around the app and when they do it into
+an array or something or that nature, then when the session ends or they log out
+of the application, this data will be passed into persistence.</p>
+<p>The second element of the tracker is from an application admin point of view. I'd love to
+have a list of users that are currently active on the application, what their current activity is and suchlike.</p>
+<p>Both of these elements are fairly simple to implement on their own, but I'm after your thoughts on where they should be stored and whether they should be contained within a single cfc, as they essemtialy perform very similar tasks keeping them as two separate components feels a little bit like over kill.</p>
+<p>As I see it we could either place the first cfc which stores all the users activities into their session scope, and
+the cfc that lists current users on the system into the application scope. Then when a user does an activity, we add it to the first cfc and update the second.
+The second option is to keep all the core function in a single component in the application scope, we then have a structure, each key representing a user
+and the value being an array of all their activities. We then place an identifier for their track into their session scope, so when they log out or the
+session ends, we can identity their track in the application scope and move it to persistence.</p>
+</blockquote>
+<p>So first off - before we discuss if this should be one CFC or two (and bear in mind, this is all about opinion, either solution <b>will</b> work), you may want to ask yourself if storing it in CFC memory (RAM) is actually what you really want. While it certainly makes it easy to get at, you aren't going to have any history. You will be able to see what people are doing now - or even through the lifetime of your Application scope, but what about two weeks ago? Two months ago? I'd first ask if you shouldn't be doing simple database logging instead. This would give you wonderful historical data. You <b>may</b> be implying that by your &quot;move it into persistence&quot; comment at the end. But this would worry me (by this I mean doing it at the end). If the server crashes, then you will have lost your current data.</p>
+<p>If you do decide to log - the catch to this is <i>what</i> you should log. You mentioned you wanted to log their actions. So lets say you log something like this to the database:</p>
+<code>
+User Bob visited page: Jobs
+</code>
+<p>And then later on you modify this to be:</p>
+<code>
+User Bob hit page: Jobs/Main
+</code>
+<p>Suddenly you have a data integrity issue as the two records won't match up. This issue is surmountable though - just spend some time really nailing down how you will log and try to ensure it will be forwards compatible with future changes.</p>
+<p>Now lets ignore that. Because whether you log to files or use RAM, your question still applies. I definitely agree that one CFC in the Application scope makes the most sense here. I try to keep my CFCs are organized as possible, and this &quot;User Activity&quot; function seems to call for it's own CFC.</p>
+<p>For fun - I decided to whip up a demo. Consider the below CFC:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<p>&lt;cffunction name=&quot;init&quot; returnType=&quot;usermonitor&quot; access=&quot;public&quot; output=&quot;false&quot;&gt;
+&lt;cfset variables.users = structNew()&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;addUserActivity&quot; returnType=&quot;void&quot; access=&quot;public&quot; output=&quot;false&quot;
+hint=&quot;Adds a user activity.&quot;&gt;
+&lt;cfargument name=&quot;key&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;activity&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfif structKeyExists(variables.users, arguments.key)&amp;gt;
+	&amp;lt;cfset arrayAppend(variables.users[arguments.key].activities, arguments.activity)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getCurrentActivity&quot; returnType=&quot;struct&quot; access=&quot;public&quot; output=&quot;false&quot;
+hint=&quot;For all users, return the latest activity.&quot;&gt;
+&lt;cfset var result = structNew()&gt;
+&lt;cfset var user = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfloop item=&quot;user&quot; collection=&quot;#variables.users#&quot;&amp;gt;
+	&amp;lt;cfset result[user] = variables.users[user].activities[arrayLen(variables.users[user].activities)]&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfreturn result&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getUserActivity&quot; returnType=&quot;array&quot; access=&quot;public&quot; output=&quot;false&quot;
+hint=&quot;Gets a user activity history.&quot;&gt;
+&lt;cfargument name=&quot;key&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfif structKeyExists(variables.users, arguments.key)&amp;gt;
+	&amp;lt;cfreturn variables.users[arguments.key].activities&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfthrow message=&quot;Invalid User&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getUserCount&quot; returnType=&quot;numeric&quot; access=&quot;public&quot; output=&quot;false&quot;
+hint=&quot;Returns the number of users in our list.&quot;&gt;
+&lt;cfreturn structCount(variables.users)&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getUsers&quot; returnType=&quot;string&quot; access=&quot;public&quot; output=&quot;false&quot;
+hint=&quot;Returns the user list.&quot;&gt;
+&lt;cfreturn structKeyList(variables.users)&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;registerUser&quot; returnType=&quot;void&quot; access=&quot;public&quot; output=&quot;false&quot;
+hint=&quot;Adds a user to our list.&quot;&gt;
+&lt;cfargument name=&quot;key&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfset variables.users[arguments.key] = structNew()&amp;gt;
+&amp;lt;cfset variables.users[arguments.key].data = structNew()&amp;gt;
+&amp;lt;cfset variables.users[arguments.key].activities = arrayNew(1)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;unregisterUser&quot; returnType=&quot;void&quot; access=&quot;public&quot; output=&quot;false&quot;
+hint=&quot;Removes a user from our list.&quot;&gt;
+&lt;cfargument name=&quot;key&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfset structDelete(variables.users, arguments.key)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>This CFC works much as you described it - storing users and activities. I added some nice convenience functions as well. So not only can you get users, you can get a simple count as well. The function getCurrentActivity will give you the last activity of all users, which is a nice way to get a snapshot of their activities. I updated my Application.cfc to create this CFC, and used onSessionStart/End to register/unregister my user:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<p>&lt;cfset this.name = &quot;um_test4&quot;&gt;
+&lt;cfset this.applicationTimeout = createTimeSpan(0,2,0,0)&gt;
+&lt;cfset this.sessionManagement = true&gt;</p>
+<p>&lt;cffunction name=&quot;onApplicationStart&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&gt;
+&lt;cfset application.usermonitor = createObject(&quot;component&quot;, &quot;usermonitor&quot;)&gt;
+&lt;cfreturn true&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;onMissingTemplate&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;targetpage&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;!--- log it ---&amp;gt;
+&amp;lt;cflog file=&quot;missingfiles&quot; text=&quot;#arguments.targetpage#&quot;&amp;gt;
+&amp;lt;cflocation url=&quot;/apptest/404.cfm?f=#urlEncodedFormat(arguments.targetpage)#&quot; addToken=&quot;false&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;onRequestStart&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;thePage&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset application.usermonitor.addUserActivity(session.urltoken,&quot;Viewing page #thePage#&quot;)&gt;
+&lt;cfreturn true&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;onRequestEnd&quot; returnType=&quot;void&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;thePage&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;onError&quot; returnType=&quot;void&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;exception&quot; required=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;eventname&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfdump var=&quot;#arguments#&quot;&amp;gt;&amp;lt;cfabort&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;onSessionStart&quot; returnType=&quot;void&quot; output=&quot;false&quot;&gt;
+&lt;cfset application.usermonitor.registerUser(session.urltoken)&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;onSessionEnd&quot; returnType=&quot;void&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;sessionScope&quot; type=&quot;struct&quot; required=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;appScope&quot; type=&quot;struct&quot; required=&quot;false&quot;&gt;</p>
+<pre><code>&amp;lt;cfset arguments.appScope.unregisterUser(arguments.sessionScope.urltoken)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>Lastly I built a simple little test page:</p>
+<code>
+<p>Current Users:
+&lt;cfdump var=&quot;#application.usermonitor.getUsers()#&quot;&gt;</p>
+<p>&lt;p&gt;</p>
+<p>User Count:
+&lt;cfdump var=&quot;#application.usermonitor.getUserCount()#&quot;&gt;</p>
+<p>&lt;p&gt;</p>
+<p>My Activity History:</p>
+<p>&lt;cfdump var=&quot;#application.usermonitor.getUserActivity(session.urltoken)#&quot;&gt;</p>
+<p>&lt;p&gt;</p>
+<p>Current Actitivity:</p>
+<p>&lt;cfdump var=&quot;#application.usermonitor.getCurrentActivity()#&quot;&gt;
+</code></p>
+<p>I wrote all of this in 10 minutes, so do not consider it &quot;tested&quot; (nor more than say - oh - Windows), but if it helps any, enjoy.</p>
+}

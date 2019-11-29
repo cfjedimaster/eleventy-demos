@@ -1,0 +1,267 @@
+<h1>Post</h1>
+
+<p>My first morning at Scotch on the Rocks was a bit rough. Despite getting to bed at a decent time (10:30 or so) so I could catch up on my sleep, I ended up waking up around 3:30 or so in the morning and tossing and turning till 6. During that time an idea popped in my head for one more demo I could do for my jQuery Mobile presentation. I was thinking about building a simple mobile web site for the hotel. I thought it would be a simple example but also pretty practical. Of course, once I figured out a simple, static plan for the site an idea occurred to me. One of the important details for a hotel - obviously - is where they are. But what if you could not only tell folks where the hotel was but how you could get there? Here's my demo which shows just that. I'll warn you now - it's brittle as heck. It's really just a proof of concept. But it works (mostly) and I think it's pretty cool. Ready?</p>
+<!--more-->
+<p>
+<p>First, I'll begin by showing a few screen shots of the application I built. This is online and I'll share that link at the end, but for now, let's just look at pretty pictures.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip36.png" />
+<p>
+<p>My hotel mobile home page has three links: Contact Us, Find Us, and About. Contact Us has the basics - a phone number and an email address.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip37.png" />
+<p>
+<p>On a mobile device, clicking that phone number will automatically call the hotel. This is probably the #1 most important &quot;service&quot; a mobile web site can provide. Unfortunately far too few make this as simple. Let's skip the second link now and show the 3rd link:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip38.png" />
+<p>
+<p>Yeah, nothing important here. This is where you can stick the content the marketing department insists on that is most likely 100% useless to visitors. Let's face it -you know you will need to add it to the site. At least by making it the third link it isn't as distracting and doesn't interfere with the critical information.</p>
+<p>
+<p>Now that you've seen those pages - let's look at the code behind it. I'm not going to explain everything here - that's for another blog entry - but check out how simple the code is...</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt; 
+&lt;html&gt; 
+	&lt;head&gt; 
+	&lt;title&gt;Apex Hotels&lt;/title&gt; 
+	&lt;link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" /&gt;
+	&lt;script src="http://code.jquery.com/jquery-1.5.min.js"&gt;&lt;/script&gt;
+	&lt;script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt; 
+&lt;body&gt; 
+<p>&lt;div data-role=&quot;page&quot; data-theme=&quot;e&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Apex Hotels&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;ul data-role=&quot;listview&quot; data-inset=&quot;true&quot;&amp;gt;
+		&amp;lt;li data-role=&quot;list-divider&quot;&amp;gt;Welcome to Apex Hotels&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;contact.html&quot;&amp;gt;Contact Us&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;find.html&quot;&amp;gt;Find Us&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+		&amp;lt;li&amp;gt;&amp;lt;a href=&quot;#about&quot;&amp;gt;About&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+	&amp;lt;/ul&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;This is NOT a real Apex Hotels page.&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;div data-role=&quot;page&quot; id=&quot;about&quot; data-theme=&quot;e&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;About&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;p&amp;gt;
+	This is demo content.
+	&amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>That code covers the home page and the About page. Here is the code behind the Contact Us page.</p>
+<p>
+<code>
+&lt;div data-role="page" data-theme="e"&gt;
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Contact Us&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+&amp;lt;p&amp;gt;
+Reservations: &amp;lt;a href=&quot;tel:0845 365 0000&quot;&amp;gt;0845 365 0000&amp;lt;/a&amp;gt;&amp;lt;br/&amp;gt;
+Email: &amp;lt;a href=&quot;mailto:reservations@apexhotels.co.uk&quot;&amp;gt;reservations@apexhotels.co.uk&amp;lt;/a&amp;gt;&amp;lt;br/&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>Ok, now let's look at Find Us. This page does two things. First, it shows a simple map to the hotel. For this, I used the address of the hotel hosting the conference. Secondly, it provides a link that will be used for driving directions.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip39.png" />
+<p>
+<p>And here is the code behind that...</p>
+<p>
+<code>
+<p>&lt;div data-role=&quot;page&quot; id=&quot;findusPage&quot; data-theme=&quot;e&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Find Us&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+&amp;lt;p&amp;gt;
+</code></pre>
+<p>Apex International Hotel, Edinburgh&lt;br/&gt;
+31-35 Grassmarket&lt;br/&gt;
+Edinburgh&lt;br/&gt;
+EH1 2HS&lt;br/&gt;
+Scotland&lt;br/&gt;
+&lt;/p&gt;</p>
+<pre><code>&amp;lt;p&amp;gt;
+&amp;lt;img src=&quot;http://maps.google.com/maps/api/staticmap?center=31-35+Grassmarket+Edinburgh+EH1+2HS+Scotland&amp;zoom=15&amp;size=200x200&amp;maptype=roadmap
+</code></pre>
+<p>&amp;sensor=false&quot;&gt;
+&lt;/p&gt;</p>
+<pre><code>&amp;lt;p&amp;gt;
+&amp;lt;a data-role=&quot;button&quot; id=&quot;drivingButton&quot; data-theme=&quot;a&quot;&amp;gt;Get driving directions&amp;lt;/a&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>By the way - notice that map there. It's using the static Google Maps API. Very simple, right? It would be better if I added a marker at the center address for the hotel. That wouldn't take long but for now, I'm skipping it. Ok, so how do we take that button and make it live? I went back to my main home page. This is always loaded first and therefore is a good place to store code like this. You can <b>not</b> - as far as I know, use $(document).ready within the page code above. This seems to work once, but not when the page is loaded again. Therefore we need to use the index page. jQuery Mobile gives us a few new events we can listen one - one of them being pagecreate. I used that and bound to the findUs page div to create the following code block:</p>
+<p>
+<code>
+$('#findusPage').live('pagecreate',function(event){
+<p>});
+</code></p>
+<p>
+<p>Ok - now let's get into the fun part. When I originally conceived of this demo, it occurred to me I couldn't do driving directions to the hotel since I was actually presenting <b>at</b> the hotel. That would be dumb. So while at the conference I decided to provide directions to Glasgow. Now that I'm back  home, I decided on Baton Rouge instead. In order to get the directions though we need to figure out where we are. That's <b>super</b> easy on mobile browsers since you've got pretty universal support for geolocation:</p>
+<p>
+<code>
+navigator.geolocation.getCurrentPosition(function(pos){
+		var lat = pos.coords.latitude;
+		var lon = pos.coords.longitude;
+</code>
+<p>
+<p>As you can see, I simply fire off the geolocation request and grab the latitude and longitude in the response. To get driving directions, we need Google Maps. I added this to the top of my page:</p>
+<p>
+<code>
+&lt;script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"&gt;&lt;/script&gt;	
+</code>
+<p>
+<p>And then back in my code I added a new instance of the directions service:</p>
+<p>
+<code>
+var dirApi = new google.maps.DirectionsService();
+</code>
+<p>
+<p>You can find the full API reference for this service here: <a href="http://code.google.com/apis/maps/documentation/javascript/reference.html#DirectionsService">http://code.google.com/apis/maps/documentation/javascript/reference.html#DirectionsService</a>. But for now, we're going to make it simple. We create an object that will be used for our request.</p>
+<p>
+<code>
+dirReq = {};
+dirReq.destination = "Baton Rouge, LA";
+dirReq.origin = new google.maps.LatLng(lat,lon);
+dirReq.travelMode = google.maps.DirectionsTravelMode.DRIVING;
+</code>
+<p>
+<p>Again - the use of Baton Route here is simply to make the demo work better for me. Ok, now for the fun part. I'm going to ask the direction service to create a route. The result is <b>very</b> complex, but essentially contains routes which contain steps. I'm going to assume we get one route and get the steps from there. I want to work with a much smaller set of data so I basically create my own, smaller and simpler copy:</p>
+<p>
+<code>
+dirApi.route(dirReq,function(dirResult,dirStatus) {
+		if (dirStatus != google.maps.DirectionsStatus.OK) {
+			alert("Driving API error: "+dirStatus);
+		}
+		//our steps are dirResult.routes[0].legs[0].steps
+		var steps = dirResult.routes[0].legs[0].steps;
+		var copy = dirResult.routes[0].copyrights;
+		console.dir(steps);
+		var niceSteps = [];
+		for (var i = 0; i &lt; steps.length; i++) {
+			step = {};
+			step.text = steps[i].instructions;
+			step.distance = steps[i].distance.text;
+			step.duration = steps[i].duration.text;
+			step.endlat = steps[i].end_location.lat();
+			step.endlon = steps[i].end_location.lng();
+			niceSteps[niceSteps.length] = step;
+		}
+</code>
+<p>
+<p>Ok - so now we have - hopefully - a simple array of steps that include the text of the direction, the duration, the time, and even the longitude and latitude of where you end up. How do we present this to the user? We could simply dump all the steps onto the page. But that may be hard to work with on the device. What if instead we broke it into steps, like so....</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip40.png" />
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip41.png" />
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip42.png" />
+<p>
+<p>Sweet, right? So how did I do it? The first thing I did was add a jQuery plugin to allow me to serialize data into JSON format. Once I did that, I was able to send the data to ColdFusion and store it:</p>
+<p>
+<code>
+$.post("store.cfm", {data:$.toJSON(niceSteps)}, function() {
+	$.mobile.changePage("driving.cfm");
+});
+</code>
+<p>
+<p>All store.cfm does is take the JSON, deserialize that, and store it into the session scope.</p>
+<p>
+<code>
+&lt;cfparam name="form.data" default=""&gt;
+&lt;cfset session.data = deserializeJSON(form.data)&gt;
+</code>
+<p>
+<p>If you notice back in the JavaScript, when the post is done, we use a jQuery Mobile utility to load a new page. driving.cfm will simply paginate over the driving steps:</p>
+<p>
+<code>
+<p>&lt;cfparam name=&quot;url.step&quot; default=&quot;1&quot;&gt;
+&lt;cfset step = session.data[url.step]&gt;</p>
+<p>&lt;div data-role=&quot;page&quot; data-theme=&quot;e&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Driving Directions - Step &amp;lt;cfoutput&amp;gt;#url.step# of #arrayLen(session.data)#&amp;lt;/cfoutput&amp;gt;&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;cfoutput&amp;gt;
+	&amp;lt;h1&amp;gt;Step #url.step#&amp;lt;/h1&amp;gt;
+	&amp;lt;p&amp;gt;
+	&amp;lt;b&amp;gt;Duration:&amp;lt;/b&amp;gt; #step.duration#&amp;lt;br/&amp;gt;
+	&amp;lt;b&amp;gt;Distance:&amp;lt;/b&amp;gt; #step.distance#&amp;lt;br/&amp;gt;
+	&amp;lt;/p&amp;gt;
+	&amp;lt;p&amp;gt;
+	#step.text#
+	&amp;lt;/p&amp;gt;		
+
+	&amp;lt;p&amp;gt;
+	&amp;lt;img src=&quot;http://maps.google.com/maps/api/staticmap?center=#step.endlat#,#step.endlon#&amp;zoom=14&amp;size=200x200&amp;maptype=roadmap
+</code></pre>
+<p>&amp;sensor=false&quot;&gt;
+&lt;/p&gt;</p>
+<pre><code>	&amp;lt;div data-inline=&quot;true&quot;&amp;gt;
+		&amp;lt;cfif url.step is 1&amp;gt;
+			&amp;lt;a href=&quot;&quot; data-role=&quot;button&quot; data-theme=&quot;c&quot; data-inline=&quot;true&quot;&amp;gt;Previous&amp;lt;/a&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;a href=&quot;driving.cfm?step=#url.step-1#&quot; data-role=&quot;button&quot; data-inline=&quot;true&quot;&amp;gt;Previous&amp;lt;/a&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+		&amp;lt;cfif url.step is arrayLen(session.data)&amp;gt;
+			&amp;lt;a href=&quot;&quot; data-role=&quot;button&quot; data-theme=&quot;c&quot; data-inline=&quot;true&quot;&amp;gt;Next&amp;lt;/a&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;a href=&quot;driving.cfm?step=#url.step+1#&quot; data-role=&quot;button&quot; data-inline=&quot;true&quot;&amp;gt;Next&amp;lt;/a&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+	
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;footer&quot;&amp;gt;
+	&amp;lt;h4&amp;gt;Page Footer&amp;lt;/h4&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>And that's it! As I said, this code is brittle. You will notice that if geolocation or driving directions fail we just use an Alert. There are <b>much</b> nicer things we could do. For example, we could ask the user where they are. If driving directions fail we could do what most places do and assume you are coming in from the closest major highway. But - hopefully you can see how easy it is to add in complex services like Google's driving directions within a simple jQuery Mobile site. To try this demo, hit the button below. But please - do not stress out if it fails for you. As I said, it is brittle, was built fast, etc, and at least <i>kind</i> of works.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/march92011/"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<p>I've included the full code for this demo as an attachment to this blog entry.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fdrivingdemo%2Ezip'>Download attached file.</a></p></p>
+}

@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>This may fall into the category of &quot;so obvious I'm the only one who didn't get it&quot;, but I just had to share it. I'm preparing a blog post where I've got an intentional error in my JavaScript code. I noticed that it wasn't showing up in the Firefox console though. I added a console.log message before the error - and it showed up - but my error never did.</p>
+<!--more-->
+<p>Check out the screen shot below:</p>
+<img src="https://static.raymondcamden.com/images/Screenshot_8_16_13_7_04_AM.png" />
+<p>Notice that CSS warnings are showing up - which is cool - and &quot;1&quot; is my console.log message. But my JavaScript error isn't there. I clicked the console drop down to see what options were there:</p>
+<img src="https://static.raymondcamden.com/images/Screen Shot 2013-08-16 at 7.06.24 AM.png" />
+<p>Yep - logging of errors is enabled. So what the heck? Turns out I had to <strong>also</strong> check the options on the JavaScript tab:</p>
+<img src="https://static.raymondcamden.com/images/Screen Shot 2013-08-16 at 7.07.25 AM.png" />
+<p>Ugh. I can't imagine why Errors would be turned off, but maybe it's a sensible default for some reason. That complaint aside - I have to say I <strong>really</strong> like the look of the console.</p>
+}

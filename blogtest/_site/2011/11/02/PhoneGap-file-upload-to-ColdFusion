@@ -1,0 +1,117 @@
+<h1>Post</h1>
+
+<p>This came up on the <a href="https://groups.google.com/forum/#!forum/phonegap">PhoneGap Forums</a> today so I thought I'd take a quick look at how PhoneGap handles file uploads. Turns out there is <i>really</i> nice support for it built-in, but you can quickly run into an issue with ColdFusion if you don't know one little tip.</p>
+<!--more-->
+<p>
+<p>My demo application will make use of PhoneGap's <a href="http://docs.phonegap.com/en/1.0.0/phonegap_file_file.md.html#FileTransfer">FileTransfer</a> object. What's nice is that the PhoneGap team includes a full demo that makes use of your device's photo library. I decided I'd use this demo to post a file to ColdFusion and perform a few quick image manipulations to it. Let's begin with the PhoneGap portion of the code. My HTML is rather simple. I've got a button and some elements that will end up storing results later on.</p>
+<p>
+<code>
+<p>&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=320; user-scalable=no&quot; /&gt;
+&lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+&lt;title&gt;Image Upload Example&lt;/title&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;master.css&quot; type=&quot;text/css&quot; media=&quot;screen&quot; title=&quot;no title&quot; charset=&quot;utf-8&quot;&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;phonegap-1.1.0.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;xui-2.3.0.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;main.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body onload=&quot;init();&quot;&gt;</p>
+<pre><code>&amp;lt;button id=&quot;picSelect&quot;&amp;gt;Select Picture&amp;lt;/button&amp;gt;
+
+&amp;lt;div id=&quot;status&quot;&amp;gt;&amp;lt;/div&amp;gt;
+
+&amp;lt;img id=&quot;resultpic&quot;&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>As you can guess, the main logic is in main.js. Let's take a look over there.</p>
+<p>
+<code>
+<p>function init() {
+document.addEventListener(&quot;deviceready&quot;, deviceReady, true);
+}</p>
+<p>function errorHandler(e) {
+/*
+FileTransferError.FILE_NOT_FOUND_ERR = 1;
+FileTransferError.INVALID_URL_ERR = 2;
+FileTransferError.CONNECTION_ERR = 3;
+*/
+alert(&quot;Error: &quot;+JSON.stringify(e));
+}</p>
+<p>function picDone(loc) {
+x$(&quot;#status&quot;).html(&quot;after&quot;,&quot;About to upload your picture...&quot;);</p>
+<pre><code>var options = new FileUploadOptions();
+options.fileKey=&quot;file&quot;;
+options.fileName=loc.substr(loc.lastIndexOf('/')+1);
+options.mimeType=&quot;image/jpeg&quot;;
+//Thank you Steve Rittler! http://www.countermarch.com/blog/index.cfm/2011/10/27/PhoneGap-FileTransfer-and-ColdFusion
+options.chunkedMode=false;
+
+var ft = new FileTransfer();
+ft.upload(loc, &quot;http://192.168.1.105/test3a.cfm&quot;, fileUploaded, errorHandler, options);
+</code></pre>
+<p>}</p>
+<p>function fileUploaded(r) {
+x$(&quot;#status&quot;).html(&quot;And we're done!&quot;);
+x$(&quot;#resultpic&quot;).attr(&quot;src&quot;, r.response);
+}</p>
+<p>function deviceReady() {</p>
+<pre><code>x$(&quot;#picSelect&quot;).touchstart(function(e) {
+    navigator.camera.getPicture(picDone,errorHandler,{sourceType:Camera.PictureSourceType.PHOTOLIBRARY, destinationType:Camera.DestinationType.FILE_URI,quality:50}); 
+});
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Let's walk through this, starting with the deviceReady function. That's run because I added a listener to it in my init function and is a way to ensure I can do &quot;cool device stuff&quot; with the PhoneGap APIs. In case you're curious about the x$ stuff - that's just me playing with <a href="http://xuijs.com/">xui.js</a>, a replacement for jQuery. I'm not sure how I feel about it yet - ask me next week.</p>
+<p>
+<p>Any way, you can see where we bind to the button element's touch event. When run, we ask the device to get a picture. PhoneGap allows you to go the camera or to the storage for the picture. In this case I went to my storage. Once the picture is taken, we then begin the file upload process. This is in the function picDone. The code here is pretty much ripped right from the PhoneGap docs, with <b>one crucial difference</b>. Notice the call out to a <a href="http://www.countermarch.com/blog/index.cfm/2011/10/27/PhoneGap-FileTransfer-and-ColdFusion">blog post</a> by Steve Rittler. Apparently the upload is using chunked form data. ColdFusion can't handle this. For the life of me though I thought it was an Apache issue. I got a 411 error in Apache, but nothing in ColdFusion. I'm still not convinced it <i>is</i> a ColdFusion, but at the end of the day, Steve's change worked fine. By the way, &quot;fileKey&quot; is simply the <i>name</i> of the form field. You will need to remember this when we get over to the server side.</p>
+<p>
+<p>Finally, our file upload handler fileUploaded() assumes we are getting a URL back. It then simply takes that URL and assigns it to the image. Here's a few screen shots. First, the application as it begins:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/device-2011-11-02-161436.png" />
+<p>
+<p>Next - the image picker....</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/shot22.png" />
+<p>
+<p>and finally, the result:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/shot31.png" />
+<p>
+<p>The server side code is rather trivial:</p>
+<p>
+<code>
+&lt;cfsetting enablecfoutputonly="true"&gt;
+<p>&lt;cfif structKeyExists(form, &quot;file&quot;)&gt;
+&lt;cfset destination = getTempDirectory()&gt;</p>
+<pre><code>&amp;lt;cffile action=&quot;upload&quot; filefield=&quot;file&quot; destination=&quot;#destination#&quot; nameconflict=&quot;makeunique&quot; result=&quot;result&quot;&amp;gt;
+
+&amp;lt;cfif result.fileWasSaved&amp;gt;
+	&amp;lt;cfset theFile = result.serverDirectory &amp; &quot;/&quot; &amp; result.serverFile&amp;gt;
+	&amp;lt;cfif isImageFile(theFile)&amp;gt;
+		&amp;lt;!--- copy to web root with new name ---&amp;gt;
+		&amp;lt;cfset newName = expandPath(&quot;./&quot;) &amp; createUUID() &amp; &quot;.jpg&quot;&amp;gt;
+		&amp;lt;cfset fileMove(theFile, newName)&amp;gt;
+		&amp;lt;!--- resize to a thumbnail and grayscale for the hell of it ---&amp;gt;
+		&amp;lt;cfset img = imageRead(newName)&amp;gt;
+		&amp;lt;cfset imageScaleToFit(img, 200,200)&amp;gt;
+		&amp;lt;cfset imageGrayScale(img)&amp;gt;
+		&amp;lt;cfset imageWrite(img)&amp;gt;
+		&amp;lt;cfoutput&amp;gt;http://192.168.1.105/#getFileFromPath(newName)#&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfset fileDelete(theFile)&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>
+<p>You can see I handle the file upload, do some basic checking, and if it is an image, I scale the size and gray scale the color. I then simply output the URL. I could have written this as a CFC of course and normally would.  Outside of the darn chunked error, this is a rather simple process. I'm not sure why this chunked option isn't documented (I posted as such to the forums), but now that I'm past it, I'm pretty pleased with how easy PhoneGap makes this.</p>
+}

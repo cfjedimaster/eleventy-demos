@@ -1,0 +1,126 @@
+<h1>Post</h1>
+
+<p>A reader asked me earlier this week if I could show an example of search, with paged results, under the <a href="http://www.jquerymobile.com">jQuery Mobile</a> framework. I whipped up a simple demo in five or so minutes. This is not a testament to my coding ability, but rather to just how fracking cool jQuery Mobile is. Before I begin though so important disclaimers. This was built using jQuery Mobile Alpha 3. If you are currently wearing a jetpack then you are reading this in the future and should expect that the code I show here may not quite work the same in the final version of jQuery Mobile. Also - I've been using jQuery Mobile for all of one month. Take my &quot;solution&quot; with a huge grain of salt. Make that two grains just to be safe. Ok, enough with the disclaimers, let's get to work.</p>
+<!--more-->
+<p>
+<p>I began by creating a simple home page for my demo. (Note - I'm not going to cover every little detail of how jQuery Mobile works here - for that, please consult the <a href="http://jquerymobile.com/demos/1.0a3/">docs</a>.)</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt; 
+&lt;html&gt; 
+	&lt;head&gt; 
+	&lt;title&gt;Search Art&lt;/title&gt; 
+	&lt;link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" /&gt;
+	&lt;script src="http://code.jquery.com/jquery-1.5.min.js"&gt;&lt;/script&gt;
+	&lt;script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt; 
+&lt;body&gt; 
+<p>&lt;div data-role=&quot;page&quot; data-theme=&quot;e&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;h1&amp;gt;Art Search&amp;lt;/h1&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;div data-inline=&quot;true&quot;&amp;gt;
+	&amp;lt;form action=&quot;search.cfm&quot; method=&quot;post&quot;&amp;gt;
+	&amp;lt;input type=&quot;search&quot; name=&quot;search&quot; data-inline=&quot;true&quot;&amp;gt; &amp;lt;input type=&quot;submit&quot; value=&quot;Search&quot; data-inline=&quot;true&quot;&amp;gt;
+	&amp;lt;/form&amp;gt;
+	&amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>You can see I include the relevant libraries on top and my content is really just a simple form. The search form type isn't supported by all clients, but jQuery Mobile (jqm from now on) has unicorn magic and can make it work pretty much anywhere:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip31.png" />
+<p>
+<p>So - notice the form posts to search.cfm. Let's look at that.</p>
+<p>
+<code>
+<p>&lt;cfparam name=&quot;url.search&quot; default=&quot;&quot;&gt;
+&lt;cfparam name=&quot;form.search&quot; default=&quot;#url.search#&quot;&gt;
+&lt;cfparam name=&quot;url.start&quot; default=&quot;1&quot;&gt;
+&lt;cfset perpage = 10&gt;
+&lt;cfif len(trim(form.search))&gt;
+&lt;cfset search = &quot;%&quot; &amp; trim(form.search) &amp; &quot;%&quot;&gt;
+&lt;cfquery name=&quot;getart&quot;&gt;
+select 	artname, price, description
+from	art
+where	artname like &lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#search#&quot;&gt;
+or		description like &lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#search#&quot;&gt;
+&lt;/cfquery&gt;
+&lt;cfelse&gt;
+&lt;cfset noSearch = true&gt;
+&lt;/cfif&gt;
+&lt;cfif not isNumeric(url.start) or url.start lte 0 or round(url.start) neq url.start&gt;
+&lt;cfset url.start = 1&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;div data-role=&quot;page&quot; data-theme=&quot;e&quot;&gt;</p>
+<pre><code>&amp;lt;div data-role=&quot;header&quot;&amp;gt;
+	&amp;lt;a href=&quot;&quot; data-rel=&quot;back&quot;&amp;gt;Back&amp;lt;/a&amp;gt;
+	&amp;lt;h1&amp;gt;Search Results&amp;lt;/h1&amp;gt;
+	&amp;lt;a href=&quot;index.cfm&quot; data-theme=&quot;b&quot;&amp;gt;Home&amp;lt;/a&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div data-role=&quot;content&quot;&amp;gt;	
+	&amp;lt;cfif structKeyExists(variables,&quot;noSearch&quot;)&amp;gt;
+		&amp;lt;p&amp;gt;
+		Please &amp;lt;a href=&quot;index.cfm&quot;&amp;gt;enter a search&amp;lt;/a&amp;gt; term.
+		&amp;lt;/p&amp;gt;
+	&amp;lt;cfelseif getart.recordCount is 0&amp;gt;
+		&amp;lt;cfoutput&amp;gt;
+		&amp;lt;p&amp;gt;
+		Sorry, there were no results for #form.search#.
+		&amp;lt;/p&amp;gt;
+		&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfloop query=&quot;getart&quot; startrow=&quot;#url.start#&quot; endrow=&quot;#url.start+perpage-1#&quot;&amp;gt;
+			&amp;lt;cfoutput&amp;gt;
+			&amp;lt;p&amp;gt;
+			#currentrow# &amp;lt;b&amp;gt;#artname#&amp;lt;/b&amp;gt;
+			#description#
+			&amp;lt;/p&amp;gt;
+			&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+
+		&amp;lt;div data-inline=&quot;true&quot;&amp;gt;
+		&amp;lt;cfoutput&amp;gt;
+		&amp;lt;cfif url.start gt 1&amp;gt;
+			&amp;lt;a href=&quot;search.cfm?search=#urlEncodedFormat(form.search)#&amp;start=#max(1,url.start-perpage)#&quot; data-role=&quot;button&quot; data-inline=&quot;true&quot;&amp;gt;Previous&amp;lt;/a&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;!--- Didn't work... &amp;lt;a href=&quot;&quot; data-role=&quot;button&quot; disabled data-inline=&quot;true&quot;&amp;gt;Previous&amp;lt;/a&amp;gt;---&amp;gt;
+		&amp;lt;/cfif&amp;gt;
+		&amp;lt;cfif url.start+perpage-1 lt getart.recordCount&amp;gt;
+			&amp;lt;a href=&quot;search.cfm?search=#urlEncodedFormat(form.search)#&amp;start=#url.start+perpage#&quot; data-role=&quot;button&quot; data-theme=&quot;b&quot; data-inline=&quot;true&quot;&amp;gt;Next&amp;lt;/a&amp;gt;
+		&amp;lt;cfelse&amp;gt;
+			&amp;lt;!--- See above...
+			&amp;lt;a href=&quot;&quot; data-role=&quot;button&quot; data-theme=&quot;b&quot; disabled data-inline=&quot;true&quot;&amp;gt;Next&amp;lt;/a&amp;gt;
+			---&amp;gt;
+		&amp;lt;/cfif&amp;gt;	
+		&amp;lt;/cfoutput&amp;gt;
+		&amp;lt;/div&amp;gt;		
+		
+
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>
+<p>Ok, we've got a bit more going on here then before. The top portion handles my search. I'm using ColdFusion (of course), but any server side language would suffice. Scroll on down to inside the div with the data-role content. My first two IF blocks handle no search or no results. The final block handles outputting the results. For my pagination I used the same old code I've used in the past. The only difference is that I made use of JQM's ability to automatically turn links into buttons. For the most part this works really well. What did not work for me, and you can see it commented out above, was passing a &quot;disabled&quot; along. I probably could have simply used a 'grey' theme for my buttons. But for now I simply hid them. Here is an example:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip32.png" />
+<p>
+<p>Not bad, right? You can demo this here:</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/feb252011/"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<p>For the most part, I think you see that nothing special was done to make this work. JQM does so much of the work for you that I literally just had to use the right markup to get it to look pretty. If you test this in your browser, mobile or not, you will see my form post, and navigation, is all being done via Ajax. Do you see any JavaScript in my code? Any? Nope? That's right. jQuery Mobile is so powerful it could even defeat Chuck Norris probably.  I decided to kick things up a notch though and work on a slightly sexier version...</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/feb252011/index2.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+<p>
+<p>This version was done using simple UL tags. You can view source to see it yourself. It's an incredibly small modification. The detail page you see took an additional 2 minutes of work.</p>
+}

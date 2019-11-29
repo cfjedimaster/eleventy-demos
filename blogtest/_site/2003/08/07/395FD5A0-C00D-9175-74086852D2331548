@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Need to grab all the active sessions of a CF application? I've written nice hacks before, even a nice CFC based one for CFLib, but the folks over at <a href="http://www.rewindlife.com/">rewindlife</a> found an even nicer <a href="http://www.rewindlife.com/archives/000046.cfm">solution</a>. It uses the internal guts of CFMX, so it's not supported, but it works very nicely.</p>
+}

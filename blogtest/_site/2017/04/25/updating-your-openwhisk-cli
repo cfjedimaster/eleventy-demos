@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>This is just a quick reminder that the <a href="https://developer.ibm.com/openwhisk/">OpenWhisk</a> CLI tool updates often, and unfortunately, doesn't provide a warning when it has become out of date. I've yet to see things break, of course, but obviously as a developer you want to ensure you have the latest and greatest installed.</p>
+<p>First - you can get information about your install by running <code>wsk property get</code>:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/4/owcli1.png" alt="Version info"></p>
+<p>You can see the CLI version highlighted above. You can compare this against the binaries hosted here:</p>
+<p>https://openwhisk.ng.bluemix.net/cli/go/download/</p>
+<p>Just today I saw a newer version was released. I downloaded the binary, copied it over, and verified the update:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/4/owcli2.png" alt="OMG NEW CLI HOTNESS"></p>
+<p>Kinda icky for those of us used to doing everything via <code>npm</code>, but hopefully it will get a bit nicer in the future. With OpenWhisk stuff updating rapdily, I've been checking for updates once a week or so.</p>
+<p>p.s. And as a total random aside, those screenshots are from the Windows Bash Unix subsystem which is running <em>really</em> freaking good.</p>
+}

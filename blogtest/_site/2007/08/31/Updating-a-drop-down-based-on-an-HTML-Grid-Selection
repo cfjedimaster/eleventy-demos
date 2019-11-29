@@ -1,0 +1,39 @@
+<h1>Post</h1>
+
+<p>A user on cf-talk today asked if you could bind a drop down to an HTML grid. I tried it and got an error. The drop down expects a query or 2d array for it's source. Too bad. But - there is a solution. I blogged a few weeks ago about noting grid changes (<a href="http://www.raymondcamden.com/index.cfm/2007/8/9/Reacting-to-grid-row-selection">Reacting to a grid row selection</a>). This technique uses the CFAJAXPROXY tag to monitor the grid. In my previous blog entry, I just did an alert, but it's trivial to update a drop down as well. Consider the following example:</p>
+<more>
+<code>
+&lt;cfajaxproxy bind="javascript:fixCat({entries.category})"&gt;
+<p>&lt;script&gt;
+function fixCat(c) {
+var dd = document.getElementById('mycat');
+console.log(dd.options.length);
+for(var i=0; i&lt;dd.options.length;i++) {
+if(dd.options[i].value==c) dd.selectedIndex=i;
+}
+}
+&lt;/script&gt;
+&lt;cfset q = queryNew(&quot;category,title&quot;)&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;10&quot;&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset rcat = listGetAt(&quot;Cat1,Cat2,Cat3&quot;, randRange(1,3))&gt;
+&lt;cfset querySetCell(q,&quot;category&quot;, rcat)&gt;
+&lt;cfset querySetCell(q,&quot;title&quot;, &quot;Title #x#&quot;)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;entries&quot; format=&quot;html&quot; query=&quot;q&quot; width=&quot;600&quot; bindOnLoad=&quot;true&quot;&gt;
+&lt;cfgridcolumn name=&quot;category&quot; display=&quot;true&quot;&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;title&quot; header=&quot;Title&quot;&gt;
+&lt;/cfgrid&gt;</p>
+<p>&lt;cfinput type=&quot;text&quot; name=&quot;thetitle&quot; bind=&quot;{entries.title}&quot;&gt;
+&lt;cfselect name=&quot;mycat&quot; id=&quot;mycat&quot;&gt;
+&lt;option value=&quot;Cat1&quot;&gt;Cat1
+&lt;option value=&quot;Cat2&quot;&gt;Cat2
+&lt;option value=&quot;Cat3&quot;&gt;Cat3
+&lt;/cfselect&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>So a good part of the code is my fake query and grid. You can pretty much ignore that. Note the first line uses cfajaxproxy with a bind attribute. This is what will fire and pass the proper column value to my function. I then just check the drop down option values and select it when I find a match.</p>
+<p>In the grid - why did I have display=&quot;true&quot;? Well normally this would be a hidden column, but I wanted to double check my work and ensure that the code was working. Not that I make mistakes of course.</p>
+<p>Off Topic P.S.: Today I discovered &quot;Apocalpso&quot; by Mew. Dang what a good song. I've played it about 10 times now. Of course, every time I hear a really cool song - the first thing I want to do is try to play it in Guitar Hero II!</p>
+}

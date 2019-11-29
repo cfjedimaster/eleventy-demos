@@ -1,0 +1,73 @@
+<style>
+[v-cloak] {display: none}
+.wrapper { 
+	display: grid;
+	grid-template-columns: 33% 33% 33%;
+}
+</style>
+
+<h1>Stats View Test</h1>
+
+<div id="app" v-cloak v-if="stats">
+	<h2>Basic Stats</h2>
+	<ul>
+		<li>Total Posts: {{ stats.totalPosts }}</li>
+		<li>Total Words: {{ stats.totalWords }} (average per post: {{ stats.avgWords }})</li>
+		<li>First Post: {{ stats.firstPost.title }} ( {{ stats.firstPost.date }} )</li>
+		<li>Last Post: {{ stats.lastPost.title }} ( {{ stats.lastPost.date }} )</li>
+	</ul>
+
+	<div class="wrapper">
+		<div> 
+		<h2>Categories</h2>
+		<ul>
+			<li v-for="(count,cat) in stats.categories">{{ cat }} ({{count}} posts)</li>
+		</ul>
+		</div>
+		<div>
+		<h2>Tags</h2>
+		<ul>
+			<li v-for="(count,tag) in stats.tags">{{ tag }} ({{count}} posts)</li>
+		</ul>
+		</div>
+	</div>
+
+	<div class="wrapper">
+		<div>
+			<h2>Years</h2>
+			<ul>
+				<li v-for="(count,year) in stats.years">{{ year }} ({{count}} posts)</li>
+			</ul>
+		</div>
+		<div>
+			<h2>Months</h2>
+			<ul>
+				<li v-for="(count,month) in stats.months">{{ month }} ({{count}} posts)</li>
+			</ul>
+		</div>
+		<div>
+			<h2>Day of Week</h2>
+			<ul>
+				<li v-for="(count,dow) in stats.days">{{ dow }} ({{count}} posts)</li>
+			</ul>
+		</div>
+	</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+const app = new Vue({
+	el: '#app', 
+	data: {
+		stats:null
+	},
+	created() {
+		fetch('/stats.json')
+		.then(res => res.json())
+		.then(res => {
+			console.log(res);
+			this.stats = res;
+		});
+	}
+});
+
+</script>

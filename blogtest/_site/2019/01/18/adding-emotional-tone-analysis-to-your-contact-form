@@ -1,0 +1,190 @@
+<h1>Post</h1>
+
+<p>A few days ago I <a href="https://www.raymondcamden.com/2019/01/15/customized-form-handling-on-netlify-with-serverless-functions">blogged</a> about adding customized form handling to your static site at Netlify. This was done via a simple serverless function that listened for form submissions and used the <a href="https://sendgrid.com/">SendGrid</a> API to send an email. While this works just fine, I actually had something more interesting in mind that I had to delay a bit. Imagine if instead of just getting emails about contact form submissions, you actually got something with a bit of a warning in terms of their content:</p>
+<img src="https://static.raymondcamden.com/images/2019/01/tone1.jpg" alt="Example of tone analysis in the subject of the email" class="imgborder imgcenter">
+<p>In the image above, you can see some basic information about the contents of the email based on their tone. This would be a great way to know what to prioritize in terms of reading and responding. To build this, I made use of the <a href="https://www.ibm.com/watson/services/tone-analyzer/">IBM Watson Tone Analyzer</a> service. I've used this multiple times in the past with various serverless demos with OpenWhisk, but I thought I'd give it a shot with Netlify and Lambda. Here's the full script (and be sure to read the <a href="https://www.raymondcamden.com/2019/01/15/customized-form-handling-on-netlify-with-serverless-functions">last entry</a> for context on how it works) with the new feature added:</p>
+<pre><code class="language-js">const helper = require('sendgrid').mail;
+const SG_KEY = process.env.SENDGRID;
+
+const axios = require('axios');
+
+const ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3')
+const TA_KEY = process.env.TONEANALZYER;
+
+exports.handler = async (event, context, callback) =&gt; {
+	console.log('submission created error testing');
+	
+	let payload = JSON.parse(event.body).payload;
+	let analysis = '';
+	let toneString = '';
+
+	//lets analyze the text
+	
+	if(payload.data.comments &amp;&amp; payload.data.comments.length) {
+		analysis = await analyze(payload.data.comments);
+
+		/*
+		if we get results, its an array of tones, ex:
+
+		[ { score: 0.633327, tone_id: 'fear', tone_name: 'Fear' },
+		{ score: 0.84639, tone_id: 'tentative', tone_name: 'Tentative' } ]
+
+		So what we will do is create an analysis string based on tone_names where score &gt; 0.5
+		*/
+		analysis = analysis.filter(t =&gt; t.score &gt; 0.5);
+		// and now we'll build an array of just tones
+		let tones = analysis.map(t =&gt; t.tone_name);
+		// and then a string
+		toneString = tones.join(', ');
+	} 
+
+	// note - no validation - booooo
+	let from_email = new helper.Email(payload.data.email);
+	let to_email = new helper.Email('raymondcamden@gmail.com');
+	let subject = 'Contact Form Submission';
+
+	if(toneString.length &gt; 0) subject += ` [Tone: ${toneString}]`;
+
+	let date = new Date();
+	let content = `
+Form Submitted at ${date}
+--------------------------------
+`;
+
+	for(let key in payload.data) {
+		content += `
+${key}:			${payload.data[key]}
+`;
+	}
+
+	let mailContent = new helper.Content('text/plain', content);
+	let mail = new helper.Mail(from_email, subject, to_email, mailContent);
+	let sg = require('sendgrid')(SG_KEY);
+
+	let request = sg.emptyRequest({
+		method: 'POST',
+		path: '/v3/mail/send',
+		body: mail.toJSON()
+	});
+		
+	await sg.API(request, function(error, response) {
+		if(error) {
+			console.log(error.response.body);
+		} else console.log(response);
+	});
+	console.log('And done...');
+};
+
+async function analyze(str) {
+	console.log('going to tone analzye '+str);
+	
+	let toneAnalyzer = new ToneAnalyzerV3({
+		username: 'apikey',
+		password: TA_KEY,
+		version: '2017-09-21',
+		url: 'https://gateway.watsonplatform.net/tone-analyzer/api/'
+	});
+
+	const result = await new Promise((resolve, reject) =&gt; {
+		toneAnalyzer.tone(
+			{
+				tone_input: str,
+				content_type: 'text/plain'
+			},
+			function(err, tone) {
+				if (err) {
+					console.log(err);
+					reject(err);
+				} else {
+					resolve(tone.document_tone.tones);
+				}
+			}
+		);
+	});
+	return result;
+
+}
+</code></pre>
+<p>Alright, let's break this down. First, I load in the <a href="https://www.npmjs.com/package/watson-developer-cloud">Watson Node.js SDK</a>. While this isn't necessary, I had issues using the REST API for Tone Analysis directly and decided to simply take the easy route out and use their package.</p>
+<pre><code class="language-js">const ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3')
+const TA_KEY = process.env.TONEANALZYER;
+</code></pre>
+<p>Where does the <code>process.env.TONEANALZYER</code> key come from? Don't forget you can define custom environment variables for your Netlify sites.</p>
+<img src="https://static.raymondcamden.com/images/2019/01/tone2.jpg" alt="Example of Netlify's settings for build variables" class="imgborder imgcenter">
+<p>Next, let's see if we have data to check. In this case I'm assuming I've got a field called <code>comments</code> and it's a block of text. You can make this more generic, or even use hidden form fields as a way of saying what should be checked.</p>
+<pre><code class="language-js">let analysis = '';
+let toneString = '';
+
+//lets analyze the text
+	
+if(payload.data.comments &amp;&amp; payload.data.comments.length) {
+	analysis = await analyze(payload.data.comments);
+</code></pre>
+<p>Note the fancy use of <code>await</code>. As a warning, please note I'm still fumbling my way around <code>async/await</code>. Let's look at <code>analyze</code>:</p>
+<pre><code class="language-js">async function analyze(str) {
+	console.log('going to tone analzye '+str);
+	
+	let toneAnalyzer = new ToneAnalyzerV3({
+		username: 'apikey',
+		password: TA_KEY,
+		version: '2017-09-21',
+		url: 'https://gateway.watsonplatform.net/tone-analyzer/api/'
+	});
+
+	const result = await new Promise((resolve, reject) =&gt; {
+		toneAnalyzer.tone(
+			{
+				tone_input: str,
+				content_type: 'text/plain'
+			},
+			function(err, tone) {
+				if (err) {
+					console.log(err);
+					reject(err);
+				} else {
+					resolve(tone.document_tone.tones);
+				}
+			}
+		);
+	});
+	return result;
+
+}
+</code></pre>
+<p>This basically just wraps the call to the Tone Analyzer API and returns the result data. I kept this mostly generic. Now back to the caller:</p>
+<pre><code class="language-js">/*
+if we get results, its an array of tones, ex:
+
+[ { score: 0.633327, tone_id: 'fear', tone_name: 'Fear' },
+{ score: 0.84639, tone_id: 'tentative', tone_name: 'Tentative' } ]
+
+So what we will do is create an analysis string based on tone_names where score &gt; 0.5
+*/
+analysis = analysis.filter(t =&gt; t.score &gt; 0.5);
+// and now we'll build an array of just tones
+let tones = analysis.map(t =&gt; t.tone_name);
+// and then a string
+toneString = tones.join(', ');
+</code></pre>
+<p>As the comments say, you get an array of tones back and they do not appear to be sorted. I did a quick &quot;quality&quot; filter by removing tones with a score less than 0.5. That was arbitrary. I then map out just the name and finally make a string.</p>
+<p>By the way, I'm 99% sure those three things could be done in one fancy line of JavaScript by someone who can work at Google. I don't work at Google.</p>
+<p>The final bit is to simply add the tones if we got em:</p>
+<pre><code class="language-js">if(toneString.length &gt; 0) subject += ` [Tone: ${toneString}]`;
+</code></pre>
+<p>And that's it! So let's have some fun with this. Warning, adult language incoming. If the adult language doesn't make sense to you, ask your kids.</p>
+<pre><code class="language-text">I AM SO FUCKING MAD AT YOU I WISH YOU WOULD DIE I HATE YOUR SERVICE.
+I HATE EVERYTHING YOU DO.
+I HATE KITTENS.
+i HATE PUPPIES.
+I HATE BEER.
+
+OH MY GOD IM SO MAD AT EVERYTHING
+</code></pre>
+<p>This returned what you would expect: <code>Contact Form Submission [Tone: Anger]</code></p>
+<p>Now check this input:</p>
+<pre><code class="language-text">i'm so happy with your service, but i'm nervous that if i commit to a monthly payment i'll not actually make use of it enough to get value. can you give me some more details on what i get with this service and help convince me it's worth it?
+</code></pre>
+<p>While I know Watson isn't perfect, but wow, check the result: <code>Contact Form Submission [Tone: Tentative]</code> I'd consider that near perfect.</p>
+<p>You could imagine connecting this with some rules in your mail server such that customer service folks with a history of handling angry customers automatically get those emails, and so on. Anyway, let me know what you think by leaving a comment below. As a reminder, this is all being done via a so-called &quot;static&quot; site. Pretty damn impressive, right?</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/lQ1hJaV0yLM?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Aliyah Jamous</a> on Unsplash</i></p>
+}

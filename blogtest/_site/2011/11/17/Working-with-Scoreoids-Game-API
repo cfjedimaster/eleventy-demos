@@ -1,0 +1,363 @@
+<h1>Post</h1>
+
+<p><b>Edited on February 26, 2012:</b> Scoreoid has recently gone through an API update. The demo here will no longer work, but the changes are not huge. I got my own local copy running well. If anyone wants an updated ColdFusion wrapper, please let me know.</p>
+<p>
+<p>This morning I checked out Jesse Freeman's <a href="http://codewarmup.jessefreeman.com/2011/11/17/create-a-leaderboard-with-scoreoid/">daily 'Code Warmup'</a> and discovered a new service called <a href="http://www.scoreoid.net/">Scoreoid</a>. Scoreoid is a free service that provides basic game stat management, specifically it allows you to offload the chore of tracking scores, players, achievements, and game stats. You may ask why you would even need to bother with that. Those tasks wouldn't be too difficult with a server-side language like ColdFusion. But for folks developing mobile games, being able to skip the server completely is <i>very</i> compelling. And as much as I love to write server side code all day, offloading tasks to someone dedicated to it is almost always worth taking a look at. You can see a full list of <a href="http://www.scoreoid.net/features/">features</a> on the site itself. Did I mentioned it was free? Yep - I got my email confirmation two minutes after signing up. They will soon be offering a Pro version of the service which will cost money.  Oddly you have to sign up and administer your games at their <a href="http://www.scoreoid.com">dot com</a> site. So you go to .net for your docs and .com for your console. Once I figured that out though it was smooth sailing. The API is very easy to use and supports both XML and JSON responses.</p>
+<!--more-->
+<p/>
+<p>To test the service out, I decided to build a very simple game. I called it OCD RPG. The game would track one basic stat, a score, and based on that assign a score. It begins by simply prompting for a username:</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/ScreenClip227.png" />
+<p/>
+<p>After entering your username, the game screen is presented.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip228.png" />
+<p/>
+<p>To play the game, you just click the button. That's it.</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip229.png" />
+<p/>
+<p>Let's take a quick look a the code behind this. The code here really isn't terribly relevant, but I want to show the initial state so you can see how I mark it up later to make use of Scoreoid's API.</p>
+<p/>
+<p>First, the HTML:</p>
+<p/>
+<code>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+<pre><code>&amp;lt;head&amp;gt;
+&amp;lt;title&amp;gt;OCD RPG&amp;lt;/title&amp;gt;
+&amp;lt;link rel=&quot;stylesheet&quot; href=&quot;bootstrap.min.css&quot;&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;game.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script&amp;gt;
+var game = new gameOb();
+//used for animation duration so I can set it SUPER low during testing
+var animDur = 500;
+$(document).ready(function() {
+
+	function drawGameStats() {
+		$(&quot;#scoreSpan&quot;).text(game.score);
+		$(&quot;#levelSpan&quot;).text(game.level);
+	}
+	
+	$(&quot;#mainGameButton&quot;).click(function() {
+		game.addScore();
+		drawGameStats();
+		$(&quot;#logContainer&quot;).prepend(game.randomLog()+&quot;&amp;lt;br/&amp;gt;&quot;);
+	});
+	
+	$(&quot;#mainForm&quot;).submit(function(e) {
+		$(&quot;#introButton&quot;).trigger(&quot;click&quot;);
+		e.preventDefault();
+	});
+	
+	$(&quot;#introButton&quot;).click(function() {
+		var username = $.trim($(&quot;#username&quot;).val());
+		if(username == '') {
+			$(&quot;#username&quot;).parent().addClass(&quot;error&quot;);				
+			return;
+		} else {
+			$(&quot;#username&quot;).parent().removeClass(&quot;error&quot;);
+			game.init(username);
+			console.log(&quot;Let's get this thing started - user is &quot;+username);	
+			$(&quot;#introDiv&quot;).fadeOut(animDur, function() {
+				$(&quot;#gameContainer&quot;).fadeIn(animDur,function() { drawGameStats(); });
+			});
+		}
+	});
+	
+})
+&amp;lt;/script&amp;gt;
+&amp;lt;style&amp;gt;
+#mainGameButton {
+	padding: 20px;
+	width: 400px;	
+}
+
+#logContainer {
+	height: 200px;
+	overflow:auto;
+	border-style:solid;
+	border-width:thin;
+}
+&amp;lt;/style&amp;gt;
+&amp;lt;/head&amp;gt;
+
+&amp;lt;body&amp;gt;
+
+	&amp;lt;div class=&quot;container&quot;&amp;gt;
+
+	
+		&amp;lt;div id=&quot;introDiv&quot;&amp;gt;
+			&amp;lt;h1&amp;gt;Welcome to OCD RPG&amp;lt;/h1&amp;gt;
+			&amp;lt;p&amp;gt;
+				To begin, please enter your username. This will be used to uniquely identify you on our high score list.
+			&amp;lt;/p&amp;gt;
+			&amp;lt;form id=&quot;mainForm&quot;&amp;gt;
+				&amp;lt;fieldset&amp;gt;
+				&amp;lt;div class=&quot;clearfix &quot;&amp;gt;
+					&amp;lt;input type=&quot;text&quot; id=&quot;username&quot; placeholder=&quot;Username&quot; class=&quot;xlarge&quot; size=&quot;30&quot;&amp;gt;
+					&amp;lt;input type=&quot;button&quot; id=&quot;introButton&quot; value=&quot;Start Game&quot; class=&quot;btn primary&quot;&amp;gt;
+				&amp;lt;/div&amp;gt;
+				&amp;lt;/fieldset&amp;gt;
+
+			&amp;lt;/form&amp;gt;
+			
+		&amp;lt;/div&amp;gt;
+
+		&amp;lt;div id=&quot;gameContainer&quot; style=&quot;display:none&quot;&amp;gt;
+			&amp;lt;h1&amp;gt;Game On!&amp;lt;/h1&amp;gt;
+			&amp;lt;p&amp;gt;
+			&amp;lt;b&amp;gt;Score:&amp;lt;/b&amp;gt; &amp;lt;span id=&quot;scoreSpan&quot;&amp;gt;&amp;lt;/span&amp;gt;
+			&amp;lt;/p&amp;gt;
+			&amp;lt;p&amp;gt;
+			&amp;lt;b&amp;gt;Level:&amp;lt;/b&amp;gt; &amp;lt;span id=&quot;levelSpan&quot;&amp;gt;&amp;lt;/span&amp;gt;
+			&amp;lt;/p&amp;gt;
+			&amp;lt;button id=&quot;mainGameButton&quot; class=&quot;btn&quot;&amp;gt;CLICK ME FOR HAPPY ADVENTURE TIME!&amp;lt;/button&amp;gt;
+			&amp;lt;h2&amp;gt;Log&amp;lt;/h2&amp;gt;
+			&amp;lt;div id=&quot;logContainer&quot;&amp;gt;&amp;lt;/div&amp;gt;
+		&amp;lt;/div&amp;gt;
+		
+	&amp;lt;/div&amp;gt;
+	
+			
+&amp;lt;/body&amp;gt;
+</code></pre>
+<p>&lt;/html&gt;
+</code></p>
+<p>
+<p>You can see two basic blocks of layout. One handles the initial name prompt and the second the main game screen. The JavaScript file is included below..</p>
+<p>
+<code>
+var gameOb = function() {
+<pre><code>var MESSAGES = [
+&quot;You looted gold pieces from the dragon's guest house.&quot;,
+[deleted for space]
+&quot;If you hold CTRL while clicking, you get extra points. Honest.&quot;
+];
+
+this.init = function(user) {
+	this.username = user;
+	this.score = 0;
+	this.level = 1;
+}
+
+this.addScore = function() {
+	//add 1-10 points
+	this.score += this.randRange(5,25)*(Math.ceil(this.level/2));
+	console.log(&quot;need &quot;+this.calculateExperiencePoints(this.level+1)+&quot; for next level&quot;);
+	if(this.score &amp;gt; this.calculateExperiencePoints(this.level+1)) {
+		this.level++;
+	}
+}
+
+//https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Math/random
+this.randRange = function(min,max) {
+	return Math.floor(Math.random() * (max - min) + min);	
+}
+
+
+//All experience level code credit Jesse Freeman - http://codewarmup.jessefreeman.com/2011/11/07/create-a-rpg-style-exp-progress-bar/#comments
+this.calculateExperiencePoints = function(level) {
+	return (level * (level + 1)) * 100;
+}
+
+this.randomLog = function() {
+	return MESSAGES[this.randRange(0,MESSAGES.length)];
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>As the game is rather simple, the only really interesting part is the experience point/level calculator. I used code (well, converted code) Jess Freeman created for an earlier code warmup. I'm treating score essentially like XP, but for naming purposes the game has a score and level property. You can demo this game here:</p>
+<p>
+<p><a href="http://coldfusionjedi.com/demos/2011/nov/17/">http://coldfusionjedi.com/demos/2011/nov/17/</a></p>
+<p>
+<p>Ok, so let's talk Scoreoid. First off, you want to take a look at their <a href="http://wiki.scoreoid.net/">wiki</a> to get an idea as to how their API works. You have methods to get basic game stats, score stats, and player stats. I realized rather quickly that my game doesn't really have a score per se. It's not like a game of pong where you play, hit a score, and the game ends. Like most RPGs, it just... goes. Therefore I decided <i>not</i> to make use of the Score API. Instead, I decided I'd use the <a href="http://wiki.scoreoid.net/category/api/player/">Player API</a>. This API allows you to add/edit/delete players. Player objects are confined to basic game stats. You can't add ad hoc properties. But the fields supported should cover most gaming needs.</p>
+<p>
+<p>I decided I'd make my game do two things:</p>
+<p>
+<ol>
+<li>First, it would register the user with Scoreoid. Basically take in the username and add it to their system. I'm not going to bother with passwords, so right now my system isn't secure in <b>any</b> way, but Scoreoid supports storing passwords and user ids and could handle ensuring you don't add the same player twice. Again, I wanted to keep things simple. So when you say your name is Happy Dan, we add you to Scoreoid.
+<li>Record your current level. I mentioned players have multiple fields. There's two related to level I care about - current_level and unlocked_levels. I'll explain why I care about unlocked_levels later.
+</ol>
+<p>
+<p>So with that being said, I began by creating a basic scoreoid CFC I could configure with my AP and game ID. I also wrote a function to handle adding the player. Scoreoid will return an error if the player exists, but since I don't care, I just ignore it.</p>
+<p>
+<code>
+component {
+<pre><code>variables.rooturl = &quot;https://www.scoreoid.com/api/&quot;;
+
+public function init(required string api, required string game) {
+	variables.api = arguments.api;
+	variables.gameid = arguments.game;
+	return this;
+}
+
+public function addPlayer(required string username) {
+	var result = apiCall(&quot;createPlayer&quot;, {&quot;username&quot;=arguments.username});
+	//Note - we should throw an error if they do - but for now, meh
+}
+
+private function apiCall(required string method,struct args) {
+	var h = new com.adobe.coldfusion.http();        
+    	h.setURL(variables.rooturl &amp; arguments.method);
+    	h.setMethod(&quot;post&quot;);
+    	h.addParam(type=&quot;formfield&quot;, name=&quot;api_key&quot;, value=variables.api);
+    	h.addParam(type=&quot;formfield&quot;, name=&quot;game_id&quot;, value=variables.gameid);
+    	h.addParam(type=&quot;formfield&quot;, name=&quot;response&quot;, value=&quot;json&quot;);
+    	if(structKeyExists(arguments,&quot;args&quot;)) {
+		for(var key in arguments.args) {
+			h.addParam(type=&quot;formfield&quot;, name=key, value=arguments.args[key]);		
+		}		
+	}
+        var result = h.send().getPrefix();
+    	if(!isJSON(result.fileContent)) throw(&quot;Invalid response: #result.fileContent#&quot;);
+        return deserializeJSON(result.fileContent);
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>I created apiCall() to handle running methods against their API in an abstract fashion. You can see how simple this makes the addPlayer call. Since this CFC is going to be cached in the Application scope, I created a new CFC, game, to handle calls from my JavaScript code:</p>
+<p>
+<code>
+component {
+<pre><code>remote function registerPlayer(required string username) {
+
+	//Ask scoreoid to make the player, we ignore any errors since we aren't doing 'real' auth	        	
+	application.scoreoid.addPlayer(arguments.username);
+	
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>That handles adding the user. To store my stats, I created a wrapper for updatePlayerField. Oddly Scoreoid doesn't let you update more than one field at a time, so you have to fire off changes to a player one at a time. Here's the wrapper:</p>
+<p>
+<code>
+public function updatePlayerField(required string username, required string field, required any value) {
+	apiCall("updatePlayerField", {"username"=arguments.username, "field"=arguments.field, "value"=arguments.value});	
+}
+</code>
+<p>
+<p>And game.cfc will get a method to handle this:</p>
+<p>
+<code>
+remote function storePlayer(required string username, required numeric score, required numeric level) {
+	application.scoreoid.updatePlayerField(arguments.username, "current_level", arguments.level);	
+	application.scoreoid.updatePlayerField(arguments.username, "unlocked_levels", arguments.level);	
+}
+</code>
+<p>
+<p>Looking at this now - I should make my Scoreoid wrapper allow for N calls. Even though the API doesn't, my wrapper could handle it behind the scenes. So that's the back end changes - how about the front end? I now record the user after you hit the initial button:</p>
+<p/>
+<code>
+$.post("game.cfc?method=registerPlayer", {username:username}, function() {
+</code>
+<p>
+<p>And I also register a 'heart beat' that pings the server every few seconds.</p>
+<p>
+<code>
+$.post("game.cfc?method=storePlayer", {username:game.username, score:game.score, level:game.level});
+</code>
+<p>
+<p>You can demo this version here: <a href="http://coldfusionjedi.com/demos/2011/nov/17/draft2/">http://coldfusionjedi.com/demos/2011/nov/17/draft2/</a>.</p>
+<p>
+<p>Right away, let me make sure it's clear to everyone that I know this system can be hacked. Easily. I'm sure folks will. I ask that you don't. But I know folks will. -sigh- With the basics built, I played a bit and went backto the Scoreoid site. Their dashboard includes some very nice reporting tools.</p>
+<p>
+<p>Here's an example of their basic stats:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip230.png" />
+<p>
+<p>You can also dig deeper into game stats and see player info as well. Remember earlier when I mentioned I needed to record &quot;unlocked_levels&quot;? When it comes to getting game stats, they only track a subset of player properties. One of them is unlocked_levels. So by tracking that too, I was always to get that data. I wrote wrappers to get top, average, and lowest game stats for a particular game field:</p>
+<p>
+<code>
+public any function getGameAverage(required string field) {
+	return apiCall("getGameAverage",{"field"=arguments.field}).number;	
+}
+<p>public any function getGameLowest(required string field) {
+return apiCall(&quot;getGameLowest&quot;,{&quot;field&quot;=arguments.field}).number;	
+}</p>
+<p>public any function getGameTop(required string field) {
+return apiCall(&quot;getGameTop&quot;,{&quot;field&quot;=arguments.field}).number;	
+}
+</code></p>
+<p>
+<p>And in ColdFusion I could now do:</p>
+<p>
+<code>
+&lt;cfset toplevel = application.scoreoid.getGameTop("unlocked_levels")&gt;
+&lt;cfset lowlevel = application.scoreoid.getGameLowest("unlocked_levels")&gt;
+&lt;cfset avglevel = application.scoreoid.getGameAverage("unlocked_levels")&gt;
+</code>
+<p>
+<p>I also made a call to get players. You can't sort by unlocked_levels, so I made use of <a href="http://www.cflib.org/udf/quicksort">QuickSort</a> from CFLib. This allowed the creation of a basic stats page: <a href="http://coldfusionjedi.com/demos/2011/nov/17/draft2/stats.cfm">http://coldfusionjedi.com/demos/2011/nov/17/draft2/stats.cfm</a>.</p>
+<p>
+<p>That's it. Here's my current Scoreoid CFC if anyone wants to run with it.</p>
+<p>
+<code>
+component {
+<pre><code>variables.rooturl = &quot;https://www.scoreoid.com/api/&quot;;
+
+public function init(required string api, required string game) {
+	variables.api = arguments.api;
+	variables.gameid = arguments.game;
+	return this;
+}
+
+public function addPlayer(required string username) {
+	var result = apiCall(&quot;createPlayer&quot;, {&quot;username&quot;=arguments.username});
+	//Note - we should throw an error if they do - but for now, meh
+}
+
+public any function getGame() {
+	return apiCall(&quot;getGame&quot;)[1].game;	
+}
+
+public any function getGameAverage(required string field) {
+	return apiCall(&quot;getGameAverage&quot;,{&quot;field&quot;=arguments.field}).number;	
+}
+
+public any function getGameLowest(required string field) {
+	return apiCall(&quot;getGameLowest&quot;,{&quot;field&quot;=arguments.field}).number;	
+}
+
+public any function getGameTop(required string field) {
+	return apiCall(&quot;getGameTop&quot;,{&quot;field&quot;=arguments.field}).number;	
+}
+
+public array function getPlayers() {
+	var res = apiCall(&quot;getPlayers&quot;);
+	var result = [];
+	for(var i=1; i&amp;lt;=arrayLen(res); i++) {
+		arrayAppend(result, res[i].Player);	
+	}
+	return result;
+}
+
+public function updatePlayerField(required string username, required string field, required any value) {
+	apiCall(&quot;updatePlayerField&quot;, {&quot;username&quot;=arguments.username, &quot;field&quot;=arguments.field, &quot;value&quot;=arguments.value});	
+}
+		
+private function apiCall(required string method,struct args) {
+	writelog(file=&quot;application&quot;, text=&quot;#serializejson(arguments)#&quot;);
+	var h = new com.adobe.coldfusion.http();        
+    h.setURL(variables.rooturl &amp; arguments.method);
+    h.setMethod(&quot;post&quot;);
+    h.addParam(type=&quot;formfield&quot;, name=&quot;api_key&quot;, value=variables.api);
+    h.addParam(type=&quot;formfield&quot;, name=&quot;game_id&quot;, value=variables.gameid);
+    h.addParam(type=&quot;formfield&quot;, name=&quot;response&quot;, value=&quot;json&quot;);
+    if(structKeyExists(arguments,&quot;args&quot;)) {
+		for(var key in arguments.args) {
+			h.addParam(type=&quot;formfield&quot;, name=key, value=arguments.args[key]);		
+		}		
+	}
+    var result = h.send().getPrefix();
+    if(!isJSON(result.fileContent)) throw(&quot;Invalid response: #result.fileContent#&quot;);
+    return deserializeJSON(result.fileContent);
+}
+</code></pre>
+<p>}
+</code></p>
+}

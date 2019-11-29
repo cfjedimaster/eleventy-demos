@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>So - I'm still not 100% sure what <a href="http://www.quora.com/">Quora</a> is and why I would use it. It looks like a generic version of <a href="http://www.stackoverflow.com">StackOverflow</a> which could be cool. Right now my take is that it's &quot;The site I keep hearing people talk about but I find impossible to spell.&quot; That being said I went to login this morning and noticed something I thought was <i>really</i> cool. Check out this screen shot.</p>
+<!--more-->
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip13.png" />
+<p>
+<p>I think that's pretty cool! Now - it may also be viewed as something of a privacy issue. I tried a few friend's email addresses and for it showed me their profile pics. I wasn't able to login as them - and - to be honest - I already knew what they looked like anyway - but it may be something that upsets some people. All I know is I saw it and wanted to recreate it as a proof of concept. Here's what I whipped up. I'm going to start on the server side. I didn't want to hook up to a <i>real</i> login system so all I did was return the gravatar URL for the email and a static name.</p>
+<p>
+<code>
+component {
+<pre><code>remote struct function checkemail(string email) {
+	//look up to see if the user exists
+	//if true (and it's always true for us), return profile image
+	//for us this will be gravatar and return their name
+	var result = {};
+	if(isValid(&quot;email&quot;, arguments.email)) {
+		result.name = &quot;John Smith&quot;;
+		result.profileimage = &quot;http://www.gravatar.com/avatar/#lcase(hash(arguments.email))#?s=64&quot;;
+	}
+	return result;
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Nothing here should be too complex. If it's a valid email I return a struct of data, otherwise I just return an empty structure. The front end is a bit more interesting.</p>
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>$(&quot;#email&quot;).blur(function() {
+	var value = $(this).val();
+	if(value.length==0) return;
+	$.post(&quot;test.cfc?method=checkemail&amp;returnFormat=json&quot;, {&quot;email&quot;:value}, function(res,code) {
+		if(res.PROFILEIMAGE &amp;&amp; res.NAME) {
+			var s = &quot;&amp;lt;img src=\&quot;&quot; + res.PROFILEIMAGE + &quot;\&quot;&amp;gt;&amp;lt;br/&amp;gt;&quot;+res.NAME;
+			$(&quot;#picSample&quot;).html(s);
+		}
+	}, &quot;json&quot;);
+});
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td&gt;email:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;email&quot; id=&quot;email&quot;&gt;&lt;/td&gt;
+&lt;td rowspan=&quot;2&quot;&gt;&lt;div id=&quot;picSample&quot;&gt;&lt;/div&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;password:&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;password&quot; name=&quot;password&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/form&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Ok, first off, I apologize for the table. Sorry - until I can layout stuff that easy and that quick with CSS without having to look it up - I'm going to stick with tables. Just call me old and cranky. While you are laughing at my horrible design skills though take note of the email field and the div to the right of it. This is where we're going to display the user info. Now go up to the jQuery code.</p>
+<p>
+<p>I've got a blur listener on the on the email field. When it's fired, we run a POST request against the CFC above. When the result returns we see if we got data and if so, create a simple HTML string out of it. You can view the demo below.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/jan192011/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

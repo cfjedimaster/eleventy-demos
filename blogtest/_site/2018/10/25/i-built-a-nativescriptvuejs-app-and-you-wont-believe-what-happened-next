@@ -1,0 +1,238 @@
+<h1>Post</h1>
+
+<p>Please forgive the clickbait title. I was struggling with what to actually title this blog post
+and just decided to give up and go a bit over the top. With how little I'm blogging lately, I figured this
+would at least put a smile on my reader's faces and that's worth something. ;) Speaking of my readers, those of you who have been around here for a while know I've been a fan of <a href="https://www.nativescript.org/">NativeScript</a> since it's release, but I've also blogged very little about it. It's consistently been on my &quot;Things I'm going to do this year&quot; posts and I never get around to actually working with it. Well, the good news for me is that while I'm between jobs, I've got a client who wants to build a NativeScript app and I've got the time (while on the clock, and yes, I'm very lucky for that) to learn while I build out the project. Even more lucky for me is that there is a <a href="https://nativescript-vue.org/">NativeScript Vue</a> project that kicks major butt. I thought I'd share my experience playing with it over the past week as well a simple application I built with it.</p>
+<p>The first thing I want to address it the development experience. I've been following the work the NativeScript team has done in that regards but I actually got to play with multiple variations of it and I have to say - they have done <em>incredible</em> work in this area.</p>
+<h3>The CLI</h3>
+<p>So yes, you have a command line. It's always felt a bit &quot;heavy&quot; to me in terms of installation and speed. That's not very scientific but it feels like the install process is a bit long and has a lot of moving parts. I did my testing in PowerShell as I didn't want to try getting the Android SDK running under WSL. The CLI can actually handle that for you, but in my case I already had Android installed. You can see more about this process at the <a href="https://docs.nativescript.org/angular/start/quick-setup">CLI installation docs</a> but I guess my point here is to not expect a quick <code>npm i nativescript</code> that will finish in a few seconds. I don't think there's anything that can be done about that, just consider this as a heads up.</p>
+<p>Once you do get it installed, the CLI works ok, but in my testing, the first run of an Android project seemed incredibly slow. Much more than I've seen with Cordova. But that's a one time pain. You can run <code>tns run android --bundle</code> and it will automatically reload your application as you save files.</p>
+<p>After that initial load the process is - I'll say - &quot;reasonably&quot; fast. For my small-ish project it took maybe 3-4 seconds for each reload as I worked. In general this never bothered me until I started working on design type stuff and it got a bit frustrating when I screwed things up.</p>
+<p>The command line will broad any <code>console.log</code> messages but I wish it would differentiate it a bit between it's own output as well. Here's a random example and while I know where my messages are, I'd like to see it called out more. (And yeah, it's way too small to even read. Sorry. But I haven't included a picture yet and it's way past due.)</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv1.jpg" alt="Terminal output you cant read"></p>
+<p>Before I leave this section, a quick note. On multiple occasions I found that if I left the CLI running over night, in the morning it didn't seem to refresh well. I just <code>CTRL-C</code> the CLI and ran it again and everything would be fine. I'm assuming something just got lost between the terminal and the Android simulator. If I were a betting man, I'd totally blame Android.</p>
+<h3>The GUI app you think you don't need but you should try it anyway</h3>
+<p>So yes, I know we're all &quot;real&quot; developers and we have to use the CLI for everything, but you may want to check out the <a href="https://www.nativescript.org/nativescript-sidekick">Sidekick</a> application. This is a desktop GUI that wraps the CLI operations and lets you quickly generate new projects and test them. It also does a great job of rendering information about your project like installed plugins and other settings.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv2.jpg" alt="My sidekick..."></p>
+<p>Even more impressive, it can handle building to your iOS device... from Windows. In my testing this was a bit flakey. I know (or I'm pretty sure ;) it worked a few times, but I had trouble getting my last project working correctly. I'm going to assume it <em>will</em> work consistently though and that's pretty damn impressive.</p>
+<p>If you want to learn more, you can watch this nice little video the NativeScript folks whipped up.</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/tG7c2nZvhTg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+<p>One oddity about the Sidekick is that while it has a &quot;logs&quot; output panel, you won't find console.log messages there. Instead, you want to ensure you select &quot;Start Debugger&quot;:</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv3.jpg" alt="The very obvious debugging thing"></p>
+<p>This pops open a new window and while still &quot;noisy&quot; like the CLI, it is a bit easier to read I think the terminal.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv4.jpg" alt="Sample of the console output"></p>
+<h3>The Simplest Solution - the Playground</h3>
+<p>So the third option, and one of the easiest if you want to skip worrying about SDKs, is the <a href="https://play.nativescript.org/">Playground</a>. This is a web-based IDE that lets you play with NativeScript without having to install anything on your machine. It even includes multiple walkthrough tutorials to help you learn. Even better, you can use the QR code feature (&quot;Yes!&quot; all the markerters yell) and a corresponding app on your mobile device to test out the code. Oddly - you need <em>two</em> apps on your device and their docs don't tell you this - both the Playground app and the Preview app.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv5.jpg" alt="Screenshot of my awesome iPhone"></p>
+<p>In general it felt like the refresh on this worked pretty well, on par with the CLI approach. But it's absolutely the simplest way to get started so I'd check it out if you aren't comfortable or familiar with the SDKs. And heck, even if you, consider using it for the nice tutorials.</p>
+<h3>My App</h3>
+<p>So after going through a few tutorials and just generally kicking the tires, I decided to build &quot;INeedIt&quot; once again. This is an app I've built in multiple languages, platforms, etc. over the past few years. It's a simple wrapper for the <a href="https://developers.google.com/places/web-service/intro">Google Places API</a>. It's a rather simple app in three discreet pages.</p>
+<p>The first page gets your location and then provides a list of service types (bars, restaurants, ATMs, etc). This is based on a hard coded <a href="https://developers.google.com/places/web-service/supported_types">list</a> that the API supports.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv6.jpg" alt="List of types"></p>
+<p>When you select a type, it then asks the API to find all the results of that type within a certain range of your location.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv7.jpg" alt="List of results"></p>
+<p>The final page is just a &quot;details&quot; view.</p>
+<p><img src="https://static.raymondcamden.com/images/2018/10/nsv8.jpg" alt="Detail view"></p>
+<p>Before I show the code, some things to take note of.</p>
+<ul>
+<li>This isn't a very pretty application. The UI controls provided by NativeScript work well, but you do have to spend some time with CSS to make this look nice, and customized for your application. I spent a <em>little</em> time fiddling with the CSS a bit but decided I wouldn't worry about it too much.</li>
+<li>On that detail view, Google Place's API used to return photos with it's detail result, now it has a separate API for that. I could have added that but decided to not worry about it. I only bring it up because the <a href="https://www.raymondcamden.com/2017/11/16/another-vuejs-demo-ineedit/">last version</a> I built supported it.</li>
+<li>That map you see is an example of the <a href="https://developers.google.com/maps/documentation/maps-static/intro">Static Map API</a>, one of my favorite Google services.</li>
+</ul>
+<p>Ok, let's check out the code! First, the initial view. As an aside, I removed most of the data from the <code>serviceTypes</code> variable to keep the length of the post down. I should really abstract that out into a service.</p>
+<pre><code class="language-markup">&lt;template&gt;
+    &lt;Page&gt;
+        &lt;ActionBar title=&quot;INeedIt&quot;/&gt;
+
+        &lt;GridLayout rows=&quot;*, auto, *&quot; columns=&quot;*, auto, *&quot;&gt;
+            &lt;ListView for=&quot;service in serviceTypes&quot; @itemTap=&quot;loadService&quot; rowHeight=&quot;40&quot; :visibility=&quot;loading?'hidden':'visible'&quot; rows=&quot;0&quot; rowSpan=&quot;3&quot; col=&quot;0&quot; colSpan=&quot;3&quot;&gt;
+                &lt;v-template&gt;
+                    &lt;Label :text=&quot;service.label&quot; verticalAlignment=&quot;middle&quot; /&gt;
+                &lt;/v-template&gt;
+            &lt;/ListView&gt;
+            &lt;ActivityIndicator :busy=&quot;loading&quot; row=&quot;1&quot; col=&quot;1&quot;/&gt;
+        &lt;/GridLayout&gt;
+    &lt;/Page&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import * as geolocation from 'nativescript-geolocation';
+import { Accuracy } from 'ui/enums';
+import TypeList from './TypeList';
+
+export default {
+    data() {
+        return {
+            loading:true,
+            location:{},
+            serviceTypes:[
+                {&quot;id&quot;:&quot;accounting&quot;,&quot;label&quot;:&quot;Accounting&quot;},{&quot;id&quot;:&quot;airport&quot;,&quot;label&quot;:&quot;Airport&quot;},                {&quot;id&quot;:&quot;veterinary_care&quot;,&quot;label&quot;:&quot;Veterinary Care&quot;},{&quot;id&quot;:&quot;zoo&quot;,&quot;label&quot;:&quot;Zoo&quot;}
+            ]            
+        }
+    },
+    mounted() {
+        console.log('lets get your location');
+        geolocation.getCurrentLocation({ desiredAccuracy: Accuracy.high, maximumAge: 1000, timeout: 20000})
+        .then(res =&gt; {
+            let lat = res.latitude;
+            let lng = res.longitude;
+            this.location.lat = lat;
+            this.location.lng = lng;      
+            this.loading = false;
+
+        })
+        .catch(e =&gt; {
+            console.log('oh frak, error', e);
+        });
+    },
+    methods:{
+        loadService(e) {
+            let service = e.item;
+            this.$navigateTo(TypeList, {props: {service:service, location:this.location}})
+        }
+    }
+    
+}
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+ActionBar {
+    background-color: #53ba82;
+    color: #ffffff;
+}
+&lt;/style&gt;
+</code></pre>
+<p>This is an example of SFC (Single File Components) that you may already be familiar with when working with Vue. I love that every aspect of this is the same except the layout, and frankly that wasn't much of a big deal. The only thing I struggled with was rendering the loading component in the middle of the page over the rest of the content and luckily nice people in the NativeScript Slack group helped me out. I don't want to minimize this. Learning layout stuff for NativeScript will be a process, but for the most part I think it generally just makes sense.</p>
+<p>Now let's look at the next component, TypeList.vue.</p>
+<pre><code class="language-markup">&lt;template&gt;
+	&lt;Page&gt;
+		&lt;ActionBar :title=&quot;service.label&quot;/&gt;
+
+        &lt;GridLayout rows=&quot;*, auto, *&quot; columns=&quot;*, auto, *&quot;&gt;
+            &lt;ListView for=&quot;place in places&quot; @itemTap=&quot;loadPlace&quot; rowHeight=&quot;45&quot; :visibility=&quot;loading?'hidden':'visible'&quot; rows=&quot;0&quot; rowSpan=&quot;3&quot; col=&quot;0&quot; colSpan=&quot;3&quot;&gt;
+                &lt;v-template&gt;
+					&lt;StackLayout&gt;
+						&lt;Label :text=&quot;place.name&quot; className=&quot;placeName&quot; /&gt;
+						&lt;Label :text=&quot;place.vicinity&quot; className=&quot;placeAddress&quot; /&gt;
+					&lt;/StackLayout&gt;
+                &lt;/v-template&gt;
+            &lt;/ListView&gt;
+			&lt;Label rows=&quot;0&quot; rowSpan=&quot;3&quot; col=&quot;0&quot; colSpan=&quot;3&quot; text=&quot;Sorry, there were no results.&quot; :visibility=&quot;noResults?'visible':'hidden'&quot; /&gt;
+            &lt;ActivityIndicator :busy=&quot;loading&quot; row=&quot;1&quot; col=&quot;1&quot;/&gt;
+        &lt;/GridLayout&gt;
+
+	&lt;/Page&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import places from '../api/places';
+import Place from './Place';
+
+export default {
+	data() {
+		return {
+			loading:true,
+			noResults:false,
+			places:[]
+		}
+	},
+	props: ['service', 'location'],
+	mounted() {
+		places.search(this.location.lat, this.location.lng, this.service.id)
+        .then(results =&gt; {
+			console.log('results', results.data.result);
+			this.places = results.data.result;
+			if(this.places.length === 0) this.noResults = true;
+			this.loading = false;
+        });
+	},
+	methods: {
+		loadPlace(event) {
+			let place = event.item;
+            this.$navigateTo(Place, {props: {place:place}})
+		}
+	}
+}
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+Label.placeName {
+	font-size: 20px;
+}
+
+Label.placeAddress {
+	font-style: italic;
+	font-size: 10px;
+}
+&lt;/style&gt;
+</code></pre>
+<p>On startup, it uses an API (more on that in a second) to get a list of results for the specific type being viewed. Then it simply renders it out in a ListView. The API I'm importing is here:</p>
+<pre><code class="language-js">import axios from 'axios/dist/axios';
+
+// radius set to 2000
+const RADIUS = 2000;
+
+export default {
+
+	detail(id) {
+		return axios.get(`https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.sandbox.auth0-extend.com/googleplaces_detail?placeid=${id}`);
+
+	},
+
+	search(lat, lng, type) {
+		return axios.get(`https://wt-c2bde7d7dfc8623f121b0eb5a7102930-0.sandbox.auth0-extend.com/googleplaces_search?lat=${lat}&amp;lng=${lng}&amp;radius=${RADIUS}&amp;type=${type}`);
+	}
+
+}
+</code></pre>
+<p>I wrote <a href="https://webtask.io">Webtask.io</a> wrappers for my Google Places API calls to make it a bit easier to share the code. You got to lose that comment about the radius. Epic comment there.</p>
+<p>The final component, Place.vue, handles getting the details and rendering it. I really only show a few values. You could do a lot more here.</p>
+<pre><code class="language-markup">&lt;template&gt;
+	&lt;Page&gt;
+		&lt;ActionBar :title=&quot;place.name&quot; /&gt;
+		&lt;StackLayout&gt;
+			&lt;Label :text=&quot;details.formatted_address&quot; /&gt;
+			&lt;Label :text=&quot;details.formatted_phone_number&quot; /&gt;
+			&lt;Image :src=&quot;mapUrl&quot; stretch=&quot;aspectFill&quot; width=&quot;100%&quot; /&gt;
+		&lt;/StackLayout&gt;
+
+	&lt;/Page&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import places from '../api/places';
+
+export default {
+	data() {
+		return {
+			loading:true,
+			details:{
+				formatted_address:''
+			},
+			mapUrl:''
+		}
+	},
+	props: ['place'],
+	mounted() {
+		console.log('load place id', this.place.place_id);
+		places.detail(this.place.place_id)
+		.then(res =&gt; {
+			console.log('my details are:', res.data.result);
+			this.details = res.data.result;
+			this.mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${this.details.geometry.location.lat},${this.details.geometry.location.lng}&amp;zoom=14&amp;markers=color:blue|${this.details.geometry.location.lat},${this.details.geometry.location.lng}&amp;size=500x500&amp;key=mykeyhere`;
+		});
+	},
+	methods: {
+	}
+}
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+&lt;/style&gt;
+</code></pre>
+<p>You'll notice my use of the Static Maps API includes a hard coded key. You can use the sample key as you do for the Places API. I'd definitely abstract this out usually but as I was at the end of my demo I was getting a bit lazy. ;)</p>
+<h3>NativeScript Vue</h3>
+<p>In conclusion, I'm really impressed with Vue running under NativeScript. I'm going to go ahead and use it for the client's project and I definitely think it's worth your time. If you're already using it, I'd love to hear about your experience so please leave me a comment below.</p>
+<p>I normally share my sample code but I don't have this in a repo anywhere. If anyone wants it though just ask and I'd be glad to share it.</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/iZGS8A1JV5Y?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Patrick Fore</a> on Unsplash</i></p>
+}

@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>So, I'm currently working on a new application for the next DRK. I can't say much about it (it's code named Harlan), but I can talk about an issue I ran into. I needed a quick way to determine the height and width of an image. Normally I would use <a href="http://www.alagad.com">Alagad</a> for this type of task. I really like Alagad - it's like the Bass-O-Matic of Image tools, and the price is right. But - it's not free, so I can't include it in the DRK. However, I did find this nice <a href="http://www.sitepoint.com/blog-post-view.php?id=168133">tip</a> by David Medlock:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfobject type=<FONT COLOR=BLUE>"JAVA"</FONT> action=<FONT COLOR=BLUE>"Create"</FONT> name=<FONT COLOR=BLUE>"tk"</FONT> class=<FONT COLOR=BLUE>"java.awt.Toolkit"</FONT>&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfobject type=<FONT COLOR=BLUE>"JAVA"</FONT> action=<FONT COLOR=BLUE>"Create"</FONT> name=<FONT COLOR=BLUE>"img"</FONT> class=<FONT COLOR=BLUE>"java.awt.Image"</FONT>&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfscript&gt;</FONT><br>
+img = tk.getDefaultToolkit().getImage(fname);<br>
+width = img.getWidth();<br>
+height = img.getHeight();<br>
+<FONT COLOR=MAROON>&lt;/cfscript&gt;</FONT></div>}

@@ -1,0 +1,44 @@
+<h1>Post</h1>
+
+<p>So as I announced back in <a href="https://www.raymondcamden.com/2018/04/20/getting-up-to-speed-with-vuejs">April</a>, I'm giving an online course on Vue.js. The May course was cancelled but the June one for the 22nd is still on.</p>
+<p><a href="https://www.safaribooksonline.com/live-training/courses/getting-up-to-speed-with-vue-js/0636920182153/">Getting Up to Speed with Vue.js</a></p>
+<p>While I'm biased, I definitely think this will be a great course for people who want an introduction to Vue. I've included the outline from the previous post below.</p>
+<h3>Segment 1: Beginning Vue.js (65 min total)</h3>
+<ul>
+<li>Why/What/How Vue.js? (15 min)</li>
+<li>Vue Basics (20 min)</li>
+<li>Exercise 1 – Palindrome Checker (10 min)</li>
+<li>Exercise 2 – Ajax Search (10 min)</li>
+<li>Break+Q/A (10 min)</li>
+</ul>
+<h3>Segment 2: Building Components (45 min total)</h3>
+<ul>
+<li>What are components? (5 min)</li>
+<li>Working with Properties and Events (10 min)</li>
+<li>Working with Slots (10 min)</li>
+<li>Exercise 1 – Music Component (10 min)</li>
+<li>Break+Q/A (10 min)</li>
+</ul>
+<h3>Segment 3: Routing (25 min)</h3>
+<ul>
+<li>Working with Routing (10 min)</li>
+<li>Exercise 1 – Master/Detail (10 min)</li>
+<li>Q/A (5 min)</li>
+</ul>
+<h3>Segment 4: State Management with Vuex (40 min)</h3>
+<ul>
+<li>What's a store? What’s Vuex? (5 min)</li>
+<li>Working with Stores (20 min)</li>
+<li>Exercise 1 – Cat Store demo (10 min)</li>
+<li>Break+Q/A (5 min)</li>
+</ul>
+<h3>Segment 5: Building Apps with the CLI (30 min)</h3>
+<ul>
+<li>What the CLI does + Installing (5 min)</li>
+<li>Generating an App (10 min)</li>
+<li>Resources (5 min)</li>
+<li>Final Q/A (10 min)</li>
+</ul>
+<p>I hope to see you there.</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/AfgJpWQH4lw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Geert Pieters</a> on Unsplash</i></p>
+}

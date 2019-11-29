@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I'm currently reading the ORA book on ASP.Net development (which, by the way, is not a well written book, but is the first I've seen to show c# examples along with VB) and was pretty impressed by the built in adRotator tag. For the heck of it, I decided to write one in CFML, which you can download <a href="http://www.camdenfamily.com/morpheus/downloads/adrotator.zip">now</a>.</p>
+<p>The tag works quite simply. You create a simple XML file that declares your ads (the image, url, etc) and then simply point adRotator.cfm to the XML file.  It certainly isn't as cool as a real banner management system, but it was fun to write.</p>
+}

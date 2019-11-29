@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>You may not know this - but you can set array elements out of order...</p>
+<p>&lt;cfset a = arrayNew(1)&gt;<br>
+&lt;cfset a[1] = &quot;foo&quot;&gt;<br>
+&lt;cfset a[3] = &quot;foo&quot;&gt;<br></p>
+<p>This will create an array that has items at positions 1 and 3. However, if you try to loop over it using cfloop - you will get an error when you try to use item 2. You may think that isDefined() would work - but it does not. There is no one function that will determine if an array item exists. The only real solution is to use try/catch when you use the item. An MX only UDF for this can be found here:</p>
+<p><a href="http://cflib.org/udf.cfm?ID=632">http://cflib.org/udf.cfm?ID=632</a></p>
+<p>However - one should not use the position of an array to signify something. If the position is important, consider reworking your data to be a structure. With structures, you can easily check for the existence of an item by using structKeyExists().</p>
+}

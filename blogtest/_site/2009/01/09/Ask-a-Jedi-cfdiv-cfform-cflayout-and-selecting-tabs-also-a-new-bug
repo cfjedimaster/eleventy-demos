@@ -1,0 +1,44 @@
+<h1>Post</h1>
+
+<p>Patrick asks:</p>
+<blockquote>
+Quick question (i think). I have this CFDIV with a form on it. When I submit this form I want it to go to another page (within the cfdiv) that has a cf tab layout on it, and based on whatever they select on the form I would like that tab to be selected when hitting the cf tab layout on the new page after they submit the form. Any ideas on how I could accomplish this, my attempts have failed. Thanks.
+</blockquote>
+<p>Let's break this down a bit.</p>
+<!--more-->
+<p>First off, when inside a cfdiv (or pod, window, layoutarea), you can automatically keep the form post inside the container by using cfform. So consider these two simple files. First, my root test file:</p>
+<code>
+&lt;cfajaximport tags="cfform,cflayout-tab"&gt;
+<p>&lt;h2&gt;Headers for the Win&lt;/h2&gt;</p>
+<p>&lt;cfdiv bind=&quot;url:test3.cfm&quot; /&gt;</p>
+<p>&lt;h2&gt;Footers for the Win&lt;/h2&gt;
+</code></p>
+<p>And then test3.cfm:</p>
+<code>
+&lt;cfform action="test2.cfm" method="post"&gt;
+	&lt;cfinput type="submit" name="doit1" value="Do One"&gt;
+	&lt;cfinput type="submit" name="doit2" value="Do Two"&gt;
+	&lt;cfinput type="submit" name="doit3" value="Do Three"&gt;
+&lt;/cfform&gt;
+</code>
+<p>Nothing too complex here. (I'll explain the button names in a sec.) This will load a page with a div where CF's Ajax code will automatically load in test2.cfm. Because I used cfform, the post will stay within the div context. Now I need to build a page that creates tabs and automatically selects the right one. This too is rather trivial.</p>
+<code>
+&lt;cfset t1Selected = false&gt;
+&lt;cfset t2Selected = false&gt;
+&lt;cfset t3Selected = false&gt;
+<p>&lt;cfif structKeyExists(form, &quot;doit1&quot;)&gt;
+&lt;cfset t1Selected = true&gt;
+&lt;cfelseif structKeyExists(form, &quot;doit2&quot;)&gt;
+&lt;cfset t2Selected = true&gt;
+&lt;cfelse&gt;
+&lt;cfset t3Selected = true&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cflayout type=&quot;tab&quot;&gt;
+&lt;cflayoutarea title=&quot;Tab1&quot; selected=&quot;#t1Selected#&quot; /&gt;
+&lt;cflayoutarea title=&quot;Tab2&quot; selected=&quot;#t2Selected#&quot; /&gt;
+&lt;cflayoutarea title=&quot;Tab3&quot; selected=&quot;#t3Selected#&quot; /&gt;
+&lt;/cflayout&gt;
+</code></p>
+<p>As you can see, I simply set state values for each tab to false and then check my form scope to see which value was passed. I say trivial, but when working on this I ran into two odd bugs.</p>
+<p>First off, my form initially had buttons with a name of action. When I did that, the form post failed due to some odd JavaScript error. It seems as if you cannot use a form field named ACTION within a form that will be 'ajax posted' within cfform. So I changed all 3 buttons to &quot;doit&quot;. Since the value was different, I should get form.doit equal to whatever button you push, right? Wrong. No matter what I pushed, the value was equal to all three values appended together in a list. Hence the switch to doit1, doit2, doit3. I assume again that this is just a quirk of CF's automatic &quot;keep it inside&quot; logic for cfform within containers.</p>
+}

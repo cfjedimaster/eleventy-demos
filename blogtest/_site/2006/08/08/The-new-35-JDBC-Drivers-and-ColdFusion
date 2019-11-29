@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I try not to cross post to other blogs often, but I wanted to point out two interesting articles on Charlie Arehart's blog:</p>
+<p><a href="http://carehart.org/blog/client/index.cfm/2006/8/8/jdbc3.5_update">Did you see the 3.5 JDBC update for CFMX 6.1 and 7: Anyone tried it? Seen the new features it adds</a></p>
+<p><a href="http://carehart.org/blog/client/index.cfm/2006/8/8/spy_jdbc_tool">More on the new SpyAttributes feature of the&quot;new&quot; 3.5 JDBC drivers for CFMX</a></p>
+<p>The second entry is the most interesting. You may remember from my <a href="http://ray.camdenfamily.com/index.cfm/2006/6/21/Review-FusionReactor-2-Beta">FusionReactor</a> review that I talked about a database driver they shipped that let you do some debugging with your queries. If you read Charlie's article and follow the links, you will see another way to accomplish this goal.</p>
+}

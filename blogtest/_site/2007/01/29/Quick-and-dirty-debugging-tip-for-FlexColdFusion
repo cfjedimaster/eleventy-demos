@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>There are multiple methods of debugging applications, including the very cool <a href="http://www.fusion-reactor.com/fusiondebug/">FusionDebug</a>, log files, <a href="http://kevinlangdon.com/serviceCapture/">ServiceCapture</a>, and the debugging rolled into Flex Builder 2 itself. Here is a quick tip for another method to use. It's ugly - but effective.</p>
+<p>Modify your onError to dump the errors and log to a file like so:</p>
+<code>
+&lt;cffunction name="onError" returnType="void" output="false"&gt;
+	&lt;cfargument name="exception" required="true"&gt;
+	&lt;cfargument name="eventname" type="string" required="true"&gt;
+	&lt;cfset var temp = ""&gt;
+<pre><code>&amp;lt;cflog file=&quot;my app&quot; text=&quot;#arguments.exception.message#, #arguments.exception.detail#&quot;&amp;gt;
+&amp;lt;cfsavecontent variable=&quot;temp&quot;&amp;gt;
+&amp;lt;cfdump var=&quot;#arguments#&quot;&amp;gt;
+&amp;lt;/cfsavecontent&amp;gt;
+&amp;lt;cffile action=&quot;write&quot; file=&quot;c:\myapp.html&quot; output=&quot;#temp#&quot;&amp;gt;
+&amp;lt;cfdump var=&quot;#arguments#&quot;&amp;gt;&amp;lt;cfabort&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>I wrapped a dump of the arguments (which contain my exception) and simply save it to the C drive as an HTML file. I then have this file open in my browser. As I debug, I can simply reload the tab in Firefox to see what the latest error was.</p>
+<p>I find this especially useful when the exception message is a bit too vague. With the dump I get the full trace of files where the error occurred.</p>
+<p>Let me be absolutely clear: Do not use this code in production. It isn't nice. It doesn't play well with others. It runs with scissors. You get the idea. But I thought I'd share.</p>
+}

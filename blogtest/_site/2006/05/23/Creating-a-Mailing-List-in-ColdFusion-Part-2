@@ -1,0 +1,122 @@
+<h1>Post</h1>
+
+<p>Welcome to the second part of my series on how to create a simple mailing list in ColdFusion. Be sure to read the <a href="http://ray.camdenfamily.com/index.cfm/2006/5/22/Creating-a-Mailing-List-in-ColdFusion-Part-1">first entry</a> in the series before starting this one. As previously mentioned, the goal of this application is to create a simple way for users to sign up at your web site. An administrator can then use a tool to send an email to folks who have signed up. Today's entry will deal with the administrator a bit. Now I'm going to cheat a bit. I don't want to spend a lot of time on security and all that, so I'm going to write a script and place it in the same folder as my other files. <b>Obviously in a real world application this file would be placed in a protected folder.</b> The specific item to add to our application today is a simple interface to list the subscribers and add/delete folks. Later in the series I'll discuss how folks can delete themselves, but the honest truth is that even if you provide such a method, folks will still email you (or call you) and demand that you remove them. So lets work on a tool that will make that simple.</p>
+<!--more-->
+<p>The following script will handle listing subscribers, removing subscribers, as well as adding them:
+<code>
+&lt;cfif structKeyExists(url, &quot;delete&quot;)&gt;
+&lt;cfset application.maillist.unsubscribe(url.delete)&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;add&quot;) and len(trim(form.email)) and isValid(&quot;email&quot;, form.email)&gt;
+&lt;cfset application.maillist.subscribe(form.email)&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfset members = application.maillist.getMembers()&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+Your mail list has
+&lt;cfif members.recordCount is 0&gt;
+no members
+&lt;cfelseif members.recordCount is 1&gt;
+1 member
+&lt;cfelse&gt;
+#members.recordCount# members
+&lt;/cfif&gt;. You may use the table below to remove any member, or the form to add a new member.
+&lt;/p&gt;	
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfif members.recordCount gte 1&gt;</p>
+<pre><code>&amp;lt;p&amp;gt;
+&amp;lt;table border=&quot;1&quot;&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;th&amp;gt;Email Address&amp;lt;/th&amp;gt;
+		&amp;lt;td&amp;gt; &amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;cfloop query=&quot;members&quot;&amp;gt;
+	&amp;lt;tr &amp;lt;cfif currentRow mod 2&amp;gt;bgcolor=&quot;yellow&quot;&amp;lt;/cfif&amp;gt;&amp;gt;
+		&amp;lt;cfoutput&amp;gt;
+		&amp;lt;td&amp;gt;#email#&amp;lt;/td&amp;gt;
+		&amp;lt;td&amp;gt;&amp;lt;a href=&quot;listmembers.cfm?delete=#token#&quot;&amp;gt;Delete&amp;lt;/a&amp;gt;&amp;lt;/td&amp;gt;
+		&amp;lt;/cfoutput&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/table&amp;gt;
+&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;form action=&quot;listmembers.cfm&quot; method=&quot;post&quot;&gt;
+&lt;input type=&quot;text&quot; name=&quot;email&quot;&gt; &lt;input type=&quot;submit&quot; name=&quot;add&quot; value=&quot;Add Subscriber&quot;&gt;
+&lt;/form&gt;
+</code></p>
+<p>There is a lot going on here, so let's handle it line by line. At the top of the script I have two checks. The first is for list removals. I check for the value, url.delete, and if it exists, I call out to my CFC to unsubscribe the user. I'm using the token instead of the email address. (You will see this later in the script.) The reason for this is that the token serves as a good primary key for the table. Sure, I know the email addresses are unique, but I'm also going to use something similar for the front end. Therefore, I just pass the token to the method.</p>
+<p>Adding a subscriber is also rather simple. I look for the submit button (named &quot;add&quot;) and check to see if the email address is valid. Because this is the admin I do less hand holding. I'm not going to display an error if the email address isn't valid. Obviously you can change this in your own code. I tend to be a bit cruel in my own administrator tools.</p>
+<p>The next section of the script gets the members from the mailing list and displays a simple count of members along with a nicely designed table. (Yes, the nicely designed part is a joke.) I had mentioned above that I use the token for deletions. Now you see where this comes from. Each delete link passes it back to the script.</p>
+<p>Last but not least, I added a simple form with one field and a button. This lets the administrator quickly add email address to the mail list.</p>
+<p>Alright, now that I showed you the front end, let's look at the new version of the CFC:</p>
+<code>
+&lt;cfcomponent displayName="MailList" output="false"&gt;
+<p>&lt;cffunction name=&quot;init&quot; returnType=&quot;maillist&quot; output=&quot;false&quot; access=&quot;public&quot;&gt;
+&lt;cfargument name=&quot;dsn&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfset variables.dsn = arguments.dsn&amp;gt;
+
+&amp;lt;cfreturn this&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getMembers&quot; returnType=&quot;query&quot; output=&quot;false&quot; access=&quot;public&quot;
+hint=&quot;Returns a query of everyone subscribed.&quot;&gt;
+&lt;cfset var q = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+select		email, token
+from		subscribers
+order by	email asc
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn q&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;subscribe&quot; returnType=&quot;boolean&quot; output=&quot;false&quot; access=&quot;public&quot;
+hint=&quot;Adds a user to the mailinst list, if and only if the person wasn't already on the list.&quot;&gt;
+&lt;cfargument name=&quot;email&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset var checkIt = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfif not isValid(&quot;email&quot;, arguments.email)&amp;gt;
+	&amp;lt;cfthrow message=&quot;#arguments.email# is not a valid email address.&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- only add if the user doesn't already exist. ---&amp;gt;
+&amp;lt;cflock name=&quot;maillist&quot; type=&quot;exclusive&quot; timeout=&quot;30&quot;&amp;gt;
+	&amp;lt;cfquery name=&quot;checkIt&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+	select	email
+	from	subscribers
+	where	email = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.email#&quot;&amp;gt;
+	&amp;lt;/cfquery&amp;gt;
+	
+	&amp;lt;cfif checkIt.recordCount is 0&amp;gt;
+	
+		&amp;lt;cfquery datasource=&quot;#variables.dsn#&quot;&amp;gt;
+		insert into subscribers(email,token)
+		values(&amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.email#&quot;&amp;gt;,&amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#createUUID()#&quot;&amp;gt;)
+		&amp;lt;/cfquery&amp;gt;
+		
+		&amp;lt;cfreturn true&amp;gt;
+		
+	&amp;lt;cfelse&amp;gt;
+	
+		&amp;lt;cfreturn false&amp;gt;
+			
+	&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;/cflock&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;unsubscribe&quot; returnType=&quot;void&quot; output=&quot;false&quot; access=&quot;public&quot;
+hint=&quot;Removes a user to the mailinst list.&quot;&gt;
+&lt;cfargument name=&quot;token&quot; type=&quot;uuid&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfquery datasource=&quot;#variables.dsn#&quot;&amp;gt;
+delete from subscribers
+where token = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.token#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>Let's focus on the changes from last time. There are two new methods, getMembers and unsubscribe. Both are rather simple, so I won't say a lot about them. If you have questions though, please add a comment.</p>
+<p>Thats it for this entry. As a general FYI, I may not be able to write part three till Friday. I've got a presentation tomorrow night (are you coming?) and Thursday is packed. Also, I made a small tweak to the Application.cfc file. I added a small hook to let me reinit the application using a URL variable. It's in there if you want to take a peak, but isn't anything special. As before, I've attached a zip to this entry so you can download the code and look for yourself. The next entry will add the mailer to the application. (The whole point of the series!)<p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fmailinglist1%2Ezip'>Download attached file.</a></p></p>
+}

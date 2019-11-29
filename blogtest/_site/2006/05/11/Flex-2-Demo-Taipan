@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I've uploaded a new Flex 2 demo, <a href="http://ray.camdenfamily.com/taipan/output/Taipan.html">Taipan</a>. Taipan was an old Apple IIe game (well, that's where I played it) that let you carry cargo between various Asian cities while fighting pirates and expanding your ship. My version is um... limited. It is about as close to the original as MS Vista shipping on it's original scheduled ship date.</p>
+<p>That being said, you can buy and sell stuff. Oh - and don't enter a bad character. Validation is easy in Flex 2, I just didn't do it. Validation is for wimps I say!</p>
+<p>Anyway, I plan on cleaning it up a bit. Not design-wise since, well, my design sucks, but I'd like to add a bank as well as a money lender. While I won't do combat, Mike Nimer had a good idea about charging a fee per travel, so there is an incentive to not just click the heck out of things.</p>
+<p>You can right click View Source to see the code. Unfortunately, you can't see the CFC that drives the data. To see that, use the Download link below.</p>
+<p>Let me be absolutely clear. I love Flex. But I suck at it. Well, I don't suck, but I'm a beginner. At least I can look at the code and know I need to shape things up a bit, which I take as a good sign. (There is hope for me yet.)<p><a href='enclosures/D%3A%5Cwebsites%5Ccamdenfamily%5Csource%5Cmorpheus%5Cblog%5Cenclosures%2Fsource%2Ezip'>Download attached file.</a></p></p>
+}

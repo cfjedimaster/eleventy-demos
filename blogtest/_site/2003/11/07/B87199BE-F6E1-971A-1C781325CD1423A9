@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>The beta for the next major version of my blog has now been <a href="http://www.camdenfamily.com/morpheus/blog/blog3beta.zip">released</a>. The major new features include Access support, caching, and localization support. This version does NOT have good documentation. This version doesn't even have bad documentation, but, it's working well here.</p>
+<p>I'm in a rush now and will post more about the changes later, especially how I got localization in (with a LOT of help from Paul Hastings).</p>
+}

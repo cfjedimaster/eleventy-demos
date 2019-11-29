@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>Yesterday one of my clients (<a href="http://www.roundpeg.com">roundpeg</a>) asked for a ColdFusion interface to the <a href="http://www.youtube.com/dev_docs">YouTube API</a>. This turned out to be rather simple since they made use of a REST API. From this work I was able to build a CFC to work with all the functions defined in the API. This lets you get video information, profile information, search for videos etc. Best of all - roundpeg, Inc was cool with me releasing the code. You can download the CFC below.</p>
+<p>Now the bad news is that YouTube will eventually be switching to a GData based API. I am <b>not</b> a fan of Google's APIs so frankly I can't see this as being a good thing - but I'll worry about that when the API is updated.</p>
+<p>Here are some sample calls:</p>
+<code>
+&lt;cfset devid = "changethis"&gt;
+<p>&lt;cfset yt = createObject(&quot;component&quot;, &quot;youtube&quot;).init(devid)&gt;</p>
+<p>&lt;!--- get videos by user ---&gt;
+&lt;cfdump var=&quot;#yt.getVideosByUser('joerinehart')#&quot; label=&quot;Videos by user.&quot;&gt;</p>
+<p>&lt;!--- get music videos tagged Lush ---&gt;
+&lt;cfdump var=&quot;#yt.getVideosByCategoryAndTag(10,'Lush')#&quot; label=&quot;Lush music videos.&quot; top=&quot;10&quot;&gt;
+</code></p>
+<p>p.s. Note that you need to get a <a href="http://www.youtube.com/my_profile_dev">developer profile</a> and key before you use the code.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fyoutube%2Ezip'>Download attached file.</a></p></p>
+}

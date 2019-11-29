@@ -1,0 +1,36 @@
+<h1>Post</h1>
+
+<p>Wow that title sounds complex. If you don't remember, a few hours ago I blogged about an <a href="http://www.boyzoid.com/blog/index.cfm/2006/11/22/Flex-Custom-Components-and-Custom-Methods">article</a> that Boyzoid wrote about how easy it was to do a custom component in Flex 2. His example added a new method to ComboBox, selectedItemByValue.</p>
+<!--more-->
+<p>What if you wanted to set the selected item when the component is created? I made these modifications to Zoid's code:</p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:ComboBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="checkSelected()"&gt;
+<p>&lt;mx:Script&gt;
+&lt;![CDATA[
+[Bindable] public var defaultSelectedValue:int;</p>
+<p>public function selectedItemByValue(val:int):void{
+for (var i:int=0;i&lt;this.dataProvider.length;i++){
+var item:int = this.dataProvider[i].data;</p>
+<pre><code>	if(item == val){
+		this.selectedIndex = i;
+		break;
+	} else{ this.selectedIndex = 0;}
+}
+</code></pre>
+<p>}</p>
+<p>private function checkSelected():void {
+selectedItemByValue(defaultSelectedValue);
+}
+]]&gt;
+&lt;/mx:Script&gt;</p>
+<p>&lt;/mx:ComboBox&gt;
+</code></p>
+<p>Note first the use of creationComplete in the top tag. That just means - run checkSelected() when done. I then created a new public variable named defaultSelectedValue. My checkSelected function simply then calls the function Boyzoid had written. This then lets me do the following in the calling code:</p>
+<code>
+&lt;comp:customComboBox dataProvider="{comboData}" id="myCombo2" defaultSelectedValue="2" /&gt;
+&lt;comp:customComboBox dataProvider="{comboData}" id="myCombo3" defaultSelectedValue="3" /&gt;
+&lt;comp:customComboBox dataProvider="{comboData}" id="myCombo4" /&gt;
+</code>
+<p>Not sure if this is best practice or not - and I did guess at a few things, but I thought I'd share.</p>
+}

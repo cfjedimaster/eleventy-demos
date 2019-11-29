@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>As you know (or may know) any custom tag can be called in both 'start' and 'end' mode. What does this mean? When CF encounters the following code:</p>
+<p>&lt;cf_foo&gt;<br>
+lots of code<br>
+&lt;/cf_foo&gt;<br></p>
+<p>The custom tag foo will actually be run twice. Inside the tag, you can check to see which mode you are in by examining thisTag.executionMode. This technique allows for many cool custom tags, but that's not why I'm posting.</p>
+<p>If you use cfmodule to call foo, you can still use 'wrappers' as I have defined above, you simply end the call with &lt;/cfmodule&gt; instead of &lt;/cf_sometag&gt;. However, if you have ANY cfmodule call inside your tag pair, CF can get confused by the &lt;/cfmodule&gt; call. To get around that, you simply use a closing / at the end of the call:</p>
+<p>&lt;cfmodule template=&quot;...&quot; /&gt;</p>
+<p>However - this will execute your tag twice. So, how do you get around it? You could check executionMode like so:</p>
+<p>&lt;cfif thisTag.executionMode is &quot;start&quot;&gt;<br>
+lots of code<br>
+&lt;/cfif&gt;<br></p>
+<p>However, why wrap an entire tag in one big cfif? Instead, simply do:</p>
+<p>&lt;cfif thisTag.executionMode is &quot;end&quot;&gt;&lt;cfexit&gt;&lt;/cfif&gt;</p>
+<p>This makes your code easier to read and simpler to debug.</p>
+}

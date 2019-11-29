@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>Every time I turn around I run across yet another cool feature of Spry. I'm going to have to force myself to sit down and read the docs cover to cover because I'm sure there is a lot that I'm missing. Today's discover is the URL Utils library. As you can probably guess, this utility library helps you work with URLs.</p>
+<!--more-->
+<p>There are two main functions you will use to examine URL variables: Spry.Utils.getLocationParamsAsObject and Spry.Utils.getLocationHashParamsAsObject. The first function grabs 'regular' URL parameters. Consider this URL:</p>
+<p>http://www.raymondcamden.com/foo.cfm?paris=truediva&amp;lindsey=lush</p>
+<p>We can grab the URL parameters like so:</p>
+<code>
+&lt;script src="/spryjs/SpryURLUtils.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+var params = Spry.Utils.getLocationParamsAsObject();
+<p>alert(params.paris);
+alert(params.lindsey);
+alert(params.nicole);
+&lt;/script&gt;</p>
+<p>&lt;p&gt;
+This page left intentionally blank.
+&lt;/p&gt;
+</code></p>
+<p>The first line of code loads the utility library. I then grab the parameters as an object. Once done, it acts just like using the URL scope in ColdFusion. As you can see - I alert each value, including a third one. If you run this code, and supply both URL parameters like I did above, you will get their values in the alerts, and an undefined string for the third test.</p>
+<p>The getLocationHashParametersAsObject works with hash parameters in a URL, like so:</p>
+<p>http://www.coldfusionjedi.com/index.cfm#ray=1</p>
+<p>Using getLocationHasParametersAsObject would let me find the value of ray in the URL above.</p>
+<p>Both of these functions work with the current URL. To supply a URL, you would use Spry.Utils.getURLParamsAsObject and Spry.Utils.getURLHashParamsAsObject.</p>
+<p>Lastly, you can work with a partial URL string (like foo=1&amp;goo=2) with the Spry.Utils.urlComponentToObject function.</p>
+<p>So - what is a real use case for this? Where things get interesting is when you mix them with Spry Datasets. Because it is easy to introspect the URL, you can do things like presetting a row in the dataset based on URL parameters. (Don't forget Spry lets you run functions before and after a dataset has loaded.) For a good set of examples, see:</p>
+<p><a href="http://labs.adobe.com/technologies/spry/samples/data_region/DataWithURLParams.html">Using URL Parameters to Control Data Regions</a></p>
+<p>The full documentation for this utility may be found here:</p>
+<p><a href="http://labs.adobe.com/technologies/spry/samples/utils/URLUtilsSample.html">URL Utils Sample</a></p>
+<p>Thanks go to the use V1 Fusion and his forum post <a href="http://www.adobe.com/cfusion/webforums/forum/messageview.cfm?forumid=72&catid=602&threadid=1317152&enterthread=y">here</a>.</p>
+}

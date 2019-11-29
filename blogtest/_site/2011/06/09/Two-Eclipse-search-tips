@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>Both of these tips come from the &quot;Obvious Department&quot;, but as I recently discovered myself <i>not</i> using them, I'm going to assume I'm not the only one a bit slow on the uptake.</p>
+<!--more-->
+<p>First - it kept bugging me that Find within a file would only search forwards. I'd forget - cuss when it didn't find something I knew was there - and then either click the search backwards checkbox or quickly jump to line one and repeat the search. But - there is a better option - Wrap Search:</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip110.png" />
+<p>What's nice is that this seems to persist. Check it and you shouldn't have to check it again.</p>
+<p>Now for the second tip. I work with a <i>very</i> repository of code. While searching, if I have to search from the root, it would take about 5 minutes or so depending on how loose my filter was. Turns out I had enabled regex for my search even when I wasn't using regex:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip111.png" />
+<p>See the checkbox to the right? I had it checked and thought - ok - I don't need it - is it faster turned off? Turns out - it was <i>way</i> faster.</p>
+<p>Hope this helps!</p>
+}

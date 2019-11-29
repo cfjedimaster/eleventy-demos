@@ -1,0 +1,58 @@
+<h1>Post</h1>
+
+<p>I'm working on a proof of concept ColdFusion Builder Extension for work and it requires that I examine a CFC. That should be easy enough, right? We have the getComponentMetadata function which returns a nice structure of information about the CFC. However, there is one problem with this function. All CFC functions in ColdFusion require a &quot;dot path&quot;. Unless the CFC is in the same folder you need to use a &quot;dot path&quot; location to tell ColdFusion how to load the CFC. Since this CFBuilder extension has to work with any CFC on the file system, it isn't really practical to figure out how to get path to that CFC. What follows is one solution to this issue - I'm not terribly happy with it but it seems to work.</p>
+<!--more-->
+<p>
+<p>To begin my CFBuilder extension, I created my ide_config.xml file. I won't go into full details about each line here - check the <a href="http://help.adobe.com/en_US/ColdFusionBuilder/Using/index.html">CFBuilder</a> docs for a full explanation on how to build extensions.</p>
+<p>
+<code>
+&lt;application&gt; 
+    &lt;name&gt;CFC Test&lt;/name&gt; 
+    &lt;author&gt;Raymond Camden&lt;/author&gt; 
+    &lt;version&gt;1.0&lt;/version&gt; 
+    &lt;email&gt;ray@camdenfamily.com&lt;/email&gt; 
+    &lt;description&gt;Attempts to get metadata for a CFC.&lt;/description&gt; 
+    &lt;license&gt;Just Use It.&lt;/license&gt;
+<pre><code>&amp;lt;menucontributions&amp;gt;
+	&amp;lt;contribution target=&quot;projectview&quot;&amp;gt;
+		&amp;lt;menu name=&quot;Get CFC Metadata&quot;&amp;gt;
+			&amp;lt;filters&amp;gt;
+				&amp;lt;filter type=&quot;file&quot; pattern=&quot;.+\.cfc&quot; /&amp;gt;
+			&amp;lt;/filters&amp;gt;
+			&amp;lt;action name=&quot;Do It&quot; handlerid=&quot;getcfcmeta&quot; showResponse=&quot;no&quot; /&amp;gt;
+		&amp;lt;/menu&amp;gt;
+	&amp;lt;/contribution&amp;gt;
+&amp;lt;/menucontributions&amp;gt;
+
+&amp;lt;handlers&amp;gt;
+	&amp;lt;handler id=&quot;getcfcmeta&quot; type=&quot;cfm&quot; filename=&quot;getcfcmeta.cfm&quot; /&amp;gt;
+&amp;lt;/handlers&amp;gt; 
+</code></pre>
+<p>&lt;/application&gt;
+</code></p>
+<p>
+<p>There are two things I want to point out here. First - notice how I used a pattern on the menu. Thanks to Dan Vega for helping me realize that the value for pattern is a regex. I began with *.cfc which didn't work correctly. Secondly make note of getcfcmeta.cfm. That's the file that will contain the main code to handle my solution. Let's take a look at that next.</p>
+<p>
+<code>
+&lt;cfparam name="ideeventinfo"&gt;
+&lt;cfset data = xmlParse(ideeventinfo)&gt;
+&lt;cfset myFile = data.event.ide.projectview.resource.xmlAttributes.path&gt;
+&lt;cflog file="bolt" text="Working with #myFile#"&gt;
+<p>&lt;cfset newName = replace(createUUID(), &quot;-&quot;, &quot;_&quot;, &quot;all&quot;)&gt;
+&lt;cfset newLocation = getDirectoryFromPath(getCurrentTemplatePath()) &amp; newName &amp; &quot;.cfc&quot;&gt;</p>
+<p>&lt;!--- Copy the file ---&gt;
+&lt;cffile action=&quot;copy&quot; source=&quot;#myFile#&quot; destination=&quot;#newLocation#&quot;&gt;</p>
+<p>&lt;cfset meta = getComponentMetaData(&quot;#newName#&quot;)&gt;</p>
+<p>&lt;cfdump var=&quot;#meta#&quot; output=&quot;c:\webroot\test.html&quot; format=&quot;html&quot;&gt;</p>
+<p>&lt;cffile action=&quot;delete&quot; file=&quot;#newLocation#&quot;&gt;
+&lt;cflog file=&quot;bolt&quot; text=&quot;I'm done. Stored to #newlocation#&quot;&gt;
+</code></p>
+<p>
+<p>So we begin by parsing out the XML sent to the extension. This is all documented but while I was developing I made copious use of cflog to look at the XML. Just know that the myFile variable will contian the full path to the CFC that was selected in the Navigator.</p>
+<p>
+<p>Now it's time for the hack. I decided I'd simply copy the CFC to the same folder as the extension. I used a new name based on UUID. Once copied I was able to use getComponentMetaData. Note that newName is just the UUID, it doesn't include the path or the extension. Once I had it I confirmed it by using cfdump. (Don't forget ColdFusion 8 added the ability to dump to a file. It's useful for situations like this where I'm working with extensions.) Finally I delete the file.</p>
+<p>
+<p>That's it. So does it work? Yes and no. It does correctly reflect function metadata which for my case is all I need. However some values, specifically fullname, name, and path, reflect the temporary copy of the CFC. Here is an example:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/shotcfb.jpg" />
+<p>}

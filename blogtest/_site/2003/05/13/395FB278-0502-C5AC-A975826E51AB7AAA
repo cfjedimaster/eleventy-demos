@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>maxEntries added as an optional argument to getEntries. Added as an additional filter to the default view in index.cfm. Thanks to Rob Brooks-Bilson for the idea. As always, you can download the code via the link in the right-hand column.</p>
+<p>I will be gone the rest of the week. I'm presenting on CFCs at MX on the Rocks. My presentation will cover the nitty gritty details about CFC development, plus some exciting developments concerning CFCs.</p>
+}

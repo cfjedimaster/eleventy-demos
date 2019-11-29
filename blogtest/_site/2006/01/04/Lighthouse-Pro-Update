@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Another minor update to <a href="http://ray.camdenfamily.com/projects/lhp">Lighthouse Pro</a>:</p>
+<ul>
+<li>The SQL Server script was hosed for the pre-seeded data. This prevented you from logging in with the default logins or using any of the default loci, etc. Big whoops on my part.
+<li>Minor fix to project editing.
+</ul>
+<p>As usual, you can download the zip from the <a href="http://ray.camdenfamily.com/projects/lhp">project</a> page. Today's build was brought to you by &quot;Breathe Me&quot;, from Sia, originally heard (by me) on the <i>most</i> excellent finale of Six Feet Under. (The absolute best ending to a TV show I've seen yet.)</p>
+}

@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>During my <a href="http://ray.camdenfamily.com/index.cfm/2007/5/1/CFJUG-Recording-and-Materials">presentation</a> earlier this week, I brought up a few 'Gotchas' that ColdFusion developers may not be aware of. Today I'm going to review some of these for those who couldn't make the presentation.</p>
+<p>The first item that came up was during my discussion of ColdFusion lists. The one thing I really see trip people up (and it tripped me up when I was building my first ColdFusion application - back in the dinosaur days) is the fact that list delimiters are only single characters - even if you pass multiple delimiters. So what do I mean? Consider this list:</p>
+<code>
+&lt;cfset monkeys = "King Kong__+__George, Bush__+__Clinton, Hillary__+__Super_Monkey"&gt;
+</code>
+<p>Looking at this string you might think you could simply tell ColdFusion to use <strong>+</strong> as a delimiter. Consider this loop:</p>
+<code>
+&lt;cfloop index="item" list="#monkeys#" delimiters="__+__"&gt;
+</code>
+<p>Many developers think that ColdFusion will do this: &quot;Ok, take my string, and consider the literal string <strong>+</strong> as a delimiter.&quot; Instead, ColdFusion does this: &quot;Ok, I'll use _ and + as delimiters.&quot;</p>
+<p>What this means is that our loop will display:</p>
+<p>King Kong<br />
+George, Bush<br />
+Clinton, Hillary<br />
+Super<br />
+Monkey<br /></p>
+<p>The _ inside of Super_Monkey was considered a delimiter and therefore was split up by ColdFusion. In case you do want to split up a string by a set of characters, consider the <a href="http://www.cflib.org/udf.cfm/split">split()</a> UDF at CFLib.</p>
+}

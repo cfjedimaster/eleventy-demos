@@ -1,0 +1,43 @@
+<h1>Post</h1>
+
+<p>Kyle asks:</p>
+<blockquote>
+<p>
+In my application I currently have a table that is created from a cfoutput query, and for each row I have an edit button that links to an edit page passing an id as a url variable. I would like to change this table to a coldfusion 8 cfgrid (html
+format), but I'm not seeing how you can do this in html format (from what U've read, it can only be done in flash format). Have you come across a way to do this in html?
+</p>
+</blockquote>
+<!--more-->
+This is something I've mentioned before, but don't forget you can include arbitrary HTML in your data passed to the grid. I'm not sure how far you can push it, but consider this sample:
+<code>
+&lt;cfquery name="entries" datasource="blogdev"&gt;
+select   *
+from   tblblogentries
+limit 0,10
+&lt;/cfquery&gt;
+<p>&lt;cfset queryAddColumn(entries,&quot;editlink&quot;,&quot;varchar&quot;,arrayNew(1))&gt;</p>
+<p>&lt;cfloop query=&quot;entries&quot;&gt;
+&lt;cfsavecontent variable=&quot;edittext&quot;&gt;
+&lt;form action=&quot;test4.cfm&quot; method=&quot;post&quot;&gt;
+&lt;cfoutput&gt;&lt;input type=&quot;hidden&quot; name=&quot;id&quot; value=&quot;#id#&quot;&gt;&lt;/cfoutput&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Edit&quot;&gt;
+&lt;/form&gt;
+&lt;/cfsavecontent&gt;
+&lt;cfset querySetCell(entries, &quot;editlink&quot;, edittext, currentRow)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;entries&quot; format=&quot;html&quot; query=&quot;entries&quot; width=&quot;600&quot;&gt;
+&lt;cfgridcolumn name=&quot;id&quot; display=&quot;false&quot;&gt;
+&lt;cfgridcolumn name=&quot;body&quot; display=&quot;false&quot;&gt;</p>
+<p>&lt;cfgridcolumn name=&quot;title&quot; header=&quot;Title&quot;&gt;
+&lt;cfgridcolumn name=&quot;posted&quot; header=&quot;Posted&quot;&gt;
+&lt;cfgridcolumn name=&quot;editlink&quot; header=&quot;&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;cfdump var=&quot;#form#&quot;&gt;
+</code></p>
+<p>I begin by doing a normal query. This grid isn't Ajax based, but that doesn't really matter. Note that I add a custom column named editlink. I then loop over the query. For each row, I create a form that simply has a hidden ID variable and a submit button. I then take this form (using the handy cfsavecontent tag) and store it into the query.</p>
+<p>I added the query column to the display, and that was it. I added a dump to the page so I could confirm the right ID was being passed. That's it really. Here is how the grid now renders:</p>
+<img src="https://static.raymondcamden.com/images/grid.jpg">
+<p>Again, I'm not quite sure this is &quot;proper&quot; usage of the grid, but it works!</p>
+}

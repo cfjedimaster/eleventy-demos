@@ -1,0 +1,51 @@
+<h1>Post</h1>
+
+<p>Many months ago I wrote a quick post on OpenWhisk, serverless, and persistence (<a href="https://www.raymondcamden.com/2017/02/09/serverless-and-persistence/">Serverless and Persistence</a>). In that article I mentioned that while your serverless actions are stateless and you should not <em>rely</em> on the file system, you do have access to it and can make use of it. It isn't something I'd recommend normally and it should be considered a - if not red flag - at least yellow for &quot;are you sure&quot; before deploying, but there are cases where it might make sense.</p>
+<p>This weekend I worked on an action that needed to use a four thousand line text file as a data source. I could have fired up a database or Reddis instance, but that seemed like overkill. I knew that I could easily write code to read the file and then store it in the action's variables scope. That way if the action was run while OpenWhisk had it warm, it wouldn't need to hit the file system again.</p>
+<p>I ran into some issues though and thankfully (once again), <a href="https://ibm.biz/rrabbah">Rodric Rabbah</a> at IBM helped me out. Let's look at a quick example and I'll describe what's necessary to make it work.</p>
+<p>First, the action:</p>
+<pre><code class="language-javascript">const fs = require('fs');
+
+let contents;
+
+function main(args) {
+
+	if(!contents) {
+		console.log('Read from the file system');
+		contents = fs.readFileSync(__dirname + '/test.txt','UTF-8');
+	}
+
+	return { contents:contents };
+
+}
+
+exports.main = main;
+</code></pre>
+<p>This is incredibly simple, but the two parts to make note of are:</p>
+<ul>
+<li>In order to read a file in the same directory as the action, you can <em>not</em> just use <code>./file</code> but must use <code>__dirname</code>. This is what Rodric helped me out with.</li>
+<li>Secondly - you definitely want to cache to read as I'm doing here. I added a console message just to make sure it worked correctly.</li>
+</ul>
+<p>Ok, so that's the code, but you have to do a bit more. In order to ship 2+ files with your action, you have to use a zipped action. That makes you also have to make a package.json. I made a quick one with <code>npm init</code>, just be sure it picks up your entry point matching your file name. In my case it was <code>testtext.js</code> and this is what the package.json looked like:</p>
+<pre><code class="language-javascript">{
+  &quot;name&quot;: &quot;texttest&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;description&quot;: &quot;&quot;,
+  &quot;main&quot;: &quot;texttest.js&quot;,
+  &quot;scripts&quot;: {
+    &quot;test&quot;: &quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;
+  },
+  &quot;author&quot;: &quot;Raymond Camden &lt;raymondcamden@gmail.com&gt; (https:&#x2F;&#x2F;www.raymondcamden.com)&quot;,
+  &quot;license&quot;: &quot;ISC&quot;
+}
+</code></pre>
+<p>You then zip up the JavaScript file, the text file, and the package.json and deploy that. I use a script to make it easier:</p>
+<pre><code class="language-javascript">#!/bin/bash
+zip -rq temp.zip texttest.js test.txt package.json
+wsk action update safeToDelete/texttest --kind nodejs:6 temp.zip
+rm temp.zip
+</code></pre>
+<p>And that's pretty much it. When I couldn't figure this out over the weekend, I went into Chrome DevTools, pasted the entire 4k line file into it, and converted it into a JSON file I could <code>require()</code> in instead.</p>
+<p>Anyway - just to complete the post, here is a screen shot of it working and a very important, very wise quote:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/10/owtext2.jpg" alt="Yoda"></p>
+}

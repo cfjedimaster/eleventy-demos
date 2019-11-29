@@ -1,0 +1,172 @@
+<h1>Post</h1>
+
+<p>Sid had the following problem. He has a form with a dynamic number of line items. Each line item has 3 fields. A product quantity, a price per product, and a total for the line item. He wanted to know if it was possible to automatically update the total as you entered prices and quantities, and to also have a grand total. This is solvable via JavaScript of course, with a bit of complexity involved to handle the dynamic number of fields. Here is how I solved it - with both my own JavaScript and a jQuery solution.</p>
+<!--more-->
+<p>First let's begin by creating our form. I've hard coded the number of line items.</p>
+<code>
+&lt;cfset numItems = 5&gt;
+<p>&lt;form id=&quot;lineitems&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;Product Qty&lt;/th&gt;
+&lt;th&gt;Price Per Unit&lt;/th&gt;
+&lt;th&gt;Total&lt;/th&gt;
+&lt;/tr&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#numItems#&quot;&gt;
+&lt;cfoutput&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;qty_#x#&quot; id=&quot;qty_#x#&quot; onChange=&quot;updateData(#x#)&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;ppu_#x#&quot; id=&quot;ppu_#x#&quot; onChange=&quot;updateData(#x#)&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;total_#x#&quot; id=&quot;total_#x#&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;</p>
+<pre><code>&amp;lt;tr&amp;gt;&amp;lt;td colspan=&quot;3&quot; bgcolor=&quot;yellow&quot;&amp;gt;&amp;lt;B&amp;gt;TOTALS:&amp;lt;/b&amp;gt;&amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;
+&amp;lt;tr&amp;gt;
+	&amp;lt;td&amp;gt;&amp;lt;input type=&quot;text&quot; name=&quot;total_qty&quot; id=&quot;total_qty&quot;&amp;gt;&amp;lt;/td&amp;gt;
+	&amp;lt;td&amp;gt;&amp;nbsp;&amp;lt;/td&amp;gt;
+	&amp;lt;td&amp;gt;&amp;lt;input type=&quot;text&quot; name=&quot;total_price&quot; id=&quot;total_price&quot;&amp;gt;&amp;lt;/td&amp;gt;
+&amp;lt;/tr&amp;gt; 
+</code></pre>
+<p>&lt;/table&gt;
+&lt;/form&gt;
+</code></p>
+<p>Notice that for each line item, I've used a dynamically named ID based on the current row. Also note I use an event handler to pass the row number to an updateData function. I check the change event for both quantity and the price per unit field. (My examples will assume that folks don't mess with the totals.)</p>
+<p>Lastly I added a row for the grand totals. It didn't make sense to me to have a grand total of the price per unit column, so I just use a grand total for quantity and the price.</p>
+<p>Ok, now let's look at the JavaScript:</p>
+<code>
+&lt;script&gt;
+function updateData(x) {
+	//x is the index
+	var qty = document.getElementById('qty_'+x).value;
+	var ppu = document.getElementById('ppu_'+x).value;
+	var liTotal = document.getElementById('total_'+x);
+	//if we have numbers for both, do math, else, nuke result
+	if(!isNaN(qty) && !isNaN(ppu)) liTotal.value = qty*ppu;
+	else liTotal.value = '';
+<pre><code>//now update grand total
+var i = 1;
+var totalQty = 0;
+var totalPrice = 0;
+while(thisQty = document.getElementById('qty_'+i)) {
+	qty = document.getElementById('qty_'+i).value;
+	liTotal = document.getElementById('total_'+i).value;
+	if(!isNaN(qty)) totalQty += Number(qty);
+	if(!isNaN(liTotal)) totalPrice += Number(liTotal);
+	i++;
+}
+document.getElementById('total_qty').value = totalQty;
+document.getElementById('total_price').value = totalPrice;
+</code></pre>
+<p>}	
+&lt;/script&gt;
+</code></p>
+<p>So what am I doing here? I first get both the quantity and price per unit fields for the current row. If both are numbers, I do simple math to get the total.</p>
+<p>Now look at the second part. This is going to loop over all my rows. I used a while loop, but since the total number of rows was generated server side, I could have output that as a hard coded JavaScript variable as well. For each row I get the quantity and the total. If they are numbers, I add them each to a variable. My final step is to update the grand total fields.</p>
+<p>Ok, easy enough, right? To get me some more practice in jQuery, I decided to rewrite the template using jQuery code. Please remember I'm new at jQuery so this may not be the best way to do things.</p>
+<p>The first thing I wanted to do was to get rid of the event handlers. I knew that jQuery had a way to select all items of a certain type. I also knew that jQuery could add event handlers to things. So my first job was to combine that into one action. I began with the basic &quot;run this on document ready&quot; wrapper:</p>
+<code>
+$(document).ready(function() {
+//insert Skynet here...
+});
+</code>
+<p>Now for the hard part. If you remember the previous example, I had change events on the quantity and ppu fields. I needed a way to select all those fields. My knowledge of jQuery selectors was a bit slim - but I found that I could select all input fields based on an ID property. What I couldn't figure out was how to do &quot;ID begins with qty_ or ID begins with ppu+&quot;. So I cheated. I modified my CFML to use dyn_ in front of all my IDs for the line items:</p>
+<code>
+&lt;td&gt;&lt;input type="text" name="qty_#x#" id="dyn_qty_#x#"&gt;&lt;/td&gt;
+&lt;td&gt;&lt;input type="text" name="ppu_#x#" id="dyn_ppu_#x#"&gt;&lt;/td&gt;
+</code>
+<p>Once I had that, I could then write my selector:</p>
+<code>
+$("input[@id^='dyn_']").bind("change",function(e) {
+//smart logic here
+});
+</code>
+<p>Note the @id^'dyn_'. This is what means &quot;all IDs that begin with dyn_. Since it's an attribute of input, it will only match inside input form fields. The .bind(&quot;change&quot; portion says to bind the function I'm about to define to the change event.</p>
+<p>Ok, now I have a new problem. I'm adding an event handler to both qty and ppu fields, but how do I know <i>which</i> one was changed?  The event handler is passed &quot;this&quot;, which represents the item that changes. That has an ID. I can use regex then to get just the number:</p>
+<code>
+var myid = this.id;
+//get the Index
+var index = myid.replace(/dyn_(qty|ppu)_/,"");
+</code>
+<p>Now I'm back, kinda, to what I had before, a row number. The rest of the code is pretty similar to the previous edition, just a bit simpler:</p>
+<code>
+var qty = $("#dyn_qty_"+index).val();
+var ppu = $('#dyn_ppu_'+index).val();
+var liTotal = $('#total_'+index);
+//if we have numbers for both, do math, else, nuke result
+if(!isNaN(qty) && !isNaN(ppu)) liTotal.val(Number(qty)*Number(ppu));
+else liTotal.val('');
+</code>
+<p>Now for the next part, which is updating the grand totals. My first edition used a while loop. I bet jQuery can do it better:</p>
+<code>
+var totalQty = 0;
+var totalPrice = 0;
+$("input[@id^='dyn_qty_']").each(function() {
+	if(!isNaN(this.value)) totalQty+=Number(this.value);
+});
+<p>$(&quot;input[@id^='total_']&quot;).each(function() {
+if(!isNaN(this.value)) totalPrice+=Number(this.value);
+});</p>
+<p>$(&quot;#gtotal_qty&quot;).val(totalQty);
+$(&quot;#gtotal_price&quot;).val(totalPrice);
+</code></p>
+<p>Check it out. I use a selector along with the .each operator to say, do this on each instance of what was found. Note that I had to modify my form a bit to use &quot;g&quot; in front of the grand total fields. I did that so the @id^='total_' wouldn't match the grand total line, but just the line items.</p>
+<p>I've attached the complete jQuery edition below. Every time I use it I like it a bit more!</p>
+<code>
+&lt;script src="/jquery/jquery.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+<p>$(document).ready(function() {
+$(&quot;input[@id^='dyn_']&quot;).bind(&quot;change&quot;,function(e) {
+var myid = this.id;
+//get the Index
+var index = myid.replace(/dyn_(qty|ppu)<em>/,&quot;&quot;);
+var qty = $(&quot;#dyn_qty</em>&quot;+index).val();
+var ppu = $('#dyn_ppu_'+index).val();
+var liTotal = $('#total_'+index);
+//if we have numbers for both, do math, else, nuke result
+if(!isNaN(qty) &amp;&amp; !isNaN(ppu)) liTotal.val(Number(qty)*Number(ppu));
+else liTotal.val('');</p>
+<pre><code>	var totalQty = 0;
+	var totalPrice = 0;
+	$(&quot;input[@id^='dyn_qty_']&quot;).each(function() {
+		if(!isNaN(this.value)) totalQty+=Number(this.value);
+	});
+	$(&quot;input[@id^='total_']&quot;).each(function() {
+		if(!isNaN(this.value)) totalPrice+=Number(this.value);
+	});
+
+	$(&quot;#gtotal_qty&quot;).val(totalQty);
+	$(&quot;#gtotal_price&quot;).val(totalPrice);
+	
+});
+</code></pre>
+<p>});</p>
+<p>&lt;/script&gt;</p>
+<p>&lt;cfset numItems = 5&gt;
+&lt;form id=&quot;lineitems&quot;&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;Product Qty&lt;/th&gt;
+&lt;th&gt;Price Per Unit&lt;/th&gt;
+&lt;th&gt;Total&lt;/th&gt;
+&lt;/tr&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#numItems#&quot;&gt;
+&lt;cfoutput&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;qty_#x#&quot; id=&quot;dyn_qty_#x#&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;ppu_#x#&quot; id=&quot;dyn_ppu_#x#&quot;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;total_#x#&quot; id=&quot;total_#x#&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;</p>
+<pre><code>&amp;lt;tr&amp;gt;&amp;lt;td colspan=&quot;3&quot; bgcolor=&quot;yellow&quot;&amp;gt;&amp;lt;B&amp;gt;TOTALS:&amp;lt;/b&amp;gt;&amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;
+&amp;lt;tr&amp;gt;
+	&amp;lt;td&amp;gt;&amp;lt;input type=&quot;text&quot; name=&quot;gtotal_qty&quot; id=&quot;gtotal_qty&quot;&amp;gt;&amp;lt;/td&amp;gt;
+	&amp;lt;td&amp;gt;&amp;nbsp;&amp;lt;/td&amp;gt;
+	&amp;lt;td&amp;gt;&amp;lt;input type=&quot;text&quot; name=&quot;gtotal_price&quot; id=&quot;gtotal_price&quot;&amp;gt;&amp;lt;/td&amp;gt;
+&amp;lt;/tr&amp;gt; 
+</code></pre>
+<p>&lt;/table&gt;
+&lt;/form&gt;
+</code></p>
+}

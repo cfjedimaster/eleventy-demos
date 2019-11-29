@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>This weekend I worked on my first extension for <a href="https://github.com/adobe/brackets">Brackets</a> - <a href="https://github.com/cfjedimaster/brackets-csslint">CSSLint</a>. The experience was pretty interesting. Much like writing extensions for ColdFusion Builder, your time is split between creating the UI/extension connection points and the actual logic of the extension itself. In this case, since it was my first extension, I'd say 95% of was on the &quot;Extension&quot; aspect and the rest on running CSSLint. Which is to be expected I think. The  <a href="http://csslint.net/">CSSLint</a> tool is trivial to implement in code. In fact, once I got the current document in Brackets I just had to do this:</p>
+<p>results = CSSLint.verify(text);</p>
+<p>Here's a quick screen shot of the results. If you are curious - it was run on a file from jQuery UI.</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip96.png" />
+<p>Here's a shot showing a complete view of Brackets and my extension running:</p>
+<img src="https://static.raymondcamden.com/images/ScreenClip97.png" />
+<p>If you are playing around with Brackets, you can <a href="https://github.com/cfjedimaster/brackets-csslint">download</a> the extension and give it a shot. Let me know what you think.</p>
+}

@@ -1,0 +1,22 @@
+<h1>Post</h1>
+
+<p>Barney Boisvert demonstrated an interesting issue with CFCs on cfcdev. Consider the following code:</p>
+<p><b>Alpha.cfc</b><br></p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfcomponent&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cffunction name=<FONT COLOR=BLUE>"test"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfargument name=<FONT COLOR=BLUE>"test"</FONT> required=<FONT COLOR=BLUE>"true"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfoutput&gt;</FONT><FONT COLOR=NAVY>&lt;br&gt;</FONT>inside the method, test is #test#<FONT COLOR=NAVY>&lt;br&gt;</FONT><FONT COLOR=MAROON>&lt;/cfoutput&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfset test = <FONT COLOR=BLUE>"apple"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfreturn arguments.test&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cffunction&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<br>
+<FONT COLOR=MAROON>&lt;/cfcomponent&gt;</FONT></div>
+<p><b>test.cfm</b></p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfset x = createObject(<FONT COLOR=BLUE>"component"</FONT>,<FONT COLOR=BLUE>"alpha"</FONT>)&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfset result = x.test(<FONT COLOR=BLUE>"banana"</FONT>)&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;cfoutput&gt;</FONT>#result#<FONT COLOR=MAROON>&lt;/cfoutput&gt;</FONT></div>
+<p>When you run this code, you would expect alpha's test method to return apple. When working with the arguments scope, we've been told that we don't have to use Arguments. in front of the variable. In fact, the debug output inside the method will clearly show that test is banana. However, note that when we change it, we don't use the Arguments scope. When we return it - we do. The result - not apple, but banana.</p>
+<p>Something to watch out for. I tend to just <i>always</i> use Arguments. notation as it helps me keep clear which variables are arguments and which are function local or in the CFC variables scope.</p>
+}

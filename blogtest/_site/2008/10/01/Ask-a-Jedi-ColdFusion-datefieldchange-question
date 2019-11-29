@@ -1,0 +1,55 @@
+<h1>Post</h1>
+
+<p>Curt Danceswithformfields asked:</p>
+<blockquote>
+<p>
+I am trying to get a form to submit onchange with cfinput type="datefield" and it won't fire my onchange event if the change is made using the popup calendar.
+</p>
+<p>
+Consider the following...<br />
+&lt;cfinput type="datefield" id="duedate" name="duedate" value="#NOW()#" onchange="javascript: ItemsDueForm.submit();"&gt;
+</p>
+<p>
+Have you ever run into anything like this before.  Do you know of a quick workaround?
+</p>
+</blockquote>
+<p>As much as I've played around with ColdFusion 8, I really haven't done much with the date controls. What's interesting is that the onchange runs just fine if you manually change the value, but the little calendar icon won't fire onchange when you change the value. So what can we do?</p>
+<!--more-->
+<p>My first thought was - let's try a bind command with cfajaxproxy:</p>
+<code>
+&lt;cfajaxproxy bind="javaScript:doSubmit({duedate})"&gt;
+</code>
+<p>Unfortunately this fired the second you clicked the calendar. Even though - visibly - nothing changed the doSubmit function was firing immediately for me. When I switched from a form submit to just a console.log('twinkies'), I noticed quite a few log messages when using the control. I figured the only way to make this work would be to store the original value, and compare that in my JavaScript. This is what I ended up with:</p>
+<code>
+<p>&lt;head&gt;		
+&lt;script&gt;
+var origDate;</p>
+<p>function setOrig() {
+origDate = document.getElementById('duedate').value;
+}</p>
+<p>function doSubmit(duedate) {
+//submit if we really changed
+if(duedate != origDate) document.getElementById('ItemsDueForm').submit();
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;cfif isDefined(&quot;form.duedate&quot;)&gt;</p>
+<pre><code>  &amp;lt;cfdump var=&quot;#form#&quot;&amp;gt;
+</code></pre>
+<p>&lt;cfelse&gt;</p>
+<pre><code>  &amp;lt;cfform id=&quot;ItemsDueForm&quot; action=&quot;#cgi.SCRIPT_NAME#&quot; method=&quot;post&quot;&amp;gt;
+
+        &amp;lt;cfinput type=&quot;datefield&quot; id=&quot;duedate&quot; name=&quot;duedate&quot; value=&quot;#NOW()#&quot;&amp;gt;
+
+  &amp;lt;/cfform&amp;gt;
+
+&amp;lt;cfajaxproxy bind=&quot;javaScript:doSubmit({duedate})&quot;&amp;gt;
+&amp;lt;cfset ajaxOnLoad('setOrig')&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>As you can see, I added an ajaxOnLoad. This will fetch the current value of the field and store it. Now when doSubmit is fired, it will only do the form submission when the value is changed.</p>
+}

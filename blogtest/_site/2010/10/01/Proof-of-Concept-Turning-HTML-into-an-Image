@@ -1,0 +1,63 @@
+<h1>Post</h1>
+
+<p>A few days ago a reader (Andrew Duvall) and I exchanged a few emails about ways one could turn HTML into an image. He wanted to make use of ColdFusion's built in rich text editor as a way for someone to write HTML that would then become an image. I recommended making use of cfdocument. cfdocument can turn HTML into PDF and with the cfpdf tag you can then turn a pdf into an image. He took that advice and ran with it. Here is the simple POC Andrew created. It works - but has one slight drawback.</p>
+<p>
+<code>
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+&lt;/head&gt;
+<p>&lt;body bgcolor=&quot;#C0C0C0&quot;&gt;</p>
+<p>&lt;cfparam name=&quot;tdata&quot; default='&lt;span style=&quot;font-family: Arial;&quot;&gt;&lt;strong&gt;This&lt;/strong&gt; &lt;em&gt;is a&lt;/em&gt; &lt;strong&gt;test &lt;/strong&gt;&lt;u&gt;to&lt;/u&gt; &lt;span style=&quot;color: rgb(255, 153, 0);&quot;&gt;see &lt;/span&gt;&lt;strong&gt;what &lt;/strong&gt;is to &lt;span style=&quot;color: rgb(255, 0, 0);&quot;&gt;happen&lt;/span&gt;&lt;/span&gt;'&gt;
+&lt;cfset tdata = replace(tdata,'&lt;p&gt;','','all')&gt;
+&lt;cfset tdata = replace(tdata,'&lt;/p&gt;','','all')&gt;
+&lt;cfif isdefined('sbt')&gt;</p>
+<pre><code>&amp;lt;cfsavecontent variable=&quot;PDFdata&quot;&amp;gt;
+&amp;lt;div style=&quot;border:1px solid blue; background-color:none; font-size:12px; width:60px; height:80px;&quot;&amp;gt;&amp;lt;cfoutput&amp;gt;#tdata#&amp;lt;/cfoutput&amp;gt;&amp;lt;/div&amp;gt;
+&amp;lt;/cfsavecontent&amp;gt;
+
+&amp;lt;cfdocument format=&quot;pdf&quot; name=&quot;data&quot; scaletofit=&quot;yes&quot;&amp;gt;&amp;lt;cfoutput&amp;gt;#PDFdata#&amp;lt;/cfoutput&amp;gt;&amp;lt;/cfdocument&amp;gt;
+&amp;lt;cfpdf source=&quot;data&quot; 
+       pages=&quot;1&quot; 
+       action=&quot;thumbnail&quot; 
+       destination=&quot;.&quot; 
+       format=&quot;png&quot; 
+       transparent = &quot;true&quot;
+
+       overwrite=&quot;true&quot; 
+       resolution=&quot;high&quot; 
+       scale=&quot;100&quot; 
+       imagePrefix=&quot;Andrew&quot;
+       &amp;gt;
+        
+	&amp;lt;cfscript&amp;gt;
+	thisImg = ImageRead( expandPath('.') &amp; &quot;/Andrew_page_1.png&quot;);
+	ImageSetAntialiasing(thisImg,&quot;on&quot;);
+	
+	ImageCrop(thisImg, 44, 48, 62, 80);
+	
+	ImageWrite( thisImg, expandPath('.') &amp; &quot;/Andrew_page_1.png&quot;);
+	&amp;lt;/cfscript&amp;gt;
+
+	&amp;lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#thisImg#&quot;&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfform&gt;
+&lt;cftextarea richtext=&quot;true&quot; name=&quot;tdata&quot;&gt;&lt;cfoutput&gt;#tdata#&lt;/cfoutput&gt;&lt;/cftextarea&gt;
+&lt;input name=&quot;sbt&quot; type=&quot;submit&quot; value=&quot;submit&quot;  /&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Reading from the bottom up - you can see it begins with a simple form that makes use of the richtext version of cftextarea. He defaulted the value with some basic HTML (see line 9). On submit the magic happens. First he wraps the HTML with a div. Let me come back to the that in a minute. He then puts the HTML into the cfdocument tag to create the PDF. Notice he saves it to a variable. There isn't any need to save it to the file system.</p>
+<p>
+<p>Next he uses cfpdf to convert the pdf into an image. Notice the scale is set to 100. This creates a full scale representation of the pdf. After making the image he does a crop on it (and again, we will come back to that) and then outputs the result. Here is a screen shot of it in action:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/Screen shot 2010-10-01 at 1.00.35 PM.png" />
+<p>
+<p>So - what's with the div and the cropping? The technique I originally proposed worked - but left a large white expanse around the rendered image. Since the HTML provided didn't take the whole &quot;page&quot;, the resulting image had a lot of white space around it. For his purposes, he was ok with using a div wrapper to set the result to a sized box. He could then crop to that when he got the image.</p>
+<p>
+<p>To make this <i>totally</i> cool you would need to find a way to make that more generic. I'm not sure how one would do that outside of literally scanning the pixels and removing the blocks of whiteness. You could make the process 3 steps - and use the second step as a preview (with just HTML) so that the user can specify his own height and width.</p>
+}

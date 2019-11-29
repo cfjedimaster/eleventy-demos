@@ -1,0 +1,26 @@
+---
+layout: post
+title: "Review: Dead Island"
+date: "2011-10-23T11:10:00+06:00"
+categories: [video games]
+tags: []
+banner_image: 
+permalink: /2011/10/23/review-dead-island
+guid: 4404
+---
+
+<iframe src="http://rcm-na.amazon-adsystem.com/e/cm?t=raymondcamden-20&o=1&p=8&l=as1&asins=B004PAGJOC&nou=1&ref=qf_sp_asin_til&fc1=000000&IS2=1&lt1=_top&m=amazon&lc1=0000FF&bc1=000000&bg1=FFFFFF&f=ifr"  scrolling="no" marginwidth="0" marginheight="0" frameborder="0" style="width:120px;height:240px;float:left;margin-right:10px"></iframe> Many months ago I <a href="http://www.raymondcamden.com/index.cfm/2011/2/16/Offtopic-and-NSFW--blog-post--Dead-Island-Trailer">posted</a> what I consider (still today) to be the best trailer for a video game yet. I'm probably being a bit dramatic, but I thought the trailer was a piece of art. Graceful, haunting, and emotional all at the same time - it was a complete surprise and made me want to add a zombie game to my 'must get' list of games this year. The last zombie game I played, Dead Rising, was fun for a few hours but quickly grew boring. I figured if the game was anywhere near as good as the trailer it was worth picking up. I can tell you right now that this is not the case. But I still <i>strongly</i> recommend picking up Dead Island. Let me explain why.
+<!--more-->
+The game begins innocently enough - your at an island resort - zombies have risen - and your given various tasks to help people. I discovered right away that the zombies in this game had a surprising amount of variety. A typical encounter may find you dealing with 3-4 different types at once. Some slow, some fast, some that start some and speed up. Unlike a typical shoot where you simply mow everything down, your zombie encounters in the game turn into intellectual encounters that force you to use strategy to figure out the right way to take them down. 
+
+The fights themselves are glorious gorey fun. I know - I've said many times I'm not a fan of gore. But the first time I noticed that I could break the arm of a zombie and it impacted it's ability to fight - I was addicted. There's something incredibly satisfying about the violence of this game that I never got from playing Dead Rising. It feels incredibly physical. Both Dead Rising and Dead Island have a large amount of weapons. Dead Rising probably has more variety. But I love the selection of weapons in Dead Island as well as the ability to upgrade them. 
+
+Weapon management does become a bit of an issue though. Every time you knock a zombie across the head you do a bit of damage to your weapon. They are <i>constantly</i> degrading which means you have to manage which weapon you want to use carefully. There's repair desks spread throughout the game but on more then one occasion I found myself down to my last decent weapon and praying for a break soon. 
+
+The environments of the game were a surprise to me. I had assumed the entire game was the resort. The first time I left the resort and ventured into the city I was incredibly impressed by the level of detail and the variety. I've been to other zones now and it reminds me how bored the shopping mall was in Dead Rising. 
+
+Probably the best thing this game does is ramp up the fear. Imagine being in a dark, inner city alley way, and you hear something running towards you. At the same time, you hear the roar of a zombie in the distance and need to figure out if it's behind you or in front of you. This game is scary. I can't remember the last time I played a game where I jumped more than once and generally just made me nervous. One of the coolest things I noticed was that the game was able to produce fear even when no zombies were around. I can remember turning a corner, seeing a large empty space and <i>no</i> zombies and coming to a complete stop. I thought - no way this place is empty of zombies. They <i>have</i> to be around. Pure fear - and I loved it. Another good example is driving. You don't get to drive often, but when you do, it can be a lot of fun. (And I love that they give a "Karmageddon" bonus - I was a huge fan of Carmageddon back in the 90s - anyone else remember that series?) However - the first time I was driving along and rammed a tree - and got stuck - and heard the zombies running to me I freaked out. I was hitting the gas, breaks, going forward, reverse, you get the idea. I loved it.
+
+So what about the trailer? I said earlier the game didn't match it - what exactly did I mean? Well, the trailer implied a large amount of emotional context to the game. There <i>is</i> a story here and there are some sad moments of course. Nothing in the game approaches the level of that trailer though. I'm at the point of the game where we are close to figuring out what caused everything and to be honest, I'm kinda "meh" on it. I do want to get to the bottom of it, but the story itself isn't that important to me. I don't mind. I'm having a hell of a lot of fun and really recommend it for anyone looking for a game. That's if - of course - you aren't planning on spending every second playing Battlefield and Call of Duty over the next three months. ;)
+
+<b>It looks like the detail view for screen shots from GamePro is a bit borked. Sorry if they don't work for you.</b>

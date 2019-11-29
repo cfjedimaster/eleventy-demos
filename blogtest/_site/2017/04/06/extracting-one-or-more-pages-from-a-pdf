@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Ok, this falls squarely into &quot;I Bet Everyone Knows This&quot; category, but have you ever wondered how you could extract one (or more) pages from a PDF? For example, imagine one of the pages is an image and you want just that, how would you do it? Last night I was about to do a screen capture of the page when I tried a simple hack.</p>
+<p>I selected Print, and then &quot;Print to PDF&quot;, and then clicked &quot;Current Page&quot;:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/4/pdf1.png" alt="Screen shot"></p>
+<p>And that's it. Pretty obvious, but I never thought of doing &quot;Save as PDF&quot; <em>with</em> an actual PDF. As you can see, you can also select <code>Pages</code> to get a range of pages instead of just one.</p>
+}

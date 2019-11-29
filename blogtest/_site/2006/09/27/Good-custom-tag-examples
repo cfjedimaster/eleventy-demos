@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>While custom tags have fallen out of a favor a bit, I'm still a big fan of them. I thought I'd point out two good blog posts by Ben Nadel which show how to nest tags:</p>
+<p><a href="http://bennadel.com/index.cfm?dax=blog:293.view">ColdFusion Basics: Nesting Custom Tags</a><br>
+<a href="http://bennadel.com/index.cfm?dax=blog:294.view">Nesting ColdFusion Custom Tag Snippet</a></p>
+<p>Later this week I'll post my example of a nested custom tag. It is a basic data grid style tag that lets me quickly dump queries into formatted tables.</p>
+}

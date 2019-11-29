@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Matt Williams has posted a <a href="http://mattw.mxdj.com/canvas_wiki_using_mach_ii.htm">Mach II conversion</a> of my <a href="http://ray.camdenfamily.com/projects/canvas">Canvas Wiki</a> project. His blog entry talks about what it took to convert the application from Model-Glue to Mach II. This version, of course, is not an officially supported version, but Mach II users may find it interesting.</p>
+<p>As just a quick FYI, I do have some bugs reported in Canvas. I'm hoping to get a Soundings update out this weekend and will then work on the Cavas issues.</p>
+}

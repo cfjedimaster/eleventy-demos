@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>A friend sent in an interesting problem yesterday that had a quick solution:</p>
+<blockquote>
+Need some help, I'm stuck on parsing this xml string.  Hoping that you might kick me back in right direction. It seems to be getting stuck on new-order-notification with the following error:
+<p>Diagnostics: Element NEW is undefined in CHECKOUT.</p>
+<p>From playing around, I can do a rereplace on the - and get  to work, but that is not really a good solution.  So the
+question is, how can I use XML like the one below.</p>
+<p>Code:
+<cfset CheckOut = xmlParse(GoogleCheckOutFile)></p>
+<cfoutput>
+#checkOut.new-order-notification.google-order-number.XMLtext#
+</cfoutput>
+</blockquote>
+<p>One of the nice things about ColdFusion's handling of XML data is that it lets you treat the document as a structure. This makes using XML very easy. However, you have to follow the same rules you would for a &quot;normal&quot; structure, and one of them is that you cannot use dot notation for keys that aren't valid ColdFusion variables.</p>
+<p>Note the variable: #checkOut.new-order-notification.google-order-number.XMLtext#</p>
+<p>The second and third keys are not valid variables, and therefore ColdFusion throws an error. Luckily this is trivial to get around:</p>
+<p>#checkOut[&quot;new-order-notification&quot;][&quot;google-order-number&quot;].XMLtext#</p>
+<p>By switching to bracket notation, ColdFusion will no longer throw an error.</p>
+}

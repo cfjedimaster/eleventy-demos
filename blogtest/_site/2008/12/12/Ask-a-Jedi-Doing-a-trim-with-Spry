@@ -1,0 +1,111 @@
+<h1>Post</h1>
+
+<p>OJ asks:</p>
+<blockquote>
+<p>
+I have a spry question. I am displaying data like so: {dsProjects::Solution}
+<p>I want to limit the amount of characters displayed to 100. How do I go about doing that?</p>
+</p>
+</blockquote>
+<p>This is fairly simple in Spry. While it has always been possible using event handlers for your data, it is far easier using a function to display the text. Let me demonstrate.</p>
+<!--more-->
+<p>Take the following XML document for our seed data:</p>
+<code>
+&lt;kids&gt;
+	&lt;kid&gt;
+		&lt;name&gt;Jacob&lt;/name&gt;
+		&lt;description&gt;Jacob is a cool kid. He likes Bionicles. He doesn't like Star Wars as much as he should.&lt;/description&gt;
+		&lt;age&gt;8&lt;/age&gt;
+	&lt;/kid&gt;
+	&lt;kid&gt;
+		&lt;name&gt;Lynn&lt;/name&gt;
+		&lt;description&gt;Lynn is the most beautiful girl in the world. She is also the most intelligent. She is also a princess.&lt;/description&gt;
+		&lt;age&gt;7&lt;/age&gt;
+	&lt;/kid&gt;
+	&lt;kid&gt;
+		&lt;name&gt;Noah&lt;/name&gt;
+		&lt;description&gt;Noah is going to be the next quarterback for the New Orleans Saints. He will take them to the Super Bowl.&lt;/description&gt;
+		&lt;age&gt;6&lt;/age&gt;
+	&lt;/kid&gt;
+&lt;/kids&gt;
+</code>
+<p>Note the description field is a bit long. On the front end, my simplest example of using this data would be:</p>
+<code>
+&lt;div spry:region="dsRows"&gt;
+	&lt;div spry:state="loading"&gt;Loading - Please stand by...&lt;/div&gt;
+	&lt;div spry:state="error"&gt;Oh crap, something went wrong!&lt;/div&gt;
+	&lt;div spry:state="ready"&gt;
+<pre><code>&amp;lt;div spry:repeat=&quot;dsRows&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+{name} is {age} years old&amp;lt;br/&amp;gt;
+{description}
+&amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;
+</code></p>
+<p>To tell Spry we want to manipulate the description, we can switch the {description} token to {function::formatDescription}. We then have to create the JavaScript funciton.</p>
+<code>
+function formatDescription(region,lookupFunc) {
+	var value = lookupFunc("{description}");
+	if(value.length &lt;= 100) return value;
+	else return value.substring(0,100) + "...";
+}
+</code>
+<p>The API for these 'format' functions require that we specify both the region and an alias for the lookupFunc. The lookupFunc is used to translate the original token into a real value.</p>
+<p>At that point we do simple string manipulation. If the size is 100 characters or less, we return it. If it is more, we return a substring with ... added to the end. For me, this returned:</p>
+<blockquote>
+<p>
+Jacob is 8 years old<br/>
+Jacob is a cool kid. He likes Bionicles. He doesn't like Star Wars as much as he should.<br/>
+</p>
+<p>
+Lynn is 7 years old<br/>
+Lynn is the most beautiful girl in the world. She is also the most intelligent. She is also a prince...
+</p>
+<p>
+Noah is 6 years old<br/>
+Noah is going to be the next quarterback for the New Orleans Saints. He will take them to the Super ...
+</p>
+</blockquote>
+<p>Nice and simple! Here is the complete code for the front end.</p>
+<code>
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt;
+&lt;title&gt;Untitled Document&lt;/title&gt;
+&lt;script src="/spryjs/xpath.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="/spryjs/SpryData.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+&lt;!--
+var dsRows = new Spry.Data.XMLDataSet("test.xml", "/kids/kid");
+<p>function formatDescription(region,lookupFunc) {
+var value = lookupFunc(&quot;{description}&quot;);
+if(value.length &lt;= 100) return value;
+else return value.substring(0,100) + &quot;...&quot;;
+}
+//--&gt;
+&lt;/script&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div spry:region=&quot;dsRows&quot;&gt;
+&lt;div spry:state=&quot;loading&quot;&gt;Loading - Please stand by...&lt;/div&gt;
+&lt;div spry:state=&quot;error&quot;&gt;Oh crap, something went wrong!&lt;/div&gt;
+&lt;div spry:state=&quot;ready&quot;&gt;</p>
+<pre><code>&amp;lt;div spry:repeat=&quot;dsRows&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+{name} is {age} years old&amp;lt;br/&amp;gt;
+{function::formatDescription}
+&amp;lt;/p&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

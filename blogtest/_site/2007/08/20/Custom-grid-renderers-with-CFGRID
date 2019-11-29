@@ -1,0 +1,86 @@
+<h1>Post</h1>
+
+<p>I've been playing a bit with CFGRID lately (as have others) and I found that by taking a look at <a href="http://extjs.com/">Ext's</a> documentation, there are some <b>very</b> powerful features hiding within the CFGRID tag. ColdFusion provides a function, ColdFusion.Grid.getGridObject, that when used gives you a handler to the underling Ext Grid object. By looking at the <a href="http://extjs.com/deploy/ext/docs/">documentation</a>, you can see which methods are available with the grid. One in particular I thought was pretty neat was the ability to add custom column renderers. What is that?</p>
+<p>Well imagine you have data being fed into the grid that you do not have control over. For example - perhaps you have price information that isn't formatted nicely. Turns out Ext has a set of built in formatters that you can apply to grid columns, one of them being a money formatter. What if you have some other logic? Maybe you want to flag a price that is lower than 10 dollars? Again, using the Ext API, you can write your own formatter just for this purpose.</p>
+<p>I've only just begun to scratch the surface of Ext, but here is a quick and dirty example to give you an idea of what is possible.</p>
+<!--more-->
+<p>First lets create a simple grid:</p>
+<code>
+&lt;cfset data = queryNew("price,product")&gt;
+&lt;cfloop from=1 to=10 index="x"&gt;
+	&lt;cfset total = randRange(20,100) & "." & randRange(1,99)&gt;
+	&lt;cfset product = "Product #X#"&gt;
+	&lt;cfset queryAddRow(data)&gt;
+	&lt;cfset querySetCell(data, "price", total+0, x)&gt;
+	&lt;cfset querySetCell(data, "product", product, x)&gt;
+&lt;/cfloop&gt;
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;data&quot; format=&quot;html&quot; query=&quot;data&quot; width=&quot;600&quot;&gt;
+&lt;cfgridcolumn name=&quot;price&quot; header=&quot;Price&quot;&gt;
+&lt;cfgridcolumn name=&quot;product&quot; header=&quot;Product&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;
+</code></p>
+<p>I'm using a hard coded query with products and prices. This is then fed directly into the grid. Note that I'm not using Ajax here.</p>
+<p>Now let's look at how we can add a custom column renderer. The first thing we need to do is to set up the page to call a function when the grid is done loading. We do this with ajaxOnLoad:</p>
+<code>
+&lt;cfset ajaxOnLoad("testgrid")&gt;
+</code>
+<p>Because I'm not &quot;properly&quot; using Ajax on my page, I also added an import:</p>
+<code>
+&lt;cfajaximport/&gt;
+</code>
+<p>I've mentioned this hack before, and credit goes to <a href="http://cfsilence.com/blog/client/">Todd Sharp</a> for discovering. Now let's look at the JavaScript:</p>
+<code>
+myf = function(data,cellmd,record,row,col,store) {
+	if(data == "Product 4") return "&lt;b&gt;" + data + "&lt;/b&gt;";
+	else return data;
+}
+testgrid = function() {
+	mygrid = ColdFusion.Grid.getGridObject('data');
+	cm = mygrid.getColumnModel();
+	cm.setRenderer(0, Ext.util.Format.usMoney);
+	cm.setRenderer(1,myf);
+	mygrid.reconfigure(mygrid.getDataSource(),cm);
+}
+</code>
+<p>Skip the first function and focus in on testgrid. Testgrid is a horrible name but I was just playing around with the code so forgive me. I grab the grid using the ColdFusion.Grid.getGridObject API mentioned before. Everything after this is based on my reading of the Ext docs. I grab the columns using the getColumnModel function. I apply a renderer to columns 0 and 1 (you will never convince me that 0 based indexes make sense). The first renderer is a built one named usMoney. The second one is a custom function named &quot;myf&quot;. usMoney will do what you imagine - format money. The second was hard coded to look for Product 4, and when found, bold it. I then use reconfigure to apply the column model back to my grid.</p>
+<p>You can see an example of this <a href="http://www.raymondcamden.com/demos/gridc.cfm">here</a>. Full source code is below.</p>
+<code>
+&lt;cfajaximport/&gt;
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script&gt;</p>
+<p>myf = function(data,cellmd,record,row,col,store) {
+if(data == &quot;Product 4&quot;) return &quot;&lt;b&gt;&quot; + data + &quot;&lt;/b&gt;&quot;;
+else return data;
+}
+testgrid = function() {
+mygrid = ColdFusion.Grid.getGridObject('data');
+cm = mygrid.getColumnModel();
+cm.setRenderer(0, Ext.util.Format.usMoney);
+cm.setRenderer(1,myf);
+mygrid.reconfigure(mygrid.getDataSource(),cm);
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfset data = queryNew(&quot;price,product&quot;)&gt;
+&lt;cfloop from=1 to=10 index=&quot;x&quot;&gt;
+&lt;cfset total = randRange(20,100) &amp; &quot;.&quot; &amp; randRange(1,99)&gt;
+&lt;cfset product = &quot;Product #X#&quot;&gt;
+&lt;cfset queryAddRow(data)&gt;
+&lt;cfset querySetCell(data, &quot;price&quot;, total+0, x)&gt;
+&lt;cfset querySetCell(data, &quot;product&quot;, product, x)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;data&quot; format=&quot;html&quot; query=&quot;data&quot; width=&quot;600&quot;&gt;
+&lt;cfgridcolumn name=&quot;price&quot; header=&quot;Price&quot;&gt;
+&lt;cfgridcolumn name=&quot;product&quot; header=&quot;Product&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;cfset ajaxOnLoad(&quot;testgrid&quot;)&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

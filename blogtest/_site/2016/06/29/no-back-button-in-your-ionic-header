@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>A few months ago I wrote up a quick article about titles not correctly updating in Ionic V1 apps (<a href="https://www.raymondcamden.com/2015/12/18/is-your-ionic-view-title-not-updating/">Is your Ionic View title not updating?</a>). Today I've run into another little issue with the header. I was working on a <em>very</em> quick demo for a presentation tonight and had an app with a grand total of two views - a master list and detail.</p>
+<!--more-->
+<p>Everything was working fine, but then I noticed I didn't have a back button when looking at the detail view. As far as I could tell, my code was fine. Here's what I had in the index.html file:</p>
+<pre><code class="language-markup">
+&lt;ion-nav-bar&gt;
+		&lt;ion-nav-back-button&gt;Back&lt;/ion-nav-back-button&gt;
+&lt;/ion-nav-bar&gt;
+
+&lt;ion-nav-view&gt;&lt;/ion-nav-view&gt;
+</code></pre>
+<p>And each view was pretty simple as well. You can see the problem in action at this CodePen: <a href="http://codepen.io/cfjedimaster/pen/WxpPap">http://codepen.io/cfjedimaster/pen/WxpPap</a>. (I apologize for the formatting in the code - I was cutting and pasting rather quickly.)</p>
+<p>I brought it up in the Slack chat and Mike Hartington came to the rescue rather quickly. Turns out the fix was... applying a class. Seriously. Even though the header has a class by default, if you don't explicitly specify one, then the back button won't show up. Literally - the fix is just this:</p>
+<pre><code class="language-markup">
+&lt;ion-nav-bar class="bar-royal"&gt;
+		&lt;ion-nav-back-button&gt;Back&lt;/ion-nav-back-button&gt;
+&lt;/ion-nav-bar&gt;
+
+&lt;ion-nav-view&gt;&lt;/ion-nav-view&gt;
+</code></pre>
+<p>You can see this working in a CodePen Mike made for me: <a href="http://codepen.io/mhartington/pen/YWZBdK">http://codepen.io/mhartington/pen/YWZBdK</a>.</p>
+<p>Obviously I think this is - well - bunk (grin) - so I'll filed a bug report for it here: <a href="https://github.com/driftyco/ionic/issues/7124">Back button will not show up if you do not specify a class for the nav bar</a>.</p>
+<p>And in case you're curious - here is the &quot;Before&quot; picture of this mission-critical Enterprise demo:</p>
+<img src="https://static.raymondcamden.com/images/2016/06/ioniccat1.png" class="imgborder">
+<p>And here is the &quot;After&quot; picture:</p>
+<img src="https://static.raymondcamden.com/images/2016/06/ioniccat2.png" class="imgborder">}

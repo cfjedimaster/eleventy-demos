@@ -1,0 +1,154 @@
+<h1>Post</h1>
+
+<p>A few days ago I shared the first draft of a customizable Vue.js weather app (<a href="https://www.raymondcamden.com/2018/03/19/building-a-customizable-weather-app-in-vue/">Building a Customizable Weather App in Vue.js</a>). Yesterday I had some time to work on an update and I thought I'd share my progress.</p>
+<p>At the end of the first draft, my code would get your location and then use the <a href="https://developer.yahoo.com/weather/">Yahoo Weather API</a> to fetch the forecast. What it didn't do was update the background to match the weather. To support this, I came up with the following procedure.</p>
+<p>First - I'm going to take the weather type, which Yahoo uses a code for, and &quot;collapse&quot; it down into a few specific types. Yahoo supports nearly <a href="https://developer.yahoo.com/weather/documentation.html">fifty different types</a> of weather, from tropical storms to dust. I figured it made sense to simplify the various types into a much smaller list. In theory, you could switch Yahoo out with another service and as long as you return the same core types, then the rest of the code would work fine.</p>
+<p>Second - I wanted to make it so you (you being the person using my code for your own personalized app) could easily supply images. To support that, you can specify images by weather type like so:</p>
+<pre><code class="language-js">images = {
+	type1: [ array of images ],
+	type2: [ array of images]
+}
+</code></pre>
+<p>By using an array, we can randomly select one to keep things a bit interesting so you don't see the same picture every time.</p>
+<p>Finally - to make it even easier for you - I support a &quot;catchall&quot; bucket of images that will be used if the code can't find images for a specific weather type. Or shoot, maybe you don't care about finding images for a particular type of weather and just want random pictures of your kids, weather be damned. Here's an example:</p>
+<pre><code class="language-js">images = {
+	&quot;rain&quot;: [ &quot;kids_rain1.jpg&quot;, &quot;kids_rain2.jpg&quot; ],
+	&quot;snow&quot;: [ &quot;snow_in_louisiana.jpg&quot; ],
+	&quot;catchall&quot;: [
+		&quot;kidsa.jpg&quot;,
+		&quot;kidsb.jpg&quot;,
+		&quot;kidsc.jpg&quot;
+	]
+}
+</code></pre>
+<p>I like this because it's simple and it allows you to be lazy too. Heck, you can even just use one image. Let's take a look at the updated code.</p>
+<pre><code class="language-js">const app = new Vue({
+	el:'#app',
+	data:{
+		loading:true,
+		lat:null,
+		lon:null,
+		location:null,
+		temp:null,
+		temp_low:null,
+		temp_high:null,
+		images:{
+			&quot;rain&quot;:[
+				&quot;clouds.jpg&quot;
+			],
+			&quot;catchall&quot;:[
+				&quot;clouds.jpg&quot;
+			]
+		},
+		selectedImage:null
+	},
+	created() {
+
+		navigator.geolocation.getCurrentPosition(pos =&gt; {
+			console.log('got coordinates', pos.coords);
+			this.lat = pos.coords.latitude;
+			this.lon = pos.coords.longitude;
+			this.loadWeather();
+		});
+
+	},
+	methods:{
+		loadWeather() {
+
+			axios.get(`https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(SELECT%20woeid%20FROM%20geo.places%20WHERE%20text%3D%22(${this.lat}%2C${this.lon})%22)&amp;format=json&amp;env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys`)
+			.then(res =&gt; {
+				let weather = res.data.query.results.channel;
+				console.log('response',weather);
+				
+				this.location = weather.location.city + &quot;, &quot; + weather.location.region;
+				this.temp = weather.item.condition.temp;
+				this.temp_low = weather.item.forecast[0].low;
+				this.temp_high = weather.item.forecast[0].high;
+				this.desc = weather.item.condition.text;
+
+				//get the proper image
+				this.selectedImage = this.getWeatherImage(weather);
+				console.log(this.selectedImage);
+				//reach out to the DOM, bad ray
+				/*
+				document.body.style.background = `url(${this.selectedImage})`;
+				document.body.style['background-image'] = `
+				linear-gradient(
+					rgba(1,0,0,0.5),
+					rgba(0,0,0,0.5)
+				), url(${this.selectedImage});`;
+				*/
+				document.body.style.background = `url(${this.selectedImage})`;
+
+				this.loading = false;
+				
+			})
+			.catch(e =&gt; {
+				console.error(e);
+			});
+				
+		},
+		getWeatherImage(d) {
+			/*
+			Alrighty then - so to be clear, this is VERY specific for Yahoo. Yahoo supports (https://developer.yahoo.com/weather/documentation.html)
+			49 unique weather codes. We're going to use some logic to break them down into a smaller subset. So for example, fair(day) and fair(night) will just be fair. blowing snow, snow, flurries, etc will be snow. In theory, what we simplify down to could be a set list such that if
+			we switch to another service, we still return the same core results. In theory.
+
+			Note that I expect some people may not like the 'groupings' I made. Change it how you will! :)
+			Some of these I just completely punted on, like smokey and dust
+			*/
+
+			let weather = '';
+			let code = d.item.condition.code;
+			console.log('weather code is '+code);
+			
+			if(code &gt;= 0 &amp;&amp; code &lt;= 4) weather = 'storm';
+			if(code &gt;= 5 &amp;&amp; code &lt;= 12) weather = 'rain';
+			if(code &gt;= 13 &amp;&amp; code &lt;= 16) weather = 'snow';
+			if(code === 17 || code === 18) weather = 'rain'; // hail and sleet
+			//todo: 19 dust
+			if(code &gt;= 20 &amp;&amp; code &lt;= 22) weather = 'foggy';
+			if(code &gt;= 23 &amp;&amp; code &lt;= 24) weather = 'windy';
+			//todo: 25 cold (seriously - cold is a condition?)
+			if(code &gt;= 26 &amp;&amp; code &lt;= 30) weather = 'cloudy';
+			if(code &gt;= 31 &amp;&amp; code &lt;= 36) weather = 'clear'; // this include 36=hot
+			if(code &gt;= 37 &amp;&amp; code &lt;= 39) weather = 'storm';
+			if(code === 40) weather = 'rain';
+			if(code &gt;= 41 &amp;&amp; code &lt;= 43) weather = 'snow';
+			if(code === 44) weather = 'cloudy';
+			if(code === 45) weather = 'storm';
+			if(code === 46) weather = 'snow';
+			if(code === 47) weather = 'storm';
+			console.log('weather is '+weather);
+			/*
+			Ok, so now the logic is this.
+
+			If the user specified this.images[TYPE], we expect it to be an an array and we 
+			select a random one.
+
+			Otherwise, we look for this.images.catchall, also an array, and pick randomly.
+			*/
+			if(this.images[weather]) {
+				return this.images[weather][getRandomInt(0, this.images[weather].length)];
+			} else {
+				return this.images['catchall'][getRandomInt(0, this.images['catchall'].length)];
+			}
+		}
+	}
+
+});
+
+//Thank you, MDN
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+</code></pre>
+<p>The important part above is <code>getWeatherImage</code>. You can see my logic to convert Yahoo's multiple weather types to a simpler list. Finally I just select a random image. The last change was to update the background:</p>
+<pre><code class="language-js">document.body.style.background = `url(${this.selectedImage})`;
+</code></pre>
+<p>You can see some commented out code there. I was using some CSS to darken the image and I was not able to dynamically update the URL. I ended punting on that. I'd love it if someone could help me figure that out.</p>
+<p>You can find the code for this version here: https://github.com/cfjedimaster/webdemos/tree/master/vueweather/v2</p>
+<p>What's next? Well, in theory, I could add support for multiple locations. I was considering that, but the last post didn't get any comments so I'm not sure if anyone is actually enjoying this. I'm totally fine with that (I had fun writing it!) but I'm not sure I'll go deeper unless there is some interest. Let me know what you think.</p>
+}

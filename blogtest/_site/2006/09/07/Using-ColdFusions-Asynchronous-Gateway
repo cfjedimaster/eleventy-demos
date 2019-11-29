@@ -1,0 +1,49 @@
+<h1>Post</h1>
+
+<p>I got an email a while back from a user who was having issues with ColdFusion's Asynchronous Gateway code. It had been a while since I used it so I thought it might be nice to refresh my own memory, and provide a simple guide for users on how to work with it. I ran into a few issues that I bet have tricked up my own readers. (Hopefully we will see Damon Cooper's <a href="http://www.dcooper.org/blog/client/index.cfm?mode=entry&entry=916FEFD9-4E22-1671-57A23859C50FFF47">cfthread</a> get rolled into the core product to make this a lot easier.) This guide will not cover everything you can do with the Asynch gateway, but it should be enough to get you going.</p>
+<!--more-->
+<p>So let's talk. When using the Asynch Gateway you are coordinating and working with two different files. You have one file that makes the requests. You can think of this as the customer asking for orders. The other file is a CFC and receives the requests via the Asynch Gateway. You can think of this as the wageslave behind the counter making your Happy Meal. To think of it another way - you have one file that fire offs the events and another file handling the (potentially) slower request in an asynchronous matter. All that means is that ColdFusion doesn't have to wait around for the slow process to end.</p>
+<p>The very first thing you need to do is create the CFC. You do <b>not</b> need to write <b>any</b> code in this CFC, but you must at least have the file. My file is located under my web root at testingzone/test.cfc. Next, you need to go into your ColdFusion Administrator. Under Event Gateways click <b>Gateway Instances</b>. Click <b>Add Gateway Instance</b>.  A form will pop up. You are concerned about the <b>Gateway ID</b> and the CFC Path. The Gateway ID is simply a label, nothing more. So for example, if your site is CIASecretPrisons.com, you may want to give your gateway a name related to the site: CIASecretPrison_AsynchGateway. That's a bit long but you get the idea.</p>
+<p>The CFC path is simply the path to the CFC you are using. You can actually change that at run time, but I'll leave that to the next blog entry. Leave the configuration file field alone and keep Startup Mode to automatic. This just ensures your gateway will run when ColdFusion restarts. Make your gateway and then start it by clicking the green start icon. Click the screen shot below for a larger version of the settings that I used.</p>
+<p><a href="http://ray.camdenfamily.com/images/gateway1.jpg"><img src="http://ray.camdenfamily.com/images/gateway1_small.jpg" border="0"></a></p>
+<p>Now open up your CFC in your <a href="http://www.cfeclipse.org">favorite text editor</a>. In order to correctly listen to the Asynch Gateway, your CFC needs to have a method named onIncomingMessage. This method is sent one argument, a struct, that contains the a set of data. What data? It depends. Let's say you were using the gateway to send mail. Well then your data may contain an email address and a message. I'm using a modified version of the example from the docs which was a basic logger:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<p>&lt;cffunction name=&quot;onIncomingMessage&quot; output=&quot;false&quot; returnType=&quot;void&quot;&gt;
+&lt;cfargument name=&quot;cfEvent&quot; type=&quot;struct&quot; required=&quot;yes&quot;&gt;</p>
+<pre><code>&amp;lt;cfscript&amp;gt;
+if(not structKeyExists(arguments.cfEvent.data, &quot;file&quot;)) arguments.cfEvent.Data.file=&quot;defaultEventLog&quot;;
+if(not structKeyExists(arguments.cfEvent.data, &quot;type&quot;)) arguments.cfEvent.Data.type=&quot;info&quot;;
+&amp;lt;/cfscript&amp;gt;
+
+&amp;lt;cfif structKeyExists(arguments.cfevent.data, &quot;message&quot;)&amp;gt;
+	&amp;lt;cflog text=&quot;#arguments.cfEvent.data.message#&quot; file=&quot;#arguments.cfEvent.data.file#&quot; 
+		   type=&quot;#arguments.cfEvent.data.type#&quot; thread=&quot;yes&quot; date=&quot;yes&quot; time=&quot;yes&quot; application=&quot;yes&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>The code should be pretty trivial. The data passed to the gateway exists in a key named &quot;data&quot; under the cfEvent argument passed in. You see some basic checking for a file and type attribute, but outside of that the code simply logs a value named &quot;message&quot;.</p>
+<p>Let's now switch to the CFM file that will call this CFC. Let me show the code first and then I'll explain it.</p>
+<code>
+&lt;cfscript&gt;
+   status = false;
+   props = structNew();
+   props.message = "Replace me with a variable with data to log";   
+   status = SendGatewayMessage("Asynch CF", props);
+   if (status IS true) WriteOutput('Event Message "#props.Message#" has been sent.');
+&lt;/cfscript&gt;
+</code>
+<p>The code begins by initializing a status variable. This is used as a default flag for what our gateway returns. I then create my data. Again - what you use here will depend on what you are doing with your code. Our logger can take a few things like file and type, but it really just needs a message. Next the <a href="http://www.techfeed.net/cfQuickDocs/?getDoc=SendGatewayMessage">SendGatewayMessage</a> function is used. This lets ColdFusion communicate with the Event Gateway system. I know - it sounds complicated. Just think of it as a message. In this case, I used the gateway ID I had created &quot;Asynch CF&quot;. The second argument is the structure of data. Just so you know - there are some special keys you can use within that structure to change how things work behind the scenes. I'll discuss that in the next entry.</p>
+<p>Guess what - we're done. If you run this in your browser you will see the message logged. By itself this isn't too sexy. But consider modifying your onIncomingMessage like so:</p>
+<code>
+&lt;cfset thread = CreateObject("java", "java.lang.Thread")&gt;
+&lt;cfset thread.sleep(5000)&gt;
+</code>
+<p>This will cause your CFC to pause for five seconds. Rerun your CFM and you will notice <b>no</b> delay. The only delay you have is in actual logging of the message.</p>
+<p>In my next blog entry I'll show a more real world example based on the code I wrote as a <a href="http://ray.camdenfamily.com/index.cfm/2006/7/21/CFTHREADCFJOIN-Proof-of-Concept">proof of concept for cfthread</a>. I'll also discuss those &quot;other&quot; keys I alluded to earlier.</p>
+<p>Something very important to remember: It is possible that your code may contain an error (shocking, I know). What happens when your CFC screws up? You don't get an error on your CFM page. In fact, the status message will still be true. If your CFC doesn't seem to be working correctly, check the eventgateway.log. I added a simple syntax error to my CFC and it was nicely logged:</p>
+<code>
+"Error", "Thread-21", "09/07/06", "08:33:05", ,"Error invoking CFC for gateway Asynch CF: Variable structKeyExistsTheSmithsRule is undefined. "
+</code>}

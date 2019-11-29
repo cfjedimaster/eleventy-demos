@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>Brian asks:</p>
+<blockquote>
+Your rantings about var scoping CFC function variables has really made me look closely to how I code. If I var scope the name of a query before querying a datasource, will that query object become local to the function as well?
+</blockquote>
+<p>Rant? Me? Ok - so maybe I go a bit off the deep end at times with var scoping. The main reason is that it makes stuff very hard to debug if something goes wrong. But to answer your question, yes, if you var scope the name of the query before you use it, it will keep the query local to the function. This is how I do it normally:</p>
+<code>
+&lt;cffunction name="foo" returnType='query" output="false" access="public"&gt;
+    &lt;cfset var q = ""&gt;
+<pre><code>&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;kingsweallare&quot;&amp;gt;
+select name from goo
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfreturn q&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>Notice that I did not define q as a query. Since CF is typeless, this is perfectly fine.</p>
+}

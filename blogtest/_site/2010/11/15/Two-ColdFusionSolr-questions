@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>After my <a href="http://www.raymondcamden.com/index.cfm/2010/11/12/Slides-code-from-ColdFusionSolr-presentation">presentation</a> last week I had a few ColdFusion/Solr questions to follow up on. Here are two of them.</p>
+<!--more-->
+<p>
+<ol>
+<li>Can you use Solr with content indexed on Amazon S3?</li>
+</ol>
+<p>
+<p>Yes and no. The main answer is no. The code below is what I used to test:</p>
+<p>
+<code>
+ &lt;cfset s3dir = "s3://myaccess:mysecret@s3.coldfusionjedi.com"&gt;
+&lt;cfdirectory directory="#s3dir#" name="files"&gt;
+<p>&lt;cfdump var=&quot;#files#&quot;&gt;</p>
+<p>&lt;cfoutput&gt;Indexing #s3dir#&lt;p&gt;&lt;/cfoutput&gt;</p>
+<p>&lt;cfindex action=&quot;update&quot; collection=&quot;indextest1&quot; type=&quot;path&quot; key=&quot;#s3dir#&quot;
+recurse=&quot;true&quot; status=&quot;result&quot; extensions=&quot;.txt,.pdf&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#result#&quot; label=&quot;Result of update operation&quot;&gt;
+</code></p>
+<p>
+<p>When run, you get: <b>The key specified is not a directory: s3://myaccess:mysecret@s3.coldfusionjedi.com. The path in the key attribute must be a directory when type=&quot;path&quot;.</b> Obviously &quot;myaccess&quot; and &quot;mysecret&quot; were real values, but nonetheless, this isn't supported. I'm not terribly surprised by this ColdFusion speaks to Solr and asks it to index a folder but in this case the folder is only 'reachable' via ColdFusion. However, you <i>can</i> make use of S3 and Solr indexing. Whenever you move a file to S3, simply run the index operation first. Let Solr index the file and then push it off to S3.</p>
+<p>
+<ol start="2">
+<li>Can you index a file and a db record together in the same search &quot;row&quot;. I know SOLR can handle it if you roll the code manually, but can this be done with the CF tags?</li>
+</ol>
+<p>
+<p>Again - yes and no. The tag that indexes file based data and query based data (cfindex) can only do one type at a time. So with just one tag you couldn't do this. However - if you read and parse the file yourself (for example, using cfpdf to read in the text of a pdf) you can then merge that textual data with any other database data when you add it to the index. I'm not sure how useful this would be. I could see merging file data with database information being stored in the custom fields though.</p>
+}

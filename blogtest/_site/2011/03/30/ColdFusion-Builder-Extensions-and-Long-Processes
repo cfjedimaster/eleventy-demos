@@ -1,0 +1,288 @@
+<h1>Post</h1>
+
+<p>A week or so ago <a href="http://www.jeffcoughlin.com/">Jeff Coughlin</a> came to me with an interesting question. Was it possible for a ColdFusion Builder extension to handle a long running process? By that he meant fire off some type of process and handle the duration without locking up the editor. I got some time to think about this at lunch today and come up with a proof of concept. I then followup the POC with a real, if silly, extension that will scan your ColdFusion code and give you a report on which tags were used the most. Before going any further, note that there is already a good idea of this concept out there - Terry Ryan's <a href="http://builderstats.riaforge.org/">builderStats</a> extension. It makes use of Flash to generate a dialog that nicely waits while the back end code does a bunch of magic bean counting. I wanted a pure HTML solution using jQuery because... well... because. Here's what I came up with. Feel free to poke multiple holes into this solution.</p>
+<!--more-->
+<p>
+<p>I began with a new extension, SlowView, that would be as simple as possible. (Both extensions will be attached to this blog entry at the bottom.) SlowView added a menu item to my editor. There was no logic to this - I just wanted a quick and dirty menu item:</p>
+<p>
+<code>
+&lt;application&gt;
+<pre><code>&amp;lt;name&amp;gt;SlowView&amp;lt;/name&amp;gt;
+&amp;lt;author&amp;gt;Raymond Camden&amp;lt;/author&amp;gt;
+&amp;lt;version&amp;gt;1&amp;lt;/version&amp;gt;
+&amp;lt;email&amp;gt;ray@camdenfamily.com&amp;lt;/email&amp;gt;
+&amp;lt;license&amp;gt;Buy something off the wishlist! http://www.amazon.com/o/registry/2TCL1D08EZEYE&amp;lt;/license&amp;gt;	
+&amp;lt;description&amp;gt;POC for handling a slow process in an extension&amp;lt;/description&amp;gt;	
+
+&amp;lt;menucontributions&amp;gt;
+
+	&amp;lt;contribution target=&quot;editor&quot;&amp;gt;    
+		&amp;lt;menu name=&quot;Run SlowView&quot;&amp;gt;    
+			&amp;lt;action name=&quot;Run&quot; handlerid=&quot;handler1&quot; showresponse=&quot;true&quot;&amp;gt;&amp;lt;/action&amp;gt;    
+		&amp;lt;/menu&amp;gt;    
+	&amp;lt;/contribution&amp;gt;	    
+
+&amp;lt;/menucontributions&amp;gt;
+
+&amp;lt;handlers&amp;gt;		
+	&amp;lt;handler id=&quot;handler1&quot; type=&quot;CFM&quot; filename=&quot;test.cfm&quot; /&amp;gt;
+&amp;lt;/handlers&amp;gt;
+</code></pre>
+<p>&lt;/application&gt;
+</code></p>
+<p>
+<p>Nothing here should be new or special yet. Now let's look at test.cfm:</p>
+<p>
+<code>
+&lt;cfinclude template="udfs.cfm"&gt;
+<p>&lt;cfheader name=&quot;Content-Type&quot; value=&quot;text/xml&quot;&gt;
+&lt;cfoutput&gt;
+&lt;response showresponse=&quot;true&quot;&gt;
+&lt;ide url=&quot;#getCurrentDir()#/display.cfm&quot;&gt;
+&lt;view id=&quot;slowview1&quot; title=&quot;Slow View 1&quot; /&gt;
+&lt;/ide&gt;
+&lt;/response&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>udfs.cfm simply include a few utility functions and are not relevant to this post. Note though that I'm creating a new view called &quot;showview1&quot;. Views in CFBuilder must be unique. If not, your output will overwrite another view. Note though that I'm loading another URL for the actual stuff to put in the view - display.cfm. Now let's look at that.</p>
+<p>
+<code>
+&lt;cfinclude template="udfs.cfm"&gt;
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script src=&quot;jquery-1.5.1.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+var watcher;
+var lastmsg = &quot;&quot;;</p>
+<p>function checkProcess() {
+$.get(&quot;checkprocess.cfm&quot;, {}, function(res,code) {
+if(res.MESSAGE != lastmsg) {
+$(&quot;#console&quot;).append(res.MESSAGE+&quot;&lt;br&gt;&quot;);
+lastmsg = res.MESSAGE;
+}
+if(res.MESSAGE == &quot;Done.&quot;) {
+clearInterval(watcher);
+$(&quot;#result&quot;).html(&quot;The result is &quot;+res.RESULT);
+}
+}, &quot;json&quot;);
+}</p>
+<p>$(document).ready(function() {</p>
+<pre><code>$(&quot;#submitBtn&quot;).click(function() {
+	var input = $(&quot;#number&quot;).val();
+	if(input == &quot;&quot; || isNaN(input)) return;
+	//fire off the request
+	$(&quot;#result&quot;).html(&quot;Beginning your process - please stand by.&quot;);
+	$.get(&quot;process.cfm&quot;,{input:input});
+	//now begin polling
+	watcher = setInterval(checkProcess,1000);
+});	
+</code></pre>
+<p>});
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form&gt;
+Input number: &lt;input type=&quot;text&quot; name=&quot;number&quot; id=&quot;number&quot;&gt;
+&lt;input type=&quot;button&quot; id=&quot;submitBtn&quot; value=&quot;Slowly Double it&quot;&gt;
+&lt;div id=&quot;result&quot;&gt;&lt;/div&gt;
+&lt;/form&gt;</p>
+<p>&lt;div id=&quot;console&quot;&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Ok, now we've got some stuff going on! Let's look at the bottom first. I've got a basic form with a button. Below that is a result div and below that is a console div. As you can guess, the console div is mainly going to be used for debugging. Now let's go up a bit.</p>
+<p>
+<p>My document.ready block adds a listener to the button click event. I grab the value out of the text field and check if it is numeric. If it is, I make a GET request to process.cfm. <b>Notice that I do not have a result handler.</b> I will not be hanging around for the end of this call. Instead, I set up an interval to run every second.</p>
+<p>
+<p>If we go higher then into checkProcess, you can see I'm performing a request to checkprocess.cfm. This is going to return a result structure to me that I can use to check the status of my process. As you can see, I look for a new message, and if one exists, I print it out. If the message is &quot;Done.&quot;, I remove my interval and tell the user. Now let's look at our two server side files. First, process.cfm:</p>
+<p>
+<code>
+&lt;cfparam name="url.input" default="0"&gt;
+&lt;cfset url.input = val(url.input)&gt;
+<p>&lt;!--- begin my super slow response ---&gt;
+&lt;cfset application.status = {}&gt;
+&lt;cfset application.status.message = &quot;Begun&quot;&gt;</p>
+<p>&lt;cfset sleep(3000)&gt;
+&lt;cfset application.status.message = &quot;Part of the way done.&quot;&gt;</p>
+<p>&lt;cfset sleep(3000)&gt;
+&lt;cfset application.status.message = &quot;Mostly done.&quot;&gt;</p>
+<p>&lt;cfset sleep(3000)&gt;
+&lt;cfset application.status.message = &quot;Done.&quot;&gt;
+&lt;cfset application.status.result = url.input * 2&gt;
+</code></p>
+<p>
+<p>This code takes the input and does quick validation on it. I then create an Application-scoped structure to hold the status. Remember - a CFB extension is much like a single user application. So using the Application scope is (pretty much) ok for this. I then use a few sleep methods to delay the completion of the file. Once it's all the way done I store my result. Here then is checkprocess.cfm:</p>
+<p>
+<code>
+&lt;cfset json = serializeJSON(application.status)&gt;
+&lt;cfcontent type="application/json" reset="true"&gt;&lt;cfoutput&gt;#json#&lt;/cfoutput&gt;
+</code>
+<p>
+<p>As you can see, all it does it spit out the Application variable. So how does it work? Here is a quick Jing video:</p>
+<p>
+<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0" width="498" height="554" id="mymoviename"> 
+<param name="movie" value="http://www.raymondcamden.com/images/videos/2011-03-30_1717.swf" />  
+<param name="quality" value="high" /> 
+<param name="bgcolor" value="#ffffff" /> 
+<embed src="http://www.coldfusionjedi.com/images/videos/2011-03-30_1717.swf" quality="high" bgcolor="#ffffff" width="498" height="554" name="mymoviename" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer"> 
+</embed> 
+</object>  
+<p>
+<p>Notice that I'm able to use the editor while this is going on. Polling isn't the most effective way to talk with the server, but in this case, it works just fine I'd say. Nice and simple. Now let's look at a more advanced example, TagCounter. First, it's ide_config.xml file:</p>
+<p>
+<code>
+&lt;application&gt;
+<pre><code>&amp;lt;name&amp;gt;Tag Counter&amp;lt;/name&amp;gt;
+&amp;lt;author&amp;gt;Raymond Camden&amp;lt;/author&amp;gt;
+&amp;lt;version&amp;gt;1&amp;lt;/version&amp;gt;
+&amp;lt;email&amp;gt;ray@camdenfamily.com&amp;lt;/email&amp;gt;
+&amp;lt;license&amp;gt;Buy something off the wishlist! http://www.amazon.com/o/registry/2TCL1D08EZEYE&amp;lt;/license&amp;gt;	
+&amp;lt;description&amp;gt;I count your ColdFusion tags.&amp;lt;/description&amp;gt;	
+
+&amp;lt;menucontributions&amp;gt;
+
+	&amp;lt;contribution target=&quot;editor&quot;&amp;gt;    
+		&amp;lt;menu name=&quot;Count Tags&quot;&amp;gt;    
+			&amp;lt;action name=&quot;Do It&quot; handlerid=&quot;startView&quot; showresponse=&quot;true&quot;&amp;gt;&amp;lt;/action&amp;gt;    
+		&amp;lt;/menu&amp;gt;    
+	&amp;lt;/contribution&amp;gt;
+
+	&amp;lt;contribution target=&quot;projectview&quot;&amp;gt;
+		&amp;lt;menu name=&quot;Count Tags&quot;&amp;gt;
+    		&amp;lt;action name=&quot;Do It&quot; handlerid=&quot;startView&quot; showResponse=&quot;true&quot;&amp;gt;&amp;lt;/action&amp;gt;
+		&amp;lt;/menu&amp;gt;
+	&amp;lt;/contribution&amp;gt;
+
+&amp;lt;/menucontributions&amp;gt;
+
+&amp;lt;handlers&amp;gt;		
+	&amp;lt;handler id=&quot;startView&quot; type=&quot;CFM&quot; filename=&quot;start.cfm&quot; /&amp;gt;
+&amp;lt;/handlers&amp;gt;
+</code></pre>
+<p>&lt;/application&gt;
+</code></p>
+<p>
+<p>Of note is that this extension supports both the project view and the editor view. Now let's look at start.cfm, where I went ahead and used my <a href="http://builderhelper.riaforge.org/">builderHelper</a> utility.</p>
+<p>
+<code>
+&lt;cfset helper = createObject("component", "builderHelper").init(ideeventinfo)&gt;
+&lt;cfset application.res = helper.getSelectedResource()&gt;
+<p>&lt;cfheader name=&quot;Content-Type&quot; value=&quot;text/xml&quot;&gt;
+&lt;cfoutput&gt;
+&lt;response showresponse=&quot;true&quot;&gt;
+&lt;ide url=&quot;#helper.getRootURL()#/display.cfm&quot;&gt;
+&lt;view id=&quot;tagcounter&quot; title=&quot;Tag Counter&quot; /&gt;
+&lt;/ide&gt;
+&lt;/response&gt;
+&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>Outside of using the utility, the other change here is that I store the selected resource to an application variable. Was it a click from the project view or the editor? Who cares. builderHelper figures it out for me. Now let's look at display.cfm:</p>
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script src=&quot;jquery-1.5.1.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+var watcher;
+var lastmsg = &quot;&quot;;</p>
+<p>function fixTag(s) {
+s = s.replace(&quot;&lt;&quot;,&quot;&lt;&quot;);
+s = s.replace(&quot;&gt;&quot;,&quot;&gt;&quot;);
+return s;
+}</p>
+<p>function checkProcess() {
+$.get(&quot;checkprocess.cfm&quot;, {}, function(res,code) {
+if(res.MESSAGE != lastmsg) {
+$(&quot;#result&quot;).html(res.MESSAGE+&quot;&lt;br&gt;&quot;);
+lastmsg = res.MESSAGE;
+}
+if(res.CODE == 1) {
+clearInterval(watcher);
+var s = &quot;&lt;h2&gt;Results&lt;/h2&gt;&lt;br/&gt;&quot;;
+s += &quot;Scanned &quot;+res.RESULT.TOTALFILES+&quot; total file(s).&lt;br/&gt;&quot;;
+s += &quot;&lt;table border=&quot;1&quot; width=&quot;300&quot;&gt;&quot;;
+for(var x = 0; x&lt;res.RESULT.SORTEDTAGS.length; x++) {
+s+= &quot;&lt;tr&gt;&lt;td&gt;&quot;+fixTag(res.RESULT.SORTEDTAGS[x])+&quot;&lt;/td&gt;&lt;td&gt;&quot;+res.RESULT.TAGS[res.RESULT.SORTEDTAGS[x]]+&quot;&lt;/td&gt;&lt;/tr&gt;&quot;;
+}
+s += &quot;&lt;/table&gt;&quot;;			
+$(&quot;#result&quot;).html(s);
+}
+}, &quot;json&quot;);
+}</p>
+<p>$(document).ready(function() {</p>
+<pre><code>$(&quot;#result&quot;).html(&quot;Beginning your process - please stand by.&quot;);
+$.get(&quot;process.cfm&quot;);
+//now begin polling
+watcher = setInterval(checkProcess,1000);
+</code></pre>
+<p>});
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p id=&quot;main&quot;&gt;
+&lt;cfif application.res.type is &quot;file&quot;&gt;
+Scanning file #application.res.path#.
+&lt;cfelse&gt;
+Scanning folder #application.res.path#.
+&lt;/cfif&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;p id=&quot;result&quot;&gt;&lt;/p&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Now this is a bit more complex than before. I begin (and as always, I'm starting at the bottom) by reporting on the type of scan being made. Unlike the form-based extension, this one begins the process immediately. Now I'm assuming a nice clean CODE result from the back end so I've got a simpler way to tell when done. Everything else is just vanilla layout of the data. Let's look at the back end.</p>
+<p>
+<code>
+&lt;cfset files = []&gt;
+<p>&lt;cfset application.status = {}&gt;
+&lt;cfset application.status.code = 0&gt;
+&lt;cfset application.status.result = {}&gt;
+&lt;cfset application.status.result.tags = {}&gt;
+&lt;cfset application.status.message = &quot;&quot;&gt;</p>
+<p>&lt;cfif application.res.type is &quot;file&quot;&gt;
+&lt;cfset files[1] = application.res.path&gt;
+&lt;cfelse&gt;
+&lt;cfset files = directoryList(application.res.path, true, &quot;path&quot;,&quot;<em>.cfm|</em>.cfc&quot;)&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(files)#&quot;&gt;
+&lt;cfset application.status.message = &quot;Processing file #x# out of #arrayLen(files)#.&quot;&gt;
+&lt;cfset contents = fileRead(files[x])&gt;</p>
+<pre><code>&amp;lt;cfset tags = reMatchNoCase(&quot;&amp;lt;cf.*?&amp;gt;&quot;,contents)&amp;gt;
+&amp;lt;!--- remove attributes ---&amp;gt;
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#arrayLen(tags)#&quot;&amp;gt;
+	&amp;lt;cfset tag = tags[x]&amp;gt;
+	&amp;lt;cfset tag = reReplace(tag,&quot;[[:space:]].*?&amp;gt;&quot;,&quot;&amp;gt;&quot;)&amp;gt;
+	&amp;lt;cfset tags[x] = tag&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfloop index=&quot;tag&quot; array=&quot;#tags#&quot;&amp;gt;
+	&amp;lt;cfif not structKeyExists(application.status.result.tags, tag)&amp;gt;
+		&amp;lt;cfset application.status.result.tags[tag] = 0&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfset application.status.result.tags[tag]++&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;cfset application.status.result.totalFiles = arrayLen(files)&gt;
+&lt;cfset application.status.result.sortedTags = structSort(application.status.result.tags, &quot;numeric&quot;, &quot;desc&quot;)&gt;
+&lt;cfset application.status.code = 1&gt;
+</code></p>
+<p>
+<p>The idea here is simple - create an error of either one file or all the files in a folder. Note that the docs are wrong about directoryList. You <i>can</i> provide multiple filters. Once I have my array, I begin looping over it. For each file I read in the contents and use some simple regex to extract the tags. This isn't rock solid but works ok. Once done I can use structSort to get a list of tags in descending order of use. And that's it. Here's a video of it scanning BlogCFC.</p>
+<p>
+<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0" width="643" height="547" id="mymoviename"> 
+<param name="movie" value="http://www.coldfusionjedi.com/images/videos/2011-03-30_1729.swf" />  
+<param name="quality" value="high" /> 
+<param name="bgcolor" value="#ffffff" /> 
+<embed src="http://www.coldfusionjedi.com/images/videos/2011-03-30_1729.swf" quality="high" bgcolor="#ffffff" width="643" height="547" name="mymoviename" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer"> 
+</embed> 
+</object>
+<p>
+<p>Enjoy!<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fforblog%2Ezip'>Download attached file.</a></p></p>
+}

@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>My project manager discovered an interesting issue while I was gone. <a href="http://www.mindseye.com">We</a> are currently working on a project now for a site that uses a Flash application to browse content. The Flash SWF calls a CFC to get the content. The back end is our ColdFusion based CMS <a href="http://www.mindseyeelement.com">Element</a>, which uses a rich text editor. The client was instructed that Flash does not understand all HTML tags, so they needed to keep things simple. That worked fine until the PM noticed something odd. Some sentences were running together. As an example:</p>
+<p>Bush is a monkey.No, monkeys have more brains.</p>
+<p>Turns out - the content was being pased in from another source like so:</p>
+<p>Bush is a monkey.&amp;nbsp;No, monkeys have more brains.</p>
+<p>And Flash was ignoring the non-breaking space. Luckily enough it was easy enough to fix. I just added a method to my CFC to change the html entity to a normal space, which Flash respected.</p>
+<p>As a related issue - the rich text editor was using liked to use the STRONG tag instead of B. Flash wants B, not STRONG. Luckily, the same method easily fixed that as well.</p>
+}

@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Ok, that's kind of a dumb title. Todays puzzler could actually be a nice little utility. In fact, the winner will get added to <a href="http://www.cflib.org">CFLib</a>, so this isn't a total waste of a time. A few days ago I discovered the <a href="http://www.opengroup.org/onlinepubs/009695399/utilities/nl.html">nl</a> command. It takes a file and dumps it out to the screen with line numbers. Very handy! Your job is to build a UDF that will:</p>
+<p>a) Take a filename or string as input.
+b) Return a string that contains the contents of the file with a line number at the beginning of each line.</p>
+<p>Bonus points if you format it such that the line #s 1-9 have a space in them if the total number of lines is greater than 10. This isn't as easy as it sounds. There may be 1000, or 10000 lines. This would change the amount of padding needed.</p>
+}

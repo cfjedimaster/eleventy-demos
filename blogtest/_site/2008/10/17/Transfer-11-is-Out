@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>Just a quick note to let people know that Mark Mandel has released Transfer 1.1. You can get full details on his <a href="http://www.transfer-orm.com/?action=displayPost&ID=372">blog entry</a>. There is a list of new features, but what impresses me most are the new TQL custom tags. I'm stealing from his blog post, but you can now do queries like so:</p>
+<code>
+&lt;cfimport prefix="report" taglib="/transfer/tags"&gt;
+<p>&lt;---  Do list operations ---&gt;
+&lt;t:query name=&quot;result&quot; transfer=&quot;#getTransfer()#&quot;&gt;
+select
+u.firstName, u.lastName
+from
+user.User as u
+where
+u.email like &lt;t:queryparam value=&quot;%example.com&quot; type=&quot;string&quot;&gt;
+&lt;/t:query&gt;
+</code></p>
+<p>Pretty snazzy I say. Anyway, if you still haven't given a Transfer a try, <a href="http://www.transfer-orm.com/?action=transfer.download">download</a> it now.</p>
+}

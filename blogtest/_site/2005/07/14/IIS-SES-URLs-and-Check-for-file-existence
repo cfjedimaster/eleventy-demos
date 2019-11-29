@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>So, a user reported a problem in the latest version of the BlogCFC beta. The SES URLs kept returning a 404 error. Turns out, he was running IIS6 with the &quot;Check for file existence&quot; flag turned on. Why would he do that? Well it let's you have nicer 404 errors on an IIS box with multiple servers on it. So this is normally a &quot;good thing.&quot; That being said...</p>
+<p>Can someone thing of a way, out of the box, to get this working:</p>
+<p>www.foo.com/foo/index.cfm/x/1</p>
+<p>What's odd is that the blog worked when run from the root, ie:</p>
+<p>www.foo.com/x/1</p>
+<p>Either way - does anyone know a work-around for this that does NOT involve using ISAPIRewrite? (Or using the 404 template.)</p>
+}

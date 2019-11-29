@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>This came up on cf-talk today - if you want CF to be able to examine network shares, you must set the service to run as a user that has access to the share. This is <b>not</b> how CF is set to run normally, so you will have to modify the service.</p>
+}

@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>Christian Ready pinged me a few days ago about an interesting problem he was having at one of his <a href="http://www.marcor.com/">web sites</a>. His search (Verity-based on CFMX7) was returning HTML. The HTML was escaped so the user literally saw stuff like this in the results:</p>
+<blockquote>
+Hi, my name is &lt;b&gt;Bob&lt;/b&gt; and I'm a rabid developer!
+</blockquote>
+<!--more-->
+I pointed out that the regex used to remove HTML would also work for escaped html:
+<code>
+&lt;cfset cleaned = rereplace(str, "&lt;.*?&gt;", "", "all")&gt;
+</code>
+<p>In English, this regex matches the escaped less than sign (&amp;lt;), any character (non greedy, more on that in a bit), and then the escaped greater than symbol (&amp;gt;). The &quot;non greedy&quot; part means to match the smallest possible match possible. Without this, the regex would remove the html tag and everything inside of it! We just want to remove the tags themselves.</p>
+<p>This worked - but then exposed another problem. Verity was returning text with incomplete HTML tags. As an example, consider this text block:</p>
+<code>
+ul&gt;This is some &lt;b&gt;bold&lt;/b&gt; html with &lt;i&gt;markup&lt;/i&gt; in it.
+Here is &lt;b
+</code>
+<p>Notice the incomplete HTML tag at the beginning and end of the string. Luckily regex provides us with a simple way to look for patterns at either the beginning or end of a string. Consider these two lines:</p>
+<code>
+&lt;cfset cleaned = rereplace(cleaned, "&lt;.*?$", "", "all")&gt;
+&lt;cfset cleaned = rereplace(cleaned, "^.*?&gt;", "", "all")&gt;
+&lt;/code
+<p>The first line looks for a match of a &amp;lt; at the end of the string. The next line looks for a &gt; at the beginning of the string. Both allow for bits of the html tag as well.</p>
+<p>So all together this is the code I gave him:</p>
+<p>&lt;code&gt;
+&lt;cfset cleaned = rereplace(str, &quot;&lt;.<em>?&gt;&quot;, &quot;&quot;, &quot;all&quot;)&gt;
+&lt;cfset cleaned = rereplace(cleaned, &quot;&lt;.</em>?$&quot;, &quot;&quot;, &quot;all&quot;)&gt;
+&lt;cfset cleaned = rereplace(cleaned, &quot;^.*?&gt;&quot;, &quot;&quot;, &quot;all&quot;)&gt;
+</code></p>
+<p>Most likely this could be done in one regex instead.</p>
+}

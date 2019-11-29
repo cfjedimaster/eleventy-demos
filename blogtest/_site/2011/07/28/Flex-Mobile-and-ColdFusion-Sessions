@@ -1,0 +1,55 @@
+<h1>Post</h1>
+
+<p>It just works. Thanks. Bye.</p>
+<p/>
+<p>Ok - maybe a little more detail is in order? ;) I knew that Flex on the desktop, when making calls to CFC, kept a session just like any other normal HTTP request. I was also mostly certain that the same held true for Flex Mobile. I decided to verify it just to be sure though. I created an incredibly simple Flex Mobile project that pings a ColdFusion service. Here is the view:</p>
+<p/>
+<!--more-->
+<pre><code class="language-markup">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot; 
+				 xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;HomeView&quot;&gt;
+	
+	&lt;fx:Declarations&gt;
+		&lt;s:RemoteObject id=&quot;testService&quot; destination=&quot;ColdFusion&quot; source=&quot;demos.july282011.remote&quot; endpoint=&quot;http://www.raymondcamden.com/flex2gateway/&quot; /&gt;			
+	&lt;/fx:Declarations&gt;
+
+	&lt;s:layout&gt;
+		&lt;s:VerticalLayout/&gt;
+	&lt;/s:layout&gt;
+
+	&lt;s:Button label=&quot;Test&quot; click=&quot;testService.getKey()&quot; /&gt;
+	&lt;s:Label id=&quot;resultLabel&quot; text=&quot;{testService.getKey.lastResult}&quot; /&gt;
+
+&lt;/s:View&gt;
+</code></pre>
+<p/>
+<p>For those of you who have never seen a lick of Flex code, you can probably guess as to what this code is doing. I've defined a CFC service that points to my blog. I've got a button that when clicked will run getKey. getKey is a ColdFusion component method. I've taken the label field below and bound it to the last result. That's a built in feature that allows me to quickly say, &quot;Just take the last result and drop it here.&quot; Normally you're going to use an event handler for the result but for this simple test it works well enough. Now let's look at the code. First, my Application.cfc:</p>
+<p/>
+<pre><code class="language-js">component {
+	this.name=&quot;flexremotetest1&quot;;
+	this.sessionManagement=&quot;true&quot;;
+	
+	public void function onSessionStart() {
+		session.mykey = randRange(1,9999);
+	}
+	
+}
+</code></pre>
+<p/>
+<p>Nothing too interesting there - just a session start event handler that assigns a random number to the session scope. Now let's look at my CFC:</p>
+<p/>
+<pre><code class="language-js">component {
+
+	remote string function getKey() { 
+		return session.mykey &amp; &quot; - &quot; &amp; session.urltoken;
+	}
+
+}
+</code></pre>
+<p/>
+<p>I've got one method, getKey, that returns the key, and just to be extra sure, the built in URL token for the session. The result is - as expected -  a random number (with the urltoken):</p>
+<p/>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip148.png" />
+<p/>
+<p>I tested it in a few devices just to be extra sure, and as expected, they each had their own sessions. Too easy.</p>
+}

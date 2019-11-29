@@ -1,0 +1,55 @@
+<h1>Post</h1>
+
+<p>A week or so ago I wrote a blog entry on converting ColdFusion logs to RSS feeds (<a href="http://www.raymondcamden.com/index.cfm/2009/3/28/ColdFusion-Logs-to-RSS-with-a-quick-sidetrack-into-zombies">ColdFusion Logs to RSS</a>). In the article I converted lines of a log file into an RSS feed. I mentioned that it was a bit silly to convert the beginning of a log file into RSS since new data is added to the end of a file. How can we grab the end of a file?</p>
+<!--more-->
+<p>One way would be to simply read in the entire file and just create a new array from the last 10 (or whatever) lines. Consider:</p>
+<code>
+&lt;cfset l = "/Users/ray/Desktop/cfserver.log.1"&gt;
+<p>&lt;cfset lines = []&gt;
+&lt;cfloop index=&quot;l&quot; file=&quot;#l#&quot;&gt;
+&lt;cfset arrayAppend(lines,l)&gt;
+&lt;/cfloop&gt;
+&lt;cfset tail = []&gt;
+&lt;cfloop index=&quot;x&quot; from=&quot;#arrayLen(lines)#&quot; to=&quot;#max(arrayLen(lines)-10+1,1)#&quot; step=&quot;-1&quot;&gt;
+&lt;cfset arrayPrepend(tail, lines[x])&gt;
+&lt;/cfloop&gt;
+&lt;cfdump var=&quot;#tail#&quot;&gt;
+</code></p>
+<p>I begin by creating a variable, l, that points to my file. Next, I use a loop to read ine ach line of the file. This is new syntax that was added to ColdFusion 8. Notice I don't have to worry about end of line markers or anything like that. It just plain works.</p>
+<p>Once done, I create a new array, tail, and populate it by reading backwards from the larger array. When done you get a nice array of lines representing the end of the file.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 230.png">
+<p>The file I used was a bit large, 13 megs, so the operation takes a few seconds to run. Could we do it quicker? In the dusty, foggy part of my brain I remember using some Java about 10 years ago to read in the file backwards. I did some digging in the API docs and figured out that I probably needed <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/io/RandomAccessFile.html">RandomAccessFile</a>. It lets you seek to any position in a file and read in data. Using that, I wrote up a simple UDF that seeks, and then steps back one character a time. This is not very safe - I should probably try/catch the read, but it seemed to work well enough.</p>
+<code>
+&lt;cfscript&gt;
+function tailFile(filename) {
+	var line = "";
+	var lines = "";
+	var theFile = createObject("java","java.io.File").init(filename);
+	var raFile = createObject("java","java.io.RandomAccessFile").init(theFile,"r");
+	var pos = theFile.length();
+	var c = "";
+	var total = 10;
+<pre><code>if(arrayLen(arguments) gte 2) total = arguments[2];
+raFile.seek(pos-1);
+
+while( (listLen(line,chr(10)) &amp;lt;= total) &amp;&amp; pos &amp;gt; -1) {
+	c = raFile.read();
+	//if(c != -1) writeOutput(&quot;#c#=&quot; &amp; chr(c) &amp; &quot;&amp;lt;br/&amp;gt;&quot;);
+	if(c != -1) line &amp;= chr(c);
+	raFile.seek(pos--);	
+}
+
+line = reverse(line);
+lines = listToArray(line, chr(10));
+arrayDeleteAt(lines,1);
+return lines;
+</code></pre>
+<p>}
+&lt;/cfscript&gt;</p>
+<p>&lt;cfset l = &quot;/Users/ray/Desktop/cfserver.log.1&quot;&gt;
+&lt;cfdump var=&quot;#tailFile(l)#&quot;&gt;
+</code></p>
+<p>What was interesting was the speed comparison. Using cftimer, I checked them both. Check out the results:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 322.png">
+<p>Pretty significant difference there. (And yes, that's <a href="http://coldfire.riaforge.org">ColdFire</a> in action there.)</p>
+}

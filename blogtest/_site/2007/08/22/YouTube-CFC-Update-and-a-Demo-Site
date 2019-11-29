@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I've updated the YouTube CFC and now have it posted up at RIAForge: <a href="http://youtubecfc.riaforge.org/">YouTube CFC</a></p>
+<p>The new version now includes a utility function to return a query of valid categories for use with the category search API.</p>
+<p>I built a quick <a href="http://www.raymondcamden.com/demos/yt/">little demo</a> site using ColdFusion 8 Ajax goodness and the CFC. Enjoy.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ytb.png">}

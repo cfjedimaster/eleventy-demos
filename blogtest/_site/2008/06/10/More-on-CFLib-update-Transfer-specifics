@@ -1,0 +1,141 @@
+<h1>Post</h1>
+
+<p>Yesterday in my blog entry on the <a href="http://www.raymondcamden.com/index.cfm/2008/6/9/CFLib-2008">CFLib relaunch</a> I mentioned that I'd talk a bit more about my experience with Transfer. What follows is my experience, and my mistakes, and also what I learned (with a lot of help from Mark Mandel), but please keep in mind that I'm still quite new to this.</p>
+<!--more-->
+<p>My biggest mistake was in how I organized my Transfer objects. I began by defining a library and udf object.</p>
+<code>
+&lt;objectDefinitions&gt;
+<p>&lt;package name=&quot;library&quot;&gt;</p>
+<pre><code>&amp;lt;object name=&quot;library&quot; table=&quot;tblLibraries&quot;&amp;gt;
+	&amp;lt;id name=&quot;id&quot; type=&quot;numeric&quot;/&amp;gt;
+	&amp;lt;property name=&quot;name&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;shortdescription&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;description&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;lastupdated&quot; type=&quot;date&quot; /&amp;gt;
+	&amp;lt;property name=&quot;owner&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;owneremail&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;released&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;onetomany name=&quot;udfs&quot;&amp;gt;
+		&amp;lt;link to=&quot;udf.udf&quot; column=&quot;libraryidfk&quot;/&amp;gt;					
+		&amp;lt;collection type=&quot;array&quot;&amp;gt;
+			&amp;lt;order property=&quot;name&quot; order=&quot;asc&quot;/&amp;gt;
+		&amp;lt;/collection&amp;gt;
+	&amp;lt;/onetomany&amp;gt;
+&amp;lt;/object&amp;gt;
+</code></pre>
+<p>&lt;/package&gt;</p>
+<p>&lt;package name=&quot;udf&quot;&gt;</p>
+<pre><code>&amp;lt;object name=&quot;udf&quot; table=&quot;tblUDFs&quot;&amp;gt;
+	&amp;lt;id name=&quot;id&quot; type=&quot;numeric&quot;/&amp;gt;
+	&amp;lt;property name=&quot;name&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;shortdescription&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;description&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;returnvalue&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;example&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;warnings&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;code&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;args&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;released&quot; type=&quot;boolean&quot; /&amp;gt;
+	&amp;lt;property name=&quot;lastupdated&quot; type=&quot;date&quot; /&amp;gt;
+	&amp;lt;property name=&quot;author&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;authoremail&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;javadoc&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;version&quot; type=&quot;numeric&quot; /&amp;gt;
+	&amp;lt;property name=&quot;headercomments&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;exampleother&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;rejected&quot; type=&quot;boolean&quot; /&amp;gt;
+	&amp;lt;property name=&quot;rejectionreason&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;cfversion&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;tagbased&quot; type=&quot;string&quot; /&amp;gt;
+	&amp;lt;property name=&quot;ratecount&quot; type=&quot;numeric&quot; /&amp;gt;
+	&amp;lt;property name=&quot;ratetotal&quot; type=&quot;numeric&quot; /&amp;gt;
+&amp;lt;/object&amp;gt;
+</code></pre>
+<p>&lt;/package&gt;</p>
+<p>&lt;/objectDefinitions&gt;
+</code></p>
+<p>Even if you don't know Transfer, this should make sense. Basically I've created an XML file to reflect my table definitions. But pay special attention to the library block, specifically this area:</p>
+<code>
+&lt;onetomany name="udfs"&gt;
+	&lt;link to="udf.udf" column="libraryidfk"/&gt;					
+	&lt;collection type="array"&gt;
+		&lt;order property="name" order="asc"/&gt;
+	&lt;/collection&gt;
+&lt;/onetomany&gt;
+</code>
+<p>If there is such thing as &quot;hot&quot; xml, this is it. This one block allows me to easily get a Library, and then easily get all the UDFs associated with the library. This works great. Until I tried this with <a href="http://www.cflib.org/library/1">StrLib</a> and it's 319 UDFs. As you can imagine, even with ColdFusion 8 dramatically improving CFC creation, this operation was extremely slow.</p>
+<p>Transfer does let you specify &quot;lazy=true&quot; in the onetomany block. This will only load the related objects when you ask for them, but I needed the UDFs every time the library was viewed.</p>
+<p>Mark made the obvious recommendation - switch to a query. I updated my model to support a new method that would get a set of UDFs based on the library, a starting index, and a max number. This then let me easily handle my pages of UDFs. I felt a bit bad because I thought my model was a bit too closely concerned with the view, but then I had a Coke and got over it. Here is how the controller method looks:</p>
+<code>
+&lt;cffunction name="getLibrary" output="false"&gt;
+	&lt;cfargument name="event" /&gt;
+	&lt;cfset var libid = arguments.event.getValue("libraryid")&gt;
+	&lt;cfset var library = beans.libraryService.getLibrary(libid)&gt;
+	&lt;cfset var perpage = beans.config.getConfigSetting("perpage")&gt;
+	&lt;cfset var udfs = ""&gt;
+	&lt;cfset var start = arguments.event.getValue("start")&gt;
+<pre><code>&amp;lt;cfif not isNumeric(libid) or libid lte 0 or round(libid) neq libid or library.getID() is 0&amp;gt;
+	&amp;lt;cfset arguments.event.addResult(&quot;BadLibrary&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfset arguments.event.setValue(&quot;library&quot;, library) /&amp;gt;
+
+&amp;lt;cfif not isNumeric(start) or start lte 0 or round(start) neq start&amp;gt;
+	&amp;lt;cfset start = 1&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- we only load a set of UDFs at a time, based on a page ---&amp;gt;
+&amp;lt;cfset udfs = beans.UDFService.getUDFsForLibrary(libid,start,perpage)&amp;gt;
+&amp;lt;cfset arguments.event.setValue(&quot;udfs&quot;,udfs)&amp;gt;	
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>This change created another problem. How do I report the number of UDFs for an individual library. The <a href="http://www.cflib.org">home page</a> for CFLib is using a simple query. But on the individual pages I created a Transfer decorator. Transfer automatically creates bean objects for your data. That rocks. These beans are based on the XML declaration for your data. But sometimes you need to extend the bean a bit. For my library I needed to add a get/setUDFCount. By using a decorator I tell Transfer, &quot;Make your normal bean for this object, but I've extended it a bit in this CFC here...&quot;</p>
+<p>I changed my XML for the library object to this:</p>
+<code>
+&lt;object name="library" table="tblLibraries" decorator="cflib2008.model.library"&gt;
+</code>
+<p>And then made the CFC:</p>
+<code>
+&lt;cfcomponent extends="transfer.com.TransferDecorator"&gt;
+<p>&lt;cffunction name=&quot;setUDFCount&quot; access=&quot;public&quot; returnType=&quot;void&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;count&quot; type=&quot;numeric&quot; required=&quot;true&quot;&gt;
+&lt;cfset variables.count = arguments.count&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getUDFCount&quot; access=&quot;public&quot; returnType=&quot;numeric&quot; output=&quot;false&quot;&gt;
+&lt;cfif structKeyExists(variables,&quot;count&quot;)&gt;
+&lt;cfreturn variables.count&gt;
+&lt;cfelse&gt;
+&lt;cfreturn 0&gt;
+&lt;/cfif&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>So nothing too complex here - just a basic get/set. My libraryGateway though handles doing the work for me:</p>
+<code>
+&lt;cffunction name="getLibrary" access="public" returnType="any" output="false"&gt;
+	&lt;cfargument name="id" type="any" required="true"&gt;
+	&lt;cfset var library = ""&gt;
+	&lt;cfset var count = ""&gt;
+<pre><code>&amp;lt;cfif structKeyExists(arguments, &quot;id&quot;) and arguments.id neq &quot;&quot;&amp;gt;
+	&amp;lt;cfset library = variables.transfer.get(&quot;library.library&quot;, arguments.id)&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfset library = variables.transfer.new(&quot;library.library&quot;)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfquery name=&quot;count&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+select	count(id) as total
+from	tbludfs
+where	libraryidfk = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.id#&quot;&amp;gt;
+and		released = 1
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfset library.setUDFCount(count.total)&amp;gt;
+
+&amp;lt;cfreturn library&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>As you can see, up top I handle getting the library. (Again, I love how short and sweet that is.) I then do my custom sql to get the count and set the value in the bean.</p>
+<p>In case folks want to see more of the code, I've zipped up the entire site and have attached it to this blog entry. Please note though that this is the first time I used Transfer from scratch (we use it a lot at <a href="http://www.broadchoice.com">Broadchoice</a>) and the first time I wrote a site in Model-Glue 3. Therefore you should <b>not</b> consider this best practice. (Unless it is - and then I rock.) I didn't include any db scripts either. This is just for folks who want to look at the code behind the site.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fcflib2008%2Ezip'>Download attached file.</a></p></p>
+}

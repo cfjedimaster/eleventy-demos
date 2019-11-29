@@ -1,0 +1,44 @@
+<h1>Post</h1>
+
+<p>Steve asks:</p>
+<blockquote>
+I hate to bug you with a question, but I am at a loss.  I have a 
+database with 200K records and one of the columns contains a string 
+of 0-30 characters that represent 0-15 pairs.  I need to find a way 
+to separate these into some form of list and then count the number 
+of instances of a given pair.  I am "sure" there is a way to dump 
+this into an Array or Struct, but I still don't have a grasp of how 
+to use these.
+<p>Can you think of an &quot;easy&quot; way to do this with CF?</p>
+</blockquote>
+<p>Hey, everything is easy in ColdFusion! (Ok, so maybe I'm a little bit biased.) This almost seems like a perfect Friday Puzzler, but I already have one in mind, so let's look at a simple solution for this.</p>
+<p>His database contains a column that looks like this:</p>
+<p>01333910394828013392948281</p>
+<p>Each two characters represents one pair. What he wanted then was a structure containing each pair along with the number of times it shows up in the string. Here is a simple UDF, and test code, to demonstrate this:</p>
+<code>
+&lt;cfset str = "01333910394828013392948281"&gt;
+<p>&lt;cffunction name=&quot;getPairStats&quot; returnType=&quot;struct&quot; output=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;pairStr&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfset var result = structNew()&gt;
+&lt;cfset var x = &quot;&quot;&gt;
+&lt;cfset var pair = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;!--- must be pairs ---&amp;gt;
+&amp;lt;cfif len(arguments.pairStr) mod 2 is not 0&amp;gt;
+	&amp;lt;cfthrow message=&quot;Avast ye matey! This string is not an even set of pairs!&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#len(arguments.pairStr)#&quot; step=&quot;2&quot;&amp;gt;
+	&amp;lt;cfset pair = mid(arguments.pairStr, x, 2)&amp;gt;
+	&amp;lt;cfif not structKeyExists(result, pair)&amp;gt;
+		&amp;lt;cfset result[pair] = 0&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfset result[pair] = result[pair] + 1&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfreturn result&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;cfdump var=&quot;#getPairStats(str)#&quot;&gt;
+</code></p>
+<p>The UDF, getPairStats, accepts a string and returns a struct. It first does a sanity check to ensure that there is an even number of characters. If not, it throws an error using my special &quot;Pirate-Mode(tm)&quot; brand error handling. (Coming soon to BlogCFC5.) After that it is nothing more than a simple loop using step=&quot;2&quot; to tell ColdFusion to skip over every other letter. I use Mid() to grab the pairs and then simply update a structure.</p>
+}

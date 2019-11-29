@@ -1,0 +1,113 @@
+<h1>Post</h1>
+
+<p><img src="https://static.raymondcamden.com/images/cfjedi/jt.jpg" align="left" style="margin-right: 10px;margin-bottom: 10px"> Justin Timberlake may be a <i>little</i> more popular than ColdFusion for bringing sexy back, but let me share how ColdFusion 8 is bringing the web counter back. What's the web counter?</p>
+<p>Back in the &quot;old&quot; days, your web site wasn't truly a web site until it had a web counter. This little graphical doodad would show you how many visitors had hit your web site. Here is an example:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture%2018.png">
+<p>You would paste once of these bad boys on your site and reload your page watching the numbers go up. And if the number actually went up twice in one hit - holy smokes - that means someone else actually hit your web page!</p>
+<p>Various services were set up to serve up these counters, and some, like <a href="http://www.sitemeter.com/">Site Meter</a> are still around.</p>
+<p>For fun, I decided to try to build one of these myself. I began by creating a simple CFC to handle storing and retrieving counter information. I didn't want to bother with a database and instead just relied on the Server scope. Yes, this means the stats won't really count, but this is all just for fun anyway. Here is what I started off with:</p>
+<code>
+&lt;cffunction name="init" access="public" returnType="counter" output="false"&gt;
+	&lt;cfset initData()&gt;
+	&lt;cfreturn this&gt;
+&lt;/cffunction&gt;
+<p>&lt;cffunction name=&quot;initData&quot; access=&quot;public&quot; returnType=&quot;void&quot; output=&quot;false&quot;&gt;
+&lt;!--- setup initial data store. ---&gt;
+&lt;cfif not structKeyExists(server, &quot;counter&quot;)&gt;
+&lt;cfset server.counter = structNew()&gt;
+&lt;/cfif&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;cffunction name=&quot;getCount&quot; access=&quot;public&quot; returnType=&quot;numeric&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;client&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;</p>
+<pre><code>&amp;lt;cfif not structKeyExists(server.counter, arguments.client)&amp;gt;
+	&amp;lt;cfset server.counter[arguments.client] = 0&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn ++server.counter[arguments.client]&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>I should have a few CFLOCKs in there, but again, I wanted to keep it simple. The code will accept any &quot;client&quot; variable which represents the counter. When requested, I use ++X form to both increase the value and return the increased value. (Boy do I love the new syntax features in ColdFusion 8!) I tested this code by itself before adding the image stuff to ensure everything worked fine.</p>
+<p>Next I created a method that would generate an image. &quot;Real&quot; hit counters give you multiple options for sizes, counter styles, etc., but I kept mine simple. You can provide an optional background and text color only. I hard coded sizes that I thought made sense. The only complex part was handling the positioning of the numbers. I <a href="http://www.raymondcamden.com/index.cfm/2008/1/16/ColdFusion-8-Image-functions-and-text-size">blogged</a> about how to handle this a few weeks ago. I haven't yet had a chance to add this to <a href="http://imageutils.riaforge.org/">ImageUtils</a> (the project Ben and I started to wrap up common image tasks) but will get to that soon. Here is the code for the function to return the counter image:</p>
+<code>
+&lt;cffunction name="makeCounter" access="public" returnType="any" output="false"&gt;
+	&lt;cfargument name="client" type="string" required="true"&gt;
+	&lt;cfargument name="bgcolor" type="string" required="false" default="black"&gt;
+	&lt;cfargument name="textcolor" type="string" required="false" default="white"&gt;
+<pre><code>&amp;lt;!--- get the number ---&amp;gt;
+&amp;lt;cfset var count = getCount(arguments.client)&amp;gt;
+&amp;lt;!--- make the canvas ---&amp;gt;
+&amp;lt;cfset var img = imageNew(&quot;&quot;, 150, 40, &quot;rgb&quot;, arguments.bgcolor)&amp;gt;
+&amp;lt;!--- set the text props ---&amp;gt;
+&amp;lt;cfset var tProps = { style='bold', size=24, font='Arial-BoldMT' }&amp;gt;
+
+&amp;lt;cfset var buffered = imageGetBufferedImage(img)&amp;gt;
+&amp;lt;cfset var context = buffered.getGraphics().getFontRenderContext()&amp;gt;
+&amp;lt;cfset var font = createObject(&quot;java&quot;, &quot;java.awt.Font&quot;)&amp;gt;
+&amp;lt;cfset var textFont = Font.init(tProps.font, Font.BOLD, javacast(&quot;int&quot;, tProps.size))&amp;gt;
+&amp;lt;cfset var textLayout = createObject(&quot;java&quot;, &quot;java.awt.font.TextLayout&quot;).init(javaCast(&quot;string&quot;,count), textFont, context)&amp;gt;
+&amp;lt;cfset var textBounds = textLayout.getBounds()&amp;gt;
+&amp;lt;cfset var twidth = textBounds.getWidth()&amp;gt;
+&amp;lt;cfset var theight = textBounds.getHeight()&amp;gt;
+&amp;lt;cfset var newx = &quot;&quot;&amp;gt;
+&amp;lt;cfset var newy = &quot;&quot;&amp;gt;
+		
+&amp;lt;!--- text color ---&amp;gt;
+&amp;lt;cfset imageSetDrawingColor(img, arguments.textColor)&amp;gt;
+
+&amp;lt;!--- handle centering crap ---&amp;gt;	
+&amp;lt;!---
+when drawing text, you specify X, Y as the bottom left corner.
+So we need to position ourselves at Total Height / 2 + Height of Text / 2
+---&amp;gt;
+&amp;lt;cfset newx = (img.width/2 - tWidth/2)&amp;gt;
+&amp;lt;cfset newy = (img.height/2 + tHeight/2)&amp;gt;
+
+&amp;lt;cfset imageDrawText(img, count, newx, newy, tProps)&amp;gt;
+
+&amp;lt;cfreturn img&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>As you can see, more than 50% of the code is just for positioning the darn text, so if I did have that nice UDF handy, the function would have been a heck of a lot slimmer.</p>
+<p>All that's left now is a file to spit out the image. Let's look at how I did that:</p>
+<code>
+&lt;cfparam name="url.client" default=""&gt;
+&lt;cfparam name="url.bgcolor" default=""&gt;
+&lt;cfparam name="url.textcolor" default=""&gt;
+<p>&lt;cfif not len(url.client)&gt;
+&lt;cfthrow message=&quot;You must supply a Client variable in the query string.&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfinvoke component=&quot;#application.counter#&quot; method=&quot;makeCounter&quot; returnVariable=&quot;img&quot;&gt;
+&lt;cfinvokeargument name=&quot;client&quot; value=&quot;#url.client#&quot;&gt;
+&lt;cfif len(url.bgcolor)&gt;
+&lt;cfinvokeargument name=&quot;bgcolor&quot; value=&quot;#url.bgcolor#&quot;&gt;
+&lt;/cfif&gt;
+&lt;cfif len(url.textcolor)&gt;
+&lt;cfinvokeargument name=&quot;textcolor&quot; value=&quot;#url.textcolor#&quot;&gt;
+&lt;/cfif&gt;
+&lt;/cfinvoke&gt;</p>
+<p>&lt;cfset bos = CreateObject(&quot;java&quot;,&quot;java.io.ByteArrayOutputStream&quot;).init()/&gt;
+&lt;cfset imageio = CreateObject(&quot;java&quot;,&quot;javax.imageio.ImageIO&quot;).write(imagegetbufferedimage(img), &quot;PNG&quot;, bos)/&gt;
+&lt;cfset bos.close()/&gt;</p>
+<p>&lt;cfcontent type=&quot;images/gif&quot; variable=&quot;#bos.toByteArray()#&quot; reset=&quot;true&quot;&gt;
+</code></p>
+<p>The code begins with a few cfparams and validation on the client variable. I then call my component and pass in the relevant values. So far so good. Now what the heck is the Java?</p>
+<p>ColdFusion 8 has a bug with images created using imageNew that are <b>not</b> based on a 'real' image. If you try to get the binary data from the image, or try to pass it to cfcontent, you will get an image.</p>
+<p><a href="http://www.cfinsider.com/">Jason Delmore</a> of Adobe came up with this solution. It provides an alternate way to get binary data out and then supply it to the cfcontent tag. I'll be adding this to ImageUtils too!</p>
+<p>So now that I've gone through all of that, here is a simple counter for the client parishilton:</p>
+<!--
+<img src="http://www.coldfusionjedi.com/demos/counterservice/image.cfm?client=parishilton">
+-->
+<p><i>Sorry, old demos are removed.</i></p>
+<p>The URL I used was http://www.coldfusionjedi.com/demos/counterservice/image.cfm?client=parishilton.</p>
+<p>Now let's make it a bit fancier and supply some colors:</p>
+<!--
+<img src="http://www.coldfusionjedi.com/demos/counterservice/image.cfm?client=parishilton&bgcolor=pink&textcolor=green">
+
+That URL was http://www.coldfusionjedi.com/demos/counterservice/image.cfm?client=parishilton&bgcolor=pink&textcolor=green.
+-->
+<p><i>Sorry, old demos are removed.</i></p>
+<p>Note - I ran into a font issue when moving my sample code from my Mac to my Windows machine. The code on the live server is using &quot;Arial Black&quot; for the font instead of the one specified in the code above.</p>
+<p>So a total waste of time - but a fun way to spend lunch. Enjoy!</p>
+}

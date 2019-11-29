@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>A while ago I <a href="http://www.camdenfamily.com/morpheus/blog/index.cfm?mode=entry&entry=395FBDF1-B095-E6F0-1C0D45520E77684D">released</a> a tag called DumpF. The idea was to create a wrapper for the cfdump tag so you could filter the output. It allowed you to show only the top X rows of a query or an array for example. I've updated the tag to mimic Bluedragon's cfdump tag. If you do not pass a var to dumpf, it will now dump all scopes. You can download the tag <a href="http://www.camdenfamily.com/morpheus/downloads/dumpf.zip">here</a>. As always, any suggestions are welcome.</p>
+}

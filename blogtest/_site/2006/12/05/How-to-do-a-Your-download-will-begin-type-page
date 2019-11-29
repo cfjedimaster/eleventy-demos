@@ -1,0 +1,42 @@
+<h1>Post</h1>
+
+<p>A user recently asked me how I did the, &quot;Your download will begin...&quot; page at <a href="http://www.riaforge.org">RIAForge</a>. For an example, click the big download button at the <a href="http://galleon.riaforge.org">Galleon project page</a>. (Note it was updated this morning!)</p>
+<!--more-->
+<p>First off - forcing a download is easy enough. You can use a cfheader/cfcontent combo like so:</p>
+<code>
+&lt;cfheader name="Content-disposition" value="attachment;filename=""#thefile#"""&gt;		
+&lt;cfcontent file="#downloadpath#" type="application/unknown"&gt;	</code>
+<p>For RIAForge I used the unknown application type, but you can easily sniff the extension and use the proper mime type. (Something I need to do to RIAForge.) But how do I do this on a &quot;Your download will begin...&quot; type page? I simply link to a page and then add logic to either display the message 	or start the download. Here is the exact code RIAForge uses:</p>
+<code>
+&lt;cfset project = viewState.getValue("project")&gt;
+<p>&lt;cfset viewState.setValue(&quot;title&quot;, &quot;#project.getName()# Download&quot;)&gt;</p>
+<p>&lt;cfif not structKeyExists(url, &quot;doit&quot;)&gt;</p>
+<pre><code>&amp;lt;cfheader name=&quot;refresh&quot; value=&quot;1; url=#viewstate.getValue(&quot;myself&quot;)#action.download&amp;doit=true&quot;&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;
+&amp;lt;p /&amp;gt;
+&amp;lt;div class=&quot;subhead&quot;&amp;gt;#viewState.getValue(&quot;title&quot;)#&amp;lt;/div&amp;gt;
+&amp;lt;div class=&quot;copy&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+Your download will begin momentarily.
+&amp;lt;/p&amp;gt; 
+&amp;lt;/div&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;cfelse&gt;</p>
+<pre><code>&amp;lt;cfif project.getExternalDownload() neq &quot;&quot;&amp;gt;
+	&amp;lt;cflocation url=&quot;#project.getExternalDownload()#&quot; addToken=&quot;false&quot;&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfset downloadpath = viewState.getValue(&quot;downloadpath&quot;)&amp;gt;
+	&amp;lt;cfset thefile = getFileFromPath(downloadpath)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfheader name=&quot;Content-disposition&quot; value=&quot;attachment;filename=&quot;&quot;#thefile#&quot;&quot;&quot;&amp;gt;		
+&amp;lt;cfcontent file=&quot;#downloadpath#&quot; type=&quot;application/unknown&quot;&amp;gt;		
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>I basically use a URL hook &quot;doit&quot; to determine if I'm showing the page or starting the download. Now you may ask - why in the heck do this anyway? Everyone say, Thank you IE! Along with the recent EOLAS issue, IE also changed how they handle what they consider to be automatic file downloads. If a page tries to download a file and you had not linked directly to the file, you will get a warning. If you tell IE to accept the download then it reloads the page. So if you were on a <i>different</i> page, you need to reclick the download link. Because I send the user to a page just for the download, it makes the process a bit less painless. They still have a reload, but they don't need to click on a download link.</p>
+<p>One more quick note. This process was also helpful for RIAForge as it lets project owners point to external URLs for download information. With this download page I can handle updating the download stats for a project even when RIAForge doesn't actually host the zip.</p>
+<p><b>Edited to fix an issue with files that have spaces in them. Thanks Rob Gonda.</b></p>
+}

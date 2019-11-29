@@ -1,0 +1,120 @@
+<h1>Post</h1>
+
+<p>This isn't going to be terribly complicated, but as I thought it was kinda cool, I thought I'd share it.
+I'm currently working through the <a href="https://github.com/openwhisk/openwhisk-workshop">OpenWhisk workshop</a>, a Node School-ish set of
+problems/tasks to help you learn the basics of OpenWhisk. One of the problems has you build a sequence, and
+while I recommend folks try to solve the problem for themselves, I thought I'd share my solution and what I discovered
+while working on it.</p>
+<p><a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_create_action_sequence">Sequences</a> are what you would imagine, two
+or more actions that are linked together. You define them by listing the actions you want executed, and when run,
+OpenWhisk will execute each in order and pass the output from one to the input of the other. (And this brings up an important detail I'll cover in a moment.)</p>
+<p>Before I talk about the problem from the workshop, let's build a simple example. First we'll build an action that takes a string input and returns
+the size of the string. To be clear, this is trivial to the point of stupidity, but let's keep it nice and simple.</p>
+<pre><code class="language-javascript">
+function main(params) {
+
+	return {
+		length:params.text.length
+	};
+
+}
+</code></pre>
+<p>I called this action strlen. Now let's create an action that, given a numeric input, finds the prime numbers. I'm going to use the solution
+from this <a href="http://stackoverflow.com/a/12287599">Stack Overflow answer</a>:</p>
+<pre><code class="language-javascript">
+&#x2F;&#x2F;http:&#x2F;&#x2F;stackoverflow.com&#x2F;a&#x2F;12287599
+function getPrimes(max) {
+    var sieve = [], i, j, primes = [];
+    for (i = 2; i &lt;= max; ++i) {
+        if (!sieve[i]) {
+            &#x2F;&#x2F; i has not been marked -- it is prime
+            primes.push(i);
+            for (j = i &lt;&lt; 1; j &lt;= max; j += i) {
+                sieve[j] = true;
+            }
+        }
+    }
+    return primes;
+}
+
+function main(params) {
+	return {
+		primes:getPrimes(params.number)
+	}
+
+}
+</code></pre>
+<p>It takes a parameter of number and returns an array in a key called primes.</p>
+<p>As a quick aside, I used the <a href="https://github.com/openwhisk/openwhisk-vscode">OpenWhisk extension</a> for Visual Studio Code to create
+and test these actions. While the extension is still in development, it works darn well so far.</p>
+<p>Ok, so how do we make a sequence?</p>
+<p>First off, you create a sequence very much like you do an action, in fact, the command begins the same way:</p>
+<pre><code>wsk action create name
+</code></pre>
+<p>But this is where things differ - instead of passing a filename of a local file for your action, you pass the <code>--sequence</code> argument and a list
+of actions:</p>
+<pre><code>wsk action create name --sequence a,b,c
+</code></pre>
+<p>Ok, so for our code above, I'd do this:</p>
+<pre><code>wsk action create strToPrimes --sequence strlen,primes
+</code></pre>
+<p>Once done, you invoke it just like a normal action:</p>
+<pre><code>wsk action invoke strToPrimes -b -r -p text &quot;Raymond&quot;
+</code></pre>
+<p>Notice I'm passing in my argument <code>text</code> that is expected by my first action. And it works perfectly! (Not!)</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owseq1.png" alt="Oops"></p>
+<p>What went wrong? Did you notice the output of strlen was an object with the key &quot;length&quot;? Did you notice the input for primes was expecting
+a param called &quot;number&quot;? When building sequences, you have to ensure that your output/inputs match up. In general, this shouldn't be a big
+deal. I'm ok with changing strlen to output &quot;number&quot; instead, but I do wish that OpenWhisk would let me define sequences along with a way to 'map' the output/input values from action to action.</p>
+<p>Now it works just fine:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owseq2.png" alt="Woot!"></p>
+<p>Ok, so lets look at the workshop problem:</p>
+<ul>
+<li>
+<p>Create an Action which takes a string parameter (text) containing a sentence. Return an array containing the individual words within the sentence.</p>
+<p>&quot;Hello my name is James&quot; --&gt; [&quot;Hello&quot;, &quot;my&quot;, &quot;name&quot;, &quot;is&quot;, &quot;James&quot;]</p>
+</li>
+<li>
+<p>Create an Action which takes an array of words and returns an array with those words reversed.</p>
+<p>[&quot;Hello&quot;, &quot;my&quot;, &quot;name&quot;, &quot;is&quot;, &quot;James&quot;] --&gt; [&quot;James&quot;, &quot;is&quot;, &quot;name&quot;, &quot;my&quot;, &quot;Hello&quot;]</p>
+</li>
+<li>
+<p>Create an Action which takes an array of words and returns the string createdby joining the words together into a sentence.</p>
+<p>[&quot;James&quot;, &quot;is&quot;, &quot;name&quot;, &quot;my&quot;, &quot;Hello&quot;]  --&gt; &quot;James is name my Hello&quot;</p>
+</li>
+<li>
+<p>Create a new Action (reverse-sentence-words) using a sequence that joins together these three Actions.</p>
+</li>
+<li>
+<p>This new Action should take a parameter (text) and return a sentence (text) which contains the words in the string reversed.</p>
+</li>
+</ul>
+<p>All in all, fairly trivial. My first action is just this:</p>
+<pre><code class="language-javascript">
+function main(params) {
+
+	var words = params.text.split(' ');
+	return {array:words};
+
+}
+</code></pre>
+<p>My second one is just this:</p>
+<pre><code class="language-javascript">
+function main(params) {
+
+	return { array:params.array.reverse()};
+	
+}
+</code></pre>
+<p>And my final one is:</p>
+<pre><code class="language-javascript">
+function main(params) {
+
+	var result = params.array.join(' ');
+	return {text:result};
+
+}
+</code></pre>
+<p>Here is my sequence in action. By the way, that <code>-r</code> argument means just return the result - I like that.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owseq3.png" alt="My sequence is better than yours..."></p>
+}

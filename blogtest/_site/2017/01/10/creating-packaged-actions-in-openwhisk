@@ -1,0 +1,104 @@
+<h1>Post</h1>
+
+<p>As I continue my journey of learning serverless and <a href="https://developer.ibm.com/openwhisk/">OpenWhisk</a>, today I'm going to talk about
+another way to deploy your code - zipped actions. So what do we mean by zipped actions?</p>
+<p>Previously I demonstrated creating actions based on single files. So action Cat was based on the file cat.js. You can also
+create actions as a <a href="https://www.raymondcamden.com/2017/01/06/an-example-of-an-openwhisk-sequence">sequence</a> of other actions.
+<a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_actions.html#openwhisk_js_packaged_action">Zipped actions</a> are
+basically JavaScript files packed up as a npm module. Why would you want to do this?</p>
+<p>First - OpenWhisk provides a set of npm modules you can require in your code. And while that last is nice, you may want something <em>not</em> on that list. By
+creating your own package of code, you can include that in your action. Secondly, you may just want to split your code into multiple files. The procedure
+isn't too terribly difficult.</p>
+<p>Let's assume a simple action:</p>
+<pre><code class="language-javascript">
+function main() {
+	return { message: "Hello World"}
+}
+</code></pre>
+<p>First, I add a package.json to the folder. (It will make things easier if your code for this particular action is in it's own folder.)</p>
+<pre><code class="language-javascript">
+{
+  "name": "something",
+  "version": "1.0.0",
+  "main": "main.js",
+  "dependencies" : {
+  }
+}
+</code></pre>
+<p>The name doesn't matter (although you'll probably want to pick something that is sensible for your action), but main should point to the JS file of your action,
+the entry point to this action as a whole.</p>
+<p>Next, modify your action to export the main function:</p>
+<pre><code class="language-javascript">
+function main() {
+	return { message: "Hello World"}
+}
+
+exports.main = main;
+</code></pre>
+<p>Now you'll want to zip your files. Be very, very, very careful at this step. Do not zip the folder, but the files in the folder. I used Windows' built in &quot;Send to Compressed folder&quot; feature
+on the folder itself, and that created a zip where the first entry was the folder. You want to zip the files, not the folder.</p>
+<p>Finally, you send this to OpenWhisk like so:</p>
+<pre><code>wsk action create packageAction --kind nodejs:6 action.zip
+</code></pre>
+<p>After that, you can run it like any normal action. Note that unzipping your code means it will take a bit longer to run your action if it's cold (a fancy
+way of saying, &quot;hasn't been run lately&quot;), but if your sure your action's going to be pretty active, then you should be fine.</p>
+<p>Now let's consider a real example. In the past, I've used a npm package called <a href="https://www.npmjs.com/package/feedparser">FeedParser</a> as a way to parse
+RSS feeds in Node.js. I thought it would be cool to build an action that would let me specify a RSS URL and get a JSON parsing of the data returned. I began with my
+package.json:</p>
+<pre><code class="language-javascript">
+{
+  "name": "rsstojson",
+  "version": "1.0.0",
+  "main": "main.js",
+  "dependencies" : {
+    "feedparser" : "*",
+	"request":"*"
+  }
+}
+</code></pre>
+<p>I then ran:</p>
+<pre><code>npm install
+</code></pre>
+<p>To get all those dependencies installed. Next, I wrote my action:</p>
+<pre><code class="language-javascript">
+var FeedParser = require('feedparser');
+var request = require('request');
+
+function main(args) {
+
+	return new Promise(function(resolve, reject) {
+
+		var fp = new FeedParser();
+		
+		request.get(args.url).pipe(fp);
+
+		var items = [];
+		var meta;
+
+		fp.on('readable', function() {
+			var stream = this;
+			var item;
+
+			while(item = stream.read()) {
+				if(!meta) meta = item.meta;
+				delete item.meta;
+				items.push(item);
+			}
+		});
+
+		fp.on('end', function() {
+			resolve({items:items, meta:meta});
+		});
+
+	});
+
+}
+
+exports.main = main;
+</code></pre>
+<p>All I do is take in a URL argument, suck it down via the Request package, and then pipe it over to FeedParser. I noticed that FeedParser would create a 'meta'
+object for every feed item. This meta object includes the metadata about the feed itself. I thought this was useful, but didn't like it being duplicated
+on every feed item. So I take it out of the first item and delete it from every item added to the array of results. I can then return the list of
+RSS entries and the metadata as well.</p>
+<p>And that's it! The output is pretty verbose so I won't share a screen shot, but I've included a video about this topic below.</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/CrnQu9tUTFM" frameborder="0" allowfullscreen></iframe>}

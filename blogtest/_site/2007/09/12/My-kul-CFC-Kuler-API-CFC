@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p><img hspace="10" src="http://kuler.adobe.com/kuler/API/rss/png/generateThemePng.cfm?themeid=11" align="left"> Most of the folks I hang out with <strike>are pretty scary</strike>are code geeks so we rarely talk about design or design related issues. As someone interested in technology in general though I find it interesting. Some time ago Adobe released <a href="http://kuler.adobe.com">kuler</a>, a site that lets people create and share color swatches. I'm not sure what a swatch is - I think it has something to do with putting colors together nicely. For me 'putting colors together nicely' means getting dressed and checking out the face my wife makes. The kuler site is pretty fun to look at and play with - and it turns out it has a pretty nice <a href="http://labs.adobe.com/wiki/index.php/Kuler">API</a> as well.</p>
+<p>As you know - the only word that makes me more excited than API is wishlist - so when I saw the docs I thought I'd see if I could whip up a quick little CFC.</p>
+<p>It turned out to be rather easy. My CFC supports everything the API does:</p>
+<ul>
+<li>Get latest, most popular, and highest rated themes
+<li>Search themes
+<li>And it also provides a few utility functions to make linking a bit easier.
+</ul>
+<p>Check out the sample code below:</p>
+<code>
+<p>&lt;cfset k = createObject(&quot;component&quot;, &quot;kuler&quot;)&gt;</p>
+<p>&lt;cfdump var=&quot;#k.getRecent()#&quot; label=&quot;Recent&quot; top=&quot;3&quot; expand=&quot;false&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#k.getPopular()#&quot; label=&quot;Popular&quot; top=&quot;3&quot; expand=&quot;false&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#k.getHighestRated()#&quot; label=&quot;Highest Rated&quot; top=&quot;3&quot; expand=&quot;false&quot;&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;a href=&quot;#k.getThemeURL(11)#&quot;&gt;&lt;img src=&quot;#k.getThumbURL(11)#&quot;&gt;&lt;/a&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;cfdump var=&quot;#k.search('ocean')#&quot; label=&quot;Search for ocean&quot; top=&quot;3&quot;&gt;</p>
+<p>&lt;cfdump var=&quot;#k.search(title='Asian')#&quot; label=&quot;Search for title=Asian&quot; top=&quot;3&quot;&gt;
+</code><p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FArchive9%2Ezip'>Download attached file.</a></p></p>
+}

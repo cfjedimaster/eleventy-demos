@@ -1,0 +1,46 @@
+<h1>Post</h1>
+
+<p>Pardon the lack of updates around here. I've been writing more for my <a href="https://developer.here.com/blog">work blog</a> and have started a new (small) book project. Plus, well, holidays and life. I had hoped to keep to a pace of one post per week minimum, but I've fallen a bit behind there. That being said, I think what I've got to share today is really freaking cool and I hope you do too.</p>
+<p>A few weeks ago I wrote up how I integrated <a href="https://www.raymondcamden.com/2019/10/16/using-indexeddb-with-vuejs">Vue.js and IndexedDB</a>. That post was actually some prep work for what I'm sharing here. I'm a fan of &quot;sound board&quot; apps, those apps that collect sound files from a particular source and let you play them back. So for example, the official Star Wars app (which is more than a sound board) has this as a feature:</p>
+<img src="https://static.raymondcamden.com/images/2019/11/sb1a.jpg" alt="Screenshot of Star Wars app, soundboard" class="imgborder imgcenter">
+<p>I like the idea so much, I built my own using Ionic and Cordova about three years ago (<a href="https://www.raymondcamden.com/2015/07/30/cordovaionic-sample-app-my-sound-board">&quot;Cordova/Ionic Sample App: My Sound Board&quot;</a>). The most painful part of that process was handling the file system, but outside of that it wasn't terribly difficult.</p>
+<p>I wanted to see if I could rebuild this application 100% web-native. To handle storage I'd use IndexedDB, which has no problem with binary data. Before I get into the code, you can browse the complete source here: <a href="https://github.com/cfjedimaster/vue-demos/tree/master/idb-sound-board">https://github.com/cfjedimaster/vue-demos/tree/master/idb-sound-board</a>. You can also check it out online at <a href="https://idbsoundboard.raymondcamden.now.sh/">https://idbsoundboard.raymondcamden.now.sh/</a>.</p>
+<h2>Setup</h2>
+<p>To begin the application, I used the Vue cli to scaffold a new application and enabled both Vuex and Vue Router. I also added <a href="https://vuetifyjs.com/">Vuetify</a> for the URL. I'll point out right away that I'm not 100% happy with how the application looks, it could definitely be better. (I'm thinking of switching to cards instead of list items.)</p>
+<p>To support audio recording, I used this excellent open source library: <a href="https://github.com/higuma/web-audio-recorder-js">web-audio-recorder</a>. It worked great, but the docs were a bit hard to grok at times. This article was very helpful: <a href="https://blog.addpipe.com/using-webaudiorecorder-js-to-record-audio-on-your-website/">&quot;Using WebAudioRecorder.js to Record MP3, Vorbis and WAV Audio on Your Website&quot;</a></p>
+<h2>The App</h2>
+<p>The first iteration of the application focused on everything <em>but</em> audio. I built the UI first. The initial page is a list of sounds with a button to add a new one. Clicking the title would play the sound.</p>
+<img src="https://static.raymondcamden.com/images/2019/11/sb2.jpg" alt="List of sounds" class="imgborder imgcenter">
+<p>The next page is where you add new sounds. It lets you record, play, and add a title to the sound.</p>
+<img src="https://static.raymondcamden.com/images/2019/11/sb3.jpg" alt="Sound saver/editor" class="imgborder imgcenter">
+<p>I had initially thought about adding &quot;edit&quot; support, but I decided you could just delete a sound and record it again. Yes, I'm being lazy.</p>
+<p>I set up my code to persist sounds, but just the title value at first. Once I had the flow done (adding sounds, listing sounds, and deleting), I then added in the recording functionality. The web-audio-recorder library uses a callback that returns a blob. So I was able to use it like this:</p>
+<pre><code class="language-js">this.recorder.onComplete = (recorder, blob) =&gt; {
+	this.recordingStatus = 'Record Sound';
+	this.blob = blob;
+};
+</code></pre>
+<p>All I do here is copy out blob into my Vue data so I can store it later:</p>
+<pre><code class="language-js">async save() {
+	let sound = {
+		title: this.title, 
+		blob: this.blob
+	};
+	await this.$store.dispatch('saveSound', sound);
+	this.$router.push('/');	
+}
+</code></pre>
+<p>My store was simply persisting the sound object as is, so when I went from saving just the title to the title and the audio blob, nothing there had to change. IndexedDB stored the string and binary data perfectly.</p>
+<p>To play that blob, I just used this:</p>
+<pre><code class="language-js">play(s) {
+	let player = new window.Audio();
+	player.src = window.URL.createObjectURL(s.blob);
+	player.play();
+}
+</code></pre>
+<p>A slightly better implementation would handle not letting you play two or more sounds at once, but I kinda like that you can do that if you want.</p>
+<h2>The Best Part</h2>
+<p>The absolute best part of this whole thing is - I forgot that I had enabled PWA support when I scaffolded the application. When I was done and deployed my build version, I noticed the service worker in play and did a quick test. Using Chrome DevTools, I turned off network support and reloaded. The entire application had been cached locally and it worked perfectly. Since all the sounds are stored in IndexedDB, there's no remote resources to hit. If I wanted to, I could replace the icons spit out by default and provide my own, but I'll probably only bother with that if folks actually like the application.</p>
+<p>So that's it. I feel like I didn't share a lot of code here, but most of the code was done in the Vue/IndexedDB example from a few weeks ago. You can check out the full code on the <a href="https://github.com/cfjedimaster/vue-demos/tree/master/idb-sound-board">repo</a> and try it yourself here: <a href="https://idbsoundboard.raymondcamden.now.sh/">https://idbsoundboard.raymondcamden.now.sh/</a>.</p>
+<p><i>Header photo by <a href="https://unsplash.com/@akeenster?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Abigail Keenan</a> on Unsplash</i></p>
+}

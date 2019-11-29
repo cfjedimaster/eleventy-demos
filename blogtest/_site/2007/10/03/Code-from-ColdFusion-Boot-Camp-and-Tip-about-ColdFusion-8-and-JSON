@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>I just gave a quick CF Boot Camp at MAX on using ColdFusion to send data to Spry. It covers going from static to CF6, CF7, and CF8 dynamic data. I've zipped up the code below. Note that it makes use of a database you won't have (I'll try to use the art gallery from now on) and I've removed the personal pictures of my kids.</p>
+<p>So during the boot camp I talk about how cool it is that you can now call a CFC and ask for JSON back. No need for my toXML .cfc anymore. No need for a 'proxy' CFC. You just call your CFC and get your data back. Sweet.</p>
+<p>This is cool but as I've blogged before, there are two ways a query can be represented in JSON:</p>
+<ol>
+<li>An array of column names and an array of data arrays.
+<li>A object with a value for the number of rows, an array of column names, and an object where each key is a column name and the value is an array of data.
+</ol>
+<p>These two options return different types of data and impact how you would use them in Spry. The <a href="http://www.cfquickdocs.com/cf8/?getDoc=SerializeJSON">SerializeJSON</a> function lets you toggle these two options. However - when using returnFormat=&quot;JSON&quot; in a CFC call - I wasn't aware of how to toggle this. Todd Sharp pointed out to me that another new URL parameter you can pass to a cfc is:</p>
+<p>queryFormat</p>
+<p>This takes two values, row and column. The row version matches option 1 above, and column matches option 2. From the zip, here is how I called my CFC from Spry:</p>
+<code>
+var mydata = new Spry.Data.JSONDataSet("/presentations/cfspry/product.cfc?method=getProducts&returnFormat=json&queryFormat=column",
+{path:"DATA", pathIsObjectOfArrays:true});
+&lt;/script&gt;
+</code><p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FArchive11%2Ezip'>Download attached file.</a></p>}

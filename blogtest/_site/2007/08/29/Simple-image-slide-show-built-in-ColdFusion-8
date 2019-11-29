@@ -1,0 +1,82 @@
+<h1>Post</h1>
+
+<p>I wrote up a quick and dirty slide show application in ColdFusion 8 and thought I'd share the code. While it isn't very pretty (I have a second version to show you tomorrow), it gets the job done. First take a look at the demo, and then I'll describe the code:</p>
+<!--more-->
+<p><a href="http://www.raymondcamden.com/demos/mooslideshow/test2.cfm">Demo</a></p>
+<p>The demo makes use of two ColdFusion 8 features - image support and and the cflayout tag. Let me talk first about how the images are handled. I begin by getting a list of all the files in a folder:</p>
+<code>
+&lt;!--- get my images ---&gt;
+&lt;cfdirectory action="list" directory="#folder#" name="images" type="file"&gt;
+</code>
+<p>Note the new type attribute. This lets you filter a directory listing to just files or directories. Next I run a query of query to filter out just the images. Why not use the filter attribute? The cfdirectory tag only lets you filter by one extension. I wanted to support both GIFs and JPGs so I used the following:</p>
+<code>
+&lt;!--- filter out jpg and gif and _thumb_* ---&gt;	  
+&lt;cfquery name="images" dbtype="query"&gt;
+select	name
+from		images
+where 	(lower(name) like '%.jpg'
+or		lower(name) like '%.gif')
+and		lower(name) not like '_thumb_%'
+&lt;/cfquery&gt;
+</code>
+<p>Notice the last condition. I'm also going to filter out any file named <em>thumb</em>*. Why? I'm getting there.</p>
+<p>Next I create a simple layout using the cflayoutarea tag, type=border. I'm not going to bother showing that code here, you can see it at the end. In my left hand menu I want to show all my pictures, but I want to show thumbnails and not a scaled down version of the full image. How do I do that?</p>
+<code>
+&lt;cfloop query="images"&gt;
+	&lt;cfif not fileExists(folder & "_thumb_" & name)&gt;
+		&lt;cfimage source="#folder##name#" action="read" name="newimage"&gt;
+		&lt;cfset imageScaleToFit(newimage, 100, 100)&gt;
+		&lt;cfimage action="write" source="#newimage#" destination="#folder#/_thumb_#name#" overwrite="true"&gt;
+	&lt;/cfif&gt;
+<pre><code>&amp;lt;cfoutput&amp;gt;&amp;lt;a href=&quot;javaScript:setImage('#jsStringFormat(name)#');&quot;&amp;gt;&amp;lt;img src=&quot;#folderurl#/_thumb_#name#&quot; border=&quot;0&quot; vspace=&quot;5&quot; /&amp;gt;&amp;lt;/a&amp;gt;&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;		<br>
+</code></p>
+<p>I begin by looping over my images query. For each one, I check for the existence of a thumbnail version. If it doesn't exist, I read in the file using cfimage. I then use the scaleToFit function. This will resize and keep the proportions of my thumbnail. Lastly I write out the scaled down image. That last bit of JavaScript just sets the image for my main display.</p>
+<p>Pretty simple, eh? As I said, I got a slightly sexier version to show tomorrow. Here is the complete code for the demo. Note that I abstracted out the URL and folder for images. In theory you could turn this into a simple custom tag.</p>
+<code>
+&lt;cfsetting showdebugoutput=false&gt;
+<p>&lt;!--- what url is the folder, relative from me ---&gt;
+&lt;cfset folderurl = &quot;images2&quot;&gt;
+&lt;!--- full path to folder ---&gt;
+&lt;cfset folder = expandPath(&quot;./images2/&quot;)&gt;</p>
+<p>&lt;!--- get my images ---&gt;
+&lt;cfdirectory action=&quot;list&quot; directory=&quot;#folder#&quot; name=&quot;images&quot; type=&quot;file&quot;&gt;</p>
+<p>&lt;!--- filter out jpg and gif and <em>thumb</em>* ---&gt;	<br>
+&lt;cfquery name=&quot;images&quot; dbtype=&quot;query&quot;&gt;
+select	name
+from		images
+where 	(lower(name) like '%.jpg'
+or		lower(name) like '%.gif')
+and		lower(name) not like '<em>thumb</em>%'
+&lt;/cfquery&gt;</p>
+<p>&lt;cflayout type=&quot;border&quot;&gt;</p>
+<p>&lt;cflayoutarea position=&quot;left&quot; title=&quot;Pictures&quot; size=&quot;150&quot; align=&quot;center&quot; collapsible=&quot;true&quot;&gt;</p>
+<p>&lt;script&gt;
+function setImage(i) {
+var mImage = document.getElementById('mainImage');
+&lt;cfoutput&gt;
+mImage.src='#folderurl#/'+i;
+&lt;/cfoutput&gt;
+}		<br>
+&lt;/script&gt;</p>
+<p>&lt;cfloop query=&quot;images&quot;&gt;
+&lt;cfif not fileExists(folder &amp; &quot;<em>thumb</em>&quot; &amp; name)&gt;
+&lt;cfimage source=&quot;#folder##name#&quot; action=&quot;read&quot; name=&quot;newimage&quot;&gt;
+&lt;cfset imageScaleToFit(newimage, 100, 100)&gt;
+&lt;cfimage action=&quot;write&quot; source=&quot;#newimage#&quot; destination=&quot;#folder#/<em>thumb</em>#name#&quot; overwrite=&quot;true&quot;&gt;
+&lt;/cfif&gt;</p>
+<pre><code>&amp;lt;cfoutput&amp;gt;&amp;lt;a href=&quot;javaScript:setImage('#jsStringFormat(name)#');&quot;&amp;gt;&amp;lt;img src=&quot;#folderurl#/_thumb_#name#&quot; border=&quot;0&quot; vspace=&quot;5&quot; /&amp;gt;&amp;lt;/a&amp;gt;&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;/cflayoutarea&gt;</p>
+<p>&lt;cflayoutarea position=&quot;center&quot; align=&quot;center&quot;&gt;</p>
+<p>&lt;cfoutput&gt;
+&lt;p&gt;
+&lt;img src=&quot;#folderurl#/#images.name[1]#&quot; id=&quot;mainImage&quot;&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;</p>
+<p>&lt;/cflayoutarea&gt;</p>
+<p>&lt;/cflayout&gt;
+</code></p>
+}

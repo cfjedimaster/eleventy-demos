@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>I'm not quite sure I'd call this a security risk, but it is something you should be aware of. I typically use this line in my open source applications to ensure that debug information doesn't show up, even if the server has it enabled:</p>
+<code>
+&lt;cfsetting showDebugOutput="false"&gt;
+</code>
+<p>This will suppress any debugging information from showing up in the browser. However - it doesn't seem to work with ColdFusion Ajax debugger. If the Ajax debugger is enabled in the ColdFusion Administrator and if you pass ?cfdebug=1 in the URL, it will always show up, even with the setting. (A bug is already filed with Adobe on this one.)</p>
+<p>FYI - this was logged as bug 70324.</p>
+}

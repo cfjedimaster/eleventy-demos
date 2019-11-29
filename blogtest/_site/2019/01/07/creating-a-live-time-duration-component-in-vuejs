@@ -1,0 +1,110 @@
+<h1>Post</h1>
+
+<p>Pardon the somewhat awkward title of the post. Today's <a href="https://vuejs.org/">Vue.js</a> demo is based on something I saw recently on the cnn.com site - a live update of how long the government shutdown has been going on. They don't have it online now, but it basically showed this...</p>
+<p>Partial government shutdown has gone on for 11d 15h 49m 7s</p>
+<p>The values were updated in real time. You could argue (and I'd agree) that it was a bit overly dramatic for a news site (and maybe that's why it isn't there now), but when I saw it, I thought it would be something fun to build in Vue. I ended up with not one, but two iterations of the idea and I'd like to share them below. As always, I welcome your comments about what could be improved. Let's get started.</p>
+<h2>Version One</h2>
+<p>The initial version began with a simple set of features. The component should accept a <code>date</code> value (either in the past or future) and then simply display the duration while updating it automatically. Here's an example of how it could be used:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  My birthday was &lt;time-since :date=&quot;birthday&quot;&gt;&lt;/time-since&gt; ago. 
+
+&lt;/div&gt;
+</code></pre>
+<p>And here's the JavaScript code behind it. First, just the Vue app itself:</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app', 
+  data:{
+    birthday:new Date(2018, 3, 8)
+  }
+})
+</code></pre>
+<p>As you can see, all I bothered to add was a value for the date. The real meat is in the component:</p>
+<pre><code class="language-js">Vue.component('time-since',{
+  template:`
+&lt;span&gt;{{days}} days {{hours}} hours {{minutes}} minutes {{seconds}} seconds&lt;/span&gt;
+`,
+  data() {
+    return {
+      interval:null,
+      days:0,
+      hours:0,
+      minutes:0,
+      seconds:0,
+      intervals:{
+        second: 1000,
+        minute: 1000 * 60,
+        hour: 1000 * 60 * 60,
+        day: 1000 * 60 * 60 * 24
+      }
+    }
+  },
+  props:{
+    date:{
+      required:true
+    }
+  },
+  mounted() {
+    this.interval = setInterval(() =&gt; {
+      this.updateDiffs();
+    },1000);
+    
+    this.updateDiffs();
+  },
+  destroyed() {
+    clearInterval(this.interval);    
+  },
+  methods:{
+    updateDiffs() {
+      //lets figure out our diffs
+      let diff = Math.abs(Date.now() - this.date.getTime());
+      this.days = Math.floor(diff / this.intervals.day);
+      diff -= this.days * this.intervals.day;
+      this.hours = Math.floor(diff / this.intervals.hour);
+      diff -= this.hours * this.intervals.hour;
+      this.minutes = Math.floor(diff / this.intervals.minute);
+      diff -= this.minutes * this.intervals.minute;
+      this.seconds = Math.floor(diff / this.intervals.second);
+    }
+  }
+});
+</code></pre>
+<p>Alright, so let's tackle it from the top to the bottom. The template is rather simple, and hard coded, to display the duration as:</p>
+<pre><code class="language-html">&lt;span&gt;X days Y hours Z minutes A seconds&lt;/span&gt;
+</code></pre>
+<p>There's no options here to change that. The next block handles the data for the component with the only interesting part (in my opinion) being the math set up to remember various millisecond based intervals.</p>
+<p>Next look at <code>mounted</code> and <code>destroyed</code>. <code>mounted</code> is responsible for setting up a second based interval to update the display (and running it right away). <code>destroyed</code> handles removing the interval if the component is removed from the DOM completely.</p>
+<p>Finally, <code>updateDiffs</code> just handles doing the math. Something tells me this part could probably be written in less lines of code by people smarter than me, but it worked so I left it alone.</p>
+<p>You can view the complete code (and play with it) in this CodePen:</p>
+<p data-height="400" data-theme-id="0" data-slug-hash="BvYPPM" data-default-tab="js,result" data-user="cfjedimaster" data-pen-title="time-since vue test" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/BvYPPM/">time-since vue test</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>Pretty cool, right? But let's look at how we can kick it up a notch.</p>
+<h2>Version the Second</h2>
+<p>So one of the issues with the first version is that it forces a particular kind of output. What if you wanted to customize the display a bit? That's where slots come in. Check out this version:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  My birthday was &lt;time-since :date=&quot;birthday&quot;&gt;
+  &lt;template slot-scope=&quot;int&quot;&gt;
+  {{int.days}}D {{int.hours}}H {{int.minutes}}M {{int.seconds}}S
+  &lt;/template&gt;
+  &lt;/time-since&gt; ago. 
+
+&lt;/div&gt;
+</code></pre>
+<p>In this version, I'm using a slot and customizing the labels used for the intervals to make it a bit closer to the CNN version. If I wanted to, I could even get rid of the seconds value to make it a bit less distracting. Let's look at the updated component.</p>
+<pre><code class="language-js">Vue.component('time-since',{
+  template:`
+&lt;span&gt;
+&lt;slot :days=&quot;days&quot; :hours=&quot;hours&quot; :minutes=&quot;minutes&quot; :seconds=&quot;seconds&quot;&gt;{{days}} days {{hours}} hours {{minutes}} minutes {{seconds}} seconds&lt;/slot&gt;
+&lt;/span&gt;
+`,
+ //stuff deleted...
+});
+</code></pre>
+<p>The change was rather minor. Now the template supports default output (the same as the previous version) but also binds values for all four intervals that can be used in the markup. The text inside that slot will only be used if you don't pass a slot in. Now the component supports the same output as before but also complete customization.</p>
+<p>You can see the output here:</p>
+<p data-height="400" data-theme-id="0" data-slug-hash="xmjROa" data-default-tab="js,result" data-user="cfjedimaster" data-pen-title="time-since vue test 2" class="codepen">See the Pen <a href="https://codepen.io/cfjedimaster/pen/xmjROa/">time-since vue test 2</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>) on <a href="https://codepen.io">CodePen</a>.</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>Ok, so what do you think?</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/ft0-Xu4nTvA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Djim Loic</a> on Unsplash</i></p>
+}

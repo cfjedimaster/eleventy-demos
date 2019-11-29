@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Here is an interesting question:</p>
+<blockquote>
+Why would you want to use cookies to store client variables vs. using the registry or external database?
+</blockquote>
+<p>To be honest, I don't know why. If you want to use client variables, I'd suggest using a database. You want to avoid the registry for sure. The only reason I could come up with to use cookie variables would be if you were at an ISP and only had one DSN. You would probably want to use that for your own content instead of the client variables.</p>
+<p>Has anyone used cookies for client variables before?</p>
+}

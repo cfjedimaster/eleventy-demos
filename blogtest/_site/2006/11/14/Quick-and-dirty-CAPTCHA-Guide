@@ -1,0 +1,114 @@
+<h1>Post</h1>
+
+<p>A reader recently sent me a note saying he was trying to add CAPTCHA to his site. He had been trying to see how I used it in BlogCFC, and was just confused by what he saw. I thought I'd write a quick and simple guide for getting CAPTCHA on a form.</p>
+<!--more-->
+<p>First - let's look at a simple form without CAPTCHA.
+<code>
+&lt;cfparam name=&quot;form.name&quot; default=&quot;&quot;&gt;
+&lt;cfparam name=&quot;form.email&quot; default=&quot;&quot;&gt;
+&lt;cfparam name=&quot;form.comments&quot; default=&quot;&quot;&gt;
+&lt;cfset showForm = true&gt;</p>
+<p>&lt;cfif structKeyExists(form, &quot;sendcomments&quot;)&gt;
+&lt;cfset error = &quot;&quot;&gt;
+&lt;cfif not len(trim(form.name))&gt;
+&lt;cfset error = error &amp; &quot;You must include your name, bozo.&lt;br&gt;&quot;&gt;
+&lt;/cfif&gt;
+&lt;cfif not len(trim(form.email)) or not isValid(&quot;email&quot;, form.email)&gt;
+&lt;cfset error = error &amp; &quot;Include a valid email address idiot!&lt;br&gt;&quot;&gt;
+&lt;/cfif&gt;
+&lt;cfif not len(trim(form.comments))&gt;
+&lt;cfset error = error &amp; &quot;It's called a Comment Form, stupid.&lt;br&gt;&quot;&gt;
+&lt;/cfif&gt;
+&lt;cfif error is &quot;&quot;&gt;
+&lt;cfmail to=&quot;foo@foo.com&quot; from=&quot;#form.email#&quot; subject=&quot;Pointless comments from the public&quot; wraptext=&quot;75&quot;&gt;
+From: #form.name# (#form.email#)
+Comments:
+#form.comments#
+&lt;/cfmail&gt;
+&lt;cfset showForm = false&gt;
+&lt;/cfif&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfif showForm&gt;
+&lt;cfif structKeyExists(variables, &quot;error&quot;)&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+&lt;b&gt;Please correct these errors:&lt;br&gt;
+#error#
+&lt;/b&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;/cfif&gt;</p>
+<pre><code>&amp;lt;cfoutput&amp;gt;
+&amp;lt;form action=&quot;test.cfm&quot; method=&quot;post&quot;&amp;gt;
+&amp;lt;table&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;td&amp;gt;Your Name:&amp;lt;/td&amp;gt;
+		&amp;lt;td&amp;gt;&amp;lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;#form.name#&quot;&amp;gt;&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;td&amp;gt;Your Email:&amp;lt;/td&amp;gt;
+		&amp;lt;td&amp;gt;&amp;lt;input type=&quot;text&quot; name=&quot;email&quot; value=&quot;#form.email#&quot;&amp;gt;&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;td&amp;gt;Your Comments:&amp;lt;/td&amp;gt;
+		&amp;lt;td&amp;gt;&amp;lt;textarea name=&quot;comments&quot;&amp;gt;#form.comments#&amp;lt;/textarea&amp;gt;&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+	&amp;lt;tr&amp;gt;
+		&amp;lt;td&amp;gt;&amp;nbsp;&amp;lt;/td&amp;gt;
+		&amp;lt;td&amp;gt;&amp;lt;input type=&quot;submit&quot; name=&quot;sendcomments&quot; value=&quot;Send Comments&quot;&amp;gt;&amp;lt;/td&amp;gt;
+	&amp;lt;/tr&amp;gt;
+&amp;lt;/table&amp;gt;
+&amp;lt;/form&amp;gt;
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;cfelse&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+Thank you for sending your comments, #form.name#.
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>I'm not going to say anything about this code as it's a fairly typical form. This will serve as a base form that we will be adding CAPTCHA too.</p>
+<p>There are multiple CAPTCHA solutions out there, including the built-in support in BlueDragon and <a href="http://www.alagad.com/index.cfm/name-captcha">Alagad's CAPTCHA component</a>. For this demo however I'm going to use the same product I used in BlogCFC, <a href="http://lyla.maestropublishing.com/">Lyla Captcha</a>. This is a free product and is pretty simple to get up and running quickly. Download the product and unzip it to a folder. Any folder will do. Just make sure your application can access it.</p>
+<p>The first thing we will do in our new form is to create an instance of the CFC:</p>
+<code>
+&lt;cfif not structKeyExists(application, "captcha")&gt;
+	&lt;cfset application.captcha = createObject("component", "captchaService").init(configFile="captcha.xml") /&gt;
+	&lt;cfset application.captcha.setup()&gt;
+&lt;/cfif&gt;
+</code>
+<p>Lyla Captcha is configured via an XML file. You don't need to touch it immediately though. (Although I'll be pointing to a darn good blog entry about this XML file later on.)</p>
+<p>Now we need to add the CAPTCHA to the form. I added a new row to my table with this code:</p>
+<code>
+&lt;tr&gt;
+	&lt;td&gt;Enter Text Shown in Picture:&lt;/td&gt;
+	&lt;td&gt;
+	&lt;input type="text" name="captcha"&gt;&lt;br&gt;
+	&lt;!--- Captcha ---&gt;
+	&lt;cfset captcha = application.captcha.createHashReference()&gt;
+	&lt;img src="captcha.cfm?hash=#captcha.hash#"&gt;
+	&lt;input name="hash" type="hidden" value="#captcha.hash#" /&gt;
+	&lt;/td&gt;
+&lt;/tr&gt;
+</code>
+<p>There are a few things going on here. First off - I added a new text field so the user can type in the CAPTCHA text. I then ask Lyla to create a hash reference. This is a long, random string. I pass this to a CFM that will serve up an image. Lastly, I add the hash itself as a hidden form field.</p>
+<p>Let's leave our form for a second and look at captcha.cfm:</p>
+<code>
+&lt;cfif not structKeyExists(url, "hash")&gt;
+	&lt;cfabort&gt;
+&lt;/cfif&gt;
+<p>&lt;cfset variables.captcha = application.captcha.createCaptchaFromHashReference(&quot;stream&quot;,url.hash) /&gt;
+&lt;cfcontent type=&quot;image/jpg&quot;  variable=&quot;#variables.captcha.stream#&quot; reset=&quot;false&quot; /&gt;
+</code></p>
+<p>I do a quick check to ensure the url variable exists, and then I simply use the Lyla Captcha built in functions to get the image data. (You can also store the CAPTCHA as a physical file.)</p>
+<p>Now let's return back to the form. To validate the CAPTCHA, I simply call one more function in the CFC:</p>
+<code>
+&lt;cfif not application.captcha.validateCaptcha(form.hash, form.captcha)&gt;
+	&lt;cfset error = error & "You did not match the image text. Try again with half a brain.&lt;br&gt;"&gt;
+&lt;/cfif&gt;
+</code>
+<p>That's it! Lyla is pretty trivial to use and you can't beat the price. Charlie Arehart also has a blog article on how to simplify the CAPTCHA text a bit - and I definitely recommend following his suggestions:</p>
+<p><a href="http://carehart.org/blog/client/index.cfm/2006/8/17/simplifying_lyla_in_blogcfc">Simplifying the captcha graphic in Lyla Captcha (and BlogCFC)</a></p>
+<p>I've included all of my text files in the attachment to this blog entry. test.cfm is the original file and test2.cfm is the file with <strike>flare</strike>CAPTCHA.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Flyla%2Ezip'>Download attached file.</a></p></p>
+}

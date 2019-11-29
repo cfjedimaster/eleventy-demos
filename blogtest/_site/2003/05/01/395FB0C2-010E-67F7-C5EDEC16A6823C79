@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I had a small bug in this page - the client that calls the Blog.cfc. The bug was that I was using a structure for the params passed to getEntries - and my default 'show last 30 days' filter was set <i>before</i> the structNew() call. Easy enough to fix if you are using a copy of my client code. If you are just using the Blog.cfc, don't even worry about it.</p>
+}

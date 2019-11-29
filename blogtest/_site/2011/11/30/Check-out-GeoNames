@@ -1,0 +1,56 @@
+<h1>Post</h1>
+
+<p>While looking at <a href="http://www.kendoui.com/">Kendo UI</a> earlier this morning, I noticed one of their demos made use of <a href="http://www.geonames.org/">GeoNames</a>. I think I had heard of this site before but I had no idea the amount of cool stuff they had there. GeoNames provides a wealth of free geographical information. For example, countries, cities, states, time zones, etc. Again, all free. But on top of the pure data dumps they have some <i>really</i> cool <a href="http://www.geonames.org/export/ws-overview.html">web services</a>. These services are free, but metered. You have to register and get a username, but once you do, it's pretty simple to use. What I found truly cool though was some of their more unique services. The neatest was <a href="http://www.geonames.org/export/wikipedia-webservice.html#findNearbyWikipedia">findNearByWikipedia</a>. Basically, if you provide a longitude and latitude, the API will find wikipedia articles of items that are near by that location. You can use this to return information about (possibly) interesting things near by the user. Here's a simple example.</p>
+<p/>
+<code>
+<p>&lt;html&gt;
+&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>//exit early if no geolocation
+if(!navigator.geolocation) return;
+		
+//our generic error handler will just give a basic message
+function handleError(e){
+	$(&quot;#status&quot;).append(&quot;&amp;lt;p&amp;gt;Sorry, I wasn't able to get your location!&amp;lt;/p&amp;gt;&quot;);
+}
+
+function gotPosition(geo){
+	var latitude = geo.coords.latitude;
+	var longitude = geo.coords.longitude;
+	var apiUrl = &quot;http://api.geonames.org/findNearbyWikipediaJSON?lat=&quot;+latitude+&quot;&amp;lng=&quot;+longitude+&quot;&amp;username=cfjedimaster&amp;maxRows=10&amp;callback=?&quot;;
+	$.getJSON(apiUrl, {}, function(res) {
+
+		if (res.hasOwnProperty(&quot;status&quot;)) {
+			$(&quot;#status&quot;).html(&quot;Sorry, I failed to work because: &quot; + res.status.message);
+			return;
+		}
+
+		var s = &quot;&quot;;
+		for (var i = 0; i &amp;lt; res.geonames.length; i++) {
+			s+= &quot;&amp;lt;h2&amp;gt;&quot;+res.geonames[i].title+&quot;&amp;lt;/h2&amp;gt;&amp;lt;p&amp;gt;&quot;;
+			if(res.geonames[i].hasOwnProperty(&quot;thumbnailImg&quot;)) s += &quot;&amp;lt;img src='&quot;+res.geonames[i].thumbnailImg+&quot;' align='left'&amp;gt;&quot;;
+			s += res.geonames[i].summary;
+			s += &quot;&amp;lt;br clear='left'&amp;gt;&amp;lt;a href='http://&quot;+res.geonames[i].wikipediaUrl+&quot;'&amp;gt;[Read More]&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&quot;;
+		}
+		$(&quot;#status&quot;).html(s);
+	});
+}
+
+$(&quot;#status&quot;).html(&quot;&amp;lt;p&amp;gt;Getting your location. Please stand by.&amp;lt;/p&amp;gt;&quot;);		
+navigator.geolocation.getCurrentPosition(gotPosition,handleError);
+</code></pre>
+<p>});
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div id=&quot;status&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>This page fires off a HTML5 geolocation request. Once it has it, it then uses jQuery's getJSON and JSON/P support to hit the API. Then it's a simple matter of rendering the results out to the user. You can demo this yourself below, but be warned, my free account will probably stop working if enough people hit the page.</p>
+<p>
+<p><a href="http://coldfusionjedi.com/demos/2011/nov/30/test.html"><img src="https://static.raymondcamden.com/images/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

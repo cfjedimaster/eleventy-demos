@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>Here is the recording URL for the presentation I just gave on IndexedDB: <a href="http://experts.adobeconnect.com/p30v2nmantc/">http://experts.adobeconnect.com/p30v2nmantc/</a></p>
+<p>You can find the full source code for the demos and slide deck here: <a href="https://github.com/cfjedimaster/indexeddb-preso">https://github.com/cfjedimaster/indexeddb-preso</a></p>
+<p>Now for some random notes:</p>
+<p>I plan on writing up this presentation as an article (not sure for whom yet, maybe Smashing Mag). But basically, I'm going to turn the presentation and demo assets into a guide that can be downloaded, read offline in the bathroom, etc.</p>
+<p>Secondly, one topic I didn't go into, but bit me in the butt today, was the transaction object's &quot;oncomplete&quot; handler. This comes into play when doing something like this:</p>
+<p>Add some crap.
+Run a method to get all crap so I can see it listed.</p>
+<p>I've had a &quot;Note Database&quot; demo in my presentation for a while now and it worked fine... until today. When I presented it today (and you can see my surprise in the recording), I noticed that my add/edit/delete operations were not updating the list of notes. Why? Because I was asking the system to refresh the notes in the success handler of the <b>request</b> (where the request was either add/edit/delete). Instead, I needed to wait for the transaction to end as a whole.</p>
+<p>As an example of this mistake, here is my original code for delete:</p>
+<script src="https://gist.github.com/cfjedimaster/5059335.js"></script>
+<p>Notice that displayNotes() is in the request success handler. Here is the corrected version.</p>
+<script src="https://gist.github.com/cfjedimaster/5059346.js"></script>
+<p>I've broken up my chained calls there a bit so I get access to the transaction and add the oncomplete there.</p>
+<p>Previously this wasn't required in Chrome, so I'm assuming something has changed, but to be honest, this feels like the right way of doing things anyway.</p>
+}

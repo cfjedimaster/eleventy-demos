@@ -1,0 +1,42 @@
+<h1>Post</h1>
+
+<p>Yesterday I <a href="http://www.raymondcamden.com/index.cfm/2007/9/12/My-kul-CFC-Kuler-API-CFC">blogged</a> about writing an interface to the kuler API. A user wrote me and mentioned he had tried to do the same, but ran into a problem with the XML. Kuler's feeds include XML that may look a bit odd. Consider this snippet:</p>
+<code>
+     &lt;item&gt;
+<pre><code>    &amp;lt;!-- theme title --&amp;gt; 
+    &amp;lt;title&amp;gt;Theme Title: my theme&amp;lt;/title&amp;gt; 
+    &amp;lt;!-- url link to theme within the kuler application --&amp;gt; 
+    &amp;lt;link&amp;gt;http://kuler.adobe.com/index.cfm#themeID/11&amp;lt;/link&amp;gt; 
+    &amp;lt;guid&amp;gt;http://kuler.adobe.com/index.cfm#themeID/69579&amp;lt;/guid&amp;gt; 
+    &amp;lt;enclosure xmlns=&quot;http://www.solitude.dk/syndication/enclosures/&quot;&amp;gt; 
+    &amp;lt;title&amp;gt;Perfect Fit&amp;lt;/title&amp;gt; 
+    &amp;lt;link length=&quot;1&quot; type=&quot;image/png&quot;&amp;gt;
+     &amp;lt;url&amp;gt;http://kuler.adobe.com/kuler/API/rss/png/generateThemePng.cfm?themeid=69579&amp;lt;/url&amp;gt; 
+
+    &amp;lt;/link&amp;gt; 
+&amp;lt;/enclosure&amp;gt; 
+&amp;lt;!-- description content which includes theme png, artist, posted date, tags, and swatch hex colors --&amp;gt; 
+&amp;lt;kuler:themeItem&amp;gt;
+
+    &amp;lt;!-- themeID --&amp;gt; 
+    &amp;lt;kuler:themeID&amp;gt;11&amp;lt;/kuler:themeID&amp;gt; 
+    &amp;lt;!-- theme title --&amp;gt; 
+    &amp;lt;kuler:themeTitle&amp;gt;my theme&amp;lt;/kuler:themeTitle&amp;gt; 
+    &amp;lt;!-- url link to theme's png image --&amp;gt; 
+    &amp;lt;kuler:themeImage&amp;gt;
+    http://kuler.adobe.com/kuler/API/rss/png/generateThemePng.cfm?themeid=11 
+
+    &amp;lt;/kuler:themeImage&amp;gt;
+</code></pre>
+</code>
+<p>While it starts off rather simple, you may notice the tags towards the end have colons in them. The user who wrote me had trouble working with them because he was trying to use struct/array notation like so:</p>
+<code>
+&lt;cfset someval = somenode.item.kuler:themeitem.xmlText&gt;
+</code>
+<p>Obviously this threw an error since colons aren't legal in ColdFusion variables. What he forgot though is that when you treat XML like a struct, you can use any struct notation you want - even bracket notation. The line above could be rewritten like so:</p>
+<code>
+&lt;cfset someval = somenode.item["kuler:themeitem"].xmlText&gt;
+</code>
+<p>Notice how the 'funky' XML tag (kuler:themeitem) is used as a string inside the brackets.</p>
+<p>This also applies to <i>any</i> structure of course.</p>
+}

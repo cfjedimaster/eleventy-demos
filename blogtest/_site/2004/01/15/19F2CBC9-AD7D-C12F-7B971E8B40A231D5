@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>An old bug involving the use of complex string functions inside of queries with values having single quotes has been fixed!</p>
+<p><a href="http://www.macromedia.com/support/coldfusion/ts/documents/quotes_hotfix.htm">http://www.macromedia.com/support/coldfusion/ts/documents/quotes_hotfix.htm</a></p>
+}

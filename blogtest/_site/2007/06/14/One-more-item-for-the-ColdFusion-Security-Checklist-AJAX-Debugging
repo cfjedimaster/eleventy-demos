@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>I've had a <a href="http://www.raymondcamden.com/coldfusionsecuritychecklist.cfm">ColdFusion Security Checklist</a> for a while now, but there is an item I will have to add once ColdFusion 8 finally ships.</p>
+<!--more-->
+<p>One of the cool new AJAX features is the debugger. You can turn it on by adding ?cfdebug to your request. While this is nice and cool (and very powerful), it is also something you probably don't want to allow on a public web site.</p>
+<p>The ColdFusion 8 Administrator adds a new option in the Debug Output Settings page: <b>Enable AJAX Debug Log Window</b></p>
+<p>It is important to remember though that AJAX requests, by their very nature, are open to inspection, especially with tools like Firebug. So turning off the AJAX Debug Log Window is probably recommended, but don't have any unwarranted expectations about your AJAX code. It is as &quot;safe&quot; as hidden form fields or cookies. (In other words - you can't trust it.)</p>
+}

@@ -1,0 +1,159 @@
+<h1>Post</h1>
+
+<p>What follows is a simple experiment in adding login and registration to a Flex Mobile project. There are probably better ways of doing this but my main interest here was to see what was possible. I've done this before with Flex applications. It's not difficult at all. But Flex Mobile has a different way of handling user views. There's a push/pop system that makes it easier to direct the user throughout the application. Specifically I was curious about the tabbed navigator - one of two main views Flex Mobile applications start with - and how it could handle presenting a User/Registration view that could be swapped to the 'real' UI once finished. Again - this was just me playing around to see what was possible. Consider it a proof of concept. Also - I avoided doing &quot;real&quot; login/registration as you will see. Doing network calls in a Flex Mobile application is no more difficult than a traditional Flex application. If readers want to see that, I can definitely make it real. (I'd estimate it would take me longer to FTP the ColdFusion files to my server than it would to actually write the code.)</p>
+<p>
+<!--more-->
+I began with a new Flex Mobile application that started off with the Tabbed view.
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip98.png" />
+<p>
+<p>One of the things I really like about Flash Builder is how far it goes to help you get things done quicker. Notice in the UI above I was able to add my two tabs (Login and Registration) before I even finished creating the project. My finished application is going to need more tabs of course, but these are the two initial tabs I'll be starting off with. Once done I can immediately run my application and switch between my Login and Registration views.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip99.png" />
+<p>
+<p>Ok - so what next? Remember I said I didn't want to bother with a real login/registration process. I just needed to fake it. I decided to add a simple form with a static login process that once done would 'speak' to my parent application to begin the 'switch to normal' process. Here's the login view:</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;Login&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Script&amp;gt;
+&amp;lt;![CDATA[
+import mx.core.FlexGlobals;
+
+protected function handleLogin(event:MouseEvent):void {
+	if(username.text == &quot;user&quot; &amp;&amp; password.text == &quot;password&quot;) {
+		FlexGlobals.topLevelApplication.loadMain();
+	} else {
+		statusLabel.text = &quot;Incorrect. (Try user/password)&quot;;
+	}
+}
+]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:layout&amp;gt;
+	&amp;lt;s:VerticalLayout gap=&quot;10&quot; paddingTop=&quot;10&quot; paddingLeft=&quot;10&quot; paddingRight=&quot;10&quot; /&amp;gt;
+&amp;lt;/s:layout&amp;gt;
+
+&amp;lt;s:Label text=&quot;Username: &quot; /&amp;gt;
+&amp;lt;s:TextInput id=&quot;username&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Label text=&quot;Password: &quot; /&amp;gt;
+&amp;lt;s:TextInput id=&quot;password&quot; displayAsPassword=&quot;true&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Button label=&quot;Login&quot; click=&quot;handleLogin(event)&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Label id=&quot;statusLabel&quot; color=&quot;#FF0000&quot; fontWeight=&quot;bold&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>The bottom of this template is just a form. Two labels and a button. I also added a label that will be used for a status message when login fails. If you go to the top and look at the handleLogin function, you can see I've hard coded a valid username and password. The truly important line to focus in on here is this:</p>
+<p>
+<code>
+FlexGlobals.topLevelApplication.loadMain();
+</code>
+<p>
+<p>The use of FlexGlobals is something I recently discovered from another Flex Mobile application. By using FlexGlobals.topLevelApplication I get a quick and simple pointer to the top level file of my application. The registration view is even simpler. My form is a little different, but the click handler does even less.</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;Register&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Script&amp;gt;
+&amp;lt;![CDATA[
+import mx.core.FlexGlobals;
+		
+protected function handleRegister(event:MouseEvent):void {
+	//Any value for registration is ok with me...
+	FlexGlobals.topLevelApplication.loadMain();
+}
+]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:layout&amp;gt;
+	&amp;lt;s:VerticalLayout gap=&quot;10&quot; paddingTop=&quot;10&quot; paddingLeft=&quot;10&quot; paddingRight=&quot;10&quot; /&amp;gt;
+&amp;lt;/s:layout&amp;gt;
+
+&amp;lt;s:Label text=&quot;Username: &quot; /&amp;gt;
+&amp;lt;s:TextInput id=&quot;username&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Label text=&quot;Password: &quot; /&amp;gt;
+&amp;lt;s:TextInput id=&quot;password&quot; displayAsPassword=&quot;true&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Label text=&quot;Confirm Password: &quot; /&amp;gt;
+&amp;lt;s:TextInput id=&quot;password2&quot; displayAsPassword=&quot;true&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Button label=&quot;Register&quot; click=&quot;handleRegister(event)&quot; width=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;s:Label id=&quot;statusLabel&quot; color=&quot;#FF0000&quot; fontWeight=&quot;bold&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>Ok - hopefully everything so far seems pretty simple. Remember that Flash Builder set up my tabbed navigator and my views for me. I just had to add the forms and the click handlers. If we run the project now we can see both views. Here's a shot of both views.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/login.png" align="left" />
+<img src="https://static.raymondcamden.com/images/cfjedi/reg.png" />
+<br clear="left">
+<p>
+<p>Now for the fun part. Let's switch to the root file of my application and see what loadMain() is doing. Remember, this function is called after a user has either logged in or registered. Basically, it's where we need to switch the application's UI.</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:TabbedViewNavigatorApplication xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot;&gt;
+&lt;fx:Declarations&gt;
+&lt;!-- Place non-visual elements (e.g., services, value objects) here --&gt;
+&lt;/fx:Declarations&gt;</p>
+<pre><code>&amp;lt;fx:Script&amp;gt;
+&amp;lt;![CDATA[
+import views.*;
+
+public function loadMain():void {
+	trace('called');
+
+	var vn1:ViewNavigator = new ViewNavigator();
+	vn1.firstView = views.HomeView;
+	vn1.label = &quot;Home&quot;;
+	vn1.percentWidth=100;
+
+	var vn2:ViewNavigator = new ViewNavigator();
+	vn2.firstView = views.Part2View;
+	vn2.label = &quot;Foo&quot;;
+	vn2.percentWidth=100;
+
+	var vn3:ViewNavigator = new ViewNavigator();
+	vn3.firstView = views.Part3View;
+	vn3.label = &quot;Something&quot;;
+	vn3.percentWidth=100;
+
+	this.tabbedNavigator.removeAll();
+	//Bug - credit for fix: Dynamic_Internet_Dev and thread: http://forums.adobe.com/message/3702163
+	this.tabbedNavigator.validateNow();
+	this.tabbedNavigator.addItem(vn1);
+	this.tabbedNavigator.addItem(vn2);
+	this.tabbedNavigator.addItem(vn3);
+	
+}
+]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:navigators&amp;gt;
+	&amp;lt;s:ViewNavigator label=&quot;Login&quot; firstView=&quot;views.LoginView&quot; width=&quot;100%&quot;/&amp;gt;
+	&amp;lt;s:ViewNavigator label=&quot;Register&quot; firstView=&quot;views.RegisterView&quot; width=&quot;100%&quot;/&amp;gt;
+&amp;lt;/s:navigators&amp;gt;
+</code></pre>
+<p>&lt;/s:TabbedViewNavigatorApplication&gt;
+</code></p>
+<p>
+<p>So - what's going on here? The TabbedViewNavigator has a few APIs that allow you to change the tabs that are visible. Unfortunately I ran into multiple bugs when working with this API. Luckily there's a work around. Look at loadMain(). I begin by defining thee view navigators objects. These represent my new tabs for the &quot;real&quot; application. HomeView, Part2View, and Part3View were made by me creating new files in Flash Builder.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip100.png" />
+<p>
+<p>For now those views don't do anything so I won't bother posting the code here. (But <i>everything</i> will be available in in the download.) Once I've defined my three views, I clear the tab navigator using removeAll. Here is where a bug exists. I initially had just the three addItem's there. When run I'd get an error from within the Flex framework itself. A user (whose name I don't know - but thank you!) from the Flex forums provided the fix you see there - validateNow(). Don't ask me why it works - it just does. The main point though is that we end up with all new tabs within our application. Here's the view after logging in.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip101.png" />
+<p>
+<p>That's it. I've included the FXP if you want to play with this yourself. As always - I'm open to alternatives and better ways of doing this.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FLoginRegisterExample%2Efxp'>Download attached file.</a></p></p>
+}

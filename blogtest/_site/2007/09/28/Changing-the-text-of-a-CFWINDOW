@@ -1,0 +1,36 @@
+<h1>Post</h1>
+
+<p>A quick tip - how do you change the text of a window created by CFWINDOW? All you need to do is grab the underlying window object:</p>
+<code>
+var win = ColdFusion.Window.getWindowObject("mywin");
+</code>
+<p>In this object there is a body property which is a complex structure pointing to the body of the window. I thought perhaps the body was a simple string. I did:</p>
+<code>
+win.body = 'Chicago better not be too cold';
+</code>
+<p>Which didn't work (nor did it throw an error). Then I used ColdFusion's Ajax debugger:</p>
+<code>
+ColdFusion.Log.dump(win.body);
+</code>
+<p>This revealed the entire body element and I saw that there was a dom key which pointed to the DOM object. So all together now - the code is:</p>
+<code>
+var win = ColdFusion.Window.getWindowObject("mywin");
+win.body.dom.innerHTML = "Hi Ray, how are you?";
+</code>
+<p>And there is a complete template for you to try:</p>
+<code>
+&lt;script&gt;
+function test() {
+	var win = ColdFusion.Window.getWindowObject("mywin");
+	win.body.dom.innerHTML = "Hi Ray, how are you?";
+}
+&lt;/script&gt;
+<p>&lt;cfwindow name=&quot;mywin&quot; width=&quot;400&quot; height=&quot;400&quot; closable=&quot;true&quot; initShow=&quot;true&quot; title=&quot;Test&quot;&gt;
+Initial Content
+&lt;/cfwindow&gt;</p>
+<p>&lt;form&gt;
+&lt;input type=&quot;button&quot; onClick=&quot;test()&quot; value=&quot;test&quot;&gt;
+&lt;/form&gt;
+</code></p>
+<p><b>Edit:</b> Please be sure to read Todd's comment below. There is a simpler way to do what I did above. I'd nuke my own entry - but I figure the alternative I used would still be of interest to folks.</p>
+}

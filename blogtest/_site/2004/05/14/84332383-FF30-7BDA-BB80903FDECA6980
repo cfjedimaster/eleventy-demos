@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>As you may know, when you request a CFM file that doesn't exist, you don't get the normal 404 error page that you may have setup in your web server, instead you get a CF error. This is simple enough to solve in IIS, you simply tell the server to ensure scripts exist in regards to cfm processing.</p>
+<p>However - how is this done for Apache?</p>
+<p><b>Edited:</b> I know about the missing handler setting in the CF admin, however, this is for a box with N virtual servers on it and I'd want a different 404 handler for each server.</p>
+}

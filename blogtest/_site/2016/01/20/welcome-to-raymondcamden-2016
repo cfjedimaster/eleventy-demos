@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>Well, I've been alluding to this now for a few months, but I've finally pulled the plug on the old site and migrated everything over to a set of flat files with <a href="http://gohugo.io">Hugo</a> powering the generation. I'm using <a href="http://surge.sh">Surge</a> for hosting and will be upgrading to the paid plan (all of 10 bucks) as soon as possible.</p>
+<!--more-->
+<p>I already <a href="http://www.raymondcamden.com/2016/01/16/working-with-hugo-on-raymondcamden-com">blogged</a> about the process a few days ago, so I don't have anything to add to it, but I can say that - as always - my concern is to ensure that folks can come here to learn new things, talk about technology (and kittens!), and find value in this site as a whole.</p>
+<p>As far as I know, everything should have migrated over except for my old blog attachments. I had about 800 megs, yes, 800 megs, of attachments associated with blog posts, and frankly, most of those were a minimum of two years old or older. So for now, I'm not shipping any of them, but on a case by case basis will restore them - most likely to my Amazon S3 bucket.</p>
+<p>I want to be clear that I think WordPress is a damn fine platform, but I don't want to worry about my server going down due to some misconfiguration or XML-RPC hack. I'm also <em>extremely</em> impressed with Google's Cloud Platform technology. I found it easier than Amazon's and in general, it just plain worked well. My costs were never too high (around 20-25 bucks per month or so) and everything pretty much worked as it should.</p>
+<p>If you do run into anything weird, just drop me a comment below.</p>
+<p>And in case you're curious, my first site, before even the blog, looked like this:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/01/Raymond_Camden.png" alt="www.deathclock.com/morpheus"></p>
+<p>Don't even ask me what I was thinking about when I chose those colors.</p>
+}

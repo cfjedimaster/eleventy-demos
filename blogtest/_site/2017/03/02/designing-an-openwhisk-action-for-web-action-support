@@ -1,0 +1,148 @@
+<h1>Post</h1>
+
+<p><strong>Please note that there is an update to this blog post. Read it here: <a href="https://www.raymondcamden.com/2017/07/03/designing-an-openwhisk-action-for-web-action-support-take-two/">https://www.raymondcamden.com/2017/07/03/designing-an-openwhisk-action-for-web-action-support-take-two/</a>.</strong></p>
+<p>Before I begin - a few words of caution. The feature I'm discussing today is - for the most part - bleeding edge for OpenWhisk. It is <em>really</em> new and most likely will change between now and when it is &quot;formally&quot; part of the platform. Secondly, what I built may not actually be the best idea either. Regular readers know that I'll often share code that is fun, but not exactly practical, so this isn't anything new per se, but I want to point out that what I demonstrate here may not be a good idea. I'm still <em>extremely</em> new to Serverless in general, so read with caution!</p>
+<p>Alright, so first off, a quick reminder. &quot;Web Actions&quot; are a new feature of <a href="https://developer.ibm.com/openwhisk/">OpenWhisk</a> that allow you to return non-JSON responses from OpenWhisk actions. There are <a href="https://github.com/openwhisk/openwhisk/blob/master/docs/webactions.md">docs</a> you can, and should, read to understand the basics as well as examples (here is <a href="https://www.raymondcamden.com/2017/02/15/building-a-form-handler-service-in-openwhisk-part-two/">my post</a> which links to even more examples) of it in use.</p>
+<p>One thing kinda bothered me though. It wasn't very clear how I could take a simple action and make it support web action results as well as &quot;normal&quot; serverless requests. Most of the demos assume you are only using it as a web action, but I wanted to see if I could support both. Here is what I came up with.</p>
+<p>I began by writing my action. In this case, the action generates a random cat. It creates random names, gender, ages, and more.</p>
+<pre><code class="language-javascript">
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+ 
+function randomName() {
+    var initialParts = [&quot;Fluffy&quot;,&quot;Scruffy&quot;,&quot;King&quot;,&quot;Queen&quot;,&quot;Emperor&quot;,&quot;Lord&quot;,&quot;Hairy&quot;,&quot;Smelly&quot;,&quot;Most Exalted Knight&quot;,&quot;Crazy&quot;,&quot;Silly&quot;,&quot;Dumb&quot;,&quot;Brave&quot;,&quot;Sir&quot;,&quot;Fatty&quot;];
+    var lastParts = [&quot;Sam&quot;,&quot;Smoe&quot;,&quot;Elvira&quot;,&quot;Jacob&quot;,&quot;Lynn&quot;,&quot;Fufflepants the III&quot;,&quot;Squarehead&quot;,&quot;Redshirt&quot;,&quot;Titan&quot;,&quot;Kitten Zombie&quot;,&quot;Dumpster Fire&quot;,&quot;Butterfly Wings&quot;,&quot;Unicorn Rider&quot;];
+    return initialParts[getRandomInt(0, initialParts.length-1)] + ' ' + lastParts[getRandomInt(0, lastParts.length-1)]
+};
+ 
+function randomColor() {
+    var colors = [&quot;Red&quot;,&quot;Blue&quot;,&quot;Green&quot;,&quot;Yellow&quot;,&quot;Rainbow&quot;,&quot;White&quot;,&quot;Black&quot;,&quot;Invisible&quot;];
+    return colors[getRandomInt(0, colors.length-1)];
+}
+ 
+function randomGender() {
+    var genders = [&quot;Male&quot;,&quot;Female&quot;];
+    return genders[getRandomInt(0, genders.length-1)];
+}
+ 
+function randomAge() {
+    return getRandomInt(1, 15);
+}
+ 
+function randomBreed() {
+    var breeds = [&quot;American Shorthair&quot;,&quot;Abyssinian&quot;,&quot;American Curl&quot;,&quot;American Wirehair&quot;,&quot;Bengal&quot;,&quot;Chartreux&quot;,&quot;Devon Rex&quot;,&quot;Maine Coon&quot;,&quot;Manx&quot;,&quot;Persian&quot;,&quot;Siamese&quot;];
+    return breeds[getRandomInt(0, breeds.length-1)];
+}
+
+function randomPic() {
+    var w = getRandomInt(100,400);
+    var h = getRandomInt(100,400);
+    return `http://placekitten.com/${w}/${h}`;
+}
+
+function main(args) {
+   return {
+        cat:{
+            name:randomName(),
+            color:randomColor(),
+            gender:randomGender(),
+            age:randomAge(),
+            breed:randomBreed(),
+            picture:randomPic()
+        }
+    };
+}
+</code></pre>
+<p>I assume this is all pretty trivial, but as always, let me know in the comments if it doesn't make sense. So I took this, pushed it up to OpenWhisk, and confirmed it work as a 'regular' simple action.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/3/caas1.png" alt="Demo"></p>
+<p>With that done, I then began thinking about how I'd support web actions. First I enabled it by updating the action: <code>wsk action update caas cat.js --annotation web-export true</code>.</p>
+<p>I thought I'd first start with - how do I tell a &quot;regular&quot; call versus a &quot;Web Action&quot; call. According to the docs, a &quot;Web Action&quot; call will send along additional arguments representing the HTTP request. These exist in args with the prefix __ow. So with that, I wrote this function as a shorthand to detect the request:</p>
+<pre><code class="language-javascript">
+function isWebInvocation(request) {
+	if(request.__ow_meta_verb) return true;
+	return false;
+}
+</code></pre>
+<p>This feels a bit risky, but if a better way comes around, I can fix it up later.</p>
+<p>The next bit was figuring out exactly how I'd support web actions. I decided on 3 different ways.</p>
+<ul>
+<li>If an HTML request is made, I'd return an HTML string representing the cat.</li>
+<li>If a JPG request is made, I'd return just the image.</li>
+<li>If a JSON response is requested, I'd return the JSON string.</li>
+</ul>
+<p>You can determine all of this by looking at the headers sent with the request. Web Actions pass this as <code>__ow_meta_headers</code> and the <code>accept</code> header would tell me what kind of response was desired. I wrote this as a shorthand way of parsing it:</p>
+<pre><code class="language-javascript">
+function getRequestType(request) {
+	//basically sniff the Accept header
+	let header = request.__ow_meta_headers.accept;
+	console.log('header', header);
+	//try to normalize a bit, just caring about a few
+	if(header.indexOf('text/html') &gt;= 0) return 'html';
+	if(header.indexOf('image/jpeg') &gt;= 0) return 'image';
+	if(header.indexOf('application/json') &gt;= 0) return 'json';
+}
+</code></pre>
+<p>Notice I have no result for an unknown request - I should fix that. So the final part was to just support all this. Here is my modified main function.</p>
+<pre><code class="language-javascript">
+function main(args) {
+	console.log('cats args: '+JSON.stringify(args));
+
+	let cat = {
+		name:randomName(),
+		color:randomColor(),
+		gender:randomGender(),
+		age:randomAge(),
+		breed:randomBreed(),
+		picture:randomPic()
+	};
+
+	if(!isWebInvocation(args)) {
+		return { cat: cat};
+	}
+
+	console.log('not a regular invoke');
+	let type = getRequestType(args);
+	console.log('type is '+type);
+
+	switch(type) {
+
+		case 'html': 
+			return {html:`
+				&lt;h1&gt;${cat.name}&lt;/h1&gt;
+				My cat, ${cat.name}, is ${cat.gender} and ${cat.age} years old.&lt;br/&gt;
+				It is a ${cat.breed} and has a ${cat.color} color.&lt;br/&gt;
+				&lt;img src=&quot;${cat.picture}&quot;&gt;
+				`
+			};
+			break;
+
+
+		case 'image':
+			return {
+				headers:{location:cat.picture},
+				code:302
+			};
+			break;
+
+		case 'json':
+			return cat;
+			break;
+	
+	}
+
+}
+</code></pre>
+<p>So how do I test? First I figured out my URL (I added a space to make it wrap nicer):</p>
+<p><code>https://openwhisk.ng.bluemix.net/api/v1/experimental/web/ rcamden@us.ibm.com_My%20Space/default/caas</code></p>
+<p>And then I tested the HTML version:</p>
+<p><code>https://openwhisk.ng.bluemix.net/api/v1/experimental/web/ rcamden@us.ibm.com_My%20Space/default/caas.html</code></p>
+<p>which worked fine:</p>
+<img src="https://static.raymondcamden.com/images/2017/3/caas2.png" class="imgborder">
+<p>To test the JSON and JPG versions, I used <a href="https://www.getpostman.com/">Postman</a>, which is a <em>damn</em> handy tool for testing various API calls. Yes, I could have done everything in Curl, but honestly, my memory for CLI args is somewhat flakey, and I love the UI and ease of use of Postman in general. To support an image response, I use this URL:</p>
+<p><code>https://openwhisk.ng.bluemix.net/api/v1/experimental/web/ rcamden@us.ibm.com_My%20Space/default/caas.http</code></p>
+<p>and here it is running in Postman:</p>
+<img src="https://static.raymondcamden.com/images/2017/3/caas3.png" class="imgborder">
+<p>And the JSON works well too - it uses the same URL, just a different Accept header.</p>
+<p>So - as I said at the beginning - I'm not entirely sure this is a good idea, but I dig how my one action can have multiple views of the same data. Any thoughts on this approach?</p>
+}

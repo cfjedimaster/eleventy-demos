@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Just a quick note to point out a cool article by Gary Gilbert:</p>
+<p><a href="http://www.garyrgilbert.com/blog/index.cfm/2007/11/23/Spry-Panel-with-Dynamic-Content">Spry Panel with Dynamic Content</a></p>
+<p>He describes how to mix two different Spry widgets - tabs and HTML panels. Basically - tabs with remote content. I'm sure his methods would also apply to accordions as well.</p>
+}

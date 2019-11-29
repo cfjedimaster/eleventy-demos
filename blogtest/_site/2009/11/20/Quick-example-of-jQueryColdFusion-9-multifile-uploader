@@ -1,0 +1,36 @@
+<h1>Post</h1>
+
+<p>I was talking to a reader earlier today about ColdFusion 9's new multi-file uploader. I mentioned my <a href="http://www.raymondcamden.com/index.cfm/2009/11/11/Important-notes-about-ColdFusion-9s-new-multi-file-uploader">earlier</a> blog post which goes into details about the &quot;multiple post&quot; nature of this control, specifically if you have other form fields involved. He came back with an interesting scenario. How would you handle allowing for metadata about each file upload. By that I mean imagine the following: You've got a form with a few basic fields in (name, email, etc), and then you have the multi-file uploader. For each file you upload you want to ask the user to enter data about the file, like perhaps a nicer name. How could you handle that? Here is one simple example that makes use of jQuery. I wrote this <i>very</i> quickly so please forgive the ugliness.</p>
+<!--more-->
+<p>Ok - the code:</p>
+<code>
+&lt;script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+var counter=0
+<p>function handleComplete(res) {
+console.dir(res)
+if(res.STATUS==200) {
+counter++
+var newRow = '&lt;tr&gt;&lt;td&gt;&lt;input type=&quot;hidden&quot; name=&quot;file_'+counter+'&quot; value=&quot;'+res.FILENAME+'&quot;&gt;'
+newRow += 'Label the file: '+res.FILENAME+' &lt;input type=&quot;text&quot; name=&quot;filename_'+counter+'&quot;&gt;&lt;/td&gt;&lt;/tr&gt;'
+$(&quot;table#detail&quot;).append(newRow)
+}
+}
+&lt;/script&gt;</p>
+<p>&lt;form action=&quot;test.cfm&quot; method=&quot;post&quot;&gt;
+Name: &lt;input type=&quot;text&quot; name=&quot;name&quot;&gt;&lt;br/&gt;
+Email: &lt;input type=&quot;text&quot; name=&quot;email&quot;&gt;&lt;br/&gt;
+Attachments: &lt;cffileupload url=&quot;uploadall.cfm&quot; name=&quot;files&quot; oncomplete=&quot;handleComplete&quot;&gt;&lt;br/&gt;
+&lt;table id=&quot;detail&quot;&gt;
+&lt;/table&gt;
+&lt;input type=&quot;submit&quot;&gt;
+&lt;/form&gt;</p>
+<p>&lt;cfdump var=&quot;#form#&quot;&gt;
+</code></p>
+<p>Starting at the bottom, we have our basic form with the multi-file control. Notice I've added a oncomplete attribute. This will be run after every file is uploaded. This runs a function called handleComplete. I get passed an object that contains a status code, a message, and the file name. So the next part is simple. If the status is 200, simply add a row of data where we can ask for more information. Notice I use a hidden form field. This let's me connect, numerically, a file name along with the meta data. You will see the connection in the sample below. The screen shot below shows the result of uploading 3 files and me entering information about them.</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2009-11-20 at 5.15.45 PM.png" />
+<p>And after submitting, note the form data:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Screen shot 2009-11-20 at 5.16.16 PM.png" />
+<p>I hope this is helpful. Let me know if you have any questions, or improvements, on the technique.</p>
+<p><b>Edit:</b> For the 'nice name' label I used filename_X. That's a poor choice there since file_X is the filename. Just pretend I used something nice like, oh, filelabel_X.</p>
+}

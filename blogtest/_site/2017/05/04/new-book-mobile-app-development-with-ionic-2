@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>Guess what I got my grubby little hands on?</p>
+<!--more-->
+<p><img src="https://static.raymondcamden.com/images/2017/5/ionic2book2.jpg" alt="A new book!"></p>
+<p>Yep, a brand-spanking new book on the latest version of Ionic by <a href="https://chrisgriffith.wordpress.com/">Chris Griffith</a>. I had the distinct pleasure of being one of the technical reviewers for this book and I enjoyed it quite a lot. I felt like I &quot;knew&quot; Ionic 2 going in, but obviously didn't know everything, and I definitely discovered some great new tips while editing. I also really like Chris' use of one main sample application throughout the book. The reader really gets a chance to see it grow and expand with new features. Pick it up by clicking the link below (and yep, that's an affiliate link so if you buy, I get a few cents, thanks!)</p>
+<p><a target="_blank" href="https://www.amazon.com/gp/product/1491937785/ref=as_li_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=1491937785&linkCode=as2&tag=raymondcamd06-20&linkId=2b3585482f86432cdf0bc8f3d5fa9e90">Mobile App Development with Ionic 2: Cross-Platform Apps with Ionic, Angular, and Cordova</a><img src="//ir-na.amazon-adsystem.com/e/ir?t=raymondcamd06-20&l=am2&o=1&a=1491937785" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" /></p>
+<p>You can read a sample <a href="http://cdn.oreillystatic.com/oreilly/booksamplers/9781491937785_sampler.pdf">here</a> and I've included the table of contents below:</p>
+<ul>
+<li>Chapter 1 - Hybrid Mobile Apps</li>
+<li>Chapter 2 - Setting Up Our Development Environment</li>
+<li>Chapter 3 - Understanding the Ionic Command-Line Interface</li>
+<li>Chapter 4 - Just Enough Angular and TypeScript</li>
+<li>Chapter 5 - Apache Cordova Basics</li>
+<li>Chapter 6 - Understanding Ionic</li>
+<li>Chapter 7 - Building Our Ionic2Do App</li>
+<li>Chapter 8 - Building a Tab-Based App</li>
+<li>Chapter 9 - Building a Weather Application</li>
+<li>Chapter 10 - Debugging and Testing Your Ionic Application</li>
+<li>Chapter 11 - Deploying Your Application</li>
+<li>Chapter 12 - Exploring the Ionic Cloud</li>
+<li>Chapter 13 - Progressive Web Apps</li>
+<li>Chapter 14 - Conclusion</li>
+<li>Appendix - Migrating Ionic 1 to Ionic 2</li>
+<li>Appendix - Understanding the Config.xml File</li>
+</ul>
+}

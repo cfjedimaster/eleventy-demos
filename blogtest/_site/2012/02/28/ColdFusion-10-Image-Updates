@@ -1,0 +1,96 @@
+<h1>Post</h1>
+
+<p>ColdFusion 10 provides a few updates to image handling that may be useful to folks. Here's a brief run down of what's new in ColdFusion 10 and image handling.</p>
+<!--more-->
+<p/>
+<p>The first feature I'll demonstrate is imageColorTransparent. This takes an image and a color and returns a new image with said color now transparent. So for example:</p>
+<p/>
+<code>
+<p>&lt;cfset img = imageRead(&quot;untitled.png&quot;)&gt;</p>
+<p>&lt;div style=&quot;float:left&quot;&gt;
+&lt;h2&gt;Original&lt;/h2&gt;
+&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#img#&quot;&gt;
+&lt;/div&gt;</p>
+<p>&lt;cfset img2 = imageMakeColorTransparent(img,&quot;##ff0000&quot;)&gt;</p>
+<p>&lt;div style=&quot;float:left&quot;&gt;
+&lt;h2&gt;Modified&lt;/h2&gt;
+&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#img2#&quot;&gt;
+&lt;/div&gt;
+</code></p>
+<p>
+<p>Nice and simple right? Here's the result:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip28.png" />
+<p>
+<p>The next function we'll look at is imageMakeTranslucent, which, as you can probably guess, makes an image more transparent. Here's an example:</p>
+<p>
+<code>
+&lt;cfset img = imageRead("thorshark.jpg")&gt;
+<p>&lt;div style=&quot;float:left&quot;&gt;
+&lt;h2&gt;Original&lt;/h2&gt;
+&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#img#&quot;&gt;
+&lt;/div&gt;</p>
+<p>&lt;cfset img2 = imageMakeTranslucent(img,&quot;50&quot;)&gt;</p>
+<p>&lt;div style=&quot;float:left&quot;&gt;
+&lt;h2&gt;Modified&lt;/h2&gt;
+&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#img2#&quot;&gt;
+&lt;/div&gt;
+</code></p>
+<p>
+<p>The function takes in an image as the source and a number from 0 to 100 for how translucent to make it. Here's the result:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip29.png" />
+<p>
+<p>Another new function provides support for creating CAPTCHAs via cfscript:</p>
+<p>
+<code>
+&lt;cfscript&gt;
+	//also supports font/fontsize
+	cImage = imageCreateCaptcha(50, 200, "Beer","medium");
+&lt;/cfscript&gt;
+<p>&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#cImage#&quot;&gt;
+</code></p>
+<p>
+<p>We all know what CAPTCHAs look like so I won't bother sharing a screen shot. Now for something pretty darn cool. One of the issues with image manipulation is handling dynamic text. ColdFusion made it easy to write dynamic text on an image, but wasn't easy was determining if the text actually <i>fit</i> on the image. (This is one of the things the open source <a href="http://imageutils.riaforge.org/">ImageUtils</a> project at RIAForge handles.) ColdFusion 10 now lets you get information about text written to an image. Consider this code:</p>
+<p>
+<code>
+&lt;cfset img = imageNew("",300,300)&gt;
+<p>&lt;cfset res = imageDrawText(img, &quot;My name is Tron&quot;, 0, 0, {size:12,style:&quot;bold&quot;})&gt;</p>
+<p>&lt;cfdump var=&quot;#res#&quot; label=&quot;12, bold&quot;&gt;</p>
+<p>&lt;!--- slightly bigger... ---&gt;
+&lt;cfset res = imageDrawText(img, &quot;My name is Tron&quot;, 0, 0, {size:13,style:&quot;bold&quot;})&gt;</p>
+<p>&lt;cfdump var=&quot;#res#&quot; label=&quot;13, bold&quot;&gt;</p>
+<p>&lt;!--- back to 12, but not bold ---&gt;
+&lt;cfset res = imageDrawText(img, &quot;My name is Tron&quot;, 0, 0, {size:12})&gt;</p>
+<p>&lt;cfdump var=&quot;#res#&quot; label=&quot;12, non bold&quot;&gt;
+</code></p>
+<p>
+<p>You can see we've got 3 different types of text. The actual text is the same, but the display is different because of the font attributes. Here are the results:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip30.png" />
+<p>
+<p>As expected, changes to bold attributes impact the size. Now, there's one thing to keep in mind. To use this new feature you have to actually draw out the text. In a real application, I'd consider using a blank canvas like I did above and not writing on a real file. So given a banner of a certain width and height, simply make a new one  with the same size (totally virtually, not store on disk), write the dynamic text and see if it fits, and if so, then read in the real image, do your write, and save that version.</p>
+<p>
+<p>Another update is to imageOverlay. You can supply both a rule and an alpha to the overlay. In the past, there were no options at all. For an example of the rules, see <a href="http://docs.oracle.com/javase/tutorial/2d/advanced/compositing.html">Compositing Graphics</a>. I've also included a sample in the zip file attached to this blog entry.</p>
+<p>
+<p>So what else changed? The cfimage/captcha option tag can now return it's data into a variable. Useful if you need to store the CAPTCHA in a variable. The cfimage tag also supports interpolation attributes for resize actions.</p>
+<p>
+<p>Another cool change - if you don't specify a font for the CAPTCHA tag/function, ColdFusion 10 will  now fallback to a default font instead of throwing an error. This makes it easier to write code that will work across multiple systems.</p>
+<p>
+<p>All code from this blog entry is available via the download link below. Enjoy.</p>
+<p>
+<p><b>Edited at 7:50AM:</b> Just a quick note. One of the Adobe engineers, Chandan Kumar, shared an interesting fact about imageMakeColorTransparent. You can actually run it multiple times to make multiple colors transparent. Ie:</p>
+<p>
+<code>
+&lt;cfimage action="writeToBrowser" source="#img#"&gt;
+<p>&lt;cfset img = imageMakeColorTransparent(img,&quot;##EC1C24&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##EC1F26&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##ED2931&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##EC1D25&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##EC1E26&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##EC1F27&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##EC1B23&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##F1545A&quot;)&gt;
+&lt;cfset img = imageMakeColorTransparent(img,&quot;##F2555B&quot;)&gt;
+</code><p><a href='enclosures/C%3A%5Chosts%5C2012%2Eraymondcamden%2Ecom%5Cenclosures%2Fimages%2Ezip'>Download attached file.</a></p></p>
+}

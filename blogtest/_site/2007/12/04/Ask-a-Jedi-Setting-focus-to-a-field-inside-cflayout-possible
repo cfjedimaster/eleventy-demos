@@ -1,0 +1,88 @@
+<h1>Post</h1>
+
+<p>JC asks:</p>
+<blockquote>
+<p>
+Have you had any success placing focus on a text field inside a
+cflayoutarea?  Is this possible or am I chasing a red herring?
+</p>
+</blockquote>
+<p>I had not tried this before, but it wasn't too hard. First consider a simple CFLAYOUT page:</p>
+<code>
+&lt;cflayout type="border"&gt;
+<pre><code>&amp;lt;cflayoutarea position=&quot;left&quot; align=&quot;center&quot; 
+		size=&quot;400&quot; collapsible=&quot;true&quot; title=&quot;Menu&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+Menu 1
+&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;
+Menu 2
+&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;
+Menu 3
+&amp;lt;/p&amp;gt;
+&amp;lt;/cflayoutarea&amp;gt;
+
+&amp;lt;cflayoutarea position=&quot;center&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+&amp;lt;form id=&quot;someform&quot;&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;username&quot; id=&quot;username&quot;&amp;gt;
+&amp;lt;/form&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cflayoutarea&amp;gt;
+</code></pre>
+<p>&lt;/cflayout&gt;
+</code></p>
+<p>Notice I've placed a form inside the main layout box. I want to run code to set focus when the page loads, and ColdFusion provides a function for this - ajaxOnLoad():</p>
+<code>
+&lt;cfset ajaxOnLoad("setfocus")&gt;
+</code>
+<p>The code for setfocus is no different than any other JavaScript code to set focus:</p>
+<code>
+&lt;script&gt;
+function setfocus() {
+	var myfield = document.getElementById("username");
+	myfield.focus();
+}
+&lt;/script&gt;
+</code>
+<p>The only thing to watch out for is that ajaxOnLoad is a bit picky. It requires your JS function to be inside &lt;HEAD&gt; tags. So a complete example would be:</p>
+<code>
+&lt;html&gt;
+&lt;head&gt;
+&lt;script&gt;
+function setfocus() {
+	var myfield = document.getElementById("username");
+	myfield.focus();
+}
+&lt;/script&gt;
+&lt;/head&gt;
+<p>&lt;body&gt;
+&lt;cflayout type=&quot;border&quot;&gt;</p>
+<pre><code>&amp;lt;cflayoutarea position=&quot;left&quot; align=&quot;center&quot; 
+		size=&quot;400&quot; collapsible=&quot;true&quot; title=&quot;Menu&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+Menu 1
+&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;
+Menu 2
+&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;
+Menu 3
+&amp;lt;/p&amp;gt;
+&amp;lt;/cflayoutarea&amp;gt;
+
+&amp;lt;cflayoutarea position=&quot;center&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+&amp;lt;form id=&quot;someform&quot;&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;username&quot; id=&quot;username&quot;&amp;gt;
+&amp;lt;/form&amp;gt;
+&amp;lt;/p&amp;gt;
+&amp;lt;/cflayoutarea&amp;gt;
+</code></pre>
+<p>&lt;/cflayout&gt;</p>
+<p>&lt;cfset ajaxOnLoad(&quot;setfocus&quot;)&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+}

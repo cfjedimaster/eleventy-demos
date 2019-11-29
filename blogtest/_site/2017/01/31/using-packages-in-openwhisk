@@ -1,0 +1,76 @@
+<h1>Post</h1>
+
+<p>As I continue my exploration of serverless with <a href="https://developer.ibm.com/openwhisk/">OpenWhisk</a>, today I'm going to look at
+the <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_packages.html">packages</a> feature. While not terribly complex, I thought writing up my take on it and
+sharing some screen shots might help folks better understand the basics.</p>
+<p>As you play with OpenWhisk, you may be wondering where exactly your actions &quot;live&quot;. Obviously the whole point of serverless is to not
+worry about - you know - the server - but there <em>is</em> a directory of sort for your actions. You can see this yourself
+by simply listing your actions:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owp1.png" alt="My Actions"></p>
+<p>What you're seeing here is a list of every action I've created. You can see that each one begins with:</p>
+<pre><code>/rcamden@us.ibm.com_My Space/
+</code></pre>
+<p>This is documented in <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_reference.html#openwhisk_entities">Namespaces and packages</a>:</p>
+<blockquote>
+In Bluemix, an organization+space pair corresponds to a OpenWhisk namespace. For example, 
+the organization BobsOrg and space dev would correspond to the OpenWhisk namespace /BobsOrg_dev
+</blockquote>
+<p>Simple enough - but you can guess that organization is going to become an issue. While you can try to name your actions with good, descriptive names,
+at some point you will have to start giving weird names to actions just to avoid conlicts.</p>
+<p>This is where packages come in. Essentially, you can think of them as a subdirectory for your actions. (They do more than that, and we'll cover them in a second.)</p>
+<p>To create a new package, you issue this command:</p>
+<pre><code class="language-javascript">wsk package create NAME
+</code></pre>
+<p>Here's an example of me creating one called <code>utils</code>:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owp2.png" alt="My package"></p>
+<p>You can see your packages with:</p>
+<pre><code class="language-javascript">wsk package list
+</code></pre>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owp3.png" alt="Package list"></p>
+<p>That second package you see there was created when I was working with Cloudant back on my <a href="https://www.raymondcamden.com/2016/12/23/going-serverless-with-openwhisk">first post</a> on OpenWhisk.</p>
+<p>To see what's in a package, you simply do either:</p>
+<pre><code class="language-javascript">wsk package get utils
+</code></pre>
+<p>Or:</p>
+<pre><code class="language-javascript">wsk package get --summary utils
+</code></pre>
+<p>The first command returns a JSON object for your package and the second returns a more readable version. I'll show you both of these later, but first let's add an action to the package so there's
+actually something in it. I've got a simple action I created earlier that just echoes a name:</p>
+<pre><code class="language-javascript">
+function main(params) {
+
+	return {
+		result: "Meow, "+params.name
+	};
+
+}
+</code></pre>
+<p>To add this to my new package, I simply do:</p>
+<pre><code class="language-javascript">wsk action create utils/action1 action1.js
+</code></pre>
+<p>Again, pretty simple. Now let's look at what <code>wsk package get</code> returns, both the 'raw' and summary version:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owp4.png" alt="Package contents"></p>
+<p>As you can see, the summary version is what you'll probably always want to use at the CLI. If your curious, the
+generic <code>wsk action list</code> returns all your actions, even those within packages:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owp5.png" alt="Action list with new packages action"></p>
+<p>Invoking the action is the same as any other action, you simply prefix the package:</p>
+<pre><code class="language-javascript">wsk action invoke utils/action1 -b -r -p name Ray
+</code></pre>
+<p><img src="https://static.raymondcamden.com/images/2017/1/owp6.png" alt="My packaged action"></p>
+<p>Whew. So I said this was simple, right? It is - but I like to be complete and show these things actually running. So that's the basics, but what else is there?</p>
+<ul>
+<li>Packages, like actions, can have default parameters. This allows you to specify a default for every action
+in the package. In case you're curious, an action's default parameter takes precedence over a package's
+default parameter. (Thank you to Stephen Fink@IBM for clarifying that for me.)</li>
+<li>The other big change is that packages can be shared with the wider world. You can specify a &quot;shared&quot;
+setting (true or false) when creating or updating a package. By making it shared, anyone can use it.
+To me, this is the biggest use case for packages - providing a way for you to collect related actions and
+then share them with others.</li>
+<li>And then finally, OpenWhisk has a large set of shared packages called <code>whisk.system</code>. They
+provide various utilities as well as access to common Watson APIs and other useful tools. You can
+browse the <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_catalog.html">docs</a> for them or use
+the CLI, but I'd check the docs as they are much easier to read.</li>
+<li>Ok, so <em>really</em> finally - I'll point out you can also put <a href="https://console.ng.bluemix.net/docs/openwhisk/openwhisk_packages.html#openwhisk_package_trigger">feeds</a> in packages. I haven't yet blogged about triggers, feeds, and rules, because
+it's a bit complex and I'm still wrapping my head around it. They will be the subject of my next OpenWhisk article.</li>
+</ul>
+}

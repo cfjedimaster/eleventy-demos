@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I thought I'd point out this Adobe Edge article by Brian Rinaldi:</p>
+<p><a href="http://www.adobe.com/newsletters/edge/march2007/articles/article6/index.html?trackingid=RUUK">Add dynamic content to your site with RSS
+and ColdFusion</a></p>
+<p>His article talks about how to use my <a href="http://cfrss.riaforge.org/">RSS.cfc</a> project (which Brian provided fixes for in the last version) to download and parse various RSS feeds into your ColdFusion site.</p>
+}

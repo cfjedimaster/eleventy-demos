@@ -1,0 +1,195 @@
+<h1>Post</h1>
+
+<p>About two nights ago I moved <a href="http://www.coldfusionbloggers.org">CFBloggers</a> to my new host. Later that night I noticed a pretty severe performance issue at the database tier. I was reasonably confident I knew what the issue was, but I was also freaking tired as heck. Given that my body was going to overrule my brain in terms of what solution to apply, I decided to apply a quick bit of caching to the code in question.</p>
+<p/>
+<!--more-->
+Now - let me be clear. <b>Caching to fix a performance problem is no fix.</b> Certainly there are times when it is out of your control. Anything loaded via HTTP for example is a prime candidate for caching. But I want folks to be absolutely clear on the fact that what I did here was a practical, expedient patch, not a fix. 
+<p>
+<p>That being said, screw it, I was tired and it worked. 2 points for me.</p>
+<p>
+<p>So let's take a quick look at the method in question, getEntries.</p>
+<p>
+<code>
+&lt;cffunction name="getEntries" access="public" returnType="struct" output="false"&gt;
+	&lt;cfargument name="start" type="numeric" required="false" default="1"&gt;
+	&lt;cfargument name="total" type="numeric" required="false" default="10"&gt;
+	&lt;cfargument name="search" type="string" required="false" default=""&gt;
+	&lt;cfargument name="log" type="boolean" required="false" default="false"&gt;
+	&lt;cfargument name="dateafter" type="date" required="false"&gt;
+<pre><code>&amp;lt;cfset var s = structNew()&amp;gt;
+&amp;lt;cfset var q = &quot;&quot;&amp;gt;
+
+&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+select	SQL_CALC_FOUND_ROWS e.url, e.title, e.posted, e.created, e.content, e.id, b.name as blog, e.categories, b.description as blogdescription, b.url as blogurl
+from	entries e, blogs b
+where	e.blogidfk = b.id
+&amp;lt;cfif len(trim(arguments.search))&amp;gt;
+	and (1=0
+	&amp;lt;cfloop index=&quot;k&quot; list=&quot;#arguments.search#&quot;&amp;gt;
+		or
+		(
+		e.title like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#k#%&quot;&amp;gt;
+		or
+		e.content like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#k#%&quot;&amp;gt;
+		or
+		e.categories like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#k#%&quot;&amp;gt;
+		)
+	&amp;lt;/cfloop&amp;gt;
+	)
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif structKeyExists(arguments,&quot;dateafter&quot;)&amp;gt;
+and 	e.created &amp;gt; &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_timestamp&quot; value=&quot;#arguments.dateafter#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+order by e.created desc
+limit	#arguments.start-1#,#arguments.total#
+&amp;lt;/cfquery&amp;gt;
+&amp;lt;cfset s.entries = q&amp;gt;
+
+&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+select found_rows() as total
+&amp;lt;/cfquery&amp;gt;
+&amp;lt;cfset s.total = q.total&amp;gt;
+
+&amp;lt;!--- log search ---&amp;gt;
+&amp;lt;cfif len(trim(arguments.search)) and arguments.log&amp;gt;
+	&amp;lt;cfset logSearch(arguments.search)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn s&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>
+<p>This is the core function that loads entries up for CFBloggers. It handles the basic data load, the paging, and retrieving searches or date based ranges. (Those of you who are OO nerds will note that the logSearch portion violates SRP. Mea culpa.) My patch took all of 2 minutes to write:</p>
+<p>
+<code>
+&lt;cffunction name="getEntries" access="public" returnType="struct" output="false"&gt;
+	&lt;cfargument name="start" type="numeric" required="false" default="1"&gt;
+	&lt;cfargument name="total" type="numeric" required="false" default="10"&gt;
+	&lt;cfargument name="search" type="string" required="false" default=""&gt;
+	&lt;cfargument name="log" type="boolean" required="false" default="false"&gt;
+	&lt;cfargument name="dateafter" type="date" required="false"&gt;
+<pre><code>&amp;lt;cfset var s = structNew()&amp;gt;
+&amp;lt;cfset var q = &quot;&quot;&amp;gt;
+&amp;lt;cfset var k = &quot;&quot;&amp;gt;
+
+&amp;lt;cfset var key = &quot;#arguments.start#_#arguments.total#_#arguments.search#&quot;&amp;gt;
+&amp;lt;cfif structKeyExists(arguments, &quot;dateafter&quot;)&amp;gt;
+	&amp;lt;cfset key &amp;= &quot;_#arguments.dateafter#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfset var s = cacheGet(key)&amp;gt;
+&amp;lt;cfif isNull(s)&amp;gt;
+	&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+	select	SQL_CALC_FOUND_ROWS e.url, e.title, e.posted, e.created, e.content, e.id, b.name as blog, e.categories, b.description as blogdescription, b.url as blogurl
+	from	entries e, blogs b
+	where	e.blogidfk = b.id
+	&amp;lt;cfif len(trim(arguments.search))&amp;gt;
+		and (1=0
+		&amp;lt;cfloop index=&quot;k&quot; list=&quot;#arguments.search#&quot;&amp;gt;
+			or
+			(
+			e.title like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#k#%&quot;&amp;gt;
+			or
+			e.content like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#k#%&quot;&amp;gt;
+			or
+			e.categories like &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;%#k#%&quot;&amp;gt;
+			)
+		&amp;lt;/cfloop&amp;gt;
+		)
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfif structKeyExists(arguments,&quot;dateafter&quot;)&amp;gt;
+	and 	e.created &amp;gt; &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_timestamp&quot; value=&quot;#arguments.dateafter#&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	order by e.created desc
+	limit	#arguments.start-1#,#arguments.total#
+	&amp;lt;/cfquery&amp;gt;
+	&amp;lt;cfset s.entries = q&amp;gt;
+
+	&amp;lt;cfquery name=&quot;q&quot; datasource=&quot;#variables.dsn#&quot;&amp;gt;
+	select found_rows() as total
+	&amp;lt;/cfquery&amp;gt;
+
+	&amp;lt;cfset s.total = q.total&amp;gt;
+	&amp;lt;cfset cachePut(key, s)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- log search ---&amp;gt;
+&amp;lt;cfif len(trim(arguments.search)) and arguments.log&amp;gt;
+	&amp;lt;cfset logSearch(arguments.search)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn s&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>
+<p>As you can see, I generate a cache key based on the relevant arguments (log doesn't count). I then try to fetch the query from the cache. If it doesn't exist, I run the query and stuff it in the query.</p>
+<p>
+<p>To handle updates, I simply modified my addEntryIfNew method. As you can guess, this handles adding new blog entries when they don't already exist. I won't post the entire method, but just note that I added this:</p>
+<code>
+&lt;cfset var ids = cacheGetAllIds()&gt;
+&lt;cfset var id = ""&gt;
+&lt;cfloop index="id" array="#ids#"&gt;
+	&lt;cfset cacheRemove(id, false)&gt;
+&lt;/cfloop&gt;
+</code>
+<p>
+<p>Raise your hand if you are <b>real</b> happy that you can var scope anywhere now.</p>
+<p>
+<p>So this went live two nights ago. I knew it would be a while before I could update the database (and thanks go to Gary Funk for helping me with that) so I was curious to see how much the cache impacted my server. I wrote up a very quick template that gathered cache data and then logged it:</p>
+<code>
+&lt;cfset ids = cacheGetAllIds()&gt;
+&lt;cfset data = {}&gt;
+&lt;cfset data.totalItems = arrayLen(ids)&gt;
+&lt;cfset data.totalSize = 0&gt;
+&lt;cfloop index="id" array="#ids#"&gt;
+	&lt;cfset md = cacheGetMetadata(id)&gt;
+	&lt;cfset data.totalSize += md.size&gt;
+&lt;/cfloop&gt;
+&lt;cfset data.ids = ids&gt;
+<p>&lt;cfoutput&gt;
+#data.totalItems# items&lt;br/&gt;
+size = #data.totalSize#&lt;br/&gt;
+#arrayToList(data.ids)#
+&lt;/cfoutput&gt;</p>
+<p>&lt;cflog file=&quot;cfbloggers_cache&quot; text=&quot;#serializeJSON(data)#&quot;&gt;
+</code></p>
+<p>
+<p>Nothing fancy here. I get the IDs, count them and count the size. I serialize the whole thing to JSON and then cflog it. I then added a scheduled task to run this report every 10 minutes. Last night I wrote a quick log parser that reads in the data and creates a query from the serialized data.</p>
+<p>
+<code>
+&lt;cfset cachedata = queryNew("items,size,time", "integer,bigint,timestamp")&gt;
+<p>&lt;cfset logFile = &quot;/Users/ray/Downloads/cfbloggers_cache.log&quot;&gt;
+&lt;cfset dataSet = 0&gt;
+&lt;cfloop index=&quot;line&quot; file=&quot;#logFile#&quot;&gt;
+&lt;cfset dataSet++&gt;
+&lt;cfset line = listDeleteAt(line, 1)&gt;
+&lt;cfset line = listDeleteAt(line, 1)&gt;
+&lt;cfset date = listGetAt(line, 1)&gt;
+&lt;cfset date = mid(date, 2, len(date)-2)&gt;
+&lt;cfset line = listDeleteAt(line, 1)&gt;
+&lt;cfset time = listGetAt(line, 1)&gt;
+&lt;cfset time = mid(time, 2, len(time)-2)&gt;
+&lt;cfset line = listDeleteAt(line, 1)&gt;
+&lt;cfset line = listDeleteAt(line, 1)&gt;
+&lt;cfset line = mid(line, 2, len(line)-2)&gt;
+&lt;cfset line = replace(line, '&quot;&quot;', '&quot;', &quot;all&quot;)&gt;
+&lt;cfset d = deserializeJSON(line)&gt;
+&lt;cfset queryAddRow(cachedata)&gt;
+&lt;cfset querySetCell(cachedata, &quot;items&quot;, d.totalitems)&gt;
+&lt;cfset querySetCell(cachedata, &quot;size&quot;, d.totalsize)&gt;
+&lt;cfset querySetCell(cachedata, &quot;time&quot;, date &amp; &quot; &quot; &amp; time)&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>I then took this data and applied it to a chart. Now here is where things get interesting. It is a rather large chart, so please click on it to view the original version.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/images/cachereportorig.png"><img src="https://static.raymondcamden.com/images/cfjedi/cachereportsmall.png" title="Go ahead, click, you know you want to..." /></a></p>
+<p>
+<p>The chart begins at midnight on the 7th and goes till 11am or so today. The up and down movement represents the cache growing until new content comes in. What's odd is that there is steady growth on the morning of the 7th, then it &quot;calms&quot; down, then at night it begins to grow and not fall, which must represent the lack of people blogging and adding new entries. This morning it seems to be following the afternoon pattern from yesterday. The only change I'm aware of is the database fix, which I did at lunch time yesterday. But while that sped things up, I didn't clear the cache myself, so I'm not sure why the drop would happen then.</p>
+<p>
+<p>Anyway, I thought folks might find this interesting. I'll run another report on Monday and share the report then.</p>
+}

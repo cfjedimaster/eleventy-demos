@@ -1,0 +1,45 @@
+<h1>Post</h1>
+
+<p>Yesterday I wrote a <a href="http://www.raymondcamden.com/index.cfm/2009/2/4/Reading-Office-documents-with-ColdFusion">blog entry</a> on reading Microsoft Office documents with ColdFusion, Apache POI, and JavaLoader. One of the commenters, Leah, shared some code that made use of the latest beta of POI. This makes the reading quite a bit simpler. I had tried this myself but ran into trouble. Thanks to Leah, I'm now able to demonstrate a new version that is quite a bit simpler.</p>
+<!--more-->
+<p>First, make sure you have read the <a href="http://www.coldfusionjedi.com/index.cfm/2009/2/4/Reading-Office-documents-with-ColdFusion">previous entry</a>, as some of this won't make sense without the background information. The next thing you want to do is grab POI 3.5 (<a href=">http://www.apache.org/dyn/closer.cgi/poi/dev/">List of Mirror</a>) and unzip it. Copy all the JARs, all the lib contents, and the ooxml-lib files, into a new subfolder called jars2. &quot;jars2&quot; as a name isn't required of course. My previous version of this code used the jars folder for the 3.2 files so I figured I'd use jars2 for the 3.5 code.</p>
+<p>Our initialization code is virtually the same as before:</p>
+<code>
+&lt;!--- where the poi files are ---&gt;
+&lt;cfset jarpath = expandPath("./jars2")&gt;
+&lt;cfset paths = []&gt;
+&lt;cfdirectory action="list" name="files" directory="#jarpath#" filter="*.jar" recurse="true"&gt;
+<p>&lt;cfloop query=&quot;files&quot;&gt;
+&lt;cfset arrayAppend(paths, directory &amp; &quot;/&quot; &amp; name)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;!--- load javaloader ---&gt;
+&lt;cfset loader = createObject(&quot;component&quot;, &quot;javaloader.JavaLoader&quot;).init(paths)&gt;
+</code></p>
+<p>Now for the cool part. Remember how we had around 8 or so specific Java classes to do our parsing? This was because each Office type we worked with (Word, Excel, Powerpoint) had their own code and APIs to get at the text. POI 3.5 makes this a bit simpler with a factory called the ExtractorFactory. Here is the rest of the file:</p>
+<code>
+&lt;!--- generic file reader doohicky ---&gt;
+&lt;cfset myfile = createObject("java","java.io.File")&gt;
+<p>&lt;!--- get our required things loaded ---&gt;
+&lt;cfset extractorFactory = loader.create(&quot;org.apache.poi.extractor.ExtractorFactory&quot;)&gt;</p>
+<p>&lt;!--- get files ---&gt;
+&lt;cfset filePath = expandPath(&quot;./testdocs&quot;)&gt;
+&lt;cfdirectory action=&quot;list&quot; name=&quot;files&quot; directory=&quot;#filePath#&quot; filter=&quot;<em>.doc</em>|<em>.ppt</em>|<em>.xls</em>&quot;&gt;</p>
+<p>&lt;cfloop query=&quot;files&quot;&gt;
+&lt;cfset theFile = filePath &amp; &quot;/&quot; &amp; name&gt;
+&lt;cfset myfile.init(theFile)&gt;</p>
+<pre><code>&amp;lt;cfoutput&amp;gt;Reading: #theFile#&amp;lt;br/&amp;gt;&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfset extractor = extractorFactory.createExtractor(myFile)&amp;gt;
+&amp;lt;cfoutput&amp;gt;&amp;lt;pre&amp;gt;#extractor.getText()#&amp;lt;/pre&amp;gt;&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;p&amp;gt;&amp;lt;hr/&amp;gt;&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>I made one File object and one instance of the ExtractorFactory. Once I've done that, look how darn simple the code is!</p>
+<code>
+&lt;cfset extractor = extractorFactory.createExtractor(myFile)&gt;
+</code>
+<p>The factory takes care of all the sniffing and ensuring the right extractor is returned. I then just run getText() and we're done. Simpler than a debate with Lindsey Lohan!</p>
+<p>I've attached the code to the blog entry. Later today I'll talk about how to get at some of the metadata for Office documents. (Note, the attached zip does not have the jars from POI 3.5, they were a bit too big.)<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fpoi1%2Ezip'>Download attached file.</a></p></p>
+}

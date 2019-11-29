@@ -1,0 +1,34 @@
+<h1>Post</h1>
+
+<p>A reader asked for help using <a href="http://www.brightcove.com">Brightcove</a>'s API to upload a video using ColdFusion. While I do not plan on writing a full wrapper, or going into great detail, I thought a quick blog post on what he tried, and why it failed, could help others who plan on using the service.</p>
+<!--more-->
+<p>Let's first look at his original code and a description of the problem he had.</p>
+<code>
+&lt;cfhttp url="http://api.brightcove.com/services/post" method="post"
+timeout="600" result="resultVar" multipart="true"&gt;
+<p>&lt;cfhttpparam type=&quot;file&quot; name=&quot;file&quot; file=&quot;c:\com\brightcove\AT_T_test.mp4&quot; /&gt;</p>
+<p>&lt;cfset jsonRequest = '{&quot;method&quot;: &quot;create_video&quot;, &quot;params&quot;:
+{&quot;video&quot;: {&quot;name&quot;: &quot;test&quot;, &quot;shortDescription&quot;: &quot;test&quot;},&quot;token&quot;:
+&quot;blahblahblah..&quot;}}'&gt;</p>
+<p>&lt;cfhttpparam type=&quot;url&quot;  name=&quot;json&quot; value=&quot;#jsonRequest#&quot;&gt;</p>
+<p>&lt;cfhttpparam type=&quot;body&quot;  name=&quot;json&quot; value=&quot;#jsonRequest#&quot;&gt;</p>
+<p>&lt;/cfhttp&gt;
+</code></p>
+<p>Even without knowing the API, you can see that it makes use of JSON to pass parameters about the upload. This code won't work at all because you can't mix a httpparam of type body with type file. The API docs though seemed to imply you needed to send the JSON values as the body. I first attempted to simply save the JSON to the file system and send it as a second file. This didn't work. I then dig a bit of digging and discovered this forum post by the Brightcove team: <a href="http://forum.brightcove.com/brgh/board/message?board.id=Developer_2&message.id=85">http://forum.brightcove.com/brgh/board/message?board.id=Developer_2&amp;message.id=85</a></p>
+<p>It pointed out that the JSON data could be sent as a form field, and it showed that my reader was missing a bit of data as well.  Oddly - another issue was the <i>order</i> of the HTTP params. I can't image why this makes a difference, but if the JSON data isn't the first httpparam, then nothing else works. The final, working code, is below. Note - I removed his API key so you can't run this as is.</p>
+<code>
+&lt;cfset json = '{"method": "create_video", "params": {"video": {"name":
+"CFHTTP create","shortDescription": "test video"},"token":
+"falkeapikey"},"filename":
+"actual2.mp4","maxsize":640000}'&gt;
+<p>&lt;cfhttp url=&quot;http://api.brightcove.com/services/post&quot; method=&quot;post&quot;
+timeout=&quot;600&quot; result=&quot;resultVar&quot; multipart=&quot;true&quot;&gt;</p>
+<p>&lt;cfhttpparam type=&quot;formfield&quot; name=&quot;json&quot; value=&quot;#json#&quot;&gt;
+&lt;cfhttpparam type=&quot;file&quot; name=&quot;actual2.mp4&quot;
+file=&quot;/Users/ray/Documents/workspace/youtubecfc/unittests/actual2.mp4&quot;
+/&gt;
+&lt;/cfhttp&gt;</p>
+<p>&lt;cfdump var=&quot;#resultvar#&quot;&gt;
+</code></p>
+<p>Anyway - I don't have time to dig into the Brightcove API more, but I'm sure someone out there could whip up a quick component.</p>
+}

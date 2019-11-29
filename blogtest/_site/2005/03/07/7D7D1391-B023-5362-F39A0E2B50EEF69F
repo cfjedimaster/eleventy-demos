@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Working with tabs/accordions? Want to add buttons to let the user go back and forth to different pages? You can do this by simply setting the selectedIndex on the tab/accordion. Assuming your accordion has the name accordion1, this button will send you to page 1.</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfinput type=<FONT COLOR=BLUE>"button"</FONT> name=<FONT COLOR=BLUE>"step2A"</FONT> value=<FONT COLOR=BLUE>"Previous"</FONT> onClick=<FONT COLOR=BLUE>"accordion1.selectedIndex=0"</FONT>&gt;</FONT></div>
+<p>Obviously if you want to go from page 3 to page 2, selectedIndex would be set to 1. You could probably rewrite this to sniff the current active page and just set it to a value one less.</p>
+<p>In fact, I shouldn't be so lazy. Here is the &quot;proper&quot; version:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfinput type=<FONT COLOR=BLUE>"button"</FONT> name=<FONT COLOR=BLUE>"step2A"</FONT> value=<FONT COLOR=BLUE>"Previous"</FONT> onClick=<FONT COLOR=BLUE>"accordion1.selectedIndex=accordion1.selectedIndex-1"</FONT>&gt;</FONT></div>
+<p>Obviously a &quot;Next&quot; button would be slightly different.</p>
+}

@@ -1,0 +1,102 @@
+<h1>Post</h1>
+
+<p>A. Stanley asks:</p>
+<p>
+<blockquote>
+I am using cf9 report builder to generate a PDF of a pie chart with many slices (i.e. 14) . When I select 'data label: pattern', for my pie chart, the labels overlap. I have tried changing the size and style (e.g. sliced instead of solid) to no avail. The labels on the pie chart still overlap. I have increased the width and height as much as possible, but the chart is displayed with a page header and footer, so I am unable to use the entire width/height of the page. Is there at least a way to modify the legend so that I might add the [data label: pattern] (e.g. itemName n x% of y) information there and remove the labels from the pie chart altogether?
+</blockquote>
+<p>
+<p>Unfortunately the last time I used ColdFusion's Report Builder I was a <i>lot</i> less gray and I think HomeSite+ was the best ColdFusion editor. Luckily though I was able to reproduce her issue with a vanilla cfchart and move from there. She sent me fruit data (why not beer???) that I turned into a query like so.</p>
+<!--more-->
+<p>
+<code>
+<p>&lt;cfset q = queryNew(&quot;fruit,total&quot;,&quot;cf_sql_varchar,cf_sql_integer&quot;)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;apples&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,112)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;oranges&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,304)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;bananas&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,0)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;pears&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,0)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;grapes&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,16)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;strawberries&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,80)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;plums&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,48)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;pineapples&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,32)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;blueberries&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,16)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;raspberries&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,32)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;apricots&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,256)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;tangerines&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,705)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;cherries&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,1)&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;fruit&quot;,&quot;peaches&quot;)&gt;
+&lt;cfset querySetCell(q, &quot;total&quot;,0)&gt;
+</code></p>
+<p>
+<p>Obviously this would normally be a database query and be a heck of a lot smaller. I then passed this into a pie chart.</p>
+<p>
+<code>
+&lt;cfchart chartheight="500" chartwidth="500"&gt;
+	&lt;cfchartseries type="pie" query="q" itemcolumn="fruit" valuecolumn="total" datalabelstyle="pattern" &gt;
+&lt;/cfchart&gt;
+</code>
+<p>
+<p>And we can see right away the - um - &quot;suboptimal&quot; rendering:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip15.png" title="The chart is messier than my daughter's bed room." />
+<p>
+<p>Gross. So I did what I normally do in cases like this and opened up the chart editor. I entered additional data and recreate the issue in their tool. I then played around and discovered that the Data Labels editor has an option called <b>AutoControl</b>. If you mouse over this you see: &quot;Toggles auto control of overlapping labels&quot;</p>
+<p>
+<p>Yeah - no way it's that easy. I turned it on and <b>bam</b> - it worked. So I snagged the XML (and tweaked a few more small things) and got this:</p>
+<p>
+<code>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;pieChart depth="Double" style="Solid" is3d="false"&gt;
+          &lt;dataLabels style="Pattern" autoControl="true"/&gt;
+          &lt;paint palette="PastelTransluent" paint="Plain" min="44" max="95"/&gt;
+&lt;/pieChart&gt;
+</code>
+<p>
+<p>The critical part is autoControl=&quot;true&quot;. Here is the complete code then to use this XML:</p>
+<p>
+<code>
+&lt;cfsavecontent variable="cxml"&gt;
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;pieChart depth="Double" style="Solid" is3d="false"&gt;
+          &lt;dataLabels style="Pattern" autoControl="true"/&gt;
+          &lt;paint palette="PastelTransluent" paint="Plain" min="44" max="95"/&gt;
+&lt;/pieChart&gt;
+&lt;/cfsavecontent&gt;
+<p>&lt;cfchart chartheight=&quot;500&quot; chartwidth=&quot;500&quot; style=&quot;#cxml#&quot;&gt;
+&lt;cfchartseries type=&quot;pie&quot; query=&quot;q&quot; itemcolumn=&quot;fruit&quot; valuecolumn=&quot;total&quot; datalabelstyle=&quot;pattern&quot; &gt;
+&lt;/cfchart&gt;
+</code></p>
+<p>
+<p>And the result is:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip16.png" />
+<p>
+<p>Still &quot;busy&quot; but a heck of a lot more readable. (I'd probably reduce the smallest 5 items into one bucket, but thats for another blog post.) Hope this helps!</p>
+}

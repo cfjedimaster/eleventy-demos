@@ -1,0 +1,132 @@
+<h1>Post</h1>
+
+<p>I haven't played much with ColdFusion 9's new Ajax UI tags, mainly because I'm kind of a jQuery UI fan boy now, but this morning I took a look at cfProgressBar. It's a nice little utility and has some interesting uses. Here are a few examples to help you learn the tag. (And hopefully avoid some of the documentation issues I ran into!)</p>
+<!--more-->
+<p>First, let's look at an incredibly simple progress bar - one that has absolutely no tie to a real process.</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script&gt;
+function init() {
+ColdFusion.ProgressBar.start(&quot;mycfb&quot;)
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;h2&gt;Processing your stuff...&lt;/h2&gt;</p>
+<p>&lt;cfprogressbar name=&quot;mycfb&quot; duration=&quot;5000&quot; interval=&quot;300&quot; width=&quot;300&quot; /&gt;</p>
+<p>&lt;cfset ajaxOnLoad(&quot;init&quot;)&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>Right off the bat, let me point some documentation bugs that may snare you. First, the cfprogressbar tag must have an end tag. That's kind of silly and I'm sure it will be corrected for the final release.</p>
+<p>Secondly, both the width and interval attributes are marked as optional with defaults. As far as I can see, this is not the case. Width for me defaulted to 100%, and when I didn't supply an interval, the progress bar never did anything.</p>
+<p>Moving on - the last thing to note is that a progress bar will not start running until you tell it to. In this case, I have a 'static' progress bar that uses a duration attribute. This progress bar will simply update it's status of 5000 ms, or 5 seconds. I start the progress bar using ColdFusion.ProgrsssBar.start(name), and, well, that's it.</p>
+<p>You can view a demo of this here: <a href="http://www.raymondcamden.com/demos/cfprogressbar/test.cfm">http://www.raymondcamden.com/demos/cfprogressbar/test.cfm</a></p>
+<p>A static progress bar may not make much sense, but, I do think folks might have a use for it. You may have a slow process that has no direct API to check it's status. If you can roughly estimate how long the process normally takes, then this type of progress bar could at least give your user a reasonable idea of its progress. That being said, I think most folks will want to tie a progress bar to a real status. Let's look at an example of that now.</p>
+<code>
+&lt;cfset session.cfpbtest = 0&gt;
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script&gt;
+function init() {
+ColdFusion.ProgressBar.start(&quot;mycfb&quot;)
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;h2&gt;Processing your stuff...&lt;/h2&gt;</p>
+<p>&lt;cfprogressbar name=&quot;mycfb&quot; bind=&quot;cfc:process.getStatus()&quot; interval=&quot;600&quot; width=&quot;300&quot; /&gt;</p>
+<p>&lt;cfset ajaxOnLoad(&quot;init&quot;)&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>This example is much like the other, but note I've removed the duration and replaced it with a bind to a CFC. (Binds to JavaScript functions are also allowed.) My template initializes a session variable, cfpbtest, to 0. This is then used within my CFC:</p>
+<code>
+component {
+<p>remote struct function getStatus() {
+var result = {};</p>
+<pre><code>if(not structKeyExists(session, &quot;cfpbtest&quot;)) session.cfpbtest = 0;
+session.cfpbtest+=0.1;
+if(session.cfpbtest &amp;gt; 1) session.cfpbtest = 1;
+result.status = session.cfpbtest;
+
+if(result.status == 1) result.message = &quot;Woot! Done.&quot;;
+if(result.status &amp;lt; 0.8) result.message = &quot;Getting closer...&quot;;
+if(result.status &amp;lt; 0.6) result.message = &quot;More than halfway done...&quot;;
+if(result.status &amp;lt; 0.4) result.message = &quot;Still working, ways to go...&quot;;
+if(result.status &amp;lt; 0.2) result.message = &quot;Just begun...&quot;;
+
+return result;
+</code></pre>
+<p>}</p>
+<p>}
+</code></p>
+<p>The API for progress bar bindings is pretty simple. The CFC method (or JavaScript function) does not take an attribute. It must return a structure with two keys, status and message. Status must be a number between 0 and 1. Message can be whatever you want, or blank even. <b>WARNING:</b> If you return a number higher than 1, the progress bar will correctly display it (i.e., it doesn't draw the progress past the end), but it will continue to peg your server. Notice my little check there to see if the value is over 1? I did that because I noticed floating point errors and an infinite loop of network calls. I've already logged a bug for this. Oh, and by the way, notice the interval value? If you set that too low, and you have an error in your CFC, you will get an infinite number of JavaScript alerts. I filed a bug report on that as well.</p>
+<p>You can view this demo here: <a href="http://www.raymondcamden.com/demos/cfprogressbar/test2.cfm">http://www.raymondcamden.com/demos/cfprogressbar/test2.cfm</a></p>
+<p>Here is another example that demonstrates the onComplete functionality. In this example, I've specified that the progress bar should hide itself when done:</p>
+<code>
+&lt;cfset session.cfpbtest = 0&gt;
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;script&gt;
+function init() {
+ColdFusion.ProgressBar.start(&quot;mycfb&quot;)
+}</p>
+<p>function hideme() {
+ColdFusion.ProgressBar.hide(&quot;mycfb&quot;)
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;
+&lt;h2&gt;Processing your stuff...&lt;/h2&gt;</p>
+<p>&lt;cfprogressbar name=&quot;mycfb&quot; bind=&quot;cfc:process.getStatus()&quot; interval=&quot;600&quot; width=&quot;300&quot; oncomplete=&quot;hideme&quot; /&gt;</p>
+<p>&lt;cfset ajaxOnLoad(&quot;init&quot;)&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>The hideme function simply uses the hide function to make the progress bar disappear. You can view this demo here: <a href="http://www.raymondcamden.com/demos/cfprogressbar/test3.cfm">http://www.raymondcamden.com/demos/cfprogressbar/test3.cfm</a></p>
+<p>Ok, so obviously this can be used to monitor the progress of some long running process. But you can also use it to provide feedback of a more manual process. Check out this example:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>function init() {
+ColdFusion.ProgressBar.updateStatus('mycfb', 0, 'Form Status')
+}</p>
+<p>$(document).ready(function() {</p>
+<pre><code>$(&quot;input&quot;).change(function() {
+	var complete = 0
+	if($(&quot;#name&quot;).val() != '') complete+=0.25
+	if($(&quot;#age&quot;).val() != '') complete+=0.25
+	if($(&quot;#email&quot;).val() != '') complete+=0.25
+	if($(&quot;#cheese&quot;).val() != '') complete+=0.25
+	if(complete == 1) {
+		msg = 'Form Complete!'
+		$(&quot;#save&quot;).attr(&quot;disabled&quot;,false)
+	} else msg = 'Form Status'
+
+	ColdFusion.ProgressBar.updateStatus('mycfb',complete,msg)
+})
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfprogressbar name=&quot;mycfb&quot; width=&quot;300&quot; /&gt;</p>
+<p>&lt;p&gt;
+&lt;form&gt;
+Name: &lt;input type=&quot;text&quot; name=&quot;name&quot; id=&quot;name&quot;&gt;&lt;br/&gt;
+Age: &lt;input type=&quot;text&quot; name=&quot;age&quot; id=&quot;age&quot;&gt;&lt;br/&gt;
+Email: &lt;input type=&quot;text&quot; name=&quot;email&quot; id=&quot;email&quot;&gt;&lt;br/&gt;
+Favorite Cheese: &lt;input type=&quot;text&quot; name=&quot;cheese&quot; id=&quot;cheese&quot;&gt;&lt;br/&gt;
+&lt;input type=&quot;submit&quot; name=&quot;Save&quot; id=&quot;save&quot; disabled=&quot;true&quot;&gt;
+&lt;/form&gt;
+&lt;/p&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;</p>
+<p>&lt;cfset ajaxOnLoad(&quot;init&quot;)&gt;
+</code></p>
+<p>I've created a simple form with 4 fields in it. I use jQuery to bind to all the inputs on the page, specifically their change event handler. Whenever you change the values of one of the form fields, I check all 4 fields and create a 'completed' value that represents how much of the form you have done. If you have all four done, I update the status and re-enable the submit button. You can view this demo here: <a href="http://www.raymondcamden.com/demos/cfprogressbar/test4.cfm">http://www.raymondcamden.com/demos/cfprogressbar/test4.cfm</a> I think it's interesting as it provides the user feedback on how far they are in the process of finishing the form. It's overkill for just 4 fields, but you get the idea.</p>
+}

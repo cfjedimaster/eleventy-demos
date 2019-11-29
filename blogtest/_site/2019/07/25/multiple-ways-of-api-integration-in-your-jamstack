@@ -1,0 +1,215 @@
+<h1>Post</h1>
+
+<p>This is something I've been kicking around in my head now for a few weeks and I'm finally
+taking the time to write it down. I've actually covered this before, but not in an explicit
+manner and I wanted to organize some thoughts I've been having on the matter lately. Before I begin though, a quick note. I was a somewhat late adopter of the <a href="https://jamstack.org/">&quot;JAMStack&quot;</a> moniker. Frankly, the name bugged me. Why not just call them what they are - static sites? But as static sites have become more powerful (thanks to various generators, APIs, and platforms like <a href="https://netlify.com">Netlify</a>), the term &quot;static sites&quot; simply doesn't fit anymore. When you say &quot;static&quot;, especially to a client who may have a tiny bit of technical knowledge, you imply a whole set of limitations that simply don't apply now. &quot;JAMStack&quot; (JavaScript, APIs, and Markup) doesn't have those connotations and really helps frame what we're talking about a lot better.</p>
+<p>Alright, so with that out of the way, what exactly am I talking about today? When adding interactivity to a JAMStack site, typically you think of APIs, remote services that can be used to get dynamic data which is then rendered on your site with JavaScript. But there's multiple ways of using those APIs, and JavaScript, that may not be apparent to you at first. In this post I'm going to go over these options and discuss when you may want to use one form over the other. I'm going to be using Netlify as my example host, but everything I'm discussing here would apply to (most) other hosts as well. I've not hidden my obvious love of Netlify so I'm somewhat biased, but again, these principles will be applicable elsewhere.</p>
+<h2>Option One - Direct Access to a Remote API</h2>
+<p>The most direct and simplest way to work with an API on your JAMStack site is directly accessing it from your JavaScript. In this form, you simply make a HTTP request to the resource and render it. Here's a quick one pager using Vue.js and the <a href="https://swapi.co/">Star Wars API</a>:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;UTF-8&quot;&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;ie=edge&quot;&gt;
+	&lt;script src=&quot;https://vuejs.org/js/vue.min.js&quot;&gt;&lt;/script&gt;
+	&lt;title&gt;SWAPI Example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div id=&quot;app&quot;&gt;
+	&lt;h1&gt;Star Wars Films&lt;/h1&gt;
+	&lt;ul&gt;
+		&lt;li v-for=&quot;film in films&quot;&gt;&lt;/li&gt;
+	&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+const app = new Vue({
+	el:'#app',
+	data: {
+		films:[]
+	},
+	created() {
+		fetch('https://swapi.co/api/films')
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			this.films = res.results;
+		});
+	}
+});
+
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>You can view this live at <a href="https://jamstackapiapproaches.netlify.com/test1.html">https://jamstackapiapproaches.netlify.com/test1.html</a>.</p>
+<p>Nice and simple, right? However it has a few drawbacks.</p>
+<ul>
+<li>First, it assumes the remote API enables CORS, which allows your domain to directly access its domain. Many APIs allow this, but not all.</li>
+<li>Secondly, it assumes anonymous access. This is actually <em>not</em> the norm as typically an API requires some kind of identifier. Sometimes this isn't a big deal. The API has a generous free tier and is not likely to be abused. But as soon as you put an API key into your code, anyone who can view source can then take that key and use it themselves. Some APIs will let you lock down what domains can use that key, and in that case, you're pretty safe. But you absolutely want to keep that in mind.</li>
+<li>Finally, you are tied to working with data from the API in only the form it provides. That may not sound like a big deal, but what if the API returned a <em>lot</em> of data you don't need? You're putting that burden on the user which means (potentially) a slower web site and a (again, potentially) frustrating experience. This is where GraphQL really shines as it lets you specify exactly what data you need.</li>
+</ul>
+<p>All in all though this is the simplest and quickest way to add dynamic content to your JAMStack.</p>
+<h2>Option Two - An API Proxy</h2>
+<p>The second option is pretty similar to the first, with the main difference being that your code hits an API running on <em>your</em> server. The &quot;server&quot; could be just that, an app server running somewhere in house, but typically will be a serverless platform instead. Basically, instead of your code making an HTTP request to some remote domain, it requests your code which then itself requests data from the remote domain.</p>
+<p>Consider this example using the <a href="https://developer.here.com/documentation/weather/topics/overview.html">Weather API</a> from HERE. (A cool company I'll be blogging about more later.) Their API requires two specific authentication values, an <code>app_id</code> and <code>app_code</code>. If I put that in my client-side code, anyone could use it, which wouldn't be desirable. I'm going to use a serverless proxy set up with <a href="https://www.netlify.com/docs/functions/">Netlify Functions</a> to proxy requests to HERE's API from my client side code.</p>
+<pre><code class="language-js">/* eslint-disable */
+const fetch = require(&quot;node-fetch&quot;);
+
+exports.handler = async function(event, context) {
+  try {
+    let app_id = process.env.HERE_APP_ID;
+    let app_code = process.env.HERE_APP_CODE;
+
+    const response = await fetch(`https://weather.api.here.com/weather/1.0/report.json?app_id=${app_id}&amp;app_code=${app_code}&amp;product=forecast_astronomy&amp;name=Lafayette,LA`, {
+      headers: { Accept: &quot;application/json&quot; }
+    });
+    if (!response.ok) {
+      // NOT res.status &gt;= 200 &amp;&amp; res.status &lt; 300
+      return { statusCode: response.status, body: response.statusText };
+    }
+    const data = await response.json();
+
+    let results = data.astronomy.astronomy.map(r =&gt; {
+      return {
+        moonRise:r.moonrise,
+        moonSet:r.moonset,
+        moonPhase:r.moonPhase,
+        moonPhaseDesc:r.moonPhaseDesc,
+        time:r.utcTime
+      }
+    });
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ data:results })
+    };
+  } catch (err) {
+    console.log(err); 
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ msg: err.message }) 
+    };
+  }
+};
+</code></pre>
+<p>In general this is just some trivial Node code, but I want to point out some specific tweaks I did here. First, HERE's weather API supports returning astronomy data. For my demo I want to know about the moon, so you can see me filtering that out in the <code>map</code> call. This will result in less data going to be my client-side code. Also note that the API has slightly different casing going on. So for <code>moonrise</code> it's all lowercase, but then they use <code>moonPhase</code>. There may be a good reason for that, but to me it wasn't what I expected so I took the opportunity to reformat the data a bit as well.</p>
+<p>Once this was in place, I could then use it with some more Vue.js code. (To be clear, you don't have to use Vue, but I recommend it. ;)</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;UTF-8&quot;&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;ie=edge&quot;&gt;
+	&lt;script src=&quot;https://vuejs.org/js/vue.min.js&quot;&gt;&lt;/script&gt;
+	&lt;title&gt;Moon Data&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div id=&quot;app&quot;&gt;
+	&lt;h1&gt;Moon Data for Lafayette, LA&lt;/h1&gt;
+	&lt;ul&gt;
+		&lt;li v-for=&quot;result in results&quot;&gt;
+			On {{result.time | formatDate}}, the moon will rise at {{result.moonRise}} and set at {{result.moonSet}}. 
+			It is in {{result.moonPhaseDesc}}. 
+		&lt;/li&gt;
+	&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+Vue.filter('formatDate', function(d) {
+	if(!window.Intl) return d;
+	return new Intl.DateTimeFormat('en-US').format(new Date(d));
+}); 
+
+const app = new Vue({
+	el:'#app',
+	data: {
+		results:[]
+	},
+	created() {
+		fetch('/.netlify/functions/get-moon')
+		.then(res =&gt; res.json())
+		.then(res =&gt; {
+			this.results = res.data;
+		});
+	}
+});
+
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>You can view this here: <a href="https://jamstackapiapproaches.netlify.com/test2.html">https://jamstackapiapproaches.netlify.com/test2.html</a></p>
+<p>So, this one is a bit more work, but depending on your app platform, it could be easy. As I said, I used Netlify Functions, and outside of a configuration issue I had (I'll be blogging on this soon), it was trivial. What does this give us?</p>
+<ul>
+<li>We have the ability to hide any required keys.</li>
+<li>We have the ability to shape the result. This could include removing data we don't need, changing data for our needs, or heck, we could even add data too if it would be useful to the client.</li>
+<li>We could even switch providers. If I need to use someone besides HERE for my data, I can change it at the server and the front-end code won't have to know. I'd just ensure the result data matches what I used before.</li>
+<li>You could also add caching. Some API providers ask that you don't do this, but you could store data locally and only fetch when you need to.</li>
+<li>The only real &quot;drawback&quot; I can see is that it's definitely a bit more work. To me this was rather easy, but I've got experience writing code on the server and working with serverless platforms. I don't want to minimize the fact that not having these skills would be a bit of a jump if your only JavaScript experience is in client-side code.</li>
+</ul>
+<h2>Option Three - Using the Build Process</h2>
+<p>In the previous two options I described two methods that were - essentially - the same thing for the client: Hit an API (either remote or local) to get data. There's another option to consider as well. Depending on your needs, your data may need to be &quot;dynamic&quot; but not &quot;very dynamic&quot;. What do I mean by that? Consider the landing page for the music newsletter I run with <a href="https://remotesynthesis.com/">Brian Rinaldi</a> - <a href="https://codabreaker.rocks/">Coda Breaker</a>. The web page lists all the previous editions of the newsletter so folks can get an idea of what they're signing up for. We publish about twice a month so while the data is definitely dynamic, it rarely changes.</p>
+<p>Instead of building a serverless proxy to the API used to host the newsletters, we could use a build script on our site's platform. What do I mean by that? Imagine a simple script that hits an API and then saves the data in a flat file.</p>
+<pre><code class="language-js">const fetch = require('node-fetch');
+const fs = require('fs');
+
+fetch('https://swapi.co/api/films')
+.then(res =&gt; res.json())
+.then(res =&gt; {
+	let films = res.results.map(f =&gt; {
+		return {
+			title:f.title,
+			director:f.director,
+			releaseDate:f.release_date
+		}	
+	});
+
+	let generatedHTML = '';
+	films.forEach(f =&gt; {
+		generatedHTML += `&lt;li&gt;${f.title} was released on ${f.releaseDate} and directed by ${f.director}.&lt;/li&gt;`;
+	});
+
+	let contents = fs.readFileSync('./test3.html','utf8');
+	contents = contents.replace('{{ filmData }}', generatedHTML);
+
+	fs.writeFileSync('./test3.final.html', contents);
+	
+});
+</code></pre>
+<p>This Node script fires off a HTTP request to the Star Wars API. It then turns the result into some HTML. Note that I'm wrapping films in a LI block. Once done, it reads in a source file, looks for a special token and replaces it with the HTML string, and then saves it. I use a different file name, but I could easily overwrite the source file to since this is on the deployed build. Here's <code>test3.html</code>:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;UTF-8&quot;&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;ie=edge&quot;&gt;
+	&lt;title&gt;SWAPI Example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div id=&quot;app&quot;&gt;
+	&lt;h1&gt;Star Wars Films&lt;/h1&gt;
+	&lt;ul&gt;
+		{{ filmData }}
+	&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>The last bit is to tell my build server to run this when deploying my JAMStack site. Netlify lets you specify a build command which for my demo site, runs a command in my package.json file, <code>npm run build</code>. This is defined here:</p>
+<pre><code class="language-js">  &quot;scripts&quot;: {
+    &quot;build&quot;: &quot;node build &amp;&amp; cd functions/get-moon &amp;&amp; npm i&quot;
+  },
+</code></pre>
+<p>Ignore everything after the first <code>&amp;&amp;</code>, that's related to the serverless function, but the first part simply runs my little script that updates the flat file. You can see the result here: <a href="https://jamstackapiapproaches.netlify.com/test3.final.html">https://jamstackapiapproaches.netlify.com/test3.final.html</a> With no JavaScript, it should work incredibly fast and be pretty darn resilient. My build script could definitely add error checking, fall back content, and more.</p>
+<p>Now whenever my site builds, the content is updated automatically. I could do this manually, or as I did with Coda Breaker, I set up a webhook back to Netlify to trigger a build when a new newsletter was released. So it's static... but dynamic. It's manual... but automated. I love that.</p>
+<h2>Conclusion</h2>
+<p>I hope this really demonstrates the kinds of options you have when going static, sorry, I mean JAMStack. Certainly I didn't cover ever possible iteration of this and a site could make use of many of these. I'd love to hear your comments on what techniques you are using so please drop me a line below! If you want, you can browse the source code repo for my demo site here: <a href="https://github.com/cfjedimaster/jamstack_api_approaches">https://github.com/cfjedimaster/jamstack_api_approaches</a>.</p>
+<p><i>Header photo by <a href="https://unsplash.com/@benjaminjohnelliott?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Benjamin Elliott</a> on Unsplash</i></p>
+}

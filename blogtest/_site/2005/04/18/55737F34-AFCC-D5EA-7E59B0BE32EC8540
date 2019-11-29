@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>A reader pinged me this weekend asking if it was possible to install Flex with ColdFusion. As it so happens, I had done it twice on Friday so the answer was a resounding yes. Just in case you don't know how to do it, here is the URL at Ado... err Macromedia:</p>
+<p><a href="http://www.macromedia.com/support/documentation/en/flex/1_5/flexforcf.html">Installing Flex on ColdFusion MX</a></p>
+<p>A few notes....</p>
+<p>First - the document says that you can install Macromedia Flex on the <b>J22 version of ColdFusion MX</b>. To me - this implies the version of CFMX you run on JRun4, WebShere, whatever. It does <b>not</b> imply the standalone version. Maybe I'm just reading it wrong. Either way, it does work perfectly fine with the &quot;normal&quot; version of CF.</p>
+<p>Also - and I'm not so sure I'd recommend this - but the most difficult part of the process is updating the web.xml file. However, I found that once I had updated the web.xml on machine 1, I had no problems simply copying it over the web.xml file on machine 2 (after backing it up of course). That may save you some time if you had to install it more than once.</p>
+<p>(And may I say again - I would <i>really</i> love it if MACR would simply make the Flex installer notice CF and offer to merge it right then and there. Or maybe I'm just too lazy?)</p>
+}

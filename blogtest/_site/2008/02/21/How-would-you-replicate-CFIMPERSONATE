@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>A friend recently asked me an interesting question. He wanted to use ColdFusion to read a folder that the server didn't have access to read. In the old days, you could get around this by using cfimpersonate. As you probably guess, this tag let ColdFusion impersonate another user when executing commands. This tag was removed when MX was released. So how would you go about doing the same thing now in ColdFusion 8?</p>
+}

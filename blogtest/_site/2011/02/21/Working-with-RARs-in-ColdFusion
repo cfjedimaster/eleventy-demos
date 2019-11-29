@@ -1,0 +1,211 @@
+<h1>Post</h1>
+
+<p>I've been meaning to look at RAR files and ColdFusion for some time, mainly as a way to work with CBR files (these are digital comic books stored in RAR format). Unfortunately, ColdFusion's built in Zip functionality only works with Zip and JAR files. After some Googling for a Java based solution, I was only available to find a good RAR list program. I was not able to find anything that would actually list as well as extract files from a RAR file. I decided to tackle the solution via another route - cfexecute. Here is what I came up with.</p>
+<!--more-->
+<p>
+<p>If you've never used cfexecute before, you can think of it as a way for ColdFusion to work with other programs on your server. cfexecute will run any command line program that the service has access to. There are a few important things to keep in mind though:</p>
+<p>
+<p>First - cfexecute does not execute programs on the <i>user's</i> machine. That is impossible.</p>
+<p>
+<p>Secondly - while you can run any program via cfexecute, only command line programs make sense. So for example, I can start Firefox at the command line, but it will pop open a window on my machine. ColdFusion can do the same, but if you want to actually run a program and do something with the result, the program must return something to the command line itself.</p>
+<p>
+<p>I decided to make use of <a href="http://www.7-zip.org/">7-zip</a>. 7-zip is free, open source software that works with a variety of compression formats, including RAR. It includes both visual as well as command line interfaces. Making use of 7-zip via cfexecute simply comes down to figuring out the proper way to execute the program and dealing with the responses. I began by working on a list interface. To list files in an archive, you can use this set of arguments at the command line:</p>
+<p>
+<code>
+C:\Program Files\7-Zip\7z.exe l somefile.rar
+</code>
+<p>
+<p>The &quot;l&quot; argument means list. So now let's look at the cfexecute version of this:</p>
+<p>
+<code>
+&lt;cfset sevenZipexe = "C:\Program Files\7-Zip\7z.exe"&gt;
+&lt;cfset theFile = "H:\comics\Guardians of the Galaxy\Guardians of the Galaxy v2 013.cbr"&gt;
+<p>&lt;cfset args = []&gt;
+&lt;cfset args[1] = &quot;l&quot;&gt;
+&lt;cfset args[2] = theFile&gt;
+&lt;cfexecute name=&quot;#sevenZipExe#&quot; arguments=&quot;#args#&quot; variable=&quot;result&quot; errorvariable=&quot;errorresult&quot; timeout=&quot;99&quot; /&gt;
+</code></p>
+<p>
+<p>In the example above I've created a variable for the 7-Zip command line program and the archive file I want to work with. I've then passed the arguments into an array. Finally I run cfexecute. Make note of a few things. First, I can ask for ColdFusion to gather any result, or error, into two variables: result and errorresult. Secondly, the default mode of operation for cfexecute is &quot;fire and forget&quot; - i.e., don't wait for a response. By adding in a specific timeout value I can ensure ColdFusion will wait (for a while anyway) and get the response.</p>
+<p>
+<p>Now for the hard part. Some command line programs (like SVN and Git) will actually allow you to get a formatted response. 7-zip does not. It returns a nicely formatted table that looks like this:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip26.png" />
+<p>
+<p>If we are going to work with this we will need to parse that string into something more readable. (I found out later that there is an argument you can pass to make for a slightly more parsed format. I'm going to skip mentioning that for now, but do know that a slightly better option exists and I may switch to it in the future.) I whipped up the following code to strip out the header and footer.</p>
+<p>
+<code>
+&lt;!--- remove header ---&gt;
+&lt;cfset result = trim(rereplace(result, ".*?------------------- ----- ------------ ------------  ------------------------", ""))&gt;
+&lt;!--- remove footer ---&gt;
+&lt;cfset result = trim(rereplace(result, "------------------- ----- ------------ ------------  ------------------------.*", ""))&gt;
+</code>
+<p>
+<p>This left me with N lines of text delimited by a space. The final part of the line, the file, could have spaces in it, but everything before that should be safe to treat as space delimited. Here is what I used:</p>
+<p>
+<code>
+&lt;cfset files = queryNew("compressed,name,size,date,time,attr","double,varchar,double,date,time,varchar")&gt;
+<p>&lt;cfloop index=&quot;line&quot; list=&quot;#result#&quot; delimiters=&quot;#chr(13)##chr(10)#&quot;&gt;
+&lt;cfset queryAddRow(files)&gt;
+&lt;cfset line = trim(line)&gt;</p>
+<pre><code>&amp;lt;cfset date = listFirst(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset querySetCell(files, &quot;date&quot;, date)&amp;gt;
+
+&amp;lt;cfset time = listFirst(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset querySetCell(files, &quot;time&quot;, time)&amp;gt;
+
+&amp;lt;cfset attr = listFirst(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset querySetCell(files, &quot;attr&quot;, attr)&amp;gt;
+
+&amp;lt;cfset size = listFirst(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset querySetCell(files, &quot;size&quot;, size)&amp;gt;
+
+&amp;lt;cfset compressed = listFirst(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+&amp;lt;cfset querySetCell(files, &quot;compressed&quot;, compressed)&amp;gt;
+
+&amp;lt;cfset name = trim(line)&amp;gt;
+&amp;lt;cfset querySetCell(files, &quot;name&quot;, name)&amp;gt;
+</code></pre>
+<p>&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>Not rocket science but it works ok. So - what about extraction? I was concerned with extracting one file at a time, so I first figured out that syntax:</p>
+<p>
+<code>
+C:\Program Files\7-Zip\7z.exe e -aoa -oc:\loc somefile.rar somefile.txt
+</code>
+<p>
+<p>In this example, e stands for extra. -aoa stands for overwrite. -o is the output directory. The next argument is the archive. And the final argument is the specific file you want to extract. With this syntax in place, it was then easy to call it via cfexecute:</p>
+<p>
+<code>
+&lt;cfset args = []&gt;
+&lt;cfset args[1] = "e"&gt;
+&lt;cfset args[2] = "-aoa"&gt;
+&lt;cfset args[3] = "-oc:\Users\Raymond\Desktop\"&gt;
+<p>&lt;cfset args[4] = theFile&gt;
+&lt;cfset args[5] = &quot;1602 001 001.jpg&quot;&gt;</p>
+<p>&lt;cfexecute name=&quot;#sevenZip#&quot; arguments=&quot;#args#&quot; variable=&quot;result&quot; errorvariable=&quot;errorresult&quot; timeout=&quot;99&quot; /&gt;
+</code></p>
+<p>
+<p>The next logical step was to wrap this up into a nice CFC. Here is my first version of a 7-zip wrapper. It isn't the most stable wrapper, but it fits my needs. I'll post my use case for this in the next blog entry.</p>
+<p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<pre><code>&amp;lt;cffunction name=&quot;init&quot; access=&quot;public&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;sevenZipExe&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	
+	&amp;lt;cfif not fileExists(arguments.sevenZipExe)&amp;gt;
+		&amp;lt;cfthrow message=&quot;Invalid 7Zip executable path: #arguments.sevenZipExe#&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+	&amp;lt;cfset variables.sevenzipexe = arguments.sevenzipexe&amp;gt;
+	&amp;lt;cfreturn this&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;extract&quot; access=&quot;public&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;archivefile&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;file&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;destination&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	&amp;lt;cfset var result = &quot;&quot;&amp;gt;
+	&amp;lt;cfset var errorresult = &quot;&quot;&amp;gt;
+	
+	&amp;lt;cfif not fileExists(arguments.archivefile)&amp;gt;
+		&amp;lt;cfthrow message=&quot;Unable to work with #arguments.arvhiefile#, it does not exist.&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;cfset var args = []&amp;gt;
+	&amp;lt;cfset args[1] = &quot;e&quot;&amp;gt;
+	&amp;lt;cfset args[2] = &quot;-aoa&quot;&amp;gt;
+	&amp;lt;cfset args[3] = &quot;-o#arguments.destination#&quot;&amp;gt;
+	&amp;lt;cfset args[4] = arguments.archivefile&amp;gt;
+	&amp;lt;cfset args[5] = arguments.file&amp;gt;
+	
+	&amp;lt;cfexecute name=&quot;#variables.sevenZipexe#&quot; arguments=&quot;#args#&quot; variable=&quot;result&quot; errorvariable=&quot;errorresult&quot; timeout=&quot;99&quot; /&amp;gt;
+	
+	&amp;lt;cfif findNoCase(&quot;Everything is ok&quot;, result)&amp;gt;
+		&amp;lt;cfreturn true&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfreturn false&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;list&quot; access=&quot;public&quot; returnType=&quot;query&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;file&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	&amp;lt;cfset var result = &quot;&quot;&amp;gt;
+	&amp;lt;cfset var errorresult = &quot;&quot;&amp;gt;
+	&amp;lt;cfset files = queryNew(&quot;compressed,name,size,date,time,attr&quot;,&quot;double,varchar,double,date,time,varchar&quot;)&amp;gt;
+	&amp;lt;cfset var line = &quot;&quot;&amp;gt;
+			
+	&amp;lt;cfif not fileExists(arguments.file)&amp;gt;
+		&amp;lt;cfthrow message=&quot;Unable to work with #arguments.file#, it does not exist.&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;cflog file=&quot;application&quot; text=&quot;Working with #arguments.file#&quot;&amp;gt;
+	&amp;lt;cfset var args = []&amp;gt;
+	&amp;lt;cfset args[1] = &quot;l&quot;&amp;gt;
+	&amp;lt;cfset args[2] = arguments.file&amp;gt;
+	&amp;lt;cfexecute name=&quot;#variables.sevenzipexe#&quot; arguments=&quot;#args#&quot; variable=&quot;result&quot; errorvariable=&quot;errorresult&quot; timeout=&quot;99&quot; /&amp;gt;
+
+	&amp;lt;cfif len(errorresult)&amp;gt;
+		&amp;lt;cfthrow message=&quot;Error from SevenZip: #errorresult#&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+
+	&amp;lt;cfif find(&quot;is not supported archive&quot;, result)&amp;gt;
+		&amp;lt;cfthrow message=&quot;#arguments.file# was not a supported archive.&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+	&amp;lt;!--- remove header ---&amp;gt;
+	&amp;lt;cfset result = trim(rereplace(result, &quot;.*?------------------- ----- ------------ ------------  ------------------------&quot;, &quot;&quot;))&amp;gt;
+	&amp;lt;!--- remove footer ---&amp;gt;
+	&amp;lt;cfset result = trim(rereplace(result, &quot;------------------- ----- ------------ ------------  ------------------------.*&quot;, &quot;&quot;))&amp;gt;
+	
+	&amp;lt;cfloop index=&quot;line&quot; list=&quot;#result#&quot; delimiters=&quot;#chr(13)##chr(10)#&quot;&amp;gt;
+		&amp;lt;cfset queryAddRow(files)&amp;gt;
+		&amp;lt;cfset line = trim(line)&amp;gt;
+		&amp;lt;cfset date = listFirst(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset querySetCell(files, &quot;date&quot;, date)&amp;gt;
+
+		&amp;lt;cfset time = listFirst(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset querySetCell(files, &quot;time&quot;, time)&amp;gt;
+
+		&amp;lt;cfset attr = listFirst(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset querySetCell(files, &quot;attr&quot;, attr)&amp;gt;
+
+		&amp;lt;cfset size = listFirst(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset querySetCell(files, &quot;size&quot;, size)&amp;gt;
+
+		&amp;lt;cfset compressed = listFirst(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset line = listRest(line, &quot; &quot;)&amp;gt;
+		&amp;lt;cfset querySetCell(files, &quot;compressed&quot;, compressed)&amp;gt;
+
+		&amp;lt;cfset name = trim(line)&amp;gt;
+		&amp;lt;cfset querySetCell(files, &quot;name&quot;, name)&amp;gt;
+		
+	&amp;lt;/cfloop&amp;gt;
+		
+	&amp;lt;cfreturn files&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>
+<p>Finally, here is a quick example of using the zip:</p>
+<p>
+<code>
+&lt;cfset sevenZipexe = "C:\Program Files\7-Zip\7z.exe"&gt;
+&lt;cfset sevenzipcfc = new sevenzip(sevenzipexe)&gt;
+&lt;cfset files = sevenzipcfc.list(theFile)&gt; 
+&lt;cfdump var="#files#"&gt;
+<p>&lt;cfset sevenzipcfc.extract(thefile,files.name[1],&quot;c:\Users\Raymond\Desktop&quot;)&gt;
+</code></p>
+}

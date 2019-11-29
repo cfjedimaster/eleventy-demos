@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>Ok, so this falls under the &quot;pretty obvious&quot; category, but as I had to figure it out
+this morning I figured I'd blog it to help myself remember. I've been playing with
+<a href="http://ionicframework.com/docs/v2/native/">Ionic Native</a> as I learn Ionic 2. I wrote up my first
+experience with it a few weeks ago (<a href="https://www.raymondcamden.com/2016/07/07/working-with-ionic-native-shake-rattle-and-roll/">&quot;Working with Ionic Native - Shake, Rattle, and Roll&quot;</a>. As I work on my next couple of examples, I ran into a few issues.</p>
+<p>First off - I did the right thing and filed a bug report on the <a href="https://github.com/driftyco/ionic-native/issues">Ionic Native</a> GitHub repo. If you run into issues with the code, don't forget to start there.</p>
+<p>Secondly - Ionic Native is installed via npm. That means you can use regular npm commands to both check for and perform updates. So first off - to see what version of Ionic Native you have, simply do <code>npm list ionic-native</code>:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/08/in1.jpg" alt="Example"></p>
+<p>And then you can check against the published version by using <code>npm info ionic-native version</code>:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/08/in2.jpg" alt="Example"></p>
+<p>And then just <code>npm update ionic-native</code> to get the bits.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/08/in3.jpg" alt="Example"></p>
+<p>So yeah, this is pretty much the same you would do for any npm package, but I thought it might be helpful for Ionic folks who may not be terribly familiar with npm. Don't forget that you'll want to <code>ionic build</code> to regenerate your code, or just emulate/run.</p>
+}

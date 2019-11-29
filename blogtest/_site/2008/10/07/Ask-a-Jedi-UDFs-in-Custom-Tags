@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>Nathan asks:</p>
+<blockquote>
+<p>
+Can you define UDFs inside of CustomTags? I have some repetitive processing I need to do inside of a custom tag and was wondering if this is a valid approach? If so is the UDF local to the custom tag?
+</p>
+</blockquote>
+<p>Yes, you can. Here is a simple example:</p>
+<!--more-->
+<p>First we will start with the custom tag, which I've given the descriptive name of test3.cfm:</p>
+<code>
+&lt;cfscript&gt;
+function getNum() {
+	return randRange(1,100);
+}
+&lt;/cfscript&gt;
+<p>&lt;cfparam name=&quot;attributes.r_result&quot; default=&quot;result&quot; type=&quot;variableName&quot;&gt;</p>
+<p>&lt;cfset result = getNum()*getNum()*getNum()&gt;</p>
+<p>&lt;cfset caller[attributes.r_result] = result&gt;</p>
+<p>&lt;cfexit method=&quot;exitTag&quot;&gt;
+</code></p>
+<p>As you can see, I have a UDF named getNum(). The custom tag uses this to create a result. Now my calling script can simply do:</p>
+<code>
+&lt;cf_test3 r_result="res" /&gt;
+<p>&lt;cfoutput&gt;res=#res#&lt;/cfoutput&gt;
+</code></p>
+<p>The UDF does <i>not</i> leak out in the calling page. Just like any other variable defined in the custom tag, it is local to the custom tag only.</p>
+<p>In older versions of ColdFusion, I believe the original CF5, you would get an error if you called your custom tag in wrapped more, or with a / at the end of the call. This has been fixed for some time now though.</p>
+<p>So the question is - while it works, does it make sense? I would tend to shy away from putting the UDF in the custom tag. It seems like every time I write a function that I'm sure will only be used in one place, I end up needing it a few other places as well. Outside of that though I can't think of any good technical reason not to do this if you feel like you need it.</p>
+}

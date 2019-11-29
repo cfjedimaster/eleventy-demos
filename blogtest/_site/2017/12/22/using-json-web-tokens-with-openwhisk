@@ -1,0 +1,185 @@
+<h1>Post</h1>
+
+<p>Hey folks, before I begin, let me preface the entry with a warning that this is an example of something I wanted to play with and should <em>not</em> be copied wholesale for your applications without a thorough security review. I got - well - attacked pretty harshly in comments a few months ago for making a few mistakes in terms of security so I want to ensure folks know that I'm putting this out as something to share, but you should use with caution. As always, if you have some constructive feedback in regards to how good/bad/etc this demo is, I'm always happy to read your comments. Whew, sorry for the long disclaimer. Let's get started, shall we?</p>
+<p>Back in April, I wrote up a quick demo of JSON Web Tokens (JWT) and <a href="https://auth0.com/">Auth0</a> to lock down OpenWhisk (<a href="https://www.raymondcamden.com/2017/04/17/openwhisk-serverless-and-security-a-poc/">OpenWhisk, Serverless, and Security - a POC </a>). In that demo, I use Auth0 and social login. It worked pretty well. But it assumes you just want to verify a user, any user. What if you wanted to authenticate to a particular set of users? For example, maybe you're building an admin interface for a site and have one simple admin login. That's a common thing I did for a lot of the sites I built for clients. While there may be users for the front end, the admin was a simpler, separate user system. I decided to build a simple demo of what this could look like.</p>
+<p>I begin with the authentication action.</p>
+<pre><code class="language-js">const jwt = require('jsonwebtoken');
+const creds = require('./creds.json');
+
+function main(args) {
+    return new Promise((resolve, reject) =&gt; {
+
+        if(!args.username || !args.password) reject({message:'Invalid auth'});
+        // hard coded auth
+        if(args.username !== 'admin' || args.password !== 'letmein') reject({message:'Invalid auth'});
+
+        let token = jwt.sign(args.username, creds.secret);
+        resolve({
+            token:token
+        });
+
+    });
+
+}
+
+exports.main = main;
+</code></pre>
+<p>It begins by doing basic validation of the arguments. Then it simply checks against hard coded values for username and password. Note that I'm using a promise for the action even though everything is synchronous. In a real application, I assume you would check the credentials against a service, or database, and therefore would not be using an entirely synchronous solution. After the credentials are verified, I then create a JSON web token via the npm package I included in the beginning. You can read more about the package here - https://www.npmjs.com/package/jsonwebtoken. Note that I'm not using the option to add a timeout to the token. I think - typically - you would want a reasonable value there. That could be added like so: <code>jwt.sign(args.username, creds.secret, {'expiresIn':'1h'})</code>. Oh, and <code>creds</code> is just a JSON file containing a key to use for signing and verifying:</p>
+<pre><code class="language-js">{
+    &quot;secret&quot;:&quot;mymilkshakeisbetterthanyoursdamnrightit&quot;
+}
+</code></pre>
+<p>Ok, so that's authentication. What about verification?</p>
+<pre><code class="language-js">const jwt = require('jsonwebtoken');
+const creds = require('./creds.json');
+
+function main(args) {
+
+    return new Promise((resolve, reject) =&gt; {
+        let decoded = jwt.verify(args.token, creds.secret, (err,decoded) =&gt; {
+            if(err) {
+                console.log('err',err);
+                reject({
+                    name:err.name,
+                    message:err.message,
+                    stack:err.stack
+                });
+            } else {
+                //passthrough, except token
+                delete args.token;
+                resolve(args);
+            }
+
+        });
+
+
+    });
+
+}
+
+exports.main = main;
+</code></pre>
+<p>Once again I'm using the <code>jsonwebtoken</code> package for the bulk of the work. I decode the token and if it fails, throw an error. If it succeeds, note that I pass on every argument sent to the function except token itself. Why? The plan here is to allow the verify action to be used in an OpenWhisk action. I can use it to lock down my actions and let the non-token arguments be passed along the sequence. How would that look? Consider this super simple 'helloWorld' action:</p>
+<pre><code class="language-js">function main(args) {
+    if(!args.name) args.name = 'Nameless';
+
+    return { result: `Hello, ${args.name}`};
+    
+}
+</code></pre>
+<p>Given that my verification action was called <code>verify</code> and this is <code>helloWorld</code>, I can expose a locked down version like so:</p>
+<pre><code>wsk action update --sequence safeHelloWorld verify,helloworld --web true
+</code></pre>
+<p>Just to recap, let me go over what I built.</p>
+<ul>
+<li>I have an &quot;auth&quot; action that has a web API. It lets me login and get a JWT in response.</li>
+<li>I have a &quot;verify&quot; action that is meant to be used in a sequence with other OpenWhisk serverless actions.</li>
+<li>Finally, I built a demo action and tied it to the verification action in a sequence.</li>
+</ul>
+<h1>Putting It Together</h1>
+<p>In order to test this out, I whipped up a quick Vue.js front end. I built it all in one file (which I'd not normally do), so let's check it out:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+    &lt;title&gt;JWT Demo&lt;/title&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+    &lt;div id=&quot;app&quot;&gt;
+
+        &lt;div v-if=&quot;needLogin&quot;&gt;
+
+            &lt;h2&gt;Login&lt;/h2&gt;
+            &lt;p&gt;
+            &lt;label for=&quot;username&quot;&gt;Username&lt;/label&gt;
+            &lt;input type=&quot;text&quot; v-model=&quot;username&quot; id=&quot;username&quot; required&gt;
+            &lt;/p&gt;
+            &lt;p&gt;
+            &lt;label for=&quot;password&quot;&gt;Password&lt;/label&gt;
+            &lt;input type=&quot;password&quot; v-model=&quot;password&quot; id=&quot;password&quot; required&gt;
+            &lt;/p&gt;
+
+            &lt;p&gt;
+                &lt;input type=&quot;submit&quot; @click=&quot;login&quot; value=&quot;Login&quot;&gt;
+            &lt;/p&gt;
+
+            &lt;p v-if=&quot;invalidLogin&quot;&gt;
+                &lt;b&gt;Invalid Login.&lt;/b&gt;
+            &lt;/p&gt;
+                
+        &lt;/div&gt;
+        &lt;div v-else&gt;
+                &lt;h2&gt;Hello World Demo&lt;/h2&gt;
+                &lt;p&gt;
+                &lt;label for=&quot;name&quot;&gt;Enter Name:&lt;/label&gt;
+                &lt;input type=&quot;text&quot; v-model=&quot;name&quot; id=&quot;name&quot; required&gt;
+                &lt;/p&gt;
+
+                &lt;p&gt;
+                    &lt;input type=&quot;submit&quot; @click=&quot;helloWorld&quot; value=&quot;Test&quot;&gt;
+                &lt;/p&gt;
+
+                &lt;p v-if=&quot;nameResult&quot;&gt;&lt;b&gt;Result: {{nameResult}}&lt;/b&gt;&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/vue&quot;&gt;&lt;/script&gt;
+    &lt;script&gt;
+    const AUTH = 'https://openwhisk.ng.bluemix.net/api/v1/web/rcamden%40us.ibm.com_My%20Space/safeToDelete/auth.json';
+    const HELLO = 'https://openwhisk.ng.bluemix.net/api/v1/web/rcamden%40us.ibm.com_My%20Space/safeToDelete/safeHelloWorld.json';
+
+    const app = new Vue({
+        el:'#app',
+        data() {
+            return {
+                needLogin:true,
+                username:null,
+                password:null,
+                invalidLogin:false,
+                token:null,
+                name:null,
+                nameResult:null
+            }
+        },
+        methods:{
+            login() {
+                this.invalidLogin = false;
+                console.log('login');
+                fetch(AUTH+'?username='+encodeURIComponent(this.username)+'&amp;password='+encodeURIComponent(this.password))
+                .then(res =&gt; res.json())
+                .then(res =&gt; {
+                    console.log('result',res);
+                    if(res.message) {
+                        this.invalidLogin = true;
+                    } else if(res.token) {
+                        this.token = res.token;
+                        this.needLogin = false;
+                    }
+                });
+            },
+            helloWorld() {
+                this.nameResult = '';
+                if(this.name.trim() === '') return;
+                fetch(HELLO+'?token='+encodeURIComponent(this.token)+'&amp;name='+encodeURIComponent(this.name))
+                .then(res =&gt; res.json())
+                .then(res =&gt; {
+                    console.log('result',res);
+                    this.nameResult = res.result;
+                });
+
+            }
+        }
+    })
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Alright, so from the top, we've got a simple layout that uses <code>v-if</code> to dynamically show or hide a login screen. The second div handles a form that will interact with the &quot;helloWorld&quot; service created earlier.</p>
+<p>The JavaScript is mostly taken up by two methods, one for login and one for helloWorld. In both cases I simply take the results and update my data and let Vue handle updating the front end. Make note that <code>login()</code> will remember the token value and <code>helloWorld</code> passes it to the method.</p>
+<p>You can run this demo here: https://cfjedimaster.github.io/Serverless-Examples/jwtdemo/client.html</p>
+<p>Remember the username is <code>admin</code> and the password is <code>letmein</code>. You can find the complete source code for all the actions and front end here: https://github.com/cfjedimaster/Serverless-Examples/tree/master/jwtdemo</p>
+<p>So - what do you think? Leave me a comment below.</p>
+}

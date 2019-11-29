@@ -1,0 +1,145 @@
+<h1>Post</h1>
+
+<p>I recently came back from <a href="http://connect.tech/">connect.tech</a> (one of my favorite conferences). I had the honor of giving not one, but two different talks. One of them was on static sites, or the JAMstack. This is a topic I've covered many times in the past, but it had been a while since I gave a presentation on it. During my presentation I covered various ways of adding dynamic features back to the static site, one of them being search.</p>
+<p>For my blog here, I make use of <a href="https://cse.google.com">Google's Custom Search Engine</a> feature. This basically lets me offload search to Google, who I hear knows a few things about search. But I also give up a bit of control over the functionality. Oh, and of course, Google gets to run a few ads while helping find those results...</p>
+<img src="https://static.raymondcamden.com/images/2019/10/lunr1.png" alt="Ads in search result" class="imgborder imgcenter">
+<p>To be clear, I don't fault Google for those ads, I'm using their service for free, but it isn't something a lot of folks would want on their site.</p>
+<p>There's an alternative that's been around for a while that I've finally made some time to learn, <a href="https://lunrjs.com/">Lunr</a>. Lunr is a completely client-side search solution. Working with an index of your creation (a <em>lot</em> more on that in a moment), Lunr will take in search input and attempt to find the best match it can. You are then free to create your search UI/UX any way you choose.</p>
+<p>I was first introduced to Lunr while working at Auth0, we used it in the docs for <a href="https://goextend.io/docs">Extend</a>. (Note - this product is currently EOLed so the previous link may not work in the future.) If you use the search form on the top right, all the logic of running the search, finding results, and displaying them, are all done client-side.</p>
+<img src="https://static.raymondcamden.com/images/2019/10/lunr2.png" alt="Example of search results at GoExtend" class="imgborder imgcenter">
+<p>Lunr is a pretty cool project, but let's talk about the biggest issue you need to consider - your index. In order for Lunr to find results, you need to feed it your data. In theory, you could feed it the plain text of every page you want to index. That essentially means your user is downloading all the text of your site on every request. While caching can be used to make that a bit nicer, if your site has thousands of pages, that's not going to scale. This is why I didn't even consider Lunr for my blog. You also need to determine what you want to actually search.</p>
+<p>Consider an ecommerce site. Adding search for products is a no brainer. But along with text about the product, you may want to index the category of the product. Maybe a subcategory. Shoot, maybe even a bit of the usage instructions.</p>
+<p>And even after determining what you want to index, you need to determine if some parts of your index are more important than others. If you are building a support site, you may consider usage instructions for products more important than the general description.</p>
+<p>Lunr isn't going to care what you index, but you really think about this aspect up front. I definitely recommend spending some time in the <a href="https://lunrjs.com/docs/index.html">Lunr docs</a> and <a href="https://lunrjs.com/guides/getting_started.html">guides</a> to get familiar with the API.</p>
+<p>So, how about an example?</p>
+<h3>Our Site</h3>
+<p>For my test, I decided to build a simple static site using <a href="https://www.11ty.io/">Eleventy</a>. This is my new favorite static site generator and I'm having a lot of fun working with it. You can use absolutely any other generator with Lunr. You could also absolutely use an application server like Node, PHP, or ColdFusion.</p>
+<p>My static site is a directory of GI Joe characters sourced from <a href="https://gijoe.fandom.com/wiki/Joepedia_-_The_G.I._Joe_Wiki">Joepedia</a>. I only copied over a few characters to keep things simple. You can see the site (including the full search functionality we're going to build) at <a href="https://lunrjoe.raymondcamden.now.sh/">https://lunrjoe.raymondcamden.now.sh/</a>. Here's an example character page.</p>
+<pre><code class="language-html">---
+layout: character
+title: Cobra Commander
+faction: Cobra
+image: https://vignette.wikia.nocookie.net/gijoe/images/b/b4/Cobra-commander-02.jpg/revision/latest?cb=20091014201339
+---
+
+Not much is known of the background of the man many call the Cobra Commander. What we can only tell is how he works and how he thinks. We know that he has deliberately started political and social conflict in a number of areas. He has amassed an army by recruiting displaced people, promising them money, power and a chance to get back at the world that hurt them. In return, he demands that they swear absolute loyalty to his cause. What is his cause? World domination. 
+
+Cobra Commander does not delude himself by justifying his actions as matters of principles or glory. He knows he does it for control and power. He is ruthless, hatred-personified and totally obsessed. A meticulous person, he likes to personally oversee vital projects himself, even engaging in military combat himself on occasion. Not much is known about him, he is a master of disguise and he has appeared as a goatee artist looking man with a son in a coma, in the Marvel comics. His appearance in the 12 inch G.I. Joe line shows him as a man with dark slicked back hair, his appearance constantly changing leaves him assumed to wear masks, even the commander can keep his identity from the people around him.
+</code></pre>
+<p>And how it looks on the site:</p>
+<img src="https://static.raymondcamden.com/images/2019/10/lunr3.png" alt="Cobra Commander page" class="imgborder imgcenter">
+<h3>Our Search Index</h3>
+<p>I decided to build my index out of the character pages. My index would include the title, URL, and the first paragraph of each character page. You can see the final result here: <a href="https://lunrjoe.raymondcamden.now.sh/index.json">https://lunrjoe.raymondcamden.now.sh/index.json</a>. So how did I build it?</p>
+<p>The first thing I did was create a <a href="https://www.11ty.io/docs/collections/">custom collection</a> for Eleventy based on the directory where I stored my character Markdown files. I added this to my <code>.eleventy.js</code> file.</p>
+<pre><code class="language-js">eleventyConfig.addCollection(&quot;characters&quot;, function(collection) {
+	return collection.getFilteredByGlob(&quot;characters/*.md&quot;).sort((a,b) =&gt; {
+		if(a.data.title &lt; b.data.title) return -1;
+		if(a.data.title &gt; b.date.title) return 1;
+		return 0;
+	});
+});
+</code></pre>
+<p>I am embarrassed to say it took me like 10 minutes to get my damn sort right even though that's a pretty simple JavaScript array method. Anyway, this is what then allows me to build a list of characters on my site's home page, like so:</p>
+<pre><code class="language-html">&lt;ul&gt;
+{% for character in collections.characters %} 
+  &lt;li&gt;&lt;a href=&quot;{{ character.url }}&quot;&gt;{{ character.data.title }}&lt;/a&gt;&lt;/li&gt;
+{% endfor %}
+&lt;/ul&gt;
+</code></pre>
+<p>This is also how I'm able to look over my characters to build my JSON index. But before I did that, I needed a way to get an &quot;excerpt&quot; of text out of my pages. The docs at Eleventy were a bit weird about this. I had the impression it was baked in via one of the tools it uses, but for the life of me I could not get it to work. I eventually ended up using a modified form of the tip on this article, <a href="https://keepinguptodate.com/pages/2019/06/creating-blog-with-eleventy/">Creating a Blog with Eleventy</a>. I added his code there to add a short code, <code>excerpt</code>, built like so:</p>
+<pre><code class="language-js">eleventyConfig.addShortcode('excerpt', article =&gt; extractExcerpt(article));
+
+// later in my .eleventy.js file...
+// https://keepinguptodate.com/pages/2019/06/creating-blog-with-eleventy/
+function extractExcerpt(article) {
+	if (!article.hasOwnProperty('templateContent')) {
+	  console.warn('Failed to extract excerpt: Document has no property &quot;templateContent&quot;.');
+	  return null;
+	}
+   
+	let excerpt = null;
+	const content = article.templateContent;
+
+	// The start and end separators to try and match to extract the excerpt
+	const separatorsList = [
+	  { start: '&lt;!-- Excerpt Start --&gt;', end: '&lt;!-- Excerpt End --&gt;' },
+	  { start: '&lt;p&gt;', end: '&lt;/p&gt;' }
+	];
+   
+	separatorsList.some(separators =&gt; {
+	  const startPosition = content.indexOf(separators.start);
+	  const endPosition = content.indexOf(separators.end);
+   
+	  if (startPosition !== -1 &amp;&amp; endPosition !== -1) {
+		excerpt = content.substring(startPosition + separators.start.length, endPosition).trim();
+		return true; // Exit out of array loop on first match
+	  }
+	});
+	return excerpt;
+  }
+</code></pre>
+<p>Note that I modified his code such that it finds the <em>first</em> closing P tag, not the last.</p>
+<p>With these pieces in place, I built my index in <code>lunr.liquid</code>:</p>
+<pre><code class="language-js">---
+permalink: /index.json
+---
+
+[
+{% for character in collections.characters %}
+{
+   &quot;title&quot;:&quot;{{character.data.title}}&quot;,
+   &quot;url&quot;:&quot;{{character.url}}&quot;,
+   &quot;content&quot;:&quot;{% excerpt character %}&quot;
+} {% if forloop.last == false %},{% endif %}
+{% endfor %} 
+]
+</code></pre>
+<h3>Our Search Front-End</h3>
+<p>Because I'm a bit slow and a glutton for punishment, I decided to build my search code using Vue.js. Why am implying this was a mistake? Well it really wasn't a mistake per se, but I did run into an unintended consequence of using Liquid as my template engine and Vue.js. You see, by using Liquid on the back end (in my static site generator), I made use of a template syntax that is similar to Vue.js. So if I did <code>{{ name }}</code> it would be picked up by Liquid first before Vue ever got a chance to run it. The solution wasn't too difficult, but possibly added a bit of complexity that may be something you wish to avoid in the future.</p>
+<p>Of course, using Vue was totally arbitrary here and not something you need to use with Lunr, so please keep that in mind when looking at my solution. Since my own blog <em>also</em> uses Liquid, I'm going to share the HTML code via an image. Note that my entire demo is available at GitHub (via the link I'll share at the end).</p>
+<img src="https://static.raymondcamden.com/images/2019/10/lunr4.png" alt="Use of raw" class="imgborder imgcenter">
+<p>In the screen shot above, note the <code>raw</code> and <code>endraw</code> tags surrounding my Vue code. That's how I was able to get it working. But as I said, let's ignore that. ;) The code here is rather simple. A search field, a place for the results, and a simple way to handle it when no results are found. Note that my results include a <code>url</code> and <code>title</code> value. This actually takes a little bit of work, and I'll explain why in a bit. Alright, let's switch to the JavaScript.</p>
+<p>First, let's look at the <code>data</code> and <code>created</code> parts of my code.</p>
+<pre><code class="language-js">data:{
+	docs:null,
+	idx:null,
+	term:'',
+	results:null
+},
+async created() {
+	let result = await fetch('/index.json');
+	docs = await result.json();
+	// assign an ID so it's easier to look up later, it will be the same as index
+	this.idx = lunr(function () {
+		this.ref('id');
+		this.field('title');
+		this.field('content');
+
+		docs.forEach(function (doc, idx) {
+			doc.id = idx;
+			this.add(doc); 
+		}, this);
+	});
+	this.docs = docs;
+},
+</code></pre>
+<p>When my Vue application loads up, I first make a request to my index data. When that's done, it's time to build the Lunr index. This is done via a function passed in to the constructor. The first thing I do is define the <code>ref</code>, or primary identifier of each thing I'm indexing, what Lunr refers to as docs. I then define the fields in my content I want indexed. Note that I could boost certain fields here if I want one to be more important than another.</p>
+<p>I then loop over each item in my index and here's a <strong>SUPER IMPORTANT</strong> thing you need to keep in mind. When Lunr returns search matches, it only returns the <code>ref</code> value. If you remember, my index consists of the url, the title, and a block of text. If I want to tell my users the title of the matched document, and if I want to link to that result, I have to get that information. But I just said - Lunr doesn't return it. So how do I get it?</p>
+<p>Since Lunr returns the <code>ref</code> value, I can use that as a way to look up my information in the index. My URLs are unique and I could use array methods to find my data, but if I simply use the position value, the <code>idx</code> above, then I've got a quick and easy way to get my original document. This comes together in the <code>search</code> method:</p>
+<pre><code class="language-js">search() {
+	let results = this.idx.search(this.term);
+
+	// we need to add title, url from ref
+	results.forEach(r =&gt; {
+		r.title = this.docs[r.ref].title;
+		r.url = this.docs[r.ref].url;
+	});
+
+	this.results = results;
+}
+</code></pre>
+<p>I begin by just doing the search, passing your input as is. Lunr will parse it, do it's magic, and return the results. In order for me to use the title and url values, I refer back to the original array as I loop over the results. And that's basically it. You can test this yourself - try searching for <code>weapon</code> to find Destro.</p>
+<p>Finally, you can find the entire repository for this demo here: <a href="https://github.com/cfjedimaster/eleventy-demos/tree/master/lunr">https://github.com/cfjedimaster/eleventy-demos/tree/master/lunr</a>. I hope this helps, and now you know how to use client-site search with Lunr and Eleventy. And as we know...</p>
+<img src="https://static.raymondcamden.com/images/2019/10/lunr5.png" alt="Knowing is half the battle..." class="imgborder imgcenter">
+<p><i>Header photo by <a href="https://unsplash.com/@imagesbykayla?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Kayla Farmer</a> on Unsplash</i></p>
+}

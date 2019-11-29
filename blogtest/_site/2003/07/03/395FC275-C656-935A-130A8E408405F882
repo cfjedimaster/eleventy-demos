@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>So, the issue with comment adding and this blog has been fixed, however, it wasn't a bug with the CFC. I have found that there are issues when you store a CFC in cache and then place the server under load. CFLib.org is suffering from it and so is this blog. on CFLib.org, the issue involves queries not being defined correctly. (I.e., a query is run, but the result is something corrupted.) On this blog, the issue was with the addComment method calling getComments, and CF saying getComments didn't exist as a method, even though it clearly does.</p>
+<p>In both cases, the fix was to simply not cache the CFC. This has performance implications, but I'd rather have a slightly slower site than a site that breaks every now and then.</p>
+<p>I've let Macromedia know about both issues, so hopefully they will be fixed in RedSky.</p>
+}

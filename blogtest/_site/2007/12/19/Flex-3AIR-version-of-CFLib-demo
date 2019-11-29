@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>Yesterday I <a href="http://www.raymondcamden.com/index.cfm/2007/12/18/CFLib-gets-a-dose-of-fresh-air">released</a> an AIR application that lets you browser <a href="http://www.cflib.org">CFLib.org</a> from your desktop. This application didn't take terribly long - except for some issues I ran into with the new security model.</p>
+<p>Today I thought I'd try it with Flex. I'm a bit rusty with Flex but I figured it couldn't be too hard. Turns out I was right. With some help from <a href="http://www.boyzoid.com/blog/index.cfm">Scott Stroz</a> and <a href="http://blog.simb.net/">Simeon Bateman</a>, I was able to crank out the application in a lunch break.</p>
+<p>The only part that confused me was - how do I use RemoteObject to talk to a CFC on another server, which AIR allows? Turns out you just need to get a copy of CF's services-config.xml file. I placed it in my Flex app and added this to my compile args:</p>
+<p>-services libs/services-config.xml</p>
+<p>Next, I edited the file to change</p>
+<code>
+&lt;endpoint uri="http://{server.name}:{server.port}{context.root}/flex2gateway/" class="flex.messaging.endpoints.AMFEndpoint"/&gt;
+</code>
+<p>to</p>
+<code>
+&lt;endpoint uri="http://www.cflib.org:80/flex2gateway/" class="flex.messaging.endpoints.AMFEndpoint"/&gt;
+</code>
+<p>That's it. I guess it really isn't much of an AIR app. It doesn't detect online/offline. But I find it cool that it took me 1/5th the time and came out ten times prettier. I've included the AIR app as a download. I renamed it to cflib.zip as I'm too lazy to mess with IIS settings. Rename it and run. If you ran the demo from yesterday, the installer will complain that an application with the same name exists. Either uninstall the other one or supply a custom install location.</p>
+<p>Also - I used Flex Builder's Include Source option so you can see my ugly MXML code. Awesome.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FCFLib%2Eair%2Ezip'>Download attached file.</a></p></p>
+}

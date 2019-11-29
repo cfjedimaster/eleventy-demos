@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>Robert writes in with a question concerning CFPOP:</p>
+<blockquote>
+I have put together a little webail app  for my website and for the most part it works pretty good but.... It returns the mail messages in a seemingly random order. Is there a way to order the results?
+</blockquote>
+<p>I could have sworn that I remember CFPOP returning items in order of delivery. In other words, the first message sent to the account would be the first downloaded. The documentation for cfpop does not specify an order, so I probably wouldn't depend on any order.</p>
+<p>That being said - don't forget that the result of cfpop is a query. Because of this, you can use query of query to sort the results. You can sort by sender, date, subject, or any other column. Here is a simple example:</p>
+<code>
+&lt;cfpop server="pop.xxx.com" username="..." password="..." action="getHeaderOnly" name="qGetMessages"&gt;
+<p>&lt;cfquery name=&quot;qGetMessages&quot; dbtype=&quot;query&quot;&gt;
+select   *
+from     qGetMessages
+order by date desc
+&lt;/cfquery&gt;
+</code></p>
+}

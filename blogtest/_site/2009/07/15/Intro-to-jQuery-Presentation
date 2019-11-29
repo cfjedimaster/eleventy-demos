@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Here is the <a href="http://www.slidesix.com">SlideSix</a> version of my presentation. From this embed you can go to the recorded version and get the code to download as well. Enjoy. I'll be giving a much shorter version of this at CFUNITED.</p>
+<p><object height="425" width="550"><param name="movie" value="http://slidesix.com/viewer/SlideSixViewer.swf?alias=preso-KTpXc" /><param name="menu" value="false"/><param name="scale" value="noScale"/><param name="allowFullScreen" value="true"/><param name="allowScriptAccess" value="always" /><param value="transparent" name="wmode" /><param value="quality" name="best" /><embed src="http://slidesix.com/viewer/SlideSixViewer.swf?alias=preso-KTpXc" allowscriptaccess="always" allowFullScreen="true" height="425" width="550" type="application/x-shockwave-flash" wmode="transparent" quality="best" /></object></p>
+}

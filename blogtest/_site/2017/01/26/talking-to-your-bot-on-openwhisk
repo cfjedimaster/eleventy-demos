@@ -1,0 +1,97 @@
+<h1>Post</h1>
+
+<p>As I continue my look into serverless with <a href="https://developer.ibm.com/openwhisk/">OpenWhisk</a>, today I thought
+I'd build a quick demo around an <em>incredibly</em> cool bot service I discovered a while ago called
+<a href="http://www.pandorabots.com/">Pandorabots</a>. I first played with their service last summer, and I thought it was
+cool as hell, but I never got around to actually writing up my experience with it. My original exploration of it
+was via ColdFusion, but I thought this would be a great example of something I could build even easier (and a heck of a lot quicker)
+in OpenWhisk.</p>
+<p>Pandorabots provides what it calls <a href="https://developer.pandorabots.com/">&quot;AIaaS&quot;</a>, &quot;AI as a Service&quot;. Basically what this boils
+down to is the ability to process natural language input and handle responding intelligently based on rules you create. Their actual service
+is pretty simple. You've got APIs to upload scripts for your bots and APIs to 'speak' to your bot, the real complexity comes in at the
+AI level.</p>
+<p>There is <em>no way</em> I can adequately explain the full power of their bot service, so instead I'll give you some high level points
+to describe what you can do.</p>
+<ul>
+<li>So the simplest, and most direct feature, is to simply say, &quot;If I say hi, respond with Hello!&quot;. That's basic string matching and it's not too exiting. But their
+service goes beyond this of course.</li>
+<li>You can define various aliases, so I can map hello, bonjour, etc. to the same response.</li>
+<li>It has built in spelling corrections and other fixes, so it will recognize &quot;isn't&quot; as &quot;is not&quot; for example.</li>
+<li>It can automatically handle multiple sentences, parsing each one and creating a response to everything sent to it.</li>
+<li>It supports both a default (&quot;I have no freaking idea what you said&quot;) response as well as the ability to respond randomly. (So if I said hi, it could respond with hello or some other greeting.)</li>
+<li>It can do basic pattern matching, so given I said, &quot;I like cookies&quot;, I can train my bot to recognize &quot;I like SOMETHING&quot; and it will correctly pick up &quot;cookies&quot; as the thing I like.</li>
+<li>The bot can have variables with predefined values. So I can define a variable, botname, that defines the name of the bot, but the bot can also remember your name if you tell it and refer to that variable later.</li>
+<li>You can define arrays (called sets) and maps to train your bot to associate words or terms together in one unit.</li>
+<li>And this truly cool - it supports context. What that means is you can recognize that a response is based on a previous question. The examples the docs give is that if I say the word coffee, the bot could respond with &quot;Do you like coffee?&quot;. If I say just &quot;yes&quot;, my bot can recognize that we're still talking about coffee.</li>
+</ul>
+<p>As I said - the logic of your bot can get <em>really</em> complex. Pandorabots provides a <a href="https://playground.pandorabots.com">&quot;playground&quot;</a> if you want to try it out.
+I also suggest looking at the <a href="https://playground.pandorabots.com/en/quickstart/">Quick Start</a> and then checking out the <a href="https://playground.pandorabots.com/en/tutorial/">tutorial</a>. Unfortunately the
+tutorial is a large slide deck, not a proper 'document', but it's pretty verbose and has lots of great examples. If your curious how the logic scripts look, here
+is one sample:</p>
+<pre><code class="language-markup">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+&lt;aiml version=&quot;2.0&quot;&gt;
+
+&lt;category&gt;
+&lt;pattern&gt;HI&lt;&#x2F;pattern&gt;
+&lt;template&gt;Hello world!&lt;&#x2F;template&gt;
+&lt;&#x2F;category&gt;
+
+&lt;&#x2F;aiml&gt;
+</code></pre>
+<p>Yep, XML-based, but there's nothing wrong with that, right?</p>
+<p>So as I said, the AI portion is pretty darn complex, but the API side is incredibly trivial. You can manage your bots via a REST
+interface, but since they have a <a href="https://medium.com/pandorabots-blog/introducing-the-pandorabots-cli-215ed9d637af#.k89f2at61">CLI</a> too, I'd probably just use
+that during initial testing. The CLI lets you chat with your bot too and is great for configuring the logic. The API I'll use in this demo is the
+<a href="https://developer.pandorabots.com/docs#!/pandorabots_api_swagger_1_3/talkBot">Talk</a> endpoint. It lets you have a conversation with a bot you've setup. I've
+used a sample robot they provide on GitHub called <a href="https://github.com/pandorabots/rosie">Rosie</a>. It's got a deep set of conversation files so I don't have to worry
+about writing that myself. I named my <a href="http://voltron.wikia.com/wiki/Princess_Allura_(DotU)">Allura</a> though. (Bonus points if you get the reference without clicking the link.)</p>
+<p>The Talk endpoint simply has me hitting: <code>https://aiaas.pandorabots.com/talk/APP_ID/BOTNAME?user_key=USER_KEY&amp;input=INPUT</code>. You can also append
+a <code>sessionid</code> value that represents a talk 'session'. When you send data to the bot, it returns a sessionid value automatically, but you need to pick that
+up and send it back.</p>
+<p>Let's start with a simple OpenWhisk action.</p>
+<pre><code class="language-javascript">
+var request = require(&#x27;request&#x27;);
+
+var bot = &#x27;allura&#x27;
+var appid = &#x27;myappid&#x27;;
+var userkey = &#x27;mykey&#x27;;
+
+function main(args) {
+
+    return new Promise(function(resolve, reject) {
+
+        let url = `https:&#x2F;&#x2F;aiaas.pandorabots.com&#x2F;talk&#x2F;${appid}&#x2F;${bot}&#x2F;?user_key=${userkey}`;
+        
+		url += &#x27;&amp;input=&#x27;+encodeURIComponent(args.input);
+		if(args.session) url += &#x27;&amp;sessionid=&#x27;+encodeURIComponent(args.session);
+
+		console.log(&#x27;url&#x27;, url);
+
+        request.post(url, function(error, response, body) {
+            if(error) return reject(error);
+			resolve({result:JSON.parse(body)});
+        });
+
+    });
+}
+
+exports.main = main;
+</code></pre>
+<p>I said it was simple, right? All I do is pass my various keys, the input, and a session value if it was passed in. Here's an example of me running
+the action locally:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/bot1.png" alt="Initial Conversation"></p>
+<p>The next step then is to add a REST interface to this action:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/bot2.png" alt="API THIS DARN THING!"></p>
+<p>And I'm good to go! First, let's try talking to it with no input:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/bot3.png" alt="No input"></p>
+<p>Woot! It works. Than let's try something sassy, like, &quot;My milkshake is better than yours&quot;:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/bot4.png" alt="WTF"></p>
+<p>What the you know what. I wasn't expecting that. Remember, I used a default bot that had logic already. Apparently it recognized the input. So yeah, let's follow up with this:</p>
+<p><img src="https://static.raymondcamden.com/images/2017/1/bot5.png" alt="Response"></p>
+<p>I think I love this bot. Honestly.</p>
+<p>And that's it! Of course I could build the front end, and I will if people ask, but Pandorabots only has a free tier for ten days, so I'm taking down the REST endpoint
+now and setting a calendar reminder to close down my account. &lt;rant&gt;Which, btw, I think kinda sucks. I mean I totally understand charging for a service, especially a cool service
+like this, but I hate that I can't simply 'fall back' to a restricted account. I've got to actually close my account which means if I want to play with this
+more in a month's time, I've got to sign up. Again. And close my account. Again.&lt;/rant&gt;</p>
+}

@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>Yesterday I posted a <a href="http://www.raymondcamden.com/index.cfm/2007/12/7/Quick-example-of-the-Google-Docs-API">quick example</a> of integrating Google's Docs API with ColdFusion. I went ahead and wrapped up the code in a simple set of CFCs. There is a base CFC that handles authentication along with a docs CFC that handles the real interaction. Here is some sample code:</p>
+<code>
+&lt;cfset docs = createObject("component", "docs")&gt;
+&lt;cfset docs.authenticate("rcamden@gmail.com","foo")&gt;
+</code>
+<p>This creates an instance of the CFC and logs the user on. If authentication fails, a CF error is thrown, so normally this would probably be wrapped in cfry/cfcatch.</p>
+<p>To get all your documents, you would run:</p>
+<code>
+&lt;cfset mydocs = docs.getDocumentList()&gt;
+</code>
+<p>This returns a query. One of the columns contains the sourceurl, which can be used to grab the source:</p>
+<code>
+&lt;cfset content = docs.download(mydocs.sourceurl[1])&gt;
+&lt;cfoutput&gt;result is #content#&lt;/cfoutput&gt;
+</code>
+<p>The getDocumentList() supports 2 filters (Google supports more). You can use max to limit the number of results:</p>
+<code>
+&lt;cfset mydocs = docs.getDocumentList(max=9)&gt;
+</code>
+<p>You can also apply a title filter:</p>
+<code>
+&lt;cfset mydocs = docs.getDocumentList(title="Blog")&gt;
+</code>
+<p>The title filter is a search, not a direct match.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FArchive14%2Ezip'>Download attached file.</a></p></p>
+}

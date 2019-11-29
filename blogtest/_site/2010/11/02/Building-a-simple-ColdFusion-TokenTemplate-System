@@ -1,0 +1,134 @@
+<h1>Post</h1>
+
+<p>As ColdFusion developers, we build a lot of different types of applications. For the most part though these apps come down to simple content management systems. We build out forms and let our clients enter blocks of text that then get put together nicely on the front end. While the actual view of the application is dynamic, typically the text itself is rather static. So for example, this blog post comprises a title and a body, and is certainly dynamic when viewed by the public, but the actual words themselves are just straight text. Sometimes we need to provide a way to add an additional level of dynamicness (yes, I know that isn't a word, but I'm going for it anyway). A great example of this is an email template. Your web site may send out emails to users on a weekly schedule. The text of the email may need to include customization. It may want to say something like, &quot;Hello #name#&quot;, where name is the person receiving the email. You can do this quite easily in ColdFusion, but what if the client wants more control over the text? What if they want to change &quot;Hello&quot; to &quot;Hiya&quot; or perhaps add a ! after the name? This is where a simple token/template system can come in handy. Here is a quick UDF I built with a few sample uses of it. (And by the way, I'm pretty sure I've blogged about this before in the past few years, but it was on my mind this week so I thought I'd whip out another example.)</p>
+<!--more-->
+<p>
+<p>To begin - let's look at a simple template. You can imagine our client editing this to create a customize email for a product site. Users are allowed to sign up for specific newsletters based on different types of products. Here is the plain text:</p>
+<p>
+<code>
+Hello {name},
+<p>Thank you for signing up for our {newslettertype} news list.
+Every day we will send you new and exciting emails about {producttype}.</p>
+<p>Thank you,
+{source}
+</code></p>
+<p>
+<p>I've decided on the use of { and } to wrap the dynamic aspects of the template. Any character could be used really but you want something that stands out from the rest of the text. Now that we've got a block of text, we need to create a ColdFusion UDF that will:</p>
+<p>
+<ul>
+<li>Look for and find all the {...} strings in the text
+<li>Accept data in that contains the "real" values for those tokens
+<li>Replace the tokens with real data and return the string
+</ul>
+<p>
+<p>Here is the UDF I came up with. It is a bit complex so I'll go into the design decisions after the paste.</p>
+<p>
+<code>
+<p>&lt;cffunction name=&quot;tokenReplace&quot; output=&quot;false&quot; returnType=&quot;array&quot;&gt;
+&lt;cfargument name=&quot;string&quot; type=&quot;string&quot; required=&quot;true&quot; hint=&quot;String with tokens inside, specified by wrapping with {}&quot;&gt;
+&lt;cfargument name=&quot;data&quot; type=&quot;any&quot; required=&quot;true&quot; hint=&quot;Data used to replace tokens. Can be an array of structs, a struct, or a query object.&quot;&gt;</p>
+<pre><code>&amp;lt;cfset var result = []&amp;gt;
+
+&amp;lt;!--- first, find tokens in the string so we know what we can recognize ---&amp;gt;
+&amp;lt;!--- note that we will use a list, which means we wouldn't support a token with a comma in it, which is fair I think ---&amp;gt;
+&amp;lt;cfset var knownTokens = &quot;&quot;&amp;gt;
+&amp;lt;cfset var matches = reMatch(&quot;{.+?}&quot;, arguments.string)&amp;gt;
+&amp;lt;cfset var match = &quot;&quot;&amp;gt;
+
+&amp;lt;cfloop index=&quot;match&quot; array=&quot;#matches#&quot;&amp;gt;
+	&amp;lt;cfset knownTokens = listAppend(knownTokens, replaceList(match, &quot;{,}&quot;,&quot;&quot;))&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;!--- based on our data, do different things ---&amp;gt;
+&amp;lt;cfif isStruct(arguments.data)&amp;gt;
+	&amp;lt;cfset var thisResult = arguments.string&amp;gt;
+	&amp;lt;cfloop index=&quot;token&quot; list=&quot;#knownTokens#&quot;&amp;gt;
+		&amp;lt;cfset thisResult = rereplace(thisResult, &quot;{&quot; &amp; token &amp; &quot;}&quot;, arguments.data[token], &quot;all&quot;)&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+	&amp;lt;cfset arrayAppend(result, thisResult)&amp;gt;
+&amp;lt;cfelseif isArray(arguments.data)&amp;gt;
+	&amp;lt;cfloop index=&quot;item&quot; array=&quot;#arguments.data#&quot;&amp;gt;
+		&amp;lt;cfset var thisResult = arguments.string&amp;gt;
+		&amp;lt;cfloop index=&quot;token&quot; list=&quot;#knownTokens#&quot;&amp;gt;
+			&amp;lt;cfset thisResult = rereplace(thisResult, &quot;{&quot; &amp; token &amp; &quot;}&quot;, item[token], &quot;all&quot;)&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;cfset arrayAppend(result, thisResult)&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfelseif isQuery(arguments.data)&amp;gt;
+	&amp;lt;cfloop query=&quot;arguments.data&quot;&amp;gt;
+		&amp;lt;cfset var thisResult = arguments.string&amp;gt;
+		&amp;lt;cfloop index=&quot;token&quot; list=&quot;#knownTokens#&quot;&amp;gt;
+			&amp;lt;cfset thisResult = rereplace(thisResult, &quot;{&quot; &amp; token &amp; &quot;}&quot;, arguments.data[token][currentRow], &quot;all&quot;)&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+		&amp;lt;cfset arrayAppend(result, thisResult)&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+&amp;lt;cfelse&amp;gt;
+	&amp;lt;cfthrow message=&quot;tokenReplace: data argument must be either a struct, array of structs, or query&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;	
+
+&amp;lt;cfreturn result&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>
+<p>So the first argument to my UDF, tokenReplace, is the actual string. That should be easy enough to understand. The second argument is a bit more complex. I wanted a system that would allow me to pass different types of data. I imagined a query would be most often used, but I also imagined you may need a &quot;one off&quot; so I also wanted to support structs. I also figured you may have an array of data as well so I added support for arrays of structs. Since I figured you would probably be working with multiple sets of data more often than not, I made the UDF consistently return an array of strings.</p>
+<p>
+<p>I begin by getting all my tokens. This is done with (edited a bit):</p>
+<p>
+<code>
+&lt;cfset matches = reMatch("{.+?}", arguments.string)&gt;
+<p>&lt;cfloop index=&quot;match&quot; array=&quot;#matches#&quot;&gt;
+&lt;cfset knownTokens = listAppend(knownTokens, replaceList(match, &quot;{,}&quot;,&quot;&quot;))&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>
+<p>The reMatch finds all the {...} tokens and the loop removes the {} from them. Once I have that, I then split into a branch that handles my three types of data. In all cases though we assume that if you have a token for foo, you have data for foo. I don't care if you send me more data than I need, but I do care if you don't have data for one of my tokens. Right now if you make that mistake, you get an ugly error, but the UDF could be updated to make it more explicit.</p>
+<p>
+<p>So, let's look at a complete example:</p>
+<p>
+<code>
+<p>&lt;!--- Our template ---&gt;
+&lt;cfsavecontent variable=&quot;template&quot;&gt;
+Hello {name},</p>
+<p>Thank you for signing up for our {newslettertype} news list.
+Every day we will send you new and exciting emails about {producttype}.</p>
+<p>Thank you,
+{source}
+&lt;/cfsavecontent&gt;</p>
+<p>&lt;!--- Our sample data ---&gt;
+&lt;cfset data = queryNew(&quot;id,name,newslettertype,producttype,source&quot;,&quot;cf_sql_integer,cf_sql_varchar,cf_sql_varchar,cf_sql_varchar,cf_sql_varchar&quot;)&gt;
+&lt;cfset queryAddRow(data)&gt;
+&lt;cfset querySetCell(data, &quot;id&quot;, 1)&gt;
+&lt;cfset querySetCell(data, &quot;name&quot;, &quot;Bob&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;newslettertype&quot;, &quot;Weapons of Mass Confusion&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;producttype&quot;, &quot;weapons&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;source&quot;, &quot;MADD&quot;)&gt;</p>
+<p>&lt;cfset queryAddRow(data)&gt;
+&lt;cfset querySetCell(data, &quot;id&quot;, 2)&gt;
+&lt;cfset querySetCell(data, &quot;name&quot;, &quot;Mary&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;newslettertype&quot;, &quot;Death Rays and MegaSharks&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;producttype&quot;, &quot;lasers&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;source&quot;, &quot;Dr. No&quot;)&gt;</p>
+<p>&lt;cfset queryAddRow(data)&gt;
+&lt;cfset querySetCell(data, &quot;id&quot;, 3)&gt;
+&lt;cfset querySetCell(data, &quot;name&quot;, &quot;Joe&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;newslettertype&quot;, &quot;Good Meat to Eat&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;producttype&quot;, &quot;food&quot;)&gt;
+&lt;cfset querySetCell(data, &quot;source&quot;, &quot;PETA&quot;)&gt;</p>
+<p>&lt;cfset results = tokenReplace(template,data)&gt;</p>
+<p>&lt;cfdump var=&quot;#results#&quot; label=&quot;Query Test&quot;&gt;
+&lt;p/&gt;</p>
+<p>&lt;cfset s = {name=&quot;Luke&quot;, newslettertype=&quot;Lightsabers&quot;, producttype=&quot;swords&quot;, source=&quot;The Empire&quot;}&gt;
+&lt;cfset results = tokenReplace(template, s)&gt;
+&lt;cfdump var=&quot;#results#&quot; label=&quot;Struct Test&quot;&gt;
+&lt;p/&gt;</p>
+<p>&lt;cfset s2 = {name=&quot;Scott&quot;, newslettertype=&quot;Beers&quot;, producttype=&quot;beer&quot;, source=&quot;The Beer Industry&quot;}&gt;
+&lt;cfset array = [s,s2]&gt;
+&lt;cfset results = tokenReplace(template, array)&gt;
+&lt;cfdump var=&quot;#results#&quot; label=&quot;Array Test&quot;&gt;
+</code></p>
+<p>
+<p>As you can see, I've got my template on top, and then three sets of examples. One query, one struct, and one array of structs. The results show that in all cases, we get nicely customized messages back.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/screen30.png" />}

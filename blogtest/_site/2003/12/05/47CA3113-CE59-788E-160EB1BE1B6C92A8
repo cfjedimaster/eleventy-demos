@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>Someone on cf-talk today asked about how to force CF to remember the case of a struct key. If you use dot notation, s.nAme = &quot;ray&quot;, CF will uppercase the key. If you use bracket notation, s[&quot;Name&quot;] = &quot;ray&quot;, CF will remember the case.</p>
+<p>However, this is not (afaik) intentional. If case is important to you, simply store the string. For example:</p>
+<p>s = structNew();<br>
+s.ray = structNew();<br>
+s.ray.value = whatever;<br>
+s.ray.label = &quot;Ray&quot;;<br></p>
+<p>Another possibility is to a use a java HashTable, but that may be a bit too complex for folks not used to Java.</p>
+}

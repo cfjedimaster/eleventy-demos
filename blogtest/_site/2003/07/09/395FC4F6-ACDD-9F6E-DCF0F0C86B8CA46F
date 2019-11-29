@@ -1,0 +1,23 @@
+<h1>Post</h1>
+
+<p>Blog 2.1 is now posted. Changes include:</p>
+<ol>
+<li>
+<p>Authenticate method is now in blog CFC where it belongs.</p>
+</li>
+<li>
+<p>blog.ini file structure has changed. Before, there was a root section called &quot;blog&quot; with one value, name. This allowed you to say, the default blog is 'foo'. Now, we have a root section called default. If you do not specify a name when you call init, these values will be used. If you specify a name and do not specify one of the values, the default will be used. If you try to init(&quot;fred&quot;) and fred isn't an ini file section, you get an error.</p>
+</li>
+</ol>
+<p><font color="red">Warning - This update changes the ini file structure. Be sure to carefully integrate the new changes.</font></p>
+<ol start="3">
+<li>
+<p>Remember Me function added to Add Comments.</p>
+</li>
+<li>
+<p>Logout link added (for when you are logged in, of course).</p>
+</li>
+</ol>
+<p>Coming Soon: Support for N blogs w/ one database.</p>
+<p>Question: Should blog support non-db persistence? Ie, should I allow you to store your data in xml files instead of SQL Server?</p>
+}

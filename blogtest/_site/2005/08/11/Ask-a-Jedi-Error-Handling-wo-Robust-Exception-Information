@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>Will asks:</p>
+<blockquote>
+If a ColdFusion hosting service has the "robust error reporting" turned off, is there a way around it?  Without a massive try/catch setup, that is.  Any "cfsetting" or anything?
+<p>It's tough to debug this message:  Cannot convert &quot;&quot; to a number.     .... when you have NO idea which of 50 function calls it could be!</p>
+</blockquote>
+<p>Absolutely. The &quot;Enable Robust Exception Information&quot; setting applies to the error you see on the web page itself. This setting should always be turned off on a production server. However, you can still get detailed error information. Simply use the cferror tag in your Application.cfc/cfc file. You can point to a template that simply does: &lt;cfdump var=&quot;#error#&quot;&gt;. While it isn't as pretty as the normal exception handler, it does give you all the information you need.</p>
+}

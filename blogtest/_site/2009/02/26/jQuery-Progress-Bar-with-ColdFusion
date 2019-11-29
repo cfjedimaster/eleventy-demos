@@ -1,0 +1,178 @@
+<h1>Post</h1>
+
+<p>I mentioned in yesterday's <a href="http://www.raymondcamden.com/index.cfm/2009/2/25/jQuery-Sortable-with-ColdFusion">blog posting</a> on the Sortable plugin that I was taking a closer look at jQuery UI and how I could integrate it with ColdFusion. I've taken a closer look at another of the widgets and thought I'd share my findings. (Also please note a personal request at the end.)</p>
+<!--more-->
+<p>The jQuery <a href="http://jqueryui.com/demos/progressbar/">Progress Bar</a> is pretty much what you would expect it to be. A bar. That shows progress. Yes, not rocket science, I know. Here is an example using the Swanky Purse theme (still my favorite theme):</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 222.png">
+<p>The code behind this is ridiculously simple:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;theme/ui.all.css&quot; /&gt;
+&lt;script src=&quot;jquery-1.3.1.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;jquery-ui-personalized-1.6rc6.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+$(&quot;#progressbar&quot;).progressbar({value:69})
+});
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div id=&quot;progressbar&quot;&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>Like other widgets, I have to remember to include my CSS along with the JavaScript. Once I've done that, I simply tell the plugin to turn a particular ID into a progress bar. The code above uses a hard coded value of 69. Progress bars uses a value system based on a percentage from 0 to 100. You can see this in action <a href="http://www.coldfusionjedi.com/demos/jquerypb/test.html">here</a>.</p>
+<p>Obviously a static progress bar isn't too exciting, and when I was mentally preparing this blog post in my head this is the part where I was going to immediately jump into creating a dynamic progress bar. However - it occurred to me that a static bar isn't exactly useless either. Imagine a case where you want to mark the progress of something that takes place over a few days, or weeks. For example, a donation drive. You may get one donation per day. It would be kind of silly to build an auto-updating Ajax-driven progress bar for something that won't likely change for a web site visitor. At the same time, you don't want to have to build a new graphic as the donation drive goes on. A static progress bar would be a great - and simple - way to handle this. Consider:</p>
+<code>
+&lt;!--- Imagine a cfquery here to get total donation ---&gt;
+&lt;cfset donations = 99&gt;
+&lt;cfset perc = int(donations/399*100)&gt;
+<p>&lt;html&gt;</p>
+<p>&lt;head&gt;
+&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;theme/ui.all.css&quot; /&gt;
+&lt;script src=&quot;jquery-1.3.1.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;jquery-ui-personalized-1.6rc6.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+&lt;cfoutput&gt;
+$(&quot;##progressbar&quot;).progressbar({value:#perc#})
+&lt;/cfoutput&gt;
+});
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;h1&gt;Buy Ray a PS3 Support Fund!&lt;/h1&gt;</p>
+<p>&lt;div id=&quot;progressbar&quot;&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>This is pretty much the exact same code as above but now I have a bit of code to determine the current percentage. My JavaScript code makes use of this value and I added a label over the progress bar so it was a bit more obvious. You can see this in action <a href="http://www.coldfusionjedi.com/demos/jquerypb/static.cfm">here</a>.</p>
+<p>So what if you <i>do</i> want a dynamic progress bar? As you can imagine the <a href="http://docs.jquery.com/UI/Progressbar">docs</a> go into detail about what events and methods you can use with the progress bar. Getting the current value is as easy as:</p>
+<code>
+var currentValue = $("#pb").progressbar('option','value');
+</code>
+<p>and setting then is:</p>
+<code>
+$("#pb").progressbar('option','value',currentValue);
+</code>
+<p>I quickly created a new demo that would let me increase and decrease the values:</p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;theme/ui.all.css&quot; /&gt;
+&lt;script src=&quot;jquery-1.3.1.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;jquery-ui-personalized-1.6rc6.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;</p>
+<p>function less() {
+var currentValue = $(&quot;#pb&quot;).progressbar('option','value');
+currentValue--;
+if(currentValue &gt;= 0) $(&quot;#pb&quot;).progressbar('option','value',currentValue);
+}</p>
+<p>function more() {
+var currentValue = $(&quot;#pb&quot;).progressbar('option','value');
+currentValue++;
+if(currentValue &lt;= 100) $(&quot;#pb&quot;).progressbar('option','value',currentValue);
+}</p>
+<p>$(document).ready(function() {
+$(&quot;#pb&quot;).progressbar({value:69})
+$(&quot;#lessBtn&quot;).click(less);
+$(&quot;#moreBtn&quot;).click(more);
+});
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div id=&quot;pb&quot;&gt;&lt;/div&gt;
+&lt;input type=&quot;button&quot; id=&quot;lessBtn&quot; value=&quot;Less&quot;&gt;
+&lt;input type=&quot;button&quot; id=&quot;moreBtn&quot; value=&quot;More&quot;&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>I've added two buttons, Less and More, each of which will run a simple function to either increase or decrease the progress bar value. I added a bit of logic to ensure I don't go below 0 or above 100. You can see this demo <a href="http://www.coldfusionjedi.com/demos/jquerypb/test2.html">here</a>.</p>
+<p>Ok, so time to get sexy. A progress bar is really useful for monitoring a slow process. You can imagine something like image resizing. Shrinking a large directory of images could take a while and it would be nice to present a UI to the user so they can see the progress of the slow process. I designed a simple ColdFusion demo that will hopefully demonstrate how you could do this.</p>
+<p>First, I added an Application.cfc just to enable Application variable support:</p>
+<code>
+&lt;cfcomponent output="false"&gt;
+<pre><code>&amp;lt;cfset this.name = &quot;jqpb&quot;&amp;gt;
+
+&amp;lt;cffunction name=&quot;onApplicationStart&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfreturn true&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;onRequestStart&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;thePage&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	
+	&amp;lt;cfif structKeyExists(url, &quot;reinit&quot;)&amp;gt;
+		&amp;lt;cfset onApplicationStart()&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	
+	&amp;lt;cfreturn true&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;onError&quot; returnType=&quot;void&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;exception&quot; required=&quot;true&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;eventname&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	&amp;lt;cfdump var=&quot;#arguments#&quot;&amp;gt;&amp;lt;cfabort&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>Next, I created my CFM page that would handle running the slow process. I decides to use a simple timer system:</p>
+<code>
+&lt;cfsetting enablecfoutputonly="true"&gt;
+<p>&lt;!--- start a process that takes 60 seconds. ---&gt;
+&lt;cfif not structKeyExists(application, &quot;process&quot;)&gt;
+&lt;cfset application.process = now()&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;!--- app.process is a timestamp, determine how much of the 60 seconds we have finished. if 60 or more, report 100 and kill the process ---&gt;
+&lt;cfset diff = dateDiff(&quot;s&quot;,application.process, now())&gt;</p>
+<p>&lt;cfif diff gte 60&gt;
+&lt;cfset structDelete(application, &quot;process&quot;)&gt;
+&lt;cfoutput&gt;100&lt;/cfoutput&gt;
+&lt;cfelse&gt;
+&lt;cfset perc = diff/60*100&gt;
+&lt;cfoutput&gt;#int(perc)#&lt;/cfoutput&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>This code will look for an Application variable named process. If it doesn't exist, it will be created and set to the current time.</p>
+<p>I then check the difference in seconds from the variable. If less then 60, I output the the percentage value of the time passed. If greater than 60, I output 100 and remove the variable. (<b>Note - this code would need to have locking added to be properly single threaded!</b>) I tested this by hitting it in my browser and reloading. I watched the value go slowly from 0 to 100 and then back again. Once I was sure it worked ok I then moved on to the front end.</p>
+<p>I began by adding a button beneath my progress bar:</p>
+<code>
+&lt;div id="pb"&gt;&lt;/div&gt;
+&lt;input type="button" id="startBtn" value="Start"&gt;
+</code>
+<p>I then modified my document.ready to initialize the progress bar to 0 and listen for the button's click event:</p>
+<code>
+$(document).ready(function() {
+	$("#pb").progressbar({value:0})
+	$("#startBtn").click(startProcess);
+});
+</code>
+<p>startProcess will now handle creating a timer:</p>
+<code>
+var timer;
+<p>function startProcess() {
+$(&quot;#startBtn&quot;).attr(&quot;disabled&quot;,&quot;disabled&quot;)
+$(&quot;#startBtn&quot;).attr(&quot;value&quot;,&quot;Working...&quot;)
+checkProcess()
+timer = setInterval(checkProcess,1000)	
+}
+</code></p>
+<p>I do a few things here besides just starting the timer. I disable and change the value of the start button. I run checkProcess immediately, and then set an interval for the function.</p>
+<p>checkProcess handles doing an Ajax call to my CFM above:</p>
+<code>
+function checkProcess() {
+	$.get('process.cfm',{},function (data,textStatus) {
+		$("#pb").progressbar('option','value',$.trim(data))
+		if(data == 100) {
+			clearInterval(timer)
+			$("#startBtn").removeAttr("disabled")
+			$("#startBtn").attr("value","Start")
+		}	
+	})
+}
+</code>
+<p>I run a simple get and then examine the result. I set the progress bar to the number returned, and if the value was 100, I handle killing the timer and resetting the button.</p>
+<p>You can see this in action <a href="http://www.coldfusionjedi.com/demos/jquerypb/test3.cfm">here</a>. Note - the file you run is a CFM file but I don't actually use ColdFusion in the view at all. It should have been an HTML file. (I hope I can be forgiven for defaulting all my files to ColdFusion files out of habit!)</p>
+<p>p.s. I've been doing a lot of jQuery posts lately. I hope my readers are enjoying them. I'm trying my best to tie each post to something ColdFusion related as well. If anyone has feedback on this, let me know via email. I'm hoping these articles are helpful to those new to jQuery, or perhaps looking for ways to integrate jQuery more with ColdFusion.</p>
+}

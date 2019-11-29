@@ -1,0 +1,144 @@
+<h1>Post</h1>
+
+<p>This weekend I worked on a little proof of concept concerning persistence and ColdFusion Builder Extensions. Persistence in ColdFusion applications normally involves either cookies, client variables, session variables, or databases. I was curious to see how I could achieve something similar for a CFB extension. My use case for this was preferences. So you could imagine a complex extension perhaps remember what your last choices were. This could make using the extension quicker if you don't have to configure your settings on ever use.</p>
+<p>
+<!--more-->
+I knew that cookies did not work at all. You can't use client variables without cookies as there is no way to match up the old data with your new request. Session variables can be made to work - but again - I wanted something that would persist. So what about databases? We could make use of Derby if we prompted the extension user for his CF Admin password. That would work - but felt like overkill. Instead, I decided on a simpler idea - using a file. 
+<p>
+I decided that a simple file, storing XML, would probably be best. It wouldn't be great for storing a <i>lot</i> of data, but again, we're just talking preferences here. I began by creating a generic component for any CFB extension. I've been meaning to do this for some time now and I finally got around to it. My CFC is named extensionUtility and will be stored in an org/camden/util folder. I've included the complete code below. Note too that I've got a few methods related to finding the current URL. This is useful for building links in forms, JS files, etc. 
+<p>
+<code>
+component {
+<pre><code>public string function getCurrentDir() {
+	var theURL = getCurrentURL();
+	theURL = listDeleteAt(theURL, listLen(theURL, &quot;/&quot;), &quot;/&quot;);
+	return theURL;
+}
+
+public string function getCurrentURL() {
+	var theURL = getPageContext().getRequest().GetRequestUrl().toString();
+	if(len( CGI.query_string )) theURL = theURL &amp; &quot;?&quot; &amp; CGI.query_string;
+	return theURL;
+}
+
+public struct function getSettings(string file=&quot;extsettings&quot;) {
+	var realFile = expandPath(&quot;./&quot; &amp; arguments.file &amp; &quot;.xml&quot;);
+	if(!fileExists(realFile)) return {};
+	var settings = {};
+	var contents = fileRead(realFile);
+	if(!isXML(contents)) return {};
+	var settingsXML = xmlParse(contents);
+	for(var key in settingsXML.settings) {
+		settings[key] = settingsXML.settings[key].xmlText;
+	}
+	return settings;
+}
+
+public void function setSetting(string name, string value, string file=&quot;extsettings&quot;) {
+	var realFile = expandPath(&quot;./&quot; &amp; arguments.file &amp; &quot;.xml&quot;);
+	var settings = getSettings(arguments.file);
+	settings[arguments.name] = arguments.value;
+	var contents = &quot;&amp;lt;settings&amp;gt;&quot;;
+	for(var key in settings) {
+		contents &amp;= &quot;&amp;lt;#key#&amp;gt;#xmlFormat(settings[key])#&amp;lt;/#key#&amp;gt;&quot;;
+	}
+	contents &amp;= &quot;&amp;lt;/settings&amp;gt;&quot;;
+	fileWrite(realFile, contents);
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>So the two methods I want to focus in on are getSettings and setSetting. getSetting takes an optional argument that allows you to override the name of a file containing your XML. In most cases you shouldn't need to worry about this. It simply reads in the XML and assumes a flat structure within a settings key. Each node should be a name and the value should be simple text. So for example:</p>
+<p>
+<code>
+&lt;settings&gt;&lt;height&gt;99&lt;/height&gt;&lt;color&gt;pink&lt;/color&gt;&lt;width&gt;249&lt;/width&gt;&lt;/settings&gt;
+</code>
+<p>
+<p>The flip side of getting the settings is to set them. In this case, I'm only allowing you to set one setting at a time, and each time you do we recreate the file. If this were a multi-user application, I'd be concerned with locking and performance. I'd definitely create a way to set multiple values at once. But for our extension, it is essentially single threaded and single user. This makes things much simpler.</p>
+<p>
+<p>So given our utility functions, how do we make use of them? Remember that we can use session variables, but they are a bit of a pain to use. We can make use of the application scope of course, and I do that to load the library in:</p>
+<p>
+<code>
+&lt;cfcomponent&gt;
+	&lt;cfsetting showdebugoutput="false"&gt;
+<pre><code>&amp;lt;cffunction name=&quot;onApplicationStart&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfset application.extensionUtility = createObject(&quot;component&quot;, &quot;org.camden.util.extensionUtility&quot;)&amp;gt;
+	&amp;lt;cfreturn true&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+
+&amp;lt;cffunction name=&quot;onRequestStart&quot; returnType=&quot;boolean&quot; output=&quot;false&quot;&amp;gt;
+	&amp;lt;cfargument name=&quot;req&quot; type=&quot;string&quot; required=&quot;true&quot;&amp;gt;
+	&amp;lt;cfif 1&amp;gt;
+		&amp;lt;cfset onApplicationStart()&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+	&amp;lt;cfreturn true&amp;gt;
+&amp;lt;/cffunction&amp;gt;
+</code></pre>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>
+<p>Just to be clear, the code within onRequestStart <b>is only for debugging</b>. There is no need to rerun onApplicationStart on every request. I normally do stuff like this with a &quot;URL hook&quot;, but since you can't do that with an extension (well, you could if you requested the extension in your browser), I use a simple &quot;if 1&quot; clause while I test.</p>
+<p>
+<p>For the next step, I need a way to read in my settings and use them. Unlike a traditional web application, extensions give you a defined way to &quot;enter&quot; the application. What I mean is - I know what the first URL request will always be. In my simple extension, I've got a right click menu added for the editor and it always runs one handler, tester.cfm. Here is how I made use of my settings:</p>
+<p>
+<code>
+<p>&lt;!--- get my setings ---&gt;
+&lt;cfset settings = application.extensionUtility.getSettings()&gt;</p>
+<p>&lt;cfif structKeyExists(settings, &quot;width&quot;)&gt;
+&lt;cfset width = settings.width&gt;
+&lt;cfelse&gt;
+&lt;cfset width = 250&gt;
+&lt;/cfif&gt;
+&lt;cfif structKeyExists(settings, &quot;height&quot;)&gt;
+&lt;cfset height = settings.height&gt;
+&lt;cfelse&gt;
+&lt;cfset height = 100&gt;
+&lt;/cfif&gt;
+&lt;cfif structKeyExists(settings, &quot;color&quot;)&gt;
+&lt;cfset color = settings.color&gt;
+&lt;cfelse&gt;
+&lt;cfset color = &quot;red&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfheader name=&quot;Content-Type&quot; value=&quot;text/xml&quot;&gt;
+&lt;cfoutput&gt;
+&lt;response showresponse=&quot;true&quot;&gt;
+&lt;ide&gt;
+&lt;dialog width=&quot;400&quot; height=&quot;400&quot; title=&quot;Make a Box&quot; /&gt;
+&lt;body&gt;
+&lt;![CDATA[</p>
+<p>&lt;h2&gt;Make a Box&lt;/h2&gt;
+&lt;form action=&quot;#application.extensionUtility.getCurrentDir()#/test_response.cfm&quot; method=&quot;post&quot;&gt;
+Width: &lt;input type=&quot;text&quot; name=&quot;width&quot; value=&quot;#width#&quot;&gt;&lt;br/&gt;
+Height: &lt;input type=&quot;text&quot; name=&quot;height&quot; value=&quot;#height#&quot;&gt;&lt;br/&gt;
+Color: &lt;input type=&quot;text&quot; name=&quot;color&quot; value=&quot;#color#&quot;&gt;&lt;br/&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Do It!&quot;&gt;
+&lt;/form&gt;
+]]&gt;
+&lt;/body&gt;
+&lt;/ide&gt;
+&lt;/response&gt;&lt;/cfoutput&gt;
+</code></p>
+<p>
+<p>As you can see, I fetch the settings and see if I have values for width, height, and color. I build up a simple form with these values and post them to the next page. Now let's look at that.</p>
+<p>
+<code>
+<p>&lt;!--- basic validation, could be better ---&gt;
+&lt;cfparam name=&quot;form.width&quot; default=&quot;0&quot;&gt;
+&lt;cfparam name=&quot;form.height&quot; default=&quot;0&quot;&gt;
+&lt;cfparam name=&quot;form.color&quot; default=&quot;red&quot;&gt;</p>
+<p>&lt;cfset box = imageNew(&quot;&quot;, form.width, form.height, &quot;rgb&quot;, form.color)&gt;
+&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#box#&quot;&gt;</p>
+<p>&lt;!--- Store these values ---&gt;
+&lt;cfset application.extensionUtility.setSetting(&quot;width&quot;, form.width)&gt;
+&lt;cfset application.extensionUtility.setSetting(&quot;height&quot;, form.height)&gt;
+&lt;cfset application.extensionUtility.setSetting(&quot;color&quot;, form.color)&gt;
+</code></p>
+<p>
+<p>As you can see, this extension draws boxes (we aren't talking rocket science here!) but at the very end, we use our API to store our settings back. Pretty simple, right? Here is a quick video showing this in action. Notice the first time through my extension will use default settings. The next time though it will have remembered what I did before.</p>
+<p>
+<a href="http://www.raymondcamden.com/images/cfbjul6.swf">
+<img src="https://static.raymondcamden.com/images/cfjedi/cfbjul6.png" border="0" title="Click for ginormous video" /></a>
+<p>
+<p>I've attached the entire extension to this blog entry - but obviously the utility CFC is the only thing worthwhile (unless you have some big need to create colored squares!). Obviously this could be tweaked a bit more. Any comments or feedback would be greatly appreciated.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Ftestextension%2Ezip'>Download attached file.</a></p></p>
+}

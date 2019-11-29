@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>It's been a while since I've done a Friday Challenge. Frankly I just haven't felt very creative. I think everyone goes through cycles of creativity and - um - the opposite of creativity (see, my vocabulary is suffering!) A reader, Kris (very Christmasy!) sent in the following idea, and I think it's pretty good.</p>
+<p>As a reminder - you should spend less than 10 minutes working on this. Don't go crazy unless you have a real understanding boss. Your challenge today is to write a UDF or Custom Tag that takes 2 directories as parameters. The tag will return a list of:</p>
+<ul>
+<li>What files exist in folder A, but not B
+<li>What files exist in folder B, but not A
+<li>What files exist in both, but APPEAR different (size, date)
+</ul>
+<p>If you want to go crazy and make it recursive, that is fine, but again, there is no need, this is just for fun. (Although honestly, this could be quite useful!)</p>
+}

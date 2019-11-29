@@ -1,0 +1,100 @@
+<h1>Post</h1>
+
+<p>While watching the Saints completely devastate the Panthers this weekend, I noticed something interesting in the &quot;info ticker&quot; (or whatever they call it) at the bottom of the screen. Whenever an important score occurred in one of the other games, there would be a &quot;Score Alert&quot;. You would see the previous score, like ATL: 0, NO: 43, and the team that scored would fade in and out, repeat, and come back with the new score. It is a great way to highlight what changed. I thought I'd try to duplicate the effect in jQuery. I'm sure this has probably already been done (a lot), but I figured it would be a good excuse to write code on vacation. Here's what I did:</p>
+<p/>
+<!--more-->
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+$(&quot;#score&quot;).fadeOut(800)
+.fadeIn(800)
+.fadeOut(800, function() {
+$(this).html(&quot;14&quot;);
+$(this).fadeIn(800);
+});
+})
+&lt;/script&gt;
+&lt;style&gt;
+.scoreVal {
+font-size: 40px;
+font-weight: bold;
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div id=&quot;score&quot; class=&quot;scoreVal&quot;&gt;7&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p/>
+<p>The template above has just one real part of the page, the score. When my page loads, I do a few animations. I fade out, in, out, and then change the value in the call back and fade it back in. Oddly, this did not work:</p>
+<p/>
+<code>
+$("something").fadeOut().fadeIn().fadeOut().html("14").fadeIn()
+</code>
+<p/>
+<p>When I tried it like this, the html() call happened immediately while the animations properly went in order. If anyone knows why, let me know, but the solution I used above worked well enough and was pretty simple. You can demo this version below:</p>
+<p/>
+<p><a href="http://www.raymondcamden.com/demos/2012/jan/2/test1.html">http://www.raymondcamden.com/demos/2012/jan/2/test1.html</a></p>
+<p/>
+<p>This worked, but if I wanted to run it multiple times, or perhaps configure the speed, it would be a lot of duplication. I decided to quickly turn it into a jQuery Plugin. I haven't done one of these in a while, so, I googled, found a doc, and - I'll admit it - did a bit of cut and paste. Here's the plugin:</p>
+<p/>
+<code>
+(function($) {
+<pre><code>$.fn.fadeChange = function(options) {
+
+	var settings = $.extend({
+      'newVal'         : '',
+      'duration' : '800'
+    }, options);
+
+	return this.each(function() {
+		
+		var $this = $(this);
+		$this.fadeOut(settings.duration)
+		   .fadeIn(settings.duration)
+		   .fadeOut(settings.duration, function() {
+				$this.html(settings.newVal);
+				$this.fadeIn(settings.duration);
+			});
+	});
+	
+};
+</code></pre>
+<p>})(jQuery);
+</code></p>
+<p/>
+<p>The plugin allows you to specify the new value and change the duration. If the duration is not specified, it will default to 800ms. Here's a new version demonstrating this.</p>
+<p/>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;fadechange.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+$(&quot;#score&quot;).fadeChange({newVal:24});
+$(&quot;#score2&quot;).fadeChange({newVal:3,duration:1200});
+})
+&lt;/script&gt;
+&lt;style&gt;
+.scoreVal {
+font-size: 40px;
+font-weight: bold;
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>Saints: &lt;div id=&quot;score&quot; class=&quot;scoreVal&quot;&gt;7&lt;/div&gt;
+Cantlanta Falcons: &lt;div id=&quot;score2&quot; class=&quot;scoreVal&quot;&gt;0&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p/>
+<p>You can demo this version by clicking the big button below.</p>
+<p/>
+<p><a href="http://www.raymondcamden.com/demos/2012/jan/2/test2.html"><img src="https://static.raymondcamden.com/images/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

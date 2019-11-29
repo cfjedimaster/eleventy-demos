@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>A reader asks:</p>
+<blockquote>
+I am coming from the PHP Development... There are several Frameworks and Templatesystems -- Are there Developing Frameworks or Templatesystems (such as Smart for PHP) for ColdFusion too ?
+</blockquote>
+<p>There are indeed frameworks around for ColdFusion. Three &quot;big ones&quot; come to mind but there are more. The oldest (that I'm aware of) is <a href="http://www.fusebox.org/">Fusebox</a>. I've never really used it and have never been a fan, but don't take my word on it. Check it out for yourself.</p>
+<p>Another one you may want to take a look at is <a href="http://www.mach-ii.com/">Mach-II</a>. This is a pretty nice framework and would be my second recommendation.</p>
+<p>The framework I most enjoy, and what I'm using for most of my new applications, is <a href="http://www.model-glue.com">Model-Glue</a>. I don't know why, but MG really &quot;clicks&quot; with me.</p>
+<p>This is just a short list though. (And if I didn't list your favorite, please don't be offended.) Many more can be found at the <b>very</b> excellent <a href="http://www.remotesynthesis.com/blog/index.cfm/2005/11/1/ColdFusion-OpenSource-Project-List">ColdFusion Open-Source Project List</a>.</p>
+}

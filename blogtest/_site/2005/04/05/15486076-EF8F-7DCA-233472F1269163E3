@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>So, after two or three updates to the stats page, it still wasn't right. Rob found another bug in it involving multiple blogs. This should be corrected now. Rob also had another good idea - he noticed that none of my blog pages have titles, except for the blog name itself. I've updated the layout page to show a specific title for category pages and for specific entry links.</p>
+<p>There was also a bug with the calendar pod when viewing the stats page. This has been corrected.</p>
+<p>So - 3.6.4 - enjoy!</p>
+<p>Oh - and I've had more than one person ask about hour offset support (basically, making the blog offset the times of entries/comments). I do have code that was submitted to me (thanks!) but I haven't had time to investigate it yet. This feature <i>is</i> going to happen.</p>
+}

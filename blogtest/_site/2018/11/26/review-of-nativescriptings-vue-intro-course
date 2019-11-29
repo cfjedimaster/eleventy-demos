@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>Good morning programs, as I continue my journey into NativeScript via Vue, I thought I'd share a quick review of a new online course that may be of interest to people. <a href="https://nativescripting.com/course/nativescript-vue-introduction/">&quot;NativeScript-Vue Introduction&quot;</a> is a great course that introduces people to both NativeScript and Vue development. It covers:</p>
+<ul>
+<li>Setting up your development environment</li>
+<li>Working with UI (this is perhaps the biggest topic for folks new to NativeScript)</li>
+<li>Working with Vue (obviously, and you do <em>not</em> need to know Vue before you start)</li>
+<li>Using Vue Components</li>
+<li>Adding Routing</li>
+<li>Styling</li>
+</ul>
+<p>While you do not need to know Vue before you start, I would perhaps spend a bit of time going through the <a href="https://vuejs.org/v2/guide/">introduction</a> so you aren't going in completely blind.</p>
+<p>The course is very nicely paced with each section being roughly 2-3 minutes in length. This makes it much easier to learn at your own pace and spend some time playing around a bit while you learn.</p>
+<p>I also <strong>really</strong> like the video platform used on the site. It's one of the simplest platforms I've seen and I appreciate that it isn't too cluttered.</p>
+<img src="https://static.raymondcamden.com/images/2018/11/vueintro.jpg" alt="Example of the video UI" class="imgborder imgcenter">
+<p>The course was created by <a href="https://twitter.com/digitalix">Alex Ziskind</a>, founder of the site itself, and you should definitely check out the other courses while you are there, although this is currently the only Vue-related one available.</p>
+<p>The course is priced at $49, which seems completely reasonable to me and worth the price. If you sign up and mention my name, you get absolutely nothing, but I still recommend you do so anyway.</p>
+}

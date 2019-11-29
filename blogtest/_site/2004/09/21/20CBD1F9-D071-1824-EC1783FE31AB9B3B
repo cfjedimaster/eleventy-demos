@@ -1,0 +1,17 @@
+<h1>Post</h1>
+
+<p>Do you ever use cfdump and notice that the layout doesn't come out right? This is due to a fairly simple issue. Whenever you use cfdump, it checks to see if it has been used already in the current request. If it has not, then it outputs CSS. This helps cut down on your download time. However, it means that if the first cfdump is suppressed in some way, your second cfdump will not look right. This can happen if you cfmail your cfdump. Here is a simple example showing this behaviour:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfsavecontent variable=<FONT COLOR=BLUE>"foo"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfdump var=<FONT COLOR=BLUE>"#server#"</FONT>&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfsavecontent&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;cfdump var=<FONT COLOR=BLUE>"#request#"</FONT>&gt;</FONT></div>
+<p>Luckily there is a simple way around it - turn off the request variable cfdump checks for:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfsavecontent variable=<FONT COLOR=BLUE>"foo"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfdump var=<FONT COLOR=BLUE>"#server#"</FONT>&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfsavecontent&gt;</FONT><br>
+<br>
+<FONT COLOR=MAROON>&lt;cfset request.cfdumpinited=false&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;cfdump var=<FONT COLOR=BLUE>"#request#"</FONT>&gt;</FONT></div>
+<p>Lastly, I've updated my <a href="http://www.camdenfamily.com/morpheus/downloads/dumpf.zip">DumpF</a> custom tag to have a showcss option. When set to true, which is the default, the css will always be displayed. If you haven't tried DumpF before, you should check it out. It lets you dump data structures along with filters. As an example, you could dump a query, but only certain columns. You can dump a query, but only the top 10 rows. Filters can also be appied to arrays and structures.</p>
+}

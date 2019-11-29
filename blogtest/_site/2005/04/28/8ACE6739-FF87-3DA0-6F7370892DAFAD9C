@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>So, there are a few minor bugs with LHP. Unfortunately, I'm preparing for a business trip so I may not have time to package a nice little zip. Until then - I'm going to post the fixes here. I will have the Forums up soon. Just click on Galleon Forums in the right hand Tools pod and you will (eventually) see the LHP conference.</p>
+<p>Bugs:</p>
+<ul>
+<li>The mySQL install script doesn't have the relatedURL property. Simply add it to issues, varchar, 255, not null, default "".
+<li>Ditto for MS Access.
+<li>So, now for a fun bug. On a MySQL install, a user kept getting an error when they would create an issue. The error was:
+<p>The argument IBEAN passed to function create() is not of type IssueBean.</p>
+<p>Now, I knew for a fact I was passing a IssueBean to IssueDAO.create. I even dumped to make sure. I scratched my head for a while on it. Then Craig Taylor sent me a note. Turns out - the bug was simply with the cfqueryparam for the isBug value. You need to change:</p>
+<p>&lt;cfqueryparam cfsqltype=&quot;cf_sql_bit&quot;  value=&quot;#arguments.iBean.getIsBug()#&quot;&gt;</p>
+<p>to</p>
+<p>&lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot;  value=&quot;#arguments.iBean.getIsBug()#&quot;&gt;</p>
+<p>Now - this may break in Access or SQL Server. When I have time, I'll test, and if so, I'll simply do an IF there to check the db type. Big thanks to Craig.</p>
+</ul>}

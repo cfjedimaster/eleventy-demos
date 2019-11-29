@@ -1,0 +1,44 @@
+<h1>Post</h1>
+
+<p>If you don't know what I'm talking about, check this <a href="http://ray.camdenfamily.com/index.cfm/2006/11/21/My-Thanksgiving-Flex-Homework">post</a>. Essentially - I'm trying to wrap my brain around how to best get Flex 2 talking to ColdFusion in a secure manner. My earlier posts showed how to graphically start up with a login screen, require you to login, and then switch to the main view.</p>
+<!--more-->
+<p>Today I've actually hooked up my Flex code to a real CFC. Let's look at how I did that. The first new lines to my Flex code are:</p>
+<code>
+&lt;mx:RemoteObject id="core" destination="ColdFusion" source="demos.flexsec3.core" showBusyCursor="true" &gt;
+<pre><code>&amp;lt;mx:method name=&quot;authenticate&quot; fault=&quot;alertMsg(event.fault.toString())&quot; result=&quot;checkAuthResult(event)&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/mx:RemoteObject&gt;
+</code></p>
+<p>This creates an object named &quot;core&quot; that represents my ColdFusion Component. Notice the &quot;source&quot; attribute is the &quot;dot&quot; path, from web root, to the CFC. (More on that later.) I have only one method defined, authenticate, and I've set up both a fault handler and a result handler.</p>
+<p>The fault handler simply dumps the error, so lets look at checkAuthResult:</p>
+<code>
+private function checkAuthResult(event):void {
+	var result = event.result;
+	if(result == 'false') {
+		Alert.show("Authentication failed", "Errors", mx.controls.Alert.OK);				
+	} else {	
+		mainView.selectedChild = mainStage;
+	}
+}
+</code>
+<p>My CFC, which I'll show in a second, will return either true or false. I check the contents of this variable, and depending on the result, either show an error or hide the login stage.</p>
+<p>Prety simple, right? The CFC doesn't do much yet. It's authenticate method simply has this:</p>
+<code>
+&lt;cfif arguments.username is "admin" and arguments.password is "dharma"&gt;
+	&lt;cfreturn true&gt;
+&lt;cfelse&gt;
+	&lt;cfreturn false&gt;
+&lt;/cfif&gt;
+</code>
+<p>Since this is only a demo I'm not going to worry about hooking it up to a database.</p>
+<p>So - let me review what I've done: I've defined a CFC service in my Flex code named core. (Not a very descriptive name, but...) I defined a method on this CFC and what Flex should do on error and on the result. I then check the result and either tell the user he didn't login correctly or go ahead and show the main application.</p>
+<p>My questions/problems are:</p>
+<ol>
+<li>It seems like the source attribute must be hard coded. This has always been a pain in the butt for me (well, "always" for the few Flex 2 applications I've built) as it means I have to change it from source to production. Obviously I could have set up things differently, but I wish I could abstract that value out - perhaps into Flash Vars. Is that possible?
+<li>I'm not storing the username and password. As I have no idea (yet!) how I'm going to talk securely to the CFC backend, I don't know if I need to. I assume I will - but for now I don't both storing the values.
+<li>As I mentioned, the fault handler should be more intelligent. Any application based on back end services like this should have some nice error handling. 
+</ol>
+<p>If you want to view this demo, please go here:</p>
+<p><a href="http://ray.camdenfamily.com/demos/flexsec3/SimpleRemotingTest.html">http://ray.camdenfamily.com/demos/flexsec3/SimpleRemotingTest.html</a></p>
+<p>As before - please feel free to point anything I did wrong.</p>
+}

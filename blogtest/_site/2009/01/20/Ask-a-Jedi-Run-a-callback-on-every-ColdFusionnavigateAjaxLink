@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>Emil asks:</p>
+<blockquote>
+<p>
+I was wondering if there is a way to set a global callbackHandler for "Coldfusion.navigate" when using the
+"AjaxLink()" function. You see, I'm using sIFR and I wanted to put the "sIFR.replace()" inside the callbackHandler-function.
+</p>
+</blockquote>
+<!--more-->
+Unfortunately there is no built in way to always run a callback for ColdFusion.navigate. Nor is there anyway to do a callback at all for AjaxLink(). What I'd recommend is simply using a wrapper function to handle calling ColdFusion.navigate() and setting up a callback. For example:
+<code>
+&lt;cfajaximport /&gt;
+&lt;script&gt;
+function load(url,con) {
+	document.getElementById('loadingdiv').innerHTML = "Loading content..."
+	ColdFusion.navigate(url,con,handleResult);	
+}
+<p>function handleResult() {
+document.getElementById('loadingdiv').innerHTML = &quot;&quot;
+}
+&lt;/script&gt;</p>
+<p>&lt;div id=&quot;somediv&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;loadingdiv&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;a href=&quot;&quot; onclick=&quot;javaScript:load('foo.cfm?x=1','somediv');return false&quot;&gt;x=1&lt;/a&gt;&lt;br&gt;
+&lt;a href=&quot;&quot; onclick=&quot;javaScript:load('foo.cfm?x=2','somediv');return false&quot;&gt;x=2&lt;/a&gt;&lt;br&gt;
+&lt;a href=&quot;&quot; onclick=&quot;javaScript:load('foo.cfm?x=3','somediv');return false&quot;&gt;x=3&lt;/a&gt;&lt;br&gt;
+</code></p>
+<p>This example uses a custom function, load, that simply wraps the setting of a loading message (a bit redundant since ColdFusion.navigate will show a spiner) and calling ColdFusion.navigate with the callback.</p>
+<p>Nice and simple I think.</p>
+}

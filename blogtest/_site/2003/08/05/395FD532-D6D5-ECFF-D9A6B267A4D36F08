@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I've ranted about this before, but I just can't help but do it again. I absolutely despise the fact that most applications (except browsers and FTP programs) that perform operations over the net do not have a stop command. The worst offender is SQL Enterprise Manager. Let me describe a typical session with EM....</p>
+<p>I open it up with the desire to browser a local SQL Server box. I accidently click on the wrong one. The one I happen to click on is a remote box. EM pings the server. And I wait. And wait. While this happens, the application becomes frozen. You can't do jack with it. You can't cancel. You can't open another SQL Server instance. You're stuck.</p>
+<p>Another fun example. You right click on an instance so you can update the properties. Every right click is a remote call. If you move your mouse while the call is being made, the right click menu will most likely disappear as soon as it displays.</p>
+<p>There is absolutely no reason for all of this! Why not simply perform remote calls only when necessary? As a developer, I don't mind having stale data as long as I know it (via visual cues), especially if it means I don't have to deal with crap like I described above.</p>
+}

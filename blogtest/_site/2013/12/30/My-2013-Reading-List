@@ -1,0 +1,514 @@
+<h1>Post</h1>
+
+<p>
+This is the year I finally stopped using Bagcheck, which is a good thing since it died earlier this year. I switched over to <a href="http://www.goodreads.com">Goodreads.com</a>, which is OK, but frankly, I'm not terribly interested in the social aspects of the site. I like tracking what I've read and what I thought about what I read, but I don't necessarily care to track what others are reading. I <i>do</i> like getting recommendations, but my queue of books (thanks to folks who hit my <a href="http://www.amazon.com/o/registry/2TCL1D08EZEYE">wishlist</a>) has provided me with reading material over the past few years. Anyway, for folks who may be curious, here is my list from 2013. I've got a few thoughts at the end.
+</p>
+<!--more-->
+<!-- Show static HTML/CSS as a placeholder in case js is not enabled - javascript include will override this if things work -->
+      <style type="text/css" media="screen">
+  .gr_custom_container_1388416209 {
+    /* customize your Goodreads widget container here*/
+    border: 1px solid gray;
+    border-radius:10px;
+    padding: 10px 5px 10px 5px;
+    background-color: #FFFFFF;
+    color: #000000;
+    width: 500px
+  }
+  .gr_custom_header_1388416209 {
+    /* customize your Goodreads header here*/
+    border-bottom: 1px solid gray;
+    width: 100%;
+    margin-bottom: 5px;
+    text-align: center;
+    font-size: 120%
+  }
+  .gr_custom_each_container_1388416209 {
+    /* customize each individual book container here */
+    width: 100%;
+    clear: both;
+    margin-bottom: 10px;
+    overflow: auto;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #aaa;
+  }
+  .gr_custom_book_container_1388416209 {
+    /* customize your book covers here */
+    overflow: hidden;
+    height: 160px;
+      float: left;
+      margin-right: 4px;
+      width: 98px;
+  }
+  .gr_custom_author_1388416209 {
+    /* customize your author names here */
+    font-size: 10px;
+  }
+  .gr_custom_tags_1388416209 {
+    /* customize your tags here */
+    font-size: 10px;
+    color: gray;
+  }
+  .gr_custom_rating_1388416209 {
+    /* customize your rating stars here */
+    float: right;
+  }
+</style>
+<pre><code>  &lt;div id=&quot;gr_custom_widget_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_container_1388416209&quot;&gt;
+&lt;h2 class=&quot;gr_custom_header_1388416209&quot;&gt;
+&lt;a href=&quot;https://www.goodreads.com/review/list/7962326-raymond?shelf=2013&amp;amp;utm_medium=api&amp;amp;utm_source=custom_widget&quot; style=&quot;text-decoration: none;&quot;&gt;Raymond's 2013 Bookshelf&lt;/a&gt;
+&lt;/h2&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/597787900?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;A Song for Lya: And Other Stories&quot;&gt;&lt;img alt=&quot;A Song for Lya: And Other Stories&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1348298313m/13498.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/597787900?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;A Song for Lya: And Other Stories&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/346732.George_R_R_Martin&quot;&gt;George R.R. Martin&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646095772?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Cipher&quot;&gt;&lt;img alt=&quot;The Cipher&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1327883859m/341930.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646095772?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Cipher&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/69317.Kathe_Koja&quot;&gt;Kathe Koja&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646096286?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Red Wolf Conspiracy (The Chathrand Voyage, #1)&quot;&gt;&lt;img alt=&quot;The Red Wolf Conspiracy&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1387700316m/2408602.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;2 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_2_of_5.png&quot; title=&quot;2 of 5 stars, it was ok&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646096286?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Red Wolf Conspiracy&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/2845500.Robert_V_S_Redick&quot;&gt;Robert V.S. Redick&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646096960?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Roadside Picnic&quot;&gt;&lt;img alt=&quot;Roadside Picnic&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1173812259m/331256.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646096960?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Roadside Picnic&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/1159886.Arkady_Strugatsky&quot;&gt;Arkady Strugatsky&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646097379?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Alien Contact&quot;&gt;&lt;img alt=&quot;Alien Contact&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1319680682m/11570454.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646097379?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Alien Contact&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/833007.Marty_Halpern&quot;&gt;Marty Halpern&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646097864?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Learning Javascript Design Patterns&quot;&gt;&lt;img alt=&quot;Learning Javascript Design Patterns&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1344734794m/14289134.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646097864?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Learning Javascript Design Patterns&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/4731125.Addy_Osmani&quot;&gt;Addy Osmani&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646099297?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Mr. Penumbra's 24-Hour Bookstore&quot;&gt;&lt;img alt=&quot;Mr. Penumbra's 24-Hour Bookstore&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1345089845m/13538873.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646099297?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Mr. Penumbra's 24-Hour Bookstore&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/2960227.Robin_Sloan&quot;&gt;Robin Sloan&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646098311?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Stalin's Hammer: Rome (Axis of Time, #4)&quot;&gt;&lt;img alt=&quot;Stalin's Hammer: Rome&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1349235569m/16062873.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646098311?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Stalin's Hammer: Rome&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/33505.John_Birmingham&quot;&gt;John Birmingham&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646098664?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Star Wars: Scoundrels&quot;&gt;&lt;img alt=&quot;Star Wars: Scoundrels&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1333577643m/13573427.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;2 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_2_of_5.png&quot; title=&quot;2 of 5 stars, it was ok&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646098664?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Star Wars: Scoundrels&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/12479.Timothy_Zahn&quot;&gt;Timothy Zahn&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Disappointing. Pretty much &amp;quot;Oceans 11&amp;quot; in Star Wars, which sounds cool, but wasn't. 
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646101766?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Dungeon (Philip José Farmer's The Dungeon, #1-2)&quot;&gt;&lt;img alt=&quot;The Dungeon&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1166725189m/16540.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;3 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_3_of_5.png&quot; title=&quot;3 of 5 stars, liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646101766?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Dungeon&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/10088.Richard_A_Lupoff&quot;&gt;Richard A. Lupoff&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646101972?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Dungeon 2 (Philip José Farmer's The Dungeon, Omnibus Volume 2: Valley of Thunder/Lake of Fire)&quot;&gt;&lt;img alt=&quot;The Dungeon 2&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1166725190m/16544.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;3 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_3_of_5.png&quot; title=&quot;3 of 5 stars, liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/646101972?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Dungeon 2&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/8456.Charles_de_Lint&quot;&gt;Charles de Lint&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/647394536?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Dungeon 3 (Philip José Farmer's The Dungeon, Omnibus Volume 3: Hidden City/Final Battle) &quot;&gt;&lt;img alt=&quot;The Dungeon 3 (Philip José Farmer's The Dungeon, Omnibus Volume 3: Hidden City/Final Battle)&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1173460889m/291913.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;1 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_1_of_5.png&quot; title=&quot;1 of 5 stars, did not like it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/647394536?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Dungeon 3 (Philip José Farmer's The Dungeon, Omnibus Volume 3: Hidden City/Final Battle)&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/8456.Charles_de_Lint&quot;&gt;Charles de Lint&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/648632705?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Third-Party Javascript&quot;&gt;&lt;img alt=&quot;Third-Party Javascript&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1366276190m/14289125.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/648632705?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Third-Party Javascript&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/5989830.Ben_Vinegar&quot;&gt;Ben Vinegar&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/648633593?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Effective JavaScript: 68 Specific Ways to Harness the Power of JavaScript&quot;&gt;&lt;img alt=&quot;Effective JavaScript: 68 Specific Ways to Harness the Power of JavaScript&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1372042097m/13705402.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/648633593?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Effective JavaScript: 68 Specific Ways to Harness the Power of JavaScript&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/67516.David_Herman&quot;&gt;David Herman&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/663808901?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Wolfhound Century&quot;&gt;&lt;img alt=&quot;Wolfhound Century&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1353855563m/15790887.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/663808901?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Wolfhound Century&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/230189.Peter_Higgins&quot;&gt;Peter Higgins&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/670872523?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Wind Through the Keyhole (The Dark Tower, #4.5)&quot;&gt;&lt;img alt=&quot;The Wind Through the Keyhole&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1328001524m/12341557.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;5 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_5_of_5.png&quot; title=&quot;5 of 5 stars, it was amazing&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/670872523?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Wind Through the Keyhole&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/3389.Stephen_King&quot;&gt;Stephen King&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/673519792?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Learning Kendo UI Web Development&quot;&gt;&lt;img alt=&quot;Learning Kendo UI Web Development&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1370224576m/17995507.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;1 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_1_of_5.png&quot; title=&quot;1 of 5 stars, did not like it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/673519792?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Learning Kendo UI Web Development&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/2171399.John_Adams&quot;&gt;John   Adams&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Don't buy it. Period. Kendo UI looks very damn cool. But this book has too many issues.
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/689497954?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Ocean at the End of the Lane&quot;&gt;&lt;img alt=&quot;The Ocean at the End of the Lane&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1351914778m/15783514.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;5 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_5_of_5.png&quot; title=&quot;5 of 5 stars, it was amazing&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/689497954?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Ocean at the End of the Lane&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/1221698.Neil_Gaiman&quot;&gt;Neil Gaiman&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Wonderful book. Probably the best this year.
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/691019245?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Lexicon&quot;&gt;&lt;img alt=&quot;Lexicon&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1356080172m/16158596.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;5 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_5_of_5.png&quot; title=&quot;5 of 5 stars, it was amazing&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/691019245?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Lexicon&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/18741.Max_Barry&quot;&gt;Max Barry&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/702331226?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Traveler (Fourth Realm, #1)&quot;&gt;&lt;img alt=&quot;The Traveler&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1320547594m/80754.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;2 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_2_of_5.png&quot; title=&quot;2 of 5 stars, it was ok&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/702331226?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Traveler&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/42540.John_Twelve_Hawks&quot;&gt;John Twelve Hawks&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/713477135?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Dragon America&quot;&gt;&lt;img alt=&quot;Dragon America&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1347770441m/293295.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;3 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_3_of_5.png&quot; title=&quot;3 of 5 stars, liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/713477135?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Dragon America&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/54475.Mike_Resnick&quot;&gt;Mike Resnick&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Disappointing. Interesting concept - but boring execution.
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/720983453?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Spellwright (Spellwright, #1)&quot;&gt;&lt;img alt=&quot;Spellwright&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1331914885m/6703145.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/720983453?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Spellwright&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/1916427.Blake_Charlton&quot;&gt;Blake Charlton&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        The story was... decent. Good, but not great. But the magic system was *incredible*. The design was very reminiscent of programming. 
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/728439899?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Joker&quot;&gt;&lt;img alt=&quot;Joker&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1334501983m/3134981.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;5 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_5_of_5.png&quot; title=&quot;5 of 5 stars, it was amazing&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/728439899?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Joker&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/17029.Brian_Azzarello&quot;&gt;Brian Azzarello&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Read this on the plane. Holy crap was it good. Amazing story - amazing art - so happy I picked this up.
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/732895009?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;On Writing&quot;&gt;&lt;img alt=&quot;On Writing&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1388192403m/10569.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;5 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_5_of_5.png&quot; title=&quot;5 of 5 stars, it was amazing&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/732895009?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;On Writing&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/3389.Stephen_King&quot;&gt;Stephen King&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Can't believe I took so long to read this.
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/735504874?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;It's Superman!&quot;&gt;&lt;img alt=&quot;It's Superman!&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1386924599m/198076.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/735504874?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;It's Superman!&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/5126125.Tom_De_Haven&quot;&gt;Tom De Haven&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Darn good book. I was really surprised by this and wish I had read it sooner.
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/769179774?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;Cockpit Confidential: Everything You Need to Know About Air Travel: Questions, Answers, and Reflections&quot;&gt;&lt;img alt=&quot;Cockpit Confidential: Everything You Need to Know About Air Travel: Questions, Answers, and Reflections&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1356476289m/16235130.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;4 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_4_of_5.png&quot; title=&quot;4 of 5 stars, really liked it&quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/769179774?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;Cockpit Confidential: Everything You Need to Know About Air Travel: Questions, Answers, and Reflections&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/24899.Patrick_Smith&quot;&gt;Patrick Smith&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_review_1388416209&quot;&gt;
+        Loved it - but was disappointed by the lack of pictures. Yeah, I know how that sounds, but seriously, when discussing airline logos (and yes, I think that's interesting) it seems silly to not actually *show* them. Ditto for various plane...
+      &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;gr_custom_each_container_1388416209&quot;&gt;
+      &lt;div class=&quot;gr_custom_book_container_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/804878129?utm_medium=api&amp;amp;utm_source=custom_widget&quot; title=&quot;The Family Trade (The Merchant Princes, #1)&quot;&gt;&lt;img alt=&quot;The Family Trade&quot; border=&quot;0&quot; src=&quot;https://d202m5krfqbpi5.cloudfront.net/books/1316637838m/17861.jpg&quot; /&gt;&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_rating_1388416209&quot;&gt;
+        &lt;img alt=&quot;0 of 5 stars&quot; class=&quot; staticStars&quot; src=&quot;https://www.goodreads.com/images/layout/stars/red_star_0_of_5.png&quot; title=&quot;0 of 5 stars, &quot; /&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_title_1388416209&quot;&gt;
+        &lt;a href=&quot;https://www.goodreads.com/review/show/804878129?utm_medium=api&amp;amp;utm_source=custom_widget&quot;&gt;The Family Trade&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;gr_custom_author_1388416209&quot;&gt;
+        by &lt;a href=&quot;https://www.goodreads.com/author/show/8794.Charles_Stross&quot;&gt;Charles Stross&lt;/a&gt;
+      &lt;/div&gt;
+  &lt;/div&gt;
+</code></pre>
+  <br style="clear: both"/>
+  <center>
+    <a href="https://www.goodreads.com/"><img alt="goodreads.com" src="https://www.goodreads.com/images/widget/widget_logo.gif" style="border:0" /></a>
+  </center>
+  <noscript>
+    Share <a href="https://www.goodreads.com/">book reviews</a> and ratings with Raymond, and even join a <a href="https://www.goodreads.com/group">book club</a> on Goodreads.
+  </noscript>
+  </div>
+<pre><code>  &lt;/div&gt;
+  &lt;script src=&quot;https://www.goodreads.com/review/custom_widget/7962326.Raymond's%202013%20Bookshelf?cover_position=left&amp;cover_size=medium&amp;num_books=50&amp;order=a&amp;shelf=2013&amp;show_author=1&amp;show_cover=1&amp;show_rating=1&amp;show_review=1&amp;show_tags=0&amp;show_title=1&amp;sort=date_added&amp;widget_bg_color=FFFFFF&amp;widget_bg_transparent=&amp;widget_border_width=1&amp;widget_id=1388416209&amp;widget_text_color=000000&amp;widget_title_size=medium&amp;widget_width=wide&quot; type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>
+Overall, this was a year of disappointments. I had some bad luck this year in my choices. As an example, I almost never reread old books (again, I've got too much new stuff to read!) but I made an exception for The Dungeon series. I had fond memories of it from when I was a teenager. It was ok for the first 5 books, but the last book was so horrible it made me want to throw the books away. I was also really disappointed by "Scoundrels". It had everything going for it - a crime-centered Star Wars book - but failed to deliver. I guess it isn't fair to say it was a bad year, it just seems like I read more bad books this year then I have in the past.
+</p>
+<p>
+It wasn't all bad of course. Neil Gaiman's book was good - and I wasn't surprised at all by that - but I forget just how damn good he is. I was also <i>very</i> impressed with King's Wasteland book, "The Wind Through the Keyhole." I loved the Wasteland series in general and was happy for the opportunity to return to that world. Overall the biggest surprise was "It's Superman!", a novelization of the Superman story. This book had probably been on my shelf for over a year and I wished I had read it sooner. 
+</p>}

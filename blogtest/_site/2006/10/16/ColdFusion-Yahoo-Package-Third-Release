@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>This release adds the Map API to the package. Need to add a map to your next user group meeting? Is this simple enough:</p>
+<code>
+&lt;img src="#mapAPI.getMap('Lafayette, LA')#"&gt;
+</code>
+<p>This is the initial release of Maps support. Yahoo also lets you create maps with marks on them and I'm going to look into that next. You may download the application using the Download link below.</p>
+<p>Also note there was a small fix to the Traffic API. The next release will most likely be the formal 1.0 release and I'll start using real release notes and instructions.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Fyahoo2%2Ezip'>Download attached file.</a></p></p>
+}

@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>So, I ran into an interesting bug yesterday. Consider the following query:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfquery name=<FONT COLOR=BLUE>"qObjectGet"</FONT><br>
+datasource=<FONT COLOR=BLUE>"#attributes.datasource#"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;SELECT &nbsp;&nbsp;&nbsp;*<br>
+&nbsp;&nbsp;&nbsp;FROM &nbsp;&nbsp;&nbsp;#attributes.type#<br>
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;&nbsp;id = <FONT COLOR=MAROON>&lt;cfqueryparam<br>
+cfsqltype=<FONT COLOR=BLUE>"CF_SQL_INTEGER"</FONT> value=<FONT COLOR=BLUE>"#attributes.id#"</FONT> list=<FONT COLOR=BLUE>"No"</FONT> null=<FONT COLOR=BLUE>"No"</FONT>&gt;</FONT><br>
+<FONT COLOR=MAROON>&lt;/cfquery&gt;</FONT></div>
+<p>This was running fine, but all of a sudden began throwing the following error:</p>
+<p>[Macromedia][SQLServer JDBC Driver]Value can not be converted to requested type.</p>
+<p>I did a quick google search, but couldn't find anything clearly related - except for one post that suggested simply modifying the query by adding a semicolon. I did and the error went away.</p>
+<p>It turns out that this error would return everytime I modified the table. I either had to modify the query or restart CF.</p>
+<p>Apparently there is some caching involved of the table schema when using queryparam, and the change to the table schema confused CF.</p>
+<p>However, it is <i>not</i> reproduceable. I tried to reproduce it again this morning and was not able to. My coworkers at <a href="http://www.mindseye.com">Mindseye</a> have also seen this and have not been able to reproduce it at will.</p>
+<p>So - something to watch out for!</p>
+}

@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p>This will be a quick post. I wanted to share a few links for people who want to take a look at <a href="https://webtask.io/">Auth0 Webtask</a>, the serverless platform behind <a href="https://auth0.com/extend">Extend</a>. Some of these links will be obvious, some not, but hopefully they will be helpful for folks who want to learn more.</p>
+<ul>
+<li>First and foremost, start with the <a href="https://webtask.io/docs/101">docs</a>. I've been doing some edits here recently but in general, they are in good shape and will help you get started.</li>
+<li>Don't forget the online <a href="https://webtask.io/docs/101">editor</a>. I really, <em>really</em> love my <a href="https://code.visualstudio.com/">editor</a> and it is the primary tool I use for all my development, but the online editor is very well done and if you aren't sure you want to &quot;commit&quot; to installing the CLI, then I suggest simply working there to get started. The CLI has full parity with the editor so you can switch back and forth.</li>
+<li>There is a public Webtask slack at webtask-chat.slack.com. You can signup here: https://skynet.run.webtask.io/webtask-signup. I didn't even know this existed until a few days ago as it is a bit hidden in the &quot;Contact Us&quot; modal. I'll be making this more visible soon.</li>
+<li>The <a href="https://auth0.com/blog/">Auth0 Blog</a> has some great content (they even covered LoopBack multiple times!) including good articles on webtask. You can find Webtask specific entries here: https://auth0.com/blog/tags/webtask/. Be sure to click the &quot;Older posts&quot; button at the bottom as the first page of results is pretty short.</li>
+<li>There is a <a href="https://github.com/auth0/webtask-workshop">webtask workshop</a> that you do by yourself to get introduced to different parts of the platform.</li>
+<li>If you are already doing serverless with the Serverless framework, they support webtask too. You can read about that here: <a href="https://serverless.com/framework/docs/providers/webtasks/guide/intro/">Auth0 Webtasks - Introduction</a>. I've not blogged on the Serverless framework yet. I hope to have a few entries on that in the next couple weeks.</li>
+<li>Finally, my current posts here on webtask may be found at the tag: https://www.raymondcamden.com/tags/webtask. Not a lot yet, but it will grow. :) You will see more posts on the official blog, but I'll be covering it here as well.</li>
+</ul>
+<p>That's all for now and I hope this is helpful!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/elFPAMiuxOo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Valentin</a> on Unsplash</i></p>
+}

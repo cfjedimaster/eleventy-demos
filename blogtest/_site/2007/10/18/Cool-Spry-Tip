@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>I missed this from two versions ago or so, but Spry has a new attribute to make master/detail work a bit easier. In the past, you would typically use code like this to display a set of data and allow a user to click to load a detail region:</p>
+<code>
+&lt;tr spry:repeat="mydata" onclick="mydata.setCurrentRow('{ds_RowID}');"&gt;
+</code>
+<p>Notice the onclick? This tells Spry to update the current selected row. This is now done like so:</p>
+<code>
+&lt;tr spry:repeat="mydata" spry:setrow="mydata"&gt;
+</code>
+<p>Love it. One more line of JavaScript removed.</p>
+}

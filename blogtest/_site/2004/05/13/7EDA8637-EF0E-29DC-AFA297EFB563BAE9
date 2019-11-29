@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>Neil Robertson-Ravo shared an interesting bug with me:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cftry&gt;</FONT><FONT COLOR=MAROON>&lt;cfcatch&gt;</FONT><FONT COLOR=MAROON>&lt;/cfcatch&gt;</FONT><FONT COLOR=MAROON>&lt;/cftry&gt;</FONT></div>
+<p>When run, this generates a error:</p>
+<p>(class: cftest2ecfm370320109, method: runPage signature: ()Ljava/lang/Object;) Illegal exception table range</p>
+<p>What makes this template interesting is that as soon as you add a line break after the first cftry, it goes away. Neil has entered a bug report for it.</p>
+}

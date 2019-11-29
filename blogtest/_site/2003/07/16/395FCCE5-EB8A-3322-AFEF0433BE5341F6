@@ -1,0 +1,24 @@
+<h1>Post</h1>
+
+<p>I was working on a CFC early this morning (5AM to be precise - don't ask my why - I wake up early) and was having an issue with performance. The CFC was a bug tracker (more info coming soon!) that would get slower as more bugs were added. I needed a nice way to quickly find out what parts of my code were the slowest. On a whim, I quickly wrote up the following custom tag:</p>
+<p>&lt;cfparam name=&quot;attributes.name&quot;&gt;<br>
+&lt;cfswitch expression=&quot;#thisTag.executionMode#&quot;&gt;<br>
+<br>
+  &lt;cfcase value=&quot;start&quot;&gt;<br>
+    &lt;cfset begin = getTickCount()&gt;<br>
+  &lt;/cfcase&gt;<br>
+<br>
+  &lt;cfcase value=&quot;end&quot;&gt;<br>
+    &lt;cfset total = getTickCount() - begin&gt;<br>
+    &lt;cftrace var=&quot;total&quot; text=&quot;Timer: #attributes.name#&quot;&gt;<br>
+  &lt;/cfcase&gt;<br>
+&lt;/cfswitch&gt;<br></p>
+<p>To test, I then simply did:</p>
+<p>&lt;cf_timer name=&quot;block where I do foo&quot;&gt;<br>
+someOperatation<br>
+&lt;/cf_timer&gt;<br></p>
+<p>By wrapping various pieces of my code with this tag, I was able to quickly diagnose the problem areas and correct them.</p>
+<p>This code was based on a tag I saw in use in the CFAdmin for MX. This code was written by Mike Nimer of Macromedia. When I mentioned to him that I was going to blog this, he let me know that his tag still existed! So, if you don't mind using an unsupported tag, try cfimporting timer from the /cfide/administrator/cftags folder.</p>
+<p>&lt;cfimport taglib=&quot;/CFIDE/administrator/cftags&quot; prefix=&quot;tags&quot;&gt;</p>
+<p>This tag tags two attributes, inline, which defaults to true, and message, which is the label. If you set inline to false, you will have to manually edit a debug template in order to get the data. It will be accessible in qEvents using a type = 'Timer'. (Did you know you could write your own debug templates for MX?)</p>
+}

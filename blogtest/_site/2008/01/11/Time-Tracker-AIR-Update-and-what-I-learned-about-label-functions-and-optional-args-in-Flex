@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>I've got a big update to the my little Time Tracker AIR application, thanks mostly to <a href="http://www.kylehayes.info/blog/">Kyle Hayes</a>. He gave some UI loving to the app - see below:</p>
+<img src="https://static.raymondcamden.com/images/Picture 41.png">
+<p>I've done a bit more cleanup. One of the things I fixed was my duplicate labelFormatter. The labelFunction feature is one of the neatest things in Flex. When it comes to a control that takes a set of data, you can say, &quot;When displaying X, call this function.&quot; Your function can then do stuff like, &quot;If the row of data has a price more than 100, mark it (Expensive!)&quot;. You get the idea. What was bugging me though was that I wanted to use the same labelFunction for my DataGrid and my ComboBox. But the DataGrid passes 2 arguments to it's label function, and the ComboBox passes one. I wrote two functions which both did the exact same thing. Turns out (and I found this online but forgot to bookmark where) there is a simpler solution - just mark the section argument as optional. Here is an example from my code:</p>
+<code>
+private function projectLabel(item:Object,col:DataGridColumn=null):String {
+	return item.project + " (" + item.client + ")";
+}
+</code>
+<p>In this code block, the second column has an optional value. It is optional because we define a default value to use in case one isn't passed.</p>
+<p>Anyway, most of my changes are pretty small. I switched to using States to handle &quot;loading&quot; versus 'real' application. I also made the Hour panel notice if you have no active projects. (Need to double check that I have the active flag in there.)</p>
+<p>I'm still struggling with the dates though, and I've had some folks help me out on my other <a href="http://www.coldfusionjedi.com/index.cfm/2008/1/10/Two-SQLite-tool-recommendations">post</a>, so hopefully that will get corrected soon.</p>
+<p>So now I'm going to turn my attention to a reports page. I've only played with Flex charts a bit, but I'm looking forward to it. I'd especially love to be able to find out which client/project paid me the most money, something that isn't possible with the current system I use.</p>
+<p>I know I keep saying the following, but I should repeat it anyway. I'm really loving AIR and Flex. But please consider my code to be anything <i>but</i> best practice.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FArchive17%2Ezip'>Download attached file.</a></p></p>
+}

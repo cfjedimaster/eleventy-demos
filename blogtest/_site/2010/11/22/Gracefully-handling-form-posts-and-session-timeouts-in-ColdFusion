@@ -1,0 +1,220 @@
+<h1>Post</h1>
+
+<p>Last week a follower on Twitter let me know that <a href="http://www.riaforge.org">RIAForge</a> doesn't nicely handle session time outs and forms. He had been working on a new project submission and had let his session time out. When he submitted the form he lost what he had typed in. While I haven't quite fixed that yet - I did work on a small demo at lunch time that both demonstrates this problem and shows one way of working around it. Let's begin by looking at the application in it's current &quot;dumb&quot; form.</p>
+<!--more-->
+<p/>
+<p>Let's begin with the critical piece - the Application.cfc file:</p>
+<p/>
+<code>
+component {
+<pre><code>this.name=&quot;logindemo&quot;;
+this.sessionManagement=&quot;true&quot;;
+this.sessionTimeOut = createTimeSpan(0,0,2,0);
+
+public boolean function onApplicationStart() {
+	return true;
+}
+
+public boolean function onRequestStart(string req) {
+	var append = &quot;&quot;;
+	//handle an authentication
+	if(structKeyExists(form, &quot;login&quot;) &amp;&amp; structKeyExists(form, &quot;username&quot;) &amp;&amp; structKeyExists(form, &quot;password&quot;)) {
+		if(form.username == &quot;admin&quot; &amp;&amp; form.password == &quot;password&quot;) session.loggedin = true;
+		else {
+			append = &quot;?error=1&quot;;
+		}
+	}
+
+	//force login if not authenticated
+	if(!session.loggedin &amp;&amp; !find(&quot;login.cfm&quot;, arguments.req)) location(url='login.cfm#append#',addtoken=false);
+
+	return true;
+}
+
+public void function onSessionStart() {
+	session.loggedin=false;
+}
+</code></pre>
+<p>}
+</code></p>
+<p/>
+<p>As this is fairly standard I won't go over every part. The critical parts are within onRequestStart. I have code to detect a login as well as code to force you to a login page if you aren't logged in. The login.cfm file is just a basic form so I won't post it here. (I've got a zip at the end of this entry though with the complete source code.) Now let's imagine a simple form:</p>
+<p/>
+<code>
+&lt;cfparam name="form.name" default=""&gt;
+&lt;cfparam name="form.email" default=""&gt;
+&lt;cfparam name="form.comment" default=""&gt;
+<p>&lt;!--- super fast, simple validation ---&gt;
+&lt;cfset errors = &quot;&quot;&gt;
+&lt;cfset showForm = true&gt;
+&lt;cfif structKeyExists(form, &quot;send&quot;)&gt;</p>
+<pre><code>&amp;lt;!--- quickly trim/htmlEditFormat ---&amp;gt;
+&amp;lt;cfloop item=&quot;field&quot; collection=&quot;#form#&quot;&amp;gt;
+	&amp;lt;cfset form[field] = trim(htmlEditFormat(form[field]))&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfif not len(form.name)&amp;gt;
+	&amp;lt;cfset errors &amp;= &quot;Please include your name.&amp;lt;br/&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.email) or not isValid(&quot;email&quot;, form.email)&amp;gt;
+	&amp;lt;cfset errors &amp;= &quot;Please include your valid email address.&amp;lt;br/&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif not len(form.comment)&amp;gt;
+	&amp;lt;cfset errors &amp;= &quot;Please include your comments.&amp;lt;br/&amp;gt;&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif errors is &quot;&quot;&amp;gt;
+	&amp;lt;!--- here is where we would email the comments ---&amp;gt;
+	&amp;lt;cfset showForm = false&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;</p>
+<p>&lt;cfif showForm&gt;</p>
+<pre><code>&amp;lt;cfoutput&amp;gt;
+
+&amp;lt;p&amp;gt;
+Use the form below to send us contact information.
+&amp;lt;/p&amp;gt;
+
+
+&amp;lt;cfif len(variables.errors)&amp;gt;
+	&amp;lt;p&amp;gt;
+	&amp;lt;b&amp;gt;Please correct the following error(s):&amp;lt;br/&amp;gt;#variables.errors#&amp;lt;/b&amp;gt;
+	&amp;lt;/p&amp;gt;
+&amp;lt;/cfif&amp;gt;
+	
+&amp;lt;form action=&quot;contact.cfm&quot; method=&quot;post&quot;&amp;gt;
+&amp;lt;p&amp;gt;
+Your name:&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;#form.name#&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+Your email address:&amp;lt;br/&amp;gt;
+&amp;lt;input type=&quot;text&quot; name=&quot;email&quot; value=&quot;#form.email#&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+Your comments:&amp;lt;br/&amp;gt;
+&amp;lt;textarea name=&quot;comment&quot;&amp;gt;#form.comment#&amp;lt;/textarea&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+&amp;lt;input type=&quot;submit&quot; name=&quot;send&quot; value=&quot;Send&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;/form&amp;gt;
+
+&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;cfelse&gt;</p>
+<pre><code>&amp;lt;p&amp;gt;
+Thank you for your feedback.
+&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p/>
+<p>This form consists of three simple fields. Normally I'd have the error checking in a controller file, but hopefully this won't offend my Model-Glue friends. Now used as is - and with the quick 2 minute session timeout I setup - it would be easy for a user to end up losing their form when they fill it out. If they take longer than two minutes to fill it out - their data is essentially lost. Lost in time. Like tears in the rain. (Sorry - got distracted.)</p>
+<p/>
+<p>Let's look at how we could handle this nicer. In my 'dream' world the user hits submit on the form - is asked to relogin - and is then returned to the form as if nothing had happened. If the form data was all good, then the form process is complete. If there was some error, then it is displayed. Again - it should act as if the session timeout never happened. Here is my new Application.cfc file:</p>
+<p/>
+<code>
+<p>component {</p>
+<pre><code>this.name=&quot;logindemo&quot;;
+this.sessionManagement=&quot;true&quot;;
+this.sessionTimeOut = createTimeSpan(0,0,0,15);
+
+public boolean function onApplicationStart() {
+	return true;
+}
+
+public boolean function onRequestStart(string req) {
+	var append = &quot;&quot;;
+	var togo = &quot;&quot;;
+
+	//handle an authentication
+	if(structKeyExists(form, &quot;login&quot;) &amp;&amp; structKeyExists(form, &quot;username&quot;) &amp;&amp; structKeyExists(form, &quot;password&quot;)) {
+		if(form.username == &quot;admin&quot; &amp;&amp; form.password == &quot;password&quot;) {
+			session.loggedin = true;
+			if(structKeyExists(session, &quot;requestedurl&quot;)) {
+				togo = session.requestedurl;
+				structDelete(session, &quot;requestedurl&quot;);
+				location(url=togo, addtoken=false);
+			} 
+		} else {
+			append = &quot;?error=1&quot;;
+		}
+	}
+
+	//force login if not authenticated
+	if(!session.loggedin &amp;&amp; !find(&quot;login.cfm&quot;, arguments.req)) {
+		session.requestedurl = arguments.req &amp; &quot;?&quot; &amp; cgi.query_string;
+		if(!structIsEmpty(form)  &amp;&amp; !structKeyExists(form, &quot;login&quot;)) session.formdata = serializeJSON(form);
+		location(url='login.cfm#append#',addtoken=false);
+	}
+
+	//Got Form?
+	if(session.loggedin &amp;&amp; structKeyExists(session, &quot;formData&quot;) and isJSON(session.formData)) {
+		structAppend(form,deserializeJSON(session.formData));
+		structDelete(session, &quot;formData&quot;);
+	}
+	
+	return true;
+}
+
+public void function onRequestEnd(string req) {
+}
+
+public void function onSessionStart() {
+	session.loggedin=false;
+}
+</code></pre>
+<p>}
+</code></p>
+<p/>
+<p>Ok, we've got a few changes here so let's pick them apart. First, let's focus on the block that occurs when you aren't logged in:</p>
+<p/>
+<code>
+//force login if not authenticated
+if(!session.loggedin && !find("login.cfm", arguments.req)) {
+	session.requestedurl = arguments.req & "?" & cgi.query_string;
+	if(!structIsEmpty(form)  && !structKeyExists(form, "login")) session.formdata = serializeJSON(form);
+	location(url='login.cfm#append#',addtoken=false);
+}
+</code>
+<p/>
+<p>I made two changes here. First - I noticed what your original request was. Both the file and the query string. Secondly I look to see if the form contained any data. I want to ensure I'm not posting a login itself so I check for that as well. If so, I copy the data into the session scope. (I just realized that I serialized it and I really didn't need to. But using JSON would allow me to do other things - like perhaps use the client scope.) Now let's go back up to the 'you logged in' block:</p>
+<p/>
+<code>
+//handle an authentication
+if(structKeyExists(form, "login") && structKeyExists(form, "username") && structKeyExists(form, "password")) {
+	if(form.username == "admin" && form.password == "password") {
+		session.loggedin = true;
+		if(structKeyExists(session, "requestedurl")) {
+			togo = session.requestedurl;
+			structDelete(session, "requestedurl");
+			location(url=togo, addtoken=false);
+		} 
+	} else {
+		append = "?error=1";
+	}
+}
+</code>
+<p/>
+<p>The main change here is that we now look for the 'requestedurl' value. If it exists, we push you there. This will handle returning the user to the contact form. Now let's look at the final block:</p>
+<p/>
+<code>
+//Got Form?
+if(session.loggedin && structKeyExists(session, "formData") and isJSON(session.formData)) {
+	structAppend(form,deserializeJSON(session.formData));
+	structDelete(session, "formData");
+}
+</code>
+<p/>
+<p>The final bit simply looks for the stored form data - deserializes it - and appends it to the Form scope. And that's it. To the contact form nothing has changed at all. It's the exact same code. But you can now handle a session time out gracefully and not lose anything in terms of the user's content.</p>
+<p/>
+<p>This system is not perfect of course. File uploads will be lost. But - it is certainly better than nothing. How have other people solved this problem on their web sites? Click the big demo button to check it out (and note that I've set the session timeout to 15 seconds). You can download the code as well.</p>
+<p/>
+<p><a href="http://www.raymondcamden.com/demos/nov222010/"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a><p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Flogin2%2Ezip'>Download attached file.</a></p></p>
+}

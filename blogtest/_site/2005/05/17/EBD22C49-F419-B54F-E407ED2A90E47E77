@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>A user found a bug in CFMX7. When doing a search and providing a category filter, the suggestions key will not be returned, even if you ask for suggestions. Macromedia is aware of this so there is no need to log a bug. I mentioned to the user that they can use a few other alternatives. They can do the filter after Verity with Query of Query. They can also switch to using custom fields instead of the category feature.</p>
+}

@@ -1,0 +1,19 @@
+<h1>Post</h1>
+
+<p>Justice (which sounds like a superhero name) asks:</p>
+<blockquote>
+Is there a way to parse a list of methods from a .CFC into an array using introspection? I am creating a simple ajax form to do testing of .cfc methods, and I would like to auto-populate a drop down of available methods after the user enters a
+component name.  I know I can &lt;cfobject&gt; the component and then dump it, but how would I reference the methods as variable's?
+</blockquote>
+<p>First off, to get the methods from a CFC instance you would use the <a href="http://www.techfeed.net/cfQuickDocs/?GetMetaData">getMetaData</a> function like so:</p>
+<code>
+&lt;cfset messageCFC = createObject("component", "forums.cfcs.message")&gt;
+&lt;cfset methods = getMetaData(messageCFC).functions&gt;
+&lt;cfdump var="#methods#"&gt;
+</code>
+<p>The getMetaData function will return a lot of information about the CFC, but note that I am just using the functions key. How could you then invoke a method dynamically? The <a href="http://www.techfeed.net/cfQuickDocs/?cfinvoke">cfinvoke</a> tag can be passed a dynamic name:</p>
+<code>
+&lt;cfinvoke component="messageCFC" method="#someMethod#"&gt;
+</code>
+<p>It would probably be a bit difficult to handle the arguments like this in a <i>truly</i> 100% dynamic fashion, but this should give you the basics for what you want to do.</p>
+}

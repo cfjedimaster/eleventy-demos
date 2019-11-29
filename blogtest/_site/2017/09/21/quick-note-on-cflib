@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>I haven't blogged about ColdFusion, or <a href="http://cflib.org/">CFLib</a> in a while, but I wanted to give folks a quick update. I migrated CFLib to Node, and then static, years ago. Due to me not really working with ColdFusion anymore and a general slowdown in submissions, I thought it was best to convert it to a static site.</p>
+<p>My intent wasn't to &quot;retire&quot; the site of course. While submissions slowed down, they still trickled in and folks found bugs from time to time. Unfortunately, when I setup the site to be static, the engine I chose (<a href="http://harpjs.com/">Harp</a>) kind of limited how I designed the setup. The &quot;data&quot; for the site is one large JSON file. That includes all the code for each UDF escaped so it can be properly stored in JSON.</p>
+<p>At the time I thought it wasn't a big deal. But it's made every update, tweak, etc a real pain in the rear. And as this site isn't my number one priority now, I've left some things slide a bit.</p>
+<p>Earlier this week I was thinking about this and did some quick tests with <a href="https://jekyllrb.com/">Jekyll</a>, my favorite static site generator. I've found that I can build CFLib in it and it should be a lot easier to do edits and add new UDFs. I'll still probably rely on GitHub and PRs for stuff, but it will be a heck of a lot easier for folks to help out.</p>
+<p>So - I don't have an ETA for this conversion. I've got a busy Fall coming up. But as things usually slow down after Thanksgiving, I'll most likely be able to get it out the door before Christmas.</p>
+<p>Thank you for your patience. :)</p>
+}

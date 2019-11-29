@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>When you view a UDF at CFlib, we nicely render out the parameters for the UDF, and the return value. We also auto-generate UDFDoc comments for our UDFs.</p>
+<p>If this were to go away, would it matter to you? Obviously you would still be able to view source. Also, UDFDoc would continue to exist, it would simply be a more manual process for myself.</p>
+}

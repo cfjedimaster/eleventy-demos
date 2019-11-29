@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I found this a few weeks ago, and I thought I'd share it with folks. In your Eclipse navigator, if you right click on a folder and select, &quot;Go Into&quot;, the navigator will reload with only that folder being available. This is an excellent way to quickly hide the rest of the navigator. It's also useful for presentations. I tend to find myself searching for files (no matter how well I document ahead of time), and restricting Eclipse to a subset helps narrow the search.</p>
+}

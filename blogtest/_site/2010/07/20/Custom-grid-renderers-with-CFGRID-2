@@ -1,0 +1,62 @@
+<h1>Post</h1>
+
+<p>Almost three years ago I wrote a <a href="http://www.raymondcamden.com/index.cfm/2007/8/20/Custom-grid-renderers-with-CFGRID">blog entry</a> on doing custom grid renderers with CFGRID and the Ext grid for ColdFusion 8. This week a reader and I went back and forth in the comments concerning how to build a renderer that would modify a column but check <i>other</i> column values for the logic. So for example, in that previous blog entry my logic for a custom product column was to check to see if the product was &quot;Product 4&quot;. What if I wanted to check the price for example? Here is an updated version that works with ColdFusion 9 and does just that.</p>
+<p>
+<!--more-->
+<p>
+<code>
+&lt;cfajaximport/&gt;
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script&gt;</p>
+<p>myf = function(data,cellmd,record,row,col,store) {
+console.dir(record.data);
+//old logic, prod 4 only
+//if(data == &quot;Product 4&quot;) return &quot;&lt;b style='color:red'&gt;&quot; + data + &quot;&lt;/b&gt;&quot;;
+//new logic, price &gt; 50 and type is weapon
+if(record.data.TYPE == 'weapon' &amp;&amp; record.data.PRICE &gt; 50) return &quot;&lt;b style='color:red'&gt;&quot; + data + &quot;&lt;/b&gt;&quot;;
+else return data;
+}
+testgrid = function() {
+mygrid = ColdFusion.Grid.getGridObject('data');
+cm = mygrid.getColumnModel();
+cm.setRenderer(0, Ext.util.Format.usMoney);
+cm.setRenderer(1,myf);
+mygrid.reconfigure(mygrid.getStore(),cm);
+}
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;cfset data = queryNew(&quot;price,product,type&quot;)&gt;
+&lt;cfloop from=1 to=10 index=&quot;x&quot;&gt;
+&lt;cfset total = randRange(20,100) &amp; &quot;.&quot; &amp; randRange(1,99)&gt;
+&lt;cfset product = &quot;Product #X#&quot;&gt;
+&lt;cfset queryAddRow(data)&gt;
+&lt;cfset querySetCell(data, &quot;price&quot;, total+0, x)&gt;
+&lt;cfset querySetCell(data, &quot;product&quot;, product, x)&gt;
+&lt;cfset querySetCell(data, &quot;type&quot;, &quot;#randRange(0,1)?'weapon':'fruit'#&quot;)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfform name=&quot;test&quot;&gt;
+&lt;cfgrid autowidth=&quot;true&quot; name=&quot;data&quot; format=&quot;html&quot; query=&quot;data&quot; width=&quot;600&quot;&gt;
+&lt;cfgridcolumn name=&quot;price&quot; header=&quot;Price&quot;&gt;
+&lt;cfgridcolumn name=&quot;product&quot; header=&quot;Product&quot;&gt;
+&lt;cfgridcolumn name=&quot;type&quot; header=&quot;Type&quot;&gt;
+&lt;/cfgrid&gt;
+&lt;/cfform&gt;</p>
+<p>&lt;cfset ajaxOnLoad(&quot;testgrid&quot;)&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>If you compare this code to the older entry, the changes are:</p>
+<p>
+<ul>
+<li>In my fake query, I added a new type column. All my products are either weapons or fruits. (Although one could argue that you could turn some weapons into fruits. I mean turn some fruits into weapons. Yeah, that's it.)
+<li>Next look at the myf function. I kept the old logic in there commented out. You can see it made use of the data argument which is the cell being formatted. I ignore that though and check the rest of the row. This is passed in the record object. As you see, I check the TYPE and PRICE, and based on my business rule, I color the item red. 
+<li>One small other change - back in the testgrid function (which remember is run when the application starts up), I changed getDataSource to getStore. This reflects the fact that the Grid used in CF9 has a different API then the one run in CF8.
+</ul>
+<p>
+<p>If you want to see a demo of this, just hit the button below. You may need to reload once or twice since the values are random.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/july202010/test2.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

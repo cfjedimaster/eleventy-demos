@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>Just a quick note to share that I've been published again on the <a href="http://developer.telerik.com">Telerik Developer Network</a>. My latest article discusses learning JavaScript by &quot;playing&quot;, or writing short bits of code, versus traditional book or classroom learning.</p>
+<!--more-->
+<p><a href="http://developer.telerik.com/featured/tools-learn-javascript/">&quot;Tools to Learn JavaScript by Doing&quot;</a> talks about various sites, tutorials, etc. that have you learn, or at least practice, JavaScript by either trying to solve coding challenges or get various tests to pass. I find this type of learning to be fascinating as it is much more active than just reading a book or attending a conference session. So I wrote up a few suggestions for things to try in this space and I hope folks find it useful.</p>
+<p>I'm also now writing for the <a href="http://strongloop.com/strongblog">StrongLoop blog</a>. I won't update my blog here every time I post there, but I strongly urge my readers who want to learn more about StrongLoop, LoopBack, and Node.js in general to sbuscribe there as well. My latest article there, <a href="https://strongloop.com/strongblog/examples-of-validations-for-loopback-models/">&quot;Examples of Validations for LoopBack Models&quot;</a>, discusses some specific examples of validation within LoopBack. I'm currently working on an article now that deals with the ORM API and relationships.</p>
+}

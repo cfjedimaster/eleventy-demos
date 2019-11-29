@@ -1,0 +1,257 @@
+<h1>Post</h1>
+
+<p>On a web site, with good analytic software, it's possible to get estimates for how long the average user spends on your site. This week I was thinking about how one could do the same with a mobile application. In theory, it should be possible to get a precise figure. You know when your application starts and you know when it ends. Therefore, I just need to write the code to handle those events and persist the data somehow. I worked up a few examples here and I welcome any comments on them. I'd <i>especially</i> like to know if anyone is actually doing something like this with their apps now.</p>
+<!--more-->
+<p>
+<p>For my first iteration, I wrote an application that simply noticed when it began and ended, and on those events would write to a log file. The entire application consists of a few files. First, let's look at the top level ViewNavigatorApplication.</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:ViewNavigatorApplication xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; firstView=&quot;views.LogTestHomeView&quot; initialize=&quot;initApp(event)&quot;&gt;
+&lt;fx:Script&gt;
+&lt;![CDATA[
+import model.dbController;		
+import mx.events.FlexEvent;</p>
+<pre><code>	protected function initApp(event:FlexEvent):void {
+		dbController.instance.addLog(&quot;opened&quot;);
+		NativeApplication.nativeApplication.addEventListener(Event.EXITING, myExiting);
+	}
+
+	protected function myExiting(event:Event):void {
+		dbController.instance.addLog(&quot;closed&quot;);
+		// Handle exiting event.
+	}
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+</code></pre>
+<p>&lt;/s:ViewNavigatorApplication&gt;
+</code></p>
+<p>
+<p>Not much here. You can see one method tied to the initialize event and one to the application exiting event. My dbController is a simple wrapper for database operations. I used a basic singleton approach (cribbed from an <a href="http://cookbooks.adobe.com/post_Singleton_Pattern-262.html">Adobe Cookbook recipe</a>). Here's the file.</p>
+<p>
+<code>
+package model {
+<pre><code>import flash.data.SQLConnection;
+import flash.data.SQLResult;
+import flash.data.SQLStatement;
+import flash.filesystem.File;
+
+public class dbController {
+
+	private static var _instance:dbController = new dbController();
+	
+	private var dbFile:File;
+	private var dbCon:SQLConnection;
+	
+	public function dbController() {
+		dbFile = File.applicationStorageDirectory.resolvePath(&quot;log.db&quot;);
+		trace(dbFile.nativePath);
+		dbCon = new SQLConnection();
+		dbCon.open(dbFile);
+
+		//create default table
+		var sqlStat:SQLStatement = new SQLStatement();
+		sqlStat.text = &quot;CREATE TABLE IF NOT EXISTS log(msg TEXT, timestamp TEXT)&quot;;
+		sqlStat.sqlConnection = dbCon;
+		sqlStat.execute();
+
+		if (_instance != null) {
+			throw new Error(&quot;dbController can only be accessed through dbController.instance&quot;);
+		}
+	}
+
+	public static function get instance():dbController {
+		return _instance;
+	}
+	
+	public function addLog(s:String):void {
+		var sqlStat:SQLStatement = new SQLStatement();
+		sqlStat.sqlConnection = dbCon;
+		sqlStat.text = &quot;insert into log(msg, timestamp) values(:msg,:tst)&quot;;
+		sqlStat.parameters[&quot;:msg&quot;] = s;
+		sqlStat.parameters[&quot;:tst&quot;] = new Date();
+		sqlStat.execute();
+		trace(&quot;inserted: &quot;+s);		
+	}
+
+	public function getLog():SQLResult {
+		trace(&quot;getting log&quot;);
+		var sqlStat:SQLStatement = new SQLStatement();
+		sqlStat.text = &quot;select * from log&quot;;
+		sqlStat.sqlConnection = dbCon;
+		sqlStat.execute();
+		return sqlStat.getResult();
+		
+	}
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>That's kind of a big file, but you can see it basically handles the database setup, the addition of a log message, and getting the log. (I could make this a bit nicer by making getLog simply return the data attribute. That way calling code could not worry about working with SQLResult objects.) So based on this code, you can see now that when my application starts and ends, it's going to log to the database. Now let's look at the view in my mobile app:</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;HomeView&quot; viewActivate=&quot;init(event)&quot;&gt;
+&lt;fx:Script&gt;
+&lt;![CDATA[
+import model.dbController;</p>
+<pre><code>		import spark.events.ViewNavigatorEvent;
+		
+		protected function init(event:ViewNavigatorEvent):void {
+			var res:SQLResult = dbController.instance.getLog();
+			for(var i:int=0; i&amp;lt;res.data.length; i++) {
+				log.text += res.data[i].msg + ' at ' + res.data[i].timestamp + '\n';
+			}
+		}
+		
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:Label id=&quot;log&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>All we do here is simply get the log and display it. After running it a few times, here is what the app displays. (Note - the case of the messages changes about half way through. This happened when I changed the messages.)</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip188.png" />
+<p>
+<p>So that was my first draft. I could - in theory - have used this to generate a &quot;Total Time Used&quot; value. I'd have to loop through the records and figure out the differences. That seemed like a lot of hard work so I decided on an easier version. Since I know when the app starts and ends - why not simply create a timestamp in the application itself? When the application ends, I can simply save the difference. Here's my new top level application:</p>
+<p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+							xmlns:s="library://ns.adobe.com/flex/spark" firstView="views.LogTest2HomeView" initialize="initApp(event)"&gt;
+<pre><code>&amp;lt;fx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import model.dbController;
+		
+		import mx.events.FlexEvent;
+		
+		private var beginTS:Date;
+		
+		protected function initApp(event:FlexEvent):void {
+			beginTS = new Date();
+			NativeApplication.nativeApplication.addEventListener(Event.EXITING, myExiting);
+		}
+		
+		protected function myExiting(event:Event):void {
+			var now:Date = new Date();
+			var duration:Number = (Math.floor(now.valueOf()/1000)) - (Math.floor(beginTS.valueOf()/1000));
+			trace(&quot;using duration of &quot;+duration);
+			dbController.instance.addLog(duration);
+			// Handle exiting event.
+		}
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+</code></pre>
+<p>&lt;/s:ViewNavigatorApplication&gt;
+</code></p>
+<p>
+<p>You can see now I've got a variable, beginTS, that acts as my startup timestamp. When the application ends, I get the difference, do some math, and store it as the number of seconds. Here's the new dbController. Notice I've tweaked the table structure a bit.</p>
+<p>
+<code>
+package model {
+<pre><code>import flash.data.SQLConnection;
+import flash.data.SQLResult;
+import flash.data.SQLStatement;
+import flash.filesystem.File;
+
+public class dbController {
+
+	private static var _instance:dbController = new dbController();
+	
+	private var dbFile:File;
+	private var dbCon:SQLConnection;
+	
+	public function dbController() {
+		dbFile = File.applicationStorageDirectory.resolvePath(&quot;log.db&quot;);
+		trace(dbFile.nativePath);
+		dbCon = new SQLConnection();
+		dbCon.open(dbFile);
+
+		//create default table
+		var sqlStat:SQLStatement = new SQLStatement();
+		sqlStat.text = &quot;CREATE TABLE IF NOT EXISTS log(duration INTEGER,timestamp  TEXT)&quot;;
+		sqlStat.sqlConnection = dbCon;
+		sqlStat.execute();
+
+		if (_instance != null) {
+			throw new Error(&quot;dbController can only be accessed through dbController.instance&quot;);
+		}
+	}
+
+	public static function get instance():dbController {
+		return _instance;
+	}
+	
+	public function addLog(dur:Number):void {
+		var sqlStat:SQLStatement = new SQLStatement();
+		sqlStat.sqlConnection = dbCon;
+		sqlStat.text = &quot;insert into log(duration, timestamp) values(:dur,:tst)&quot;;
+		sqlStat.parameters[&quot;:dur&quot;] = dur;
+		sqlStat.parameters[&quot;:tst&quot;] = new Date();
+		sqlStat.execute();
+		trace(&quot;inserted: &quot;+dur);		
+	}
+
+	public function getLog():SQLResult {
+		trace(&quot;getting log&quot;);
+		var sqlStat:SQLStatement = new SQLStatement();
+		sqlStat.text = &quot;select * from log&quot;;
+		sqlStat.sqlConnection = dbCon;
+		sqlStat.execute();
+		return sqlStat.getResult();
+		
+	}
+
+	public function getTotalUsage():Number {
+		trace(&quot;getting duration&quot;);
+		var sqlStat:SQLStatement = new SQLStatement();
+		sqlStat.text = &quot;select sum(duration) as total from log&quot;;
+		sqlStat.sqlConnection = dbCon;
+		sqlStat.execute();
+		var res:SQLResult = sqlStat.getResult();
+		return res.data[0].total;
+	}
+
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Along with changing the table structure, I've added a method, getTotalUsage, that returns the total number of seconds the application has been used. Now my front end view can display it:</p>
+<p>
+<code>
+<p>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;s:View xmlns:fx=&quot;http://ns.adobe.com/mxml/2009&quot;
+xmlns:s=&quot;library://ns.adobe.com/flex/spark&quot; title=&quot;HomeView&quot; viewActivate=&quot;init(event)&quot;&gt;</p>
+<pre><code>&amp;lt;fx:Script&amp;gt;
+	&amp;lt;![CDATA[
+		import model.dbController;
+		
+		import spark.events.ViewNavigatorEvent;
+		
+		protected function init(event:ViewNavigatorEvent):void {
+			var total:Number = dbController.instance.getTotalUsage();
+			trace(total);
+			log.text = &quot;You've used this application for &quot;+total+&quot; seconds.&quot;;
+		}
+		
+	]]&amp;gt;
+&amp;lt;/fx:Script&amp;gt;
+
+&amp;lt;s:Label id=&quot;log&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/s:View&gt;
+</code></p>
+<p>
+<p>Which gives me this:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/ScreenClip189.png" />
+<p>
+<p>Technically the message should be something like, &quot;In the past, you've used this application for...&quot; but you get the point. So - any thoughts on this? If the application crashes it won't store anything, but that should be a rare event. If you <i>really</i> were concerned about that you could used a timed event to store a duration ever few minutes or so. If you want to play with my code, I've made FXPs from both projects and added them to a zip attached to this blog entry.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fprojects%2Ezip'>Download attached file.</a></p></p>
+}

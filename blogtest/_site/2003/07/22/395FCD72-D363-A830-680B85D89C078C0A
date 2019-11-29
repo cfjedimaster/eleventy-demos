@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>A user on cf-talk ran across an odd bug today. The error was:</p>
+<p>Unable to complete CFML to Java translation.</p>
+<p>What was the problem? He had simply tried to define a UDF inside a CFC method. This is not allowed. The same applies to trying to define a UDF inside another UDF. The fix was simple - move the UDF declaration outside the method.</p>
+}

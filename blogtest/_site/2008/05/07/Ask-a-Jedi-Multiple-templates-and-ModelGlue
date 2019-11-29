@@ -1,0 +1,69 @@
+<h1>Post</h1>
+
+<p>Shimju asks:</p>
+<blockquote>
+<p>
+In a model-glue app, suppose I have 3 templates files - templateA, templateB and
+templateC. All are set as private events in model-glue.xml. Now my requirement
+is I want to select a particular template dynamically based on
+Arguments.event.AddResult("templateA") which we set on contoller method for the
+event. Based on this, I want corresponding template should appear for that
+event. Can you please advice how we can accomplish this.
+</p>
+</blockquote>
+<!--more-->
+This is rather simple, and I think you already have most of the answer written out already. Typically folks do layouts in Model-Glue like so:
+<code>
+&lt;event-handler name="page.index"&gt;
+	&lt;broadcasts /&gt; 
+	&lt;results&gt;
+		&lt;result do="view.template" /&gt;
+	&lt;/results&gt;
+	&lt;views&gt;
+		&lt;include name="body" template="dspIndex.cfm" /&gt;
+	&lt;/views&gt;
+&lt;/event-handler&gt;
+<p>&lt;event-handler name=&quot;view.template&quot;&gt;
+&lt;broadcasts /&gt;
+&lt;results /&gt;
+&lt;views&gt;
+&lt;include name=&quot;template&quot; template=&quot;dspTemplate.cfm&quot; /&gt;
+&lt;/views&gt;
+&lt;/event-handler&gt;
+</code></p>
+<p>The event, page.index, has one result. Because it is unnamed, and the only result, it will always run. So all calls to page.index always run view.template. As you have already suggested, you can simply add other results. So let's say you want to have a default template, and two alternates, slim and print. Your controller could decide to add those results based on some logic, like the existence of a print attribute:</p>
+<code>
+&lt;cfif arguments.event.valueExists("print")&gt;
+  &lt;cfset arguments.event.addResult("print")&gt;
+&lt;/cfif&gt;
+</code>
+<p>The modified XML could then look like so:</p>
+<code>
+&lt;event-handler name="page.index"&gt;
+	&lt;broadcasts /&gt; 
+	&lt;results&gt;
+		&lt;result name="print" do="view.printtemplate" /&gt;
+		&lt;result do="view.template" /&gt;
+	&lt;/results&gt;
+	&lt;views&gt;
+		&lt;include name="body" template="dspIndex.cfm" /&gt;
+	&lt;/views&gt;
+&lt;/event-handler&gt;
+<p>&lt;event-handler name=&quot;view.template&quot;&gt;
+&lt;broadcasts /&gt;
+&lt;results /&gt;
+&lt;views&gt;
+&lt;include name=&quot;template&quot; template=&quot;dspTemplate.cfm&quot; /&gt;
+&lt;/views&gt;
+&lt;/event-handler&gt;</p>
+<p>&lt;event-handler name=&quot;view.printtemplate&quot;&gt;
+&lt;broadcasts /&gt;
+&lt;results /&gt;
+&lt;views&gt;
+&lt;include name=&quot;template&quot; template=&quot;dspPrintTemplate.cfm&quot; /&gt;
+&lt;/views&gt;
+&lt;/event-handler&gt;
+</code></p>
+<p>This simply reads as - if no result was fired, use the view.template template, but if the print result was used, fire off view.printtemplate.</p>
+<p>Pretty simple, but I wonder if this could be done <a href="http://www.raymondcamden.com/index.cfm/2008/5/2/ModelGlue-3--The-New-Frakin-Awesomeness">easier?</a> (And yes, I'm being sly. Look later today for another example using Model-Glue 3, or as I call it, the Super-Fantastic Uber Framework.)</p>
+}

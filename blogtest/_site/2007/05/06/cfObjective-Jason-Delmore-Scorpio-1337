@@ -1,0 +1,50 @@
+<h1>Post</h1>
+
+<p>Again, pardon the haphazard nature of these notes.</p>
+<p>I believe this has all been mentioned before, but here are the notes from Jason's talk this morning on Scorpio 'geek' features.</p>
+<p>You can now create arrays inline like so:</p>
+<code>
+&lt;cfset arr = ["x","y","z"]&gt;
+</code>
+<p>This creates an with three strings.</p>
+<p>You can do the same with structs:</p>
+<code>
+&lt;cfset person = {name="ray",age="34"}&gt;
+</code>
+<p>You can specify argmentsCollection to let you pass a structure of arguments/values to a CF tag. This will be <i>real</i> useful for cfmail.</p>
+<p>Demonstrating CFTHREAD (which I won't cover - it's been covered quite a bit).</p>
+<p>Tons of new functions to handle file operations. FileOpen, FileDelete, FileReadLine, etc. Pay special attention to the FileReadLine function. This will be very useful for reading large files. CFLOOP modded to let you loop over a file:</p>
+<code>
+&lt;cfloop file="" index="line"&gt;
+</code>
+<p>or</p>
+<code>
+&lt;cfloop file="" index="chars" characters="100"&gt;
+</code>
+<p>AJAX integration with the cfajaxproxy tag. One tag handles <b>all</b> the JavaScript plumbing to let you invoke any CFC method from JavaScript. Example:</p>
+<code>
+&lt;cfajaxproxy name="validator" component="myvalidation.cfc"&gt;
+</code>
+<p>Invoke CFC method, perform validation:</p>
+<code>
+&lt;script&gt;
+function checkEail(emailAddr) {
+ if(!validator.validateEmail(email.value)) alert('error here');
+}
+&lt;/script&gt;
+<p>&lt;input type=&quot;text&quot; name=&quot;email&quot; onChange=&quot;checkEmail(this.value)&quot;&gt;
+</code></p>
+<p>AJAX UI elements - you can have an AJAX grid where when you select an item, other form fields are bound to it and are updated.</p>
+<p>There are AJAX JavaScript functions to let you work with AJAX from JS. Stuff like refreshing an AJAX grid. Sorting a grid. Etc. ColdFusion.navigate() lets you display the output of a URL in a cfdiv, cflayoutarea, cfpod, cfwindow, etc. All of these JS functions are loaded up whenever you use one of the new AJAX features.</p>
+<p>The ColdFusion Admin has a new UI. Sorry - no camera on me. Still frames based, but, um, shinier.</p>
+<p>CFC interfaces (not a big deal to me). IsInstanceOf() - checks to see if an object is an instance of a CFC type.</p>
+<p>getComponentMetaData - lets you get metadata by passing a path of a CFC. In the past you needed an instance of a CFC to do this.</p>
+<p>Roles based security in the CF admin. You can set the admin to single password mode, or separate usernames and passwords. New user editor in the CF Admin. RDS can be setup the same way. Users can be restricted to just the Admin API or the Administrator itself. You can specify roles for users (like allowing a user to just see the Code Analyzer).</p>
+<p>cfstoredproc now supports caching</p>
+<p>query caching now works when usig cfqueryparam</p>
+<p>cfftp  now supports sftp</p>
+<p>cfc serialization for session replication</p>
+<p>Flash form restrictions removed (yawn, just move to Flex 2 folks!)</p>
+<p>Apache Derby supported. A 100% Java database.</p>
+<p>You can create a Spry dataset in CF.</p>
+}

@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>If you use BlogCFC, please edit your style sheets so that the code style adds &quot;courier new&quot; to the list of fonts and changes the size to 1em. For a while now I've been wondering why code blocks were small on BlogCFC sites, but only on my Mac. I want to thank <a href="http://cjordan.us/index.cfm">Chris Jordan</a> for sending me the fix and sharing it on the <a href="http://groups.google.com/group/cfbloggers">cfbloggers</a> listserv.</p>
+<p>Oops, forgot to paste the final code:</p>
+<code>
+.code {
+	font-family: "courier new",courier,monospace;
+	font-size: 1em;
+	color: black;
+	border: solid thin #0000cc;
+	background-color: #ffffcc;
+	overflow: auto;
+	max-height: 200px;
+    padding: 4px 4px 4px 4px;
+    line-height: 15px;
+	 margin:5px 0 5px 0;	
+}
+</code>}

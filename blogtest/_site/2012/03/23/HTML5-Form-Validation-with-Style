@@ -1,0 +1,176 @@
+<h1>Post</h1>
+
+<p>Welcome to my third and final (although whenever I say that it typically leads to more posts, diversions, and experiments) on HTML5-based form validation. In the <a href="http://www.raymondcamden.com/index.cfm/2012/3/16/A-look-at-HTML5-Form-Validition">first entry</a> I discussed how you could add simple client-side validation to your forms by just using HTML. In my <a href="http://www.raymondcamden.com/index.cfm/2012/3/19/HTML5-Form-Validation--The-Constraint-Validation-API">second entry</a>, I demonstrated how to add JavaScript for deeper, and customized validation. In this final entry, I'll discuss how to employ CSS to visually enhance your forms.</p>
+<!--more-->
+<p>
+<p>While doing research into this topic, I had a vague idea of the CSS styles that could be used. But I had a difficult time finding an exact specification for the feature itself. Called &quot;CSS Pseudo-Classes&quot;, these are styles that reflect a <i>state</i> of a DOM item instead of simple tag or class. I came across an excellent article by Ryan Seddon on <a href="http://www.alistapart.com/articles/forward-thinking-form-validation/">form validation</a> where he lists the following pseudo-classes:</p>
+<p>
+<ul>
+<li>valid</li>
+<li>invalid</li>
+<li>required</li>
+<li>optional</li>
+<li>in-range</li>
+<li>out-of-range</li>
+<li>read-only</li>
+<li>read-write</li>
+</ul>
+<p>
+<p>Right away, we can see that there are some interesting options here. I went into this research expecting support for invalid and valid, but the other options surprised me. Using in-range and out-of-range, you can actually apply styles to number text fields that are not within a particular range. I also think it is cool that you can combine required, invalid, and valid to visually represent three separate states for a form field. Let's look at an example.</p>
+<p>
+<p>Here is one of the forms I used in my first example. It contains both a login and registration section.</p>
+<p>
+<code>
+&lt;h2&gt;Login&lt;/h2&gt;
+&lt;form action="" autocomplete="off"&gt;
+&lt;label for="username"&gt;Username&lt;/label&gt;
+&lt;input id="username" name="username" pattern="[a-zA-Z0-9]{5,}" title="Minmimum 5 letters or numbers." required&gt;
+&lt;!-- Credit: http://stackoverflow.com/questions/5458076/regex-in-new-pattern-attr-for-html5-forms --&gt;
+&lt;label for="password"&gt;Password&lt;/label&gt;
+&lt;input id="password" name="password" type="password" pattern=".{5,}" title="Minmimum 5 letters or numbers." required&gt;
+&lt;p/&gt;
+&lt;input type="submit" class="btn" value="Login"&gt;
+&lt;/form&gt;
+<p>&lt;h2&gt;Register&lt;/h2&gt;
+&lt;form action=&quot;&quot; autocomplete=&quot;off&quot;&gt;
+&lt;label for=&quot;username2&quot;&gt;Username&lt;/label&gt;
+&lt;input id=&quot;username2&quot; name=&quot;username&quot; pattern=&quot;[a-zA-Z0-9]{5,}&quot; title=&quot;Minmimum 5 letters or numbers.&quot;  required&gt;</p>
+<p>&lt;label for=&quot;password2&quot;&gt;Password&lt;/label&gt;
+&lt;input id=&quot;password2&quot; name=&quot;password&quot; type=&quot;password&quot; pattern=&quot;.{5,}&quot; title=&quot;Minmimum 5 letters or numbers.&quot; required&gt;</p>
+<p>&lt;label for=&quot;email&quot;&gt;Email&lt;/label&gt;
+&lt;input id=&quot;email&quot; name=&quot;email&quot; type=&quot;email&quot; required&gt;</p>
+<p>&lt;label for=&quot;url&quot;&gt;Homepage&lt;/label&gt;
+&lt;input id=&quot;url&quot; name=&quot;url&quot; type=&quot;url&quot;&gt;</p>
+<p>&lt;p/&gt;
+&lt;input type=&quot;submit&quot; class=&quot;btn&quot; value=&quot;Register&quot;&gt;</p>
+<p>&lt;/form&gt;
+</code></p>
+<p>
+<p>And here's how it renders normally.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip48.png" />
+<p>
+<p>Now let's add a bit of CSS:</p>
+<p>
+<code>
+&lt;style&gt;
+input:required {
+    border-style:solid;
+    border-width:thick;
+}
+input:valid {
+    background-color: #adff2f;
+}
+input:invalid {
+    background-color: #f08080;
+}
+&lt;/style&gt;
+</code>
+<p>
+<p>I've defined 3 different things here - all using pseudo-classes. The first defines a thick border for required items. The second defines a greenish (it's a color - honest) color for valid items and a reddish color for invalid items. Now look at the same form:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip49.png" />
+<p>
+<p>Big difference, right? Now look at it after I've done a bit of editing.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip50.png" />
+<p>
+<p>What isn't evident in these screenshots is that Chrome and Firefox both animate these styles. It's a minor animation, pretty subtle, but it works rather well. You can demo this form here:</p>
+<p>
+<a href="http://www.raymondcamden.com/demos/2012/mar/23/20_validationnicer.html"><img src="https://static.raymondcamden.com/images/icon_128.png" title="Demo, Baby" border="0"></a>
+<p>
+<p>Just imagine if someone with - you know - actual design sense were to work with this? Now let's look at another example. In the form below, I've got a few simple text fields but also some numeric ones:</p>
+<p>
+<code>
+&lt;form id="mainForm"&gt;
+<pre><code>&amp;lt;p&amp;gt;
+    Not required, nothing special:
+    &amp;lt;input type=&quot;text&quot; id=&quot;field0&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    Just required:
+    &amp;lt;input type=&quot;text&quot; id=&quot;field1&quot; required&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    Email:
+    &amp;lt;input type=&quot;email&quot; id=&quot;field2&quot; required&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    URL:
+    &amp;lt;input type=&quot;url&quot; id=&quot;field3&quot; required&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    Number:
+    &amp;lt;input type=&quot;number&quot; id=&quot;field4&quot; required&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    Number (Min 0):
+    &amp;lt;input type=&quot;number&quot; id=&quot;field5&quot; required min=&quot;0&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    Number (Max 10):
+    &amp;lt;input type=&quot;number&quot; id=&quot;field6&quot; required max=&quot;10&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    Number (Min 1, Max 10):
+    &amp;lt;input type=&quot;number&quot; id=&quot;field7&quot; required min=&quot;1&quot; max=&quot;10&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+    Number (Min 1, Max 10, Step 2):
+    &amp;lt;input type=&quot;number&quot; id=&quot;field8&quot; required min=&quot;1&quot; max=&quot;10&quot; step=&quot;2&quot;&amp;gt;
+&amp;lt;/p&amp;gt;
+</code></pre>
+<p>&lt;/form&gt;
+</code></p>
+<p>
+<p>I used the following CSS. Note specifically the in-range and out-of-range pseudo-classes:</p>
+<p>
+<code>
+&lt;style&gt;
+input:required {
+    border-style:solid;
+     border-width:thick;
+}
+input:valid {
+     background-color: #adff2f;
+}
+input:invalid {
+     background-color: #f08080;
+}
+input:out-of-range {
+     background-color: #808080;
+}
+input:in-range {
+     background-color: #8a2be2;
+}
+&lt;/style&gt;
+</code>
+<p>
+<p>In Chrome, this is what you get:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip51.png" />
+<p>
+<p>My numeric fields are empty, but marked in-range, which is a bit weird. But look what happens when I intentionally enter a bad value for one of them:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip52.png" />
+<p>
+<p>As you can see, it did recognize my number was too low and colored it wrong. All very interesting, but it looks like Firefox doesn't support these two at all:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip53.png" />
+<p>
+<p>It looks like Firefox isn't supporting the number type at all so it makes sense for the pseudo-class not to be supported either. Thankfully Firefox supports mission critical features like Canvas, which is obviously more much more important than form fields. (Oops, sorry, I started my old rant again. I'll stop.) It does fall back nicely though so it's certainly not a total loss. For an example of that, we can always rely on IE...</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip54.png" />
+<p>
+<p>You can demo this version below.</p>
+<p>
+<p><a href="http://www.raymondcamden.com/demos/2012/mar/23/21_validationnicer.html"><img src="https://static.raymondcamden.com/images/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

@@ -1,0 +1,90 @@
+<h1>Post</h1>
+
+<p>I'm continuing my journey into the Yahoo API. Today let's take a look at <a href="http://answers.yahoo.com/">Yahoo Answers</a>. This is a service where people can ask questions and other people (hopefully bright, intelligent reasonable people, which the net is full of) then answer. While you can use the web to search for Yahoo Answers, you can also use a REST based API. The documentation for this API may be found here:</p>
+<!--more-->
+<p><a href="http://developer.yahoo.com/answers/V1/questionSearch.html">http://developer.yahoo.com/answers/V1/questionSearch.html</a></p>
+<p>It is pretty simple so I won't go over it too deeply. Basically you can do free form searches along with searches on question status (is it already solved?), category, and date ranges. A good &quot;real world&quot; example of this would be a search for unanswered questions in your area of expertise. You could then try to answer the question and increase your rep with Yahoo Answers. (That plus 2.99 will buy you a cup of coffee.)</p>
+<p>So let's take a look at a quick example:</p>
+<code>
+&lt;cfset searchTerm = "coldfusion"&gt;
+&lt;cfset results = "10"&gt;
+&lt;cfset appid = "dharma_rules_me"&gt;
+<p>&lt;cfhttp url=&quot;http://answers.yahooapis.com/AnswersService/V1/questionSearch?appid=#appid#&amp;query=#urlEncodedFormat(searchTerm)#&amp;results=#results#&amp;date_range=7&quot; result=&quot;result&quot; charset=&quot;utf-8&quot; /&gt;</p>
+<p>&lt;cfif len(result.fileContent) and isXml(result.fileContent)&gt;</p>
+<pre><code>&amp;lt;cfset xmlResult = xmlParse(result.fileContent)&amp;gt;
+
+&amp;lt;cfif structKeyExists(xmlResult, &quot;Error&quot;)&amp;gt;
+
+	&amp;lt;cfoutput&amp;gt;
+	An error occured while performing your query. The error was:&amp;lt;br /&amp;gt;
+	#xmlResult.Error.Message#
+	&amp;lt;/cfoutput&amp;gt;
+	
+&amp;lt;cfelse&amp;gt;
+
+	&amp;lt;cfset numResults = arrayLen(xmlResult.ResultSet.Question)&amp;gt;
+	
+	&amp;lt;cfoutput&amp;gt;
+	Your search for #searchTerm# questions returned #numResults# results.
+	&amp;lt;/cfoutput&amp;gt;
+
+	&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;#numResults#&quot;&amp;gt;
+
+		&amp;lt;cfset node = xmlResult.resultSet.Question[x]&amp;gt;
+		
+		&amp;lt;cfset questiontype = node.xmlAttributes.type&amp;gt;
+		&amp;lt;cfset subject = node.subject.xmlText&amp;gt;
+		&amp;lt;cfset question = node.content.xmlText&amp;gt;
+		&amp;lt;cfset date = node.date.xmlText&amp;gt;
+		&amp;lt;cfset link = node.link.xmlText&amp;gt;
+		&amp;lt;cfset category = node.category.xmlText&amp;gt;
+		&amp;lt;cfset numanswers = node.numanswers.xmlText&amp;gt;
+		&amp;lt;cfset answer = node.chosenanswer.xmlText&amp;gt;
+		
+		&amp;lt;cfoutput&amp;gt;
+		&amp;lt;p&amp;gt;
+		&amp;lt;b&amp;gt;Question:&amp;lt;/b&amp;gt; &amp;lt;a href=&quot;#link#&quot;&amp;gt;#question#&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;
+		&amp;lt;b&amp;gt;Date:&amp;lt;/b&amp;gt; #date#&amp;lt;br&amp;gt;
+		&amp;lt;b&amp;gt;Number of Answers:&amp;lt;/b&amp;gt; #numanswers#&amp;lt;br&amp;gt;
+		&amp;lt;/p&amp;gt;
+		
+		&amp;lt;p&amp;gt;
+		&amp;lt;cfif len(answer)&amp;gt;
+		&amp;lt;b&amp;gt;Answer:&amp;lt;/b&amp;gt; #answer#
+		&amp;lt;cfelse&amp;gt;
+		This question has NOT been answered yet. Please &amp;lt;a href=&quot;#link#&quot;&amp;gt;answer&amp;lt;/a&amp;gt; it!
+		&amp;lt;/cfif&amp;gt;
+		&amp;lt;/p&amp;gt;
+		&amp;lt;/cfoutput&amp;gt;
+		
+		&amp;lt;hr /&amp;gt;
+	&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>As a quick note - don't forget that I've changed the appid. You will need to <a href="http://api.search.yahoo.com/webservices/register_application">get your own</a> if you want to test.</p>
+<p>The URL is pretty long, so let me focus on the variables and what they mean:</p>
+<ul>
+<li>appid: The application id. 
+<li>query: The search term.
+<li>results: The total number of results. The API for Yahoo Answers has a max of 50 results.
+<li>date_range: My value of 7 just means find results in the last 7 days. 
+</ul>
+<p>There are more options for the API of course. See the <a href="http://developer.yahoo.com/answers/V1/questionSearch.html">documentation</a> for more attributes.</p>
+<p>Unlike my last example, I added a bit of error checking this time. I look at the XML packet and if Error is the root node, then I display the error result. You probably don't want to display to this user, but you would definitely want to email it to yourself.</p>
+<p>After that it is simply a matter of getting the values out of the XML. These lines get a subset of what is returned:</p>
+<code>
+&lt;cfset questiontype = node.xmlAttributes.type&gt;
+&lt;cfset subject = node.subject.xmlText&gt;
+&lt;cfset question = node.content.xmlText&gt;
+&lt;cfset date = node.date.xmlText&gt;
+&lt;cfset link = node.link.xmlText&gt;
+&lt;cfset category = node.category.xmlText&gt;
+&lt;cfset numanswers = node.numanswers.xmlText&gt;
+&lt;cfset answer = node.chosenanswer.xmlText&gt;
+</code>
+<p>Once I have the values I output them to the user. I also prompt them to answer the question if there isn't a chosen answer yet. By &quot;chosenanswer&quot; Yahoo means that the person who wrote the question hasn't picked one answer as the one that best answers their problem. A question can have multiple answers without one being chosen.</p>
+<p>p.s. I'd love to share this with Yahoo's Developer Network. But as far as I can see, they have no way of contacting them. Surely <i>someone</i> must have a connection?</p>
+}

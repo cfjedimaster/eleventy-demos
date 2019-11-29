@@ -1,0 +1,128 @@
+<h1>Post</h1>
+
+<p>A few weeks ago I <a href="http://www.raymondcamden.com/index.cfm/2011/4/7/Workarounds-for-things-not-supported-in-ColdFusion-Script">posted</a> a simple guide to dealing with features you could not use in ColdFusion 9 script based code. While CF9 went a long way to making the scripting form more powerful, there are still some holes that need patching. One of the things that can be a bit confusing though is figuring out all the new script based forms of tags we've used in the past. While not a deep dive, I decided to write up a quick template that ran through all of these new keywords just so I'd have the syntax handy. I hope this helps.</p>
+<!--more-->
+<p>
+<p><b>Doing a dump...</b><br/>
+<code>
+&lt;cfscript&gt;
+writedump(var=server,top=2,label=&quot;You betcha&quot;);
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Doing an include...</b><br/>
+<code>
+&lt;cfscript&gt;
+include &quot;foo.cfm&quot;;
+//a dynamic version...
+x = &quot;test2.cfm&quot;;
+include x;
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Doing a cflocation...</b><br/>
+<code>
+&lt;cfscript&gt;
+location(url=&quot;test2.cfm&quot;,addtoken=false);
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>cfparam</b><br/>
+<code>
+&lt;cfscript&gt;
+param name=&quot;y&quot; default=1 min=1;
+writeOutput(&quot;y is &quot; &amp; y);
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Doing a lock...</b><br/>
+<code>
+&lt;cfscript&gt;
+lock type=&quot;exlcusive&quot; name=&quot;somelock&quot; timeout=&quot;30&quot; {
+//stuff
+}
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Doing a log...</b><br/>
+<code>
+&lt;cfscript&gt;
+writelog(file=&quot;application&quot;, text=&quot;beer time?&quot;);
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Doing cfsavecontent...</b><br/>
+<code>
+&lt;cfscript&gt;
+savecontent variable=&quot;buffer&quot; {
+include &quot;test2.cfm&quot;;
+}
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Exception handling...</b><br/>
+<code>
+&lt;cfscript&gt;
+try {
+writeoutput(&quot;unknown #variablename#&quot;);
+} catch(any e) {
+//if(e.errnumber == 0) rethrow;
+writedump(var=e);
+} finally {
+writeoutput(&quot;&lt;p&gt;finally....&quot;);
+}
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Tracing...</b><br/>
+<code>
+&lt;cfscript&gt;
+trace(category=&quot;beer&quot;,text=&quot;my trace&quot;);
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Threading...</b><br/>
+<code>
+&lt;cfscript&gt;
+thread name=&quot;slowthing&quot; priority=&quot;low&quot; {
+sleep(1000);
+}
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>transactions...</b><br/>
+<code>
+&lt;cfscript&gt;
+transaction action=&quot;begin&quot; {</p>
+<pre><code>//query
+</code></pre>
+<p>}
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Throwing an exception...</b><br/>
+<code>
+&lt;cfscript&gt;
+throw(message=&quot;You smell&quot;, detail=&quot;No, you REALLY smell&quot;);
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p><b>Stopping the execution of a request</b><br/>
+<code>
+&lt;cfscript&gt;
+abort;
+&lt;/cfscript&gt;
+</code></p>
+<p>
+<p>I think that covers everything, but if I missed something, let me know.</p>
+<p>
+<p>Shoot - one more just occurred to me. You can set pagencoding for a CFC at the top of the file - but after the component begins, ala:</p>
+<p>
+<code>
+component car {
+pageencoding "Cp1252"
+}
+</code>
+<p>
+<p>I've yet to use that syntax.</p>
+}

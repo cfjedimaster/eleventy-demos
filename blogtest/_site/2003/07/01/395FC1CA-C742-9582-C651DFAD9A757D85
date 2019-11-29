@@ -1,0 +1,12 @@
+<h1>Post</h1>
+
+<p>Ben Forta pointed out an issue with my blog where comments with single quotes were ending up doubled. Why? As you know, CF will auto-escape single quotes in string values passed to a database with cfquery. In this case, I was passing in values with the queryParam custom tag. (This makes your queries faster and safer - if you aren't using it yet - you should be.) Anyway, there is an issue where if you pass in a value <i>along with</i> a string function, the queryParam tag will double the double so to speak. So, this will lead to incorrect results:</p>
+<p>&lt;cfset foo = &quot;here's looking&quot;&gt;<br>
+&lt;cfquery datasource=&quot;camdenblog&quot;&gt;<br>
+...<br>
+&lt;cfqueryparam value=&quot;#htmlEditFormat(foo)#&quot; cfsqltype=&quot;CF_SQL_LONGVARCHAR&quot;&gt;<br>
+...<br>
+&lt;/cfquery&gt;</p>
+<p>To fix this, you simply move the string call outside the queryparam, ie:</p>
+<p>&lt;cfset foo = htmlEditFormat(...)&gt;</p>
+}

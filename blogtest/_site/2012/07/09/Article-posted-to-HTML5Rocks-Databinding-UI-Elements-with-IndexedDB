@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I'm <i>very</i> proud (ok, giddy even) to announce that I've had my first article published at <a href="http://www.html5rocks.com">HTML5Rocks</a>:</p>
+<p><a href="http://www.html5rocks.com/en/tutorials/indexeddb/uidatabinding/">Databinding UI Elements with IndexedDB</a></p>
+<p>The article discusses how you can create a simple auto-suggest for an input field that ties to data stored in the browser's IndexedDB feature. Simple stuff really, but I think it is a good (and practical) example of the feature.</p>
+<p>How happy do I feel? This happy...</p>
+<img src="https://static.raymondcamden.com/images/robocop unicorn.jpg" />}

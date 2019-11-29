@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>TeraTech just <a href="http://cfunited.com/blog/index.cfm/2008/6/10/Raymonds-Part-II-Ajax-and-CF-with-Spry">blogged</a> about my new session at CFUNITED. I want to clarify the subject matter a bit. My first session is a generic &quot;ColdFusion 8 and Ajax&quot; session. This is heavy on the UI side. It is very difficult to fit this into an hour. When I found that I could take over another hour (after lunch, everyone be sure to eat a lot!) I thought it was an excellent way to cover the stuff I couldn't cover in the first part.</p>
+<p>I don't necessarily think it's a &quot;Part 2&quot; - you certainly don't have to attend the first block. But my goal is to try to focus on some of the nitty gritty stuff that I can't cover in the main hour. Stuff like debugging, returnformat, and certainly some Spry and maybe even a tiny bit of ColdFusion and jQuery.</p>
+<p>Hopefully that's just confusing enough to make sense.</p>
+}

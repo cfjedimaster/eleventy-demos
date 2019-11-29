@@ -1,0 +1,92 @@
+<h1>Post</h1>
+
+<p>Last week I <a href="http://www.raymondcamden.com/index.cfm/2010/5/1/Simple-jQueryColdFusion-data-loading-example">blogged</a> a very simple example of jQuery to ColdFusion communication. At the request of a reader I created the simplest example I could come up with that demonstrated the basic concepts. Today I have a slightly more advanced example, one that specifically makes use of a form and a post operation.</p>
+<!--more-->
+<p>
+<p>My example is a very simple authentication system. The form has a username and password field. We want to integrate with a ColdFusion Component that will handle responding to the post from jQuery. Let's begin with the front end template.</p>
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+//grab the submit action
+$(&quot;#loginForm&quot;).submit(function(e) {</p>
+<pre><code>	//stop the form submission
+	e.preventDefault()
+
+	//get my values
+	var uval = $(&quot;#username&quot;).val()
+	var pval = $(&quot;#password&quot;).val()
+
+	//basic validation
+	if(uval == '' || pval == '') return
+
+	//disable the button
+	$(&quot;#loginButton&quot;).attr(&quot;disabled&quot;,true)
+
+	//Let the user know we are doing something		
+	$(&quot;#result&quot;).html(&quot;Logging in...&quot;)
+	
+	//Send them to the CFC
+	$.post(&quot;test.cfc?method=authenticate&amp;returnformat=json&quot;, 
+			{username:uval, password:pval},
+			function(res) {
+				//Handle the result
+				if(res == &quot;true&quot;) {
+					$(&quot;#result&quot;).html(&quot;Your login worked.&quot;)
+					//Do more here.
+				} else {
+					$(&quot;#result&quot;).html(&quot;Your login failed.&quot;)
+					$(&quot;#loginButton&quot;).removeAttr(&quot;disabled&quot;)
+				}
+			})
+
+})
+</code></pre>
+<p>})
+&lt;/script&gt;
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;form id=&quot;loginForm&quot;&gt;
+username: &lt;input type=&quot;text&quot; name=&quot;username&quot; id=&quot;username&quot;&gt;&lt;br/&gt;
+password: &lt;input type=&quot;password&quot; name=&quot;password&quot; id=&quot;password&quot;&gt;&lt;br/&gt;
+&lt;input type=&quot;submit&quot; value=&quot;Login&quot; id=&quot;loginButton&quot;&gt;
+&lt;/form&gt;</p>
+<p>&lt;div id=&quot;result&quot;&gt;&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>Ok, we've got a few things to cover here. I'll begin with the HTML at the bottom. You can see my simple form (2 text fields and a submit button). Also notice the little &quot;result&quot; div at the bottom. I'll be using that later to provide feedback to the user.</p>
+<p>
+<p>Ok, now scroll up to the JavaScript. The meat of this template is all within one main event handler defined here:</p>
+<p>
+<code>
+$("#loginForm").submit(function(e) {
+</code>
+<p>
+<p>This is going to &quot;take over&quot; the normal form submission and let me do something else with it. Notice too that the very first command within the handler is: e.preventDefault(). This will ensure that my form never does actually submit (if the user has JavaScript enabled of course). Moving down, I grab the value from my two fields. I do this manually but jQuery does provide a few ways of serializing a form all at once. Once I've got that, I do some very simple validation. If either field is blank we leave the function.</p>
+<p>
+<p>Next up I disable the submit button. Remember that we're going to be doing an Ajax post, a network operation, and that isn't instantaneous. Disabling the submit button is an easy way to prevent a user from going click happy. We <i>also</i> add a status message so that the user knows something is going on.</p>
+<p>
+<p>The portion that actually performs the Ajax based request begins with $.post. We provide the URL first. Remember that you must pass the method to execute within the CFC. That's the method=authenticate part. You can - and normally should - provide a returnFormat argument as well to tell ColdFusion how to format the response. The second argument is a structure of data. These will be sent as POST fields to the CFC. Lastly we have a response handler. This is going to execute when the CFC returns a result to us. For our simple example we are assuming a string result of &quot;true&quot; or &quot;false&quot;. Obviously there may be more complex results. In a longer form, you may have a set of error messages. In the result we either provide a &quot;good&quot; message or a &quot;bad&quot; message. As you can see in the comments, you would probably do a bit more on a good result. You may want to hide the form for example. Or you may actually push the user to another URL.</p>
+<p>
+<p>Now let's take a look at the CFC:</p>
+<p>
+<code>
+component {
+<pre><code>remote boolean function authenticate(string username, string password) {
+	sleep(1400);
+	if(arguments.username == &quot;paris&quot; &amp;&amp; arguments.password == &quot;hilton&quot;) return true;
+	return false;
+}
+</code></pre>
+<p>}
+</code></p>
+<p>
+<p>Yeah, I love me some script-based CFCs. So as you can imagine, this would probably be replaced with a query call or perhaps LDAP. But that doesn't really matter here. I added a sleep command in there to help simulate a slow network. To see this yourself, click the big new fancy Demo button below.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/may82010/test.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo" border="0"></a></p>
+}

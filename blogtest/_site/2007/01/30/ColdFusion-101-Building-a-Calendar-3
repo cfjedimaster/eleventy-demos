@@ -1,0 +1,72 @@
+<h1>Post</h1>
+
+<p>I've finally gotten around to writing the follow up to my <a href="http://ray.camdenfamily.com/index.cfm/2007/1/23/ColdFusion-101-Building-a-Calendar-2">last entry</a> on building a simple calendar in ColdFusion. I mentioned that the next entry was going to focus on making the CSS a bit more configurable, but that's boring. I'll do that next. What folks really want is an example of sending data to the custom tag. So let's get to it.</p>
+<!--more-->
+<p>First off - lets talk about calendar data. Our custom tag is meant to be abstract, but as we all know, applications are not (typically) abstract. In fact, this was the main reason why I took so long to write these calendar write ups. (The <a href="http://ray.camdenfamily.com/index.cfm/2005/8/31/ColdFusion-101-Building-a-Calendar">first entry</a> was actually written back in 2005.)</p>
+<p>So I decided to just say screw it. My tag will make some basic assumptions if you want to use it and that's that. The assumptions are pretty simple though.</p>
+<p>First off - your event data must be a query. Not a list. Not an array. Not a cow bell. But a query.</p>
+<p>Secondly - your query must have a title, date, and link column. These columns will be what the custom tag will look for when displaying data.</p>
+<p>So I don't think this is <i>too</i> bad. If your events data doesn't look exactly like this, you can always modify your query a bit to rename the columns. Plus, maybe I'll figure out a smart way to make this easier?</p>
+<p>Let's jump into our custom tag. The first thing I'm going to do is add a new cfparam to create a default for our event data:</p>
+<code>
+&lt;cfparam name="attributes.events" default=""&gt;
+</code>
+<p>I created a simple string for the events attribute. Later on I'll check to see if events is a query.</p>
+<p>If you remember, we looped over each day of the month. Here was the original code:</p>
+<code>
+&lt;cfloop index="x" from="1" to="#days#"&gt;
+	&lt;cfif x is day(attributes.today) and attributes.month is month(attributes.today) and attributes.year is year(attributes.today)&gt;
+		&lt;cfoutput&gt;&lt;td class="cell_today"&gt;&lt;/cfoutput&gt;
+	&lt;cfelse&gt;
+		&lt;cfoutput&gt;&lt;td class="cell"&gt;&lt;/cfoutput&gt;
+	&lt;/cfif&gt;
+<pre><code>&amp;lt;cfoutput&amp;gt;#x#&amp;lt;/cfoutput&amp;gt;
+
+&amp;lt;cfoutput&amp;gt;&amp;lt;/td&amp;gt;&amp;lt;/cfoutput&amp;gt;
+</code></pre>
+</code>
+<p>Now I'm going to add code that will check my query for events. I'll post the complete code, then I'll explain it:</p>
+<code>
+&lt;!--- check for stuff for today ---&gt;
+&lt;cfif isQuery(attributes.events)&gt;
+	&lt;cfset thisDate = createDate(attributes.year, attributes.month, x)&gt;
+<pre><code>&amp;lt;cfquery name=&quot;todaysEvents&quot; dbtype=&quot;query&quot;&amp;gt;
+select	title, link
+from	attributes.events
+where	[date] &amp;gt;= &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_date&quot; value=&quot;#thisDate#&quot;&amp;gt;
+and		[date] &amp;lt; 	&amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_date&quot; value=&quot;#dateAdd(&quot;d&quot;, 1, thisDate)#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfif todaysEvents.recordCount&amp;gt;
+	&amp;lt;cfoutput&amp;gt;
+		&amp;lt;cfloop query=&quot;todaysEvents&quot;&amp;gt;
+		&amp;lt;cfif len(link)&amp;gt;&amp;lt;a href=&quot;#link#&quot;&amp;gt;&amp;lt;/cfif&amp;gt;#title#&amp;lt;cfif len(link)&amp;gt;&amp;lt;/a&amp;gt;&amp;lt;/cfif&amp;gt;&amp;lt;br /&amp;gt;
+		&amp;lt;/cfloop&amp;gt;
+	&amp;lt;/cfoutput&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cfif&gt;
+</code></p>
+<p>The first thing I do is check if attributes.event is actually a query. If it - I then create a date object for the current date.</p>
+<p>Next I use query of query to look for events that occur within that date. Note how I add one to the date value to create the second boundary of my where clause.</p>
+<p>Last - I check to see if my query of query returned anything. If it did, I simply output over the events.</p>
+<p>Pretty simple, right? What's nice is that the custom tag will continue to work without event data if you want a simple calendar display. But now it supports passing in events and having them displayed (and linked as well).</p>
+<p>Ok - so as I mentioned - your database probably won't match the structure the custom tag will use. What if there was a nice way around that? Turns out there is.</p>
+<p>First I'm going to add 3 new attributes to my custom tag:</p>
+<code>
+&lt;cfparam name="attributes.datecolumn" default="date"&gt;
+&lt;cfparam name="attributes.titlecolumn" default="title"&gt;
+&lt;cfparam name="attributes.linkcolumn" default="link"&gt;
+</code>
+<p>These all define defaults for the date, title, and link columns for my query. Now lets see how we can use this in the code:</p>
+<code>
+&lt;cfquery name="todaysEvents" dbtype="query"&gt;
+select	#attributes.titlecolumn# as title, #attributes.linkcolumn# as link
+from	attributes.events
+where	[#attributes.datecolumn#] &gt;= &lt;cfqueryparam cfsqltype="cf_sql_date" value="#thisDate#"&gt;
+and		[#attributes.datecolumn#] &lt; 	&lt;cfqueryparam cfsqltype="cf_sql_date" value="#dateAdd("d", 1, thisDate)#"&gt;
+&lt;/cfquery&gt;
+</code>
+<p>This is the query we used before to determine if we had any events for today. However - now my column names are dynamic. I use aliases so I end up with the same column names. Now you can pass any query to the tag and simply tell it which columns to use for the title, link, and date columns.</p>
+<p>I've attached the latest copy to this blog entry. In the follow up, I'll talk about how we can make the CSS a bit prettier. No, I haven't suddenly sprouted CSS genes. Instead I'll discuss how the custom tag can be told to rely on external CSS items instead. Enjoy.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2Fcalendar2%2Ezip'>Download attached file.</a></p></p>
+}

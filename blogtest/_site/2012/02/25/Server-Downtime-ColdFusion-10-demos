@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>So, I knew I was taking a risk when upgrading my server to the ColdFusion 10 beta, but, I went ahead and did it anyway. The bad news is that I seemed to have a found a bug with connectors and the server. The good news is that I found a bug. ;)</p>
+<p>So that being said, the server is now back to ColdFusion 9, which means some of my earlier ColdFusion 10 demos are going to start throwing errors. Obviously you can still download them and play with them locally. I'm going to sign up for Hostek's free ColdFusion 10 hosting and use it for any future demos.</p>
+<p>Sorry for the downtime folks!</p>
+}

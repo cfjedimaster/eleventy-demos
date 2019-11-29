@@ -1,0 +1,45 @@
+<h1>Post</h1>
+
+<p>Brad asked the following question:</p>
+<blockquote>
+In CF 6.1, I have application.cfm in the root directory.  It contains a custom tag that records PPC visits.  If I have a page in a subdirectory (below root)--what will happen when the custom tag is executed in the application.cfm in the root?
+I'm using the &quot;CF_&quot; format and not CFIMPORT.  
+<p>I'm just curious how application.cfm handles paths when executed from a subdirectory that does not have it's own application.cfm.</p>
+</blockquote>
+<p>This is one of those things that I'm always unsure of, so I whipped up a quick test. I wrote an Application.cfm file like so:</p>
+<!--more-->
+<code>
+&lt;p&gt;
+Running from Application.cfm
+&lt;/p&gt;
+<p>&lt;cfinclude template=&quot;include.cfm&quot;&gt;</p>
+<p>&lt;cf_tag&gt;
+</code></p>
+<p>As you can see, I have a simple message and an include as well as a custom tag call. I dropped in a simple index.cfm:</p>
+<code>
+&lt;p&gt;
+This is index.cfm in root.
+&lt;/p&gt;
+</code>
+<p>I then added a subdirectory named sub and added this index.cfm in that folder:</p>
+<code>
+&lt;p&gt;
+This is index.cfm in sub.
+&lt;/p&gt;
+</code>
+<p>Running the index.cfm in both the root and child subdirectory worked as expected. Both the include and custom tag call were relative to the root folder. I tested this both in CFMX and CFMX7 to be sure. I also tested it with Application.cfc:</p>
+<code>
+&lt;cfcomponent&gt;
+<p>&lt;cffunction name=&quot;onRequestStart&quot;&gt;
+&lt;cfoutput&gt;
+&lt;p&gt;
+Running from App.cfc
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;cfinclude template=&quot;include.cfm&quot;&gt;
+&lt;cf_tag&gt;
+&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>And this also worked fine. Lastly, as a quick off topic note. This particular question came to me in March. As a reminder - I don't reply to all my &quot;Ask a Jedi&quot; stuff immediately. If you send a question and you need an answer asap, please tell me. That doesn't mean I'll answer (I do have a 9-5 ya know ;) but I will at least try to reply back letting you know I can't answer on time.</p>
+}

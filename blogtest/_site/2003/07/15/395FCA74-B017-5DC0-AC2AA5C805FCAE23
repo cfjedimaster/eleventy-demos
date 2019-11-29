@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>So, this is my problem. I have a CFC where you need to call an init on it to set certain values up. So, the logic is:</p>
+<p>Make an instance in X.<br>
+X.init(&quot;foo&quot;,&quot;goo&quot;)</p>
+<p>The problem is - how can I ensure people always call init? The simple yet yucky solution is to let init set a variable called loaded. If you call any other method, a check is made to checkLoaded(), which throws an error if init was never called. This works, but requires me adding hooks to all my methods.</p>
+<p>The other possible solution - make the init() method actually return an instance of the CFC itself, so you could do something like this instead:</p>
+<p>x = createObject(&quot;component&quot;,&quot;foo&quot;).init(&quot;moo&quot;)</p>
+<p>However, if the user doesn't create the CFC in this manner, all the methods will fail when run.</p>
+<p>So, what do you think is best? On one hand, we have a solution that is somewhat idiot-proof. On the otherhand we have a solution that is less &quot;hacky&quot; but more prone to user error.</p>
+}

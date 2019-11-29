@@ -1,0 +1,10 @@
+<h1>Post</h1>
+
+<p>I've updated <a href="http://ray.camdenfamily.com/projects/soundings">Soundings</a>, my ColdFusion Survey application, with some minor bug fixes and a major performance change. The details are below:</p>
+<ul>
+<li>Charting would drop labels if too many answers were present. For more information, see this <a href="http://ray.camdenfamily.com/index.cfm/2006/2/10/CFCHART-and-the-Case-of-the-Disappearing-Labels">blog entry</a>.
+<li>Matrix questions would chart their answers and items in random order. Now they maintain the order you set when designing the question.
+<li>Excel reporting was super slow. I mean - very, very, very slow. It should now be significantly faster.
+</ul>
+<p>As always, you can download the application from the <a href="http://ray.camdenfamily.com/projects/soundings">project page</a>. If you find the application useful, please visit my <a href="http://www.amazon.com/o/registry/2TCL1D08EZEYE">wish list</a>.</p>
+}

@@ -1,0 +1,152 @@
+<h1>Post</h1>
+
+<p>So a few hours ago I <a href="http://www.raymondcamden.com/index.cfm/2011/8/8/cfpresentation-and-HTML-slides">blogged</a> about how you can use the cfpresentation tag to create an HTML-based presentation. As I mentioned in the blog post, the output works, but, is a bit atrocious. It looks like I designed it. Drunk. (To be fair, I'd probably do better design if I was drinking.) I spent a few minutes Googling today to see if I could find a nicer example, one based on jQuery. It didn't take long at all. I turned up this blog entry, <a href="http://www.jay-han.com/2011/07/21/8-html-presentation-plugins-that-you-can-use/">8 HTML presentation plugins that you can use</a>, and decided to play around a bit.</p>
+<!--more-->
+<p>
+<p>After looking at a couple of them, I decided my favorite was the simple <a href="http://www.viget.com/inspire/jquery-presentation-plugin/">jQuery Presentation Plugin</a> by Trevor Davis. It wasn't the sexiest of them all, but it was the easiest to work with. (I also liked the <a href="http://code.google.com/p/html5slides/">html5slides</a> project, but I don't like presentations that show you a bit of the next slide on screen. I think it's distracting to the audience.) Here's how simple his code is to use:</p>
+<p>
+<code>
+&lt;!DOCTYPE html&gt;
+&lt;html class="no-js"&gt;
+  &lt;head&gt;
+    &lt;title&gt;jQuery Presentation Plugin&lt;/title&gt;
+    &lt;meta http-equiv="Content-type" content="text/html; charset=utf-8" /&gt;
+    &lt;script type="text/javascript"&gt;(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)&lt;/script&gt; 
+    &lt;link href="stylesheets/screen.css" type="text/css" rel="stylesheet" media="Screen,projection" /&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id="header"&gt;
+      &lt;div class="container"&gt;
+        &lt;h1&gt;jQuery Presentation Plugin&lt;/h1&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+<pre><code>&amp;lt;div id=&quot;content&quot;&amp;gt;
+  &amp;lt;div id=&quot;slides&quot;&amp;gt;
+    &amp;lt;div class=&quot;slide&quot;&amp;gt;
+      &amp;lt;h2&amp;gt;Slide 1&amp;lt;/h2&amp;gt;
+      &amp;lt;p&amp;gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&amp;lt;/p&amp;gt;
+      &amp;lt;ul&amp;gt;
+       &amp;lt;li&amp;gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation&amp;lt;/li&amp;gt;
+       &amp;lt;li&amp;gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&amp;lt;/li&amp;gt;
+       &amp;lt;li&amp;gt;Here is a short list item&amp;lt;/li&amp;gt;
+      &amp;lt;/ul&amp;gt;
+     
+    &amp;lt;/div&amp;gt;
+    &amp;lt;div class=&quot;slide&quot;&amp;gt;
+      &amp;lt;h2&amp;gt;Slide 2&amp;lt;/h2&amp;gt;
+      &amp;lt;p&amp;gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&amp;lt;/p&amp;gt;
+    &amp;lt;/div&amp;gt;
+    &amp;lt;div class=&quot;slide&quot;&amp;gt;
+      &amp;lt;h2&amp;gt;Slide 3&amp;lt;/h2&amp;gt;
+      &amp;lt;p&amp;gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&amp;lt;/p&amp;gt;
+    &amp;lt;/div&amp;gt;
+    &amp;lt;div class=&quot;slide&quot;&amp;gt;
+      &amp;lt;h2&amp;gt;Slide 4&amp;lt;/h2&amp;gt;
+      &amp;lt;p&amp;gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&amp;lt;/p&amp;gt;
+    &amp;lt;/div&amp;gt;
+    &amp;lt;div class=&quot;slide&quot;&amp;gt;
+      &amp;lt;h2&amp;gt;Slide 5&amp;lt;/h2&amp;gt;
+      &amp;lt;p&amp;gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&amp;lt;/p&amp;gt;
+    &amp;lt;/div&amp;gt;
+  &amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div id=&quot;footer&quot;&amp;gt;
+  &amp;lt;div class=&quot;container&quot;&amp;gt;
+    &amp;copy; 2010 Trevor Davis Viget Labs
+  &amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;scripts/jquery.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;scripts/jquery.presentation.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;scripts/global.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>As you can see, it's just a collection of DIV tags. The presentation is enabled in global.js, but is just this few lines of code:</p>
+<p>
+<code>
+$(document).ready(function(){
+  $('#slides').presentation();
+});
+</code>
+<p>
+<p>If you want to see this live on my server, just click here: <a href="http://www.coldfusionjedi.com/demos/aug82011/preso/index.htm">http://www.coldfusionjedi.com/demos/aug82011/preso/index.htm</a>. Note that you can use the left and right arrow to navigate. Also note that the URL changes as you advance. This means you can deep link (for example, <a href="http://www.viget.com/uploads/file/jquery-presentation/#3">slide 3</a>) to a particular slide. I whipped up a quick example using ColdFusion. I apologize for doing yet another art browser.</p>
+<p>
+<code>
+&lt;cfquery name="getArt" datasource="cfartgallery"&gt;
+select	artid, artname, description, price, largeimage, mediatype, firstname, lastname
+from	art
+left join media on art.mediaid = media.mediaid
+left join artists on art.artistid = artists.artistid
+&lt;/cfquery&gt;
+<p>&lt;!DOCTYPE html&gt;
+&lt;html class=&quot;no-js&quot;&gt;
+&lt;head&gt;
+&lt;title&gt;Art Presentation&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)&lt;/script&gt;
+&lt;link href=&quot;stylesheets/screen.css&quot; type=&quot;text/css&quot; rel=&quot;stylesheet&quot; media=&quot;Screen,projection&quot; /&gt;
+&lt;style&gt;
+.artImage {
+float:right;	
+margin-top: 10px;
+margin-left: 10px;
+width: 250px;
+height: 250px;
+}</p>
+<pre><code>&amp;lt;/style&amp;gt;
+</code></pre>
+<p>&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;header&quot;&gt;
+&lt;div class=&quot;container&quot;&gt;
+&lt;h1&gt;jQuery Presentation Plugin&lt;/h1&gt;
+&lt;/div&gt;
+&lt;/div&gt;</p>
+<pre><code>&amp;lt;div id=&quot;content&quot;&amp;gt;
+  &amp;lt;div id=&quot;slides&quot;&amp;gt;
+
+    &amp;lt;div class=&quot;slide&quot;&amp;gt;
+      &amp;lt;h2&amp;gt;Art Browser&amp;lt;/h2&amp;gt;
+      &amp;lt;p&amp;gt;Welcome to our Art Browser. It is the most beautiful presentation you will see today...&amp;lt;/p&amp;gt;
+    &amp;lt;/div&amp;gt;
+
+	&amp;lt;cfoutput query=&quot;getArt&quot;&amp;gt;
+		
+    &amp;lt;div class=&quot;slide&quot;&amp;gt;
+      &amp;lt;h2&amp;gt;#artname#&amp;lt;/h2&amp;gt;
+	  	&amp;lt;p&amp;gt;
+		&amp;lt;img src=&quot;artgallery/#largeimage#&quot; class=&quot;artImage&quot; &amp;gt;
+	  		&amp;lt;b&amp;gt;Artist:&amp;lt;/b&amp;gt; #firstname# #lastname#&amp;lt;br/&amp;gt;
+			&amp;lt;b&amp;gt;Media:&amp;lt;/b&amp;gt; #mediatype#&amp;lt;br/&amp;gt;
+			&amp;lt;b&amp;gt;Price:&amp;lt;/b&amp;gt; #dollarFormat(price)#&amp;lt;br/&amp;gt;
+			#description#
+		&amp;lt;/p&amp;gt; 
+    &amp;lt;/div&amp;gt;
+
+	&amp;lt;/cfoutput&amp;gt;
+	
+
+
+  &amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+
+&amp;lt;div id=&quot;footer&quot;&amp;gt;
+  &amp;lt;div class=&quot;container&quot;&amp;gt;
+    &amp;copy; 2010 Trevor Davis Viget Labs
+  &amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;scripts/jquery.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;scripts/jquery.presentation.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script type=&quot;text/javascript&quot; src=&quot;scripts/global.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+<p>As you can see, I've added a simple query on top. I then replaced the 2nd-N slides with a simple cfoutput. This gives me a title slide and then one slide per piece of art. I could add a concluding slide as well. To see this in action just hit the big ole demo button below.</p>
+<p>
+<p><a href="http://www.coldfusionjedi.com/demos/aug82011/preso/index.cfm"><img src="https://static.raymondcamden.com/images/cfjedi/icon_128.png" title="Demo, Baby" border="0"></a></p>
+}

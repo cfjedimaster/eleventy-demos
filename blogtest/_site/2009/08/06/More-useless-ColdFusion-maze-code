@@ -1,0 +1,128 @@
+<h1>Post</h1>
+
+<p>Warning - this blog post has nothing worthwhile in it. No line of code in this post will be relevant, productive, mission critical, or &quot;Web 2.0&quot;. It <i>was</i> as heck to play with though so if you are still interested, keep reading.</p>
+<!--more-->
+<p>A few weeks back I <a href="http://www.raymondcamden.com/index.cfm/2009/7/23/Generating-mazes-in-ColdFusion">blogged</a> about how you could use ColdFusion to generate mazes. It worked ok, but I was wondering if I could do something a bit fun with it. For the first time in years I opened up my laptop while on my flight and - miracle of miracles - actually had enough room to type. The first thing I did was take my previous maze code and create a UDF out of it. This UDF took a size in width and height and returned a structure. The structure contained the array of maze data, as well as a new height and width (since the tile based maze is bigger than your original size). Here is the UDF:</p>
+<code>
+function genMaze(mazewidth, mazeheight) {
+	var maze = arrayNew(2);
+	var moves = [];
+	var width = 2*mazeWidth+1;
+	var height = 2*mazeHeight+1;
+	var x = "";
+	var xPos = 2;
+	var yPos = 2;
+	var y = "";
+	var possibleDirections = "";
+	var move = "";
+	var back = "";
+	var s = {};
+<pre><code>for(x=1;x&amp;lt;=height;x++) {
+	for(y=1;y&amp;lt;=width;y++){
+		maze[x][y]=1;
+	}
+}
+
+maze[xPos][yPos]=0;
+moves[1] = yPos+(xPos*width);
+
+while(arrayLen(moves)) {
+
+     possibleDirections = &quot;&quot;;
+
+     if(arrayLen(maze) gte xPos+2 &amp;&amp; maze[xPos+2][yPos] == 1 &amp;&amp; xPos+2!=0 &amp;&amp; xPos+2!=height-0){
+          possibleDirections &amp;= &quot;S&quot;;
+     }
+
+     if(xpos-2 gt 0 &amp;&amp; maze[xPos-2][yPos]==1 &amp;&amp; xPos-2!=0 &amp;&amp; xPos-2!=height-0){
+          possibleDirections &amp;= &quot;N&quot;;
+     }
+     if(ypos-2 gt 0 &amp;&amp; maze[xPos][yPos-2]==1 &amp;&amp; yPos-2!=0 &amp;&amp; yPos-2!=width-0){
+          possibleDirections &amp;= &quot;W&quot;;
+     }
+     if(arrayLen(maze[xPos]) gte yPos+2 &amp;&amp; maze[xPos][yPos+2]==1 &amp;&amp; yPos+2!=0 &amp;&amp; yPos+2!=width-0) {
+          possibleDirections &amp;= &quot;E&quot;;
+     }
+
+     if(len(possibleDirections)) {
+          move = randRange(1,len(possibleDirections));
+          switch (mid(possibleDirections, move, 1)){
+
+               case &quot;N&quot;: maze[xPos-2][yPos]=0;
+                         maze[xPos-1][yPos]=0;
+                         xPos -=2;
+                         break;
+               case &quot;S&quot;: maze[xPos+2][yPos]=0;
+                         maze[xPos+1][yPos]=0;
+                         xPos +=2;
+                         break;
+               case &quot;W&quot;: maze[xPos][yPos-2]=0;
+                         maze[xPos][yPos-1]=0;
+                         yPos -=2;
+                         break;
+               case &quot;E&quot;: maze[xPos][yPos+2]=0;
+                         maze[xPos][yPos+1]=0;
+                         yPos +=2;
+                         break;        
+          }
+		  moves[arrayLen(moves)+1] = yPos + (xPos*width);
+     }
+     else {
+          back = moves[arrayLen(moves)];
+		  arrayDeleteAt(moves, arrayLen(moves));
+		  xPos = fix(back/width);
+		  Ypos = back mod width;
+     }
+	 
+}
+
+s.maze = maze;
+s.width = width;
+s.height = height;
+return s;
+</code></pre>
+<p>}
+</code></p>
+<p>You can generate a maze by just doing:</p>
+<code>
+&lt;cfset mazedata = genMaze(30,30)&gt;
+</code>
+<p>So once I had that - I decided to see if I could create a graphical maze. I began by creating a canvas:</p>
+<code>
+&lt;cfset canvas = imageNew("", 500, 500, "rgb", "white")&gt;
+</code>
+<p>I then used a bit of math to determine the size of each 'block' (remember that mazedata is the result of the UDF call):</p>
+<code>
+&lt;cfset sqWidth = canvas.width/mazedata.width&gt;
+&lt;cfset sqHeight = canvas.height/mazedata.height&gt;
+</code>
+<p>Next, I set a drawing color:</p>
+<code>
+&lt;!--- wall color ---&gt;
+&lt;cfset imageSetDrawingColor(canvas, "red")&gt;
+</code>
+<p>and finally, here is the super complex code to draw the maze:</p>
+<code>
+&lt;!--- begin to draw ---&gt;
+&lt;cfloop index="x" from="1" to="#mazedata.height#"&gt;
+	&lt;cfloop index="y" from="1" to="#mazedata.width#"&gt;
+		&lt;cfif mazedata.maze[x][y] is 1&gt;
+			&lt;!--- draw a sq ---&gt;
+			&lt;cfset yPos = (x-1) * sqHeight&gt;
+			&lt;cfset xPos = (y-1) * sqWidth&gt;
+			&lt;cfset imageDrawRect(canvas, xPos, yPos, sqWidth, sqHeight, true)&gt;			
+		&lt;cfelse&gt;
+			&lt;!--- do nothing ---&gt;
+		&lt;/cfif&gt;
+	&lt;/cfloop&gt;
+&lt;/cfloop&gt;
+<p>&lt;cfimage action=&quot;writeToBrowser&quot; source=&quot;#canvas#&quot;&gt;
+</code></p>
+<p>Remember that a 1 in our maze array means a wall. ColdFusion provides a rectangle drawing function for you, so the work is pretty trivial. And the result?</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/Picture 179.png" />
+<p>Pretty cool I think. It's not super fast, but it only takes about one second. I was going to leave it at that, but then I decided - why not go crazy? Instead of a white canvas, what if we drew on a picture?</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/maze2.jpg" />
+<p>Then - being the wild and crazy guy I am - I revered the draw logic. Instead of drawing walls, I drew the paths. (Note, this one has a different source image.)</p>
+<img src="https://static.raymondcamden.com/images/cfjedi/maze3.jpg" />
+<p>Pretty dumb - but it was cool to me. I've included a zip of the modified CFMs.<p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Farchive23%2Ezip'>Download attached file.</a></p></p>
+}

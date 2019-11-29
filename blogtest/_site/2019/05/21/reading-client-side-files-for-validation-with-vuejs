@@ -1,0 +1,214 @@
+<h1>Post</h1>
+
+<p>Folks new to web development may not know that form inputs using the <code>file</code> type are read only. For good reason of course. You wouldn't want nefarious (I've been waiting a while to use that word) JavaScript programs setting the value of the field and doing uploads behind the scenes - it would be a great way to steal information off your computer. However, just because the field is read only doesn't mean we can't do cool stuff with it. In fact, once a user has select a file (or files, remember the <code>multiple</code> attribute!), you can not only see the file type, name, and size, you can read it as well. This offers you some interesting possibilities.</p>
+<p>Let's pretend you've got a form for a mailing service. You want to seed a list of recipients with a set of email addresses. You could allow the user to select a text file from their machine and upload it. Before they do so, however, you could pre-emptively check the file and display the names to the end user.</p>
+<p>Another option would be a form that allows for uploads of JSON-formatted data. Before that file is sent to the server, you could read it, check for valid JSON data, and then potentially render out the information. You could also do other checks, so for example, maybe you require your JSON data to be an array of objects with keys <code>name</code> and <code>gender</code> being required while <code>age</code> is optional.</p>
+<p>As always, you need to have server side validation for anything your users send, but being able to pre-emptively check files and provide feedback to the user could save them a lot of time. I thought I'd share a few examples of this using Vue.js, but of course, you could this with any (or no) framework at all.</p>
+<h3>Reading a File</h3>
+<p>For the first example, let's just consider a super simple example where we -</p>
+<ul>
+<li>note when a file is selected in the input field</li>
+<li>check to see if it's a text file</li>
+<li>read in the contents and display it</li>
+</ul>
+<p>For my HTML, I keep it nice and simple:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  &lt;input type=&quot;file&quot; ref=&quot;myFile&quot; @change=&quot;selectedFile&quot;&gt;&lt;br/&gt;
+  &lt;textarea v-model=&quot;text&quot;&gt;&lt;/textarea&gt;
+
+&lt;/div&gt;
+</code></pre>
+<p>This is pretty standard Vue stuff, but note the <code>ref</code> usage. This is how we'll read the value later.</p>
+<p>Now the JavaScript:</p>
+<pre><code class="language-js">Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+const app = new Vue({
+  el:'#app',
+  data: {
+    text:''
+  },
+  methods:{
+    selectedFile() {
+      console.log('selected a file');
+      console.log(this.$refs.myFile.files[0]);
+      
+      let file = this.$refs.myFile.files[0];
+      if(!file || file.type !== 'text/plain') return;
+      
+      // Credit: https://stackoverflow.com/a/754398/52160
+      let reader = new FileReader();
+      reader.readAsText(file, &quot;UTF-8&quot;);
+      reader.onload =  evt =&gt; {
+        this.text = evt.target.result;
+      }
+      reader.onerror = evt =&gt; {
+        console.error(evt);
+      }
+      
+    }
+  }
+})
+</code></pre>
+<p>So the main action here is the <code>selectedFile</code> method. This is run whenever the input field fires a <code>change</code> event. I use <code>this.$refs.myFile</code> to refer to the original DOM element I had used and to read the value. Notice that this is an array so I grab the first value only to keep things simple. In theory the end user could use dev tools to add <code>multiple</code> and then select multiple files, but I won't have to worry about that.</p>
+<p>Next, I use the <code>FileReader</code> API to read in the file. This is asynchronous and you can see two handlers to respond to the <code>onload</code> and <code>onerror</code> events. For <code>onload</code>, I simply pass the value to <code>this.text</code> which will render in the textarea. You can see this in action in the CodePen below.</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="qGPrJY" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="vue file 1">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/qGPrJY/">
+  vue file 1</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<h3>A List of Names</h3>
+<p>Imagine you've been wronged. Badly wronged. And you've got a list of names. People who have it coming to them. Just as an example, let's call you Arya.</p>
+<img src="https://static.raymondcamden.com/images/2019/05/arya.jpg" alt="Arya Stark, don't get on her bad side" class="imgborder imgcenter">
+<p>To help process this list of names, let's build some code that will read in a text file of names, report on the total length, and show the top ten. The list may be incredibly huge but by showing a small subset, the user can quickly determine if the file was correctly setup, or lord forbid, they selected the wrong file. Here's a simple example of this in action.</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  &lt;h2&gt;Upload List of Names&lt;/h2&gt;
+  &lt;input type=&quot;file&quot; ref=&quot;myFile&quot; @change=&quot;selectedFile&quot;&gt; 
+  &lt;input type=&quot;submit&quot; value=&quot;Upload File&quot; /&gt;
+  &lt;div v-if=&quot;allNames.length&quot;&gt;
+    &lt;p&gt;Your file contains {{allNames.length}} names. Here's the first ten names.&lt;/p&gt;
+    &lt;ul&gt;
+	  &lt;li v-for=&quot;name in names&quot;&gt;{{name}}&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+  
+&lt;/div&gt;
+</code></pre>
+<p>The top portion prompts for the file and uses similar attributes to the first example. Next I've got the display. I print out how many names were in the file and then iterate over a <code>names</code> value. This is going to be a virtual property of just the first ten values. (By the way, I don't like using <code>allNames.length</code>. While I appreciate Vue lets me do a bit of logic in my HTML, I would have preferred to use a simple boolean instead for the <code>v-if</code> and another value for the length.)</p>
+<p>Alright, so here's the JavaScript:</p>
+<pre><code class="language-js">Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+const app = new Vue({
+  el:'#app',
+  data: {
+    allNames:[]
+  },
+  computed:{
+    names() {
+      return this.allNames.slice(0,10);
+    }
+  },
+  methods:{
+    selectedFile() {
+      console.log('selected a file');
+      console.log(this.$refs.myFile.files[0]);
+      
+      let file = this.$refs.myFile.files[0];
+      if(!file || file.type !== 'text/plain') return;
+      
+      // Credit: https://stackoverflow.com/a/754398/52160
+      let reader = new FileReader();
+      reader.readAsText(file, &quot;UTF-8&quot;);
+      
+      reader.onload = evt =&gt; {
+        let text = evt.target.result;
+        this.allNames = text.split(/\r?\n/);
+        //empty string at end?
+        if(this.allNames[this.allNames.length-1] === '') this.allNames.pop();
+      }
+      
+      reader.onerror = evt =&gt; {
+        console.error(evt);
+      }
+      
+    }
+  }
+})
+</code></pre>
+<p>In general, the only interesting bits are in the <code>reader.onload</code> event. I'm still checking the file type, but now when I read it in split it on newlines and remove the file value is blank. This will set the <code>allNames</code> value. The <code>names</code> value is in the <code>computed</code> block and only consists of the first ten values. You can play with this below - just make your own list of names. Please do not include my name on it.</p>
+<p class="codepen" data-height="300" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="dEVvgq" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="vue file 2">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/dEVvgq/">
+  vue file 2</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<h3>The Cat File</h3>
+<img src="https://static.raymondcamden.com/images/2019/05/catfile.gif" alt="A cat filing its nails" class="imgborder imgcenter">
+<p>Look, it's a cat file. Get it? Sorry, I've been waiting a long time to use that gif. So in this scenario I'm going to demonstrate an example that parses a JSON file. It will first check to see if the file contains JSON text, and then if so render the results. Unlike the previous example I'm just going to render every row of data. The data will be an array of cat. Did you know a group of cats is called an Awesome? It is - I read it on wikipedia.</p>
+<p>Here's the layout:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  
+  &lt;h2&gt;Upload Cat Data&lt;/h2&gt;
+  &lt;input type=&quot;file&quot; ref=&quot;myFile&quot; @change=&quot;selectedFile&quot;&gt; 
+  &lt;input type=&quot;submit&quot; value=&quot;Upload File&quot; /&gt;
+  &lt;div v-if=&quot;cats&quot;&gt;
+    &lt;h3&gt;Data Preview&lt;/h3&gt;
+    &lt;table border=&quot;1&quot;&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;Name&lt;/th&gt;
+          &lt;th&gt;Age&lt;/th&gt;
+          &lt;th&gt;Gender&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr v-for=&quot;cat in cats&quot;&gt;
+          &lt;td&gt;{{cat.name}}&lt;/td&gt;
+          &lt;td&gt;{{cat.age}}&lt;/td&gt;
+          &lt;td&gt;{{cat.gender}}&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+  
+&lt;/div&gt;
+</code></pre>
+<p>I'm using a table to render the cats and yeah that's it. Here's the JavaScript:</p>
+<pre><code class="language-js">Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+const app = new Vue({
+  el:'#app',
+  data: {
+    cats:null
+  },
+  methods:{
+    selectedFile() {
+      console.log('selected a file');
+      console.log(this.$refs.myFile.files[0]);
+      
+      let file = this.$refs.myFile.files[0];
+      if(!file || file.type !== 'application/json') return;
+      
+      // Credit: https://stackoverflow.com/a/754398/52160
+      let reader = new FileReader();
+      reader.readAsText(file, &quot;UTF-8&quot;);
+      
+      reader.onload =  evt =&gt; {
+        let text = evt.target.result;
+        try {
+          this.cats = JSON.parse(text);
+        } catch(e) {
+          alert(&quot;Sorry, your file doesn't appear to be valid JSON data.&quot;);
+        }
+      }
+      
+      reader.onerror = evt =&gt; {
+        console.error(evt);
+      }
+      
+    }
+  }
+})
+</code></pre>
+<p>The important bits here are how I test for valid JSON, a simple <code>try/catch</code> around <code>JSON.parse</code>. And that's it. You could definitely do more checks here:</p>
+<ul>
+<li>Is the valid JSON data an array?</li>
+<li>Is it at least one row?</li>
+<li>Do we have required columns?</li>
+<li>If we have extra data, like a &quot;isFeisty&quot; boolean, do we consider that an error?</li>
+</ul>
+<p>And so forth. Feel free to fork the CodePen below and go cat crazy!</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="JqrJeR" style="height: 400px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="vue file 3">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/JqrJeR/">
+  vue file 3</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>So as always, I'd love to hear if people are using these techniques. Drop me a comment below and share what you've done!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/2Nca6Aum17o?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Manki Kim</a> on Unsplash</i></p>
+}

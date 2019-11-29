@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>The getMetaData function returns metadata about a CFC. It <i>appears</i> as if it returns a struct, heck, you can even cfdump it and will see &quot;struct&quot; as the type. However, the function is returning an object, and if you attempt to use a struct function on the result of getMetaData(), you will get an error. If you need to examine the result, you will have to use normal dot notation or array functions (if for example you want to search the functions portion of metadata).</p>
+}

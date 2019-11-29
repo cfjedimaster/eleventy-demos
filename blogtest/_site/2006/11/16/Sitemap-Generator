@@ -1,0 +1,96 @@
+<h1>Post</h1>
+
+<p>Earlier today Yahoo and Google announced their collaboration on <a href="http://www.sitemaps.org/">Sitemaps.org</a>. Sitemaps provide a way to describe to a search engine what pages make up your web site. I've had sitemap support in BlogCFC for a while, but today I wrote a little UDF you can use to generate sitemap xml. It will take either a list of URLs or a query of URLs. Enjoy. I'll post it to CFLib later in the week.</p>
+<!--more-->
+<code>
+&lt;cffunction name="generateSiteMap" output="false" returnType="xml"&gt;
+	&lt;cfargument name="data" type="any" required="true"&gt;
+	&lt;cfargument name="lastmod" type="date" required="false"&gt;
+	&lt;cfargument name="changefreq" type="string" required="false"&gt;
+	&lt;cfargument name="priority" type="numeric" required="false"&gt;
+<pre><code>&amp;lt;cfset var header = &quot;&amp;lt;?xml version=&quot;&quot;1.0&quot;&quot; encoding=&quot;&quot;UTF-8&quot;&quot;?&amp;gt;&amp;lt;urlset xmlns=&quot;&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;&quot;&amp;gt;&quot;&amp;gt;
+&amp;lt;cfset var result = header&amp;gt;
+&amp;lt;cfset var aurl = &quot;&quot;&amp;gt;
+&amp;lt;cfset var item = &quot;&quot;&amp;gt;
+&amp;lt;cfset var validChangeFreq = &quot;always,hourly,daily,weekly,monthly,yearly,never&quot;&amp;gt;
+&amp;lt;cfset var newDate = &quot;&quot;&amp;gt;
+&amp;lt;cfset var tz = getTimeZoneInfo().utcHourOffset&amp;gt;
+
+&amp;lt;cfif structKeyExists(arguments, &quot;changefreq&quot;) and not listFindNoCase(validChangeFreq, arguments.changefreq)&amp;gt;
+	&amp;lt;cfthrow message=&quot;Invalid changefreq (#arguments.changefreq#) passed. Valid values are #validChangeFreq#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif structKeyExists(arguments, &quot;priority&quot;) and (arguments.priority lt 0 or arguments.priority gt 1)&amp;gt;
+	&amp;lt;cfthrow message=&quot;Invalid priority (#arguments.priority#) passed. Must be between 0.0 and 1.0&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- reformat datetime as w3c datetime / http://www.w3.org/TR/NOTE-datetime ---&amp;gt;
+&amp;lt;cfif structKeyExists(arguments, &quot;lastmod&quot;)&amp;gt;			
+	&amp;lt;cfset newDate = dateFormat(arguments.lastmod, &quot;YYYY-MM-DD&quot;) &amp; &quot;T&quot; &amp; timeFormat(arguments.lastmod, &quot;HH:mm&quot;)&amp;gt;
+	&amp;lt;cfif tz gte 0&amp;gt;
+		&amp;lt;cfset newDate = newDate &amp; &quot;-&quot; &amp; tz &amp; &quot;:00&quot;&amp;gt;
+	&amp;lt;cfelse&amp;gt;
+		&amp;lt;cfset newDate = newDate &amp; &quot;+&quot; &amp; tz &amp; &quot;:00&quot;&amp;gt;
+	&amp;lt;/cfif&amp;gt;		
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- Support either a query or list of URLs ---&amp;gt;
+&amp;lt;cfif isSimpleValue(arguments.data)&amp;gt;
+	&amp;lt;cfloop index=&quot;aurl&quot; list=&quot;#arguments.data#&quot;&amp;gt;
+		&amp;lt;cfsavecontent variable=&quot;item&quot;&amp;gt;
+</code></pre>
+<p>&lt;cfoutput&gt;
+&lt;url&gt;
+&lt;loc&gt;#xmlFormat(aurl)#&lt;/loc&gt;
+&lt;cfif structKeyExists(arguments,&quot;lastmod&quot;)&gt;
+&lt;lastmod&gt;#newDate#&lt;/lastmod&gt;
+&lt;/cfif&gt;
+&lt;cfif structKeyExists(arguments,&quot;changefreq&quot;)&gt;
+&lt;changefreq&gt;#arguments.changefreq#&lt;/changefreq&gt;
+&lt;/cfif&gt;
+&lt;cfif structKeyExists(arguments,&quot;priority&quot;)&gt;
+&lt;priority&gt;#arguments.priority#&lt;/priority&gt;
+&lt;/cfif&gt;
+&lt;/url&gt;
+&lt;/cfoutput&gt;
+&lt;/cfsavecontent&gt;
+&lt;cfset item = trim(item)&gt;
+&lt;cfset result = result &amp; item&gt;
+&lt;/cfloop&gt;</p>
+<pre><code>&amp;lt;cfelseif isQuery(arguments.data)&amp;gt;
+	&amp;lt;cfloop query=&quot;arguments.data&quot;&amp;gt;
+		&amp;lt;cfsavecontent variable=&quot;item&quot;&amp;gt;
+</code></pre>
+<p>&lt;cfoutput&gt;
+&lt;url&gt;
+&lt;loc&gt;#xmlFormat(url)#&lt;/loc&gt;
+&lt;cfif listFindNoCase(arguments.data.columnlist,&quot;lastmod&quot;)&gt;
+&lt;cfset newDate = dateFormat(lastmod, &quot;YYYY-MM-DD&quot;) &amp; &quot;T&quot; &amp; timeFormat(lastmod, &quot;HH:mm&quot;)&gt;
+&lt;cfif tz gte 0&gt;
+&lt;cfset newDate = newDate &amp; &quot;-&quot; &amp; tz &amp; &quot;:00&quot;&gt;
+&lt;cfelse&gt;
+&lt;cfset newDate = newDate &amp; &quot;+&quot; &amp; tz &amp; &quot;:00&quot;&gt;
+&lt;/cfif&gt;		
+&lt;lastmod&gt;#newDate#&lt;/lastmod&gt;
+&lt;/cfif&gt;
+&lt;cfif listFindNoCase(arguments.data.columnlist,&quot;changefreq&quot;)&gt;
+&lt;changefreq&gt;#changefreq#&lt;/changefreq&gt;
+&lt;/cfif&gt;
+&lt;cfif listFindNoCase(arguments.data.columnlist,&quot;priority&quot;)&gt;
+&lt;priority&gt;#priority#&lt;/priority&gt;
+&lt;/cfif&gt;
+&lt;/url&gt;
+&lt;/cfoutput&gt;
+&lt;/cfsavecontent&gt;
+&lt;cfset item = trim(item)&gt;
+&lt;cfset result = result &amp; item&gt;</p>
+<pre><code>	&amp;lt;/cfloop&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfset result = result &amp; &quot;&amp;lt;/urlset&amp;gt;&quot;&amp;gt;
+
+&amp;lt;cfreturn result&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+}

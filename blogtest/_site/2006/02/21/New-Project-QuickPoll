@@ -1,0 +1,26 @@
+<h1>Post</h1>
+
+<p>Hey, did you see my <a href="http://ray.camdenfamily.com/index.cfm/2006/2/21/Reader-Survey">post</a> about the reader survey? Guess what - the form was all built on the fly using a new project I released today, <a href="http://ray.camdenfamily.com/projects/quickpollcfc">QuickPoll CFC</a>. &quot;Project&quot; may be too strong of a word - it's really just a nice CFC. Think of it like a &quot;lite&quot; version of <a href="http://ray.camdenfamily.com/projects/soundings">Soundings</a>.</p>
+<!--more-->
+<p>QuickPoll CFC lets you rapidly deploy a simple survery. How rapid? The following code is shows how my <a href="http://ray.camdenfamily.com/index.cfm/2006/2/21/Reader-Survey">reader survey</a> was done:</p>
+<code>
+&lt;cfset poll = createObject("component", "quickpoll")&gt;
+<p>&lt;cfset poll.setThankYouMessage(&quot;Thanks for taking the time to respond to my survey. I'll be sharing the results in a week or two once I've collected the data.&quot;)&gt;
+&lt;cfset poll.setMailResults(&quot;ray@camdenfamily.com&quot;)&gt;
+&lt;cfset poll.setPollName(&quot;Initial Test&quot;)&gt;
+&lt;cfset resultsFile = expandPath(&quot;./results.csv&quot;)&gt;
+&lt;cfset poll.setFileResults(resultsFile)&gt;</p>
+<p>&lt;cfset poll.addQuestion(&quot;text&quot;, false, &quot;What is your name? (Optional)&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;text&quot;, false, &quot;What is your email address? (Optional)&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;multichoicesingle&quot;, true, &quot;I visit your blog&quot;, &quot;Multiple times a day,Once a day,Few times a week,Once a week,Very rarely&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;multichoicesingle&quot;, true, &quot;In general, your articles are&quot;, &quot;Interesting and useful to my job@Interesting, but not very useful to my job@Not very interesting&quot;, &quot;@&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;multichoicesingle&quot;, true, &quot;The design of this blog&quot;, &quot;Is fine@Is great, but not terribly important to me@Isn't great, but doesn't impact my reading@Is bad, and detracts from my reading&quot;, &quot;@&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;multichoicesingle&quot;, true, &quot;Compared to other ColdFusion blogs, I find this blog&quot;, &quot;Very Useful@Somewhat Useful@Useful@Not very useful@A complete waste of time&quot;, &quot;@&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;textarea&quot;, false, &quot;What does my blog need more articles on?&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;textarea&quot;, false, &quot;What does my blog need less articles on?&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;textarea&quot;, false, &quot;The thing I like best about your blog is&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;textarea&quot;, false, &quot;The thing I like least about your blog is&quot;)&gt;
+&lt;cfset poll.addQuestion(&quot;textarea&quot;, false, &quot;Any last comments?&quot;)&gt;
+</code></p>
+<p>The CFC allows you to generate results in email or a CSV file (or both). Enjoy.</p>
+}

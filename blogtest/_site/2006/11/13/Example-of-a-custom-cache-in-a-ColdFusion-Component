@@ -1,0 +1,148 @@
+<h1>Post</h1>
+
+<p>My friend who is learning ColdFusion recently ran into the issue of not being able to use query caching since he was also using cfqueryparam. Since cfqueryparam is vital to any dynamic query, he wisely chose to lose the the caching and keep the cfqueryparam. I mentioned that he could roll his own caching and wrote up this quick example for him.</p>
+<!--more-->
+<p>Consider this CFC method:</p>
+<code>
+&lt;cffunction name="getData" returnType="query" access="public" output="false"&gt;
+	&lt;cfargument name="name" type="string" required="false"&gt;
+	&lt;cfargument name="age" type="numeric" required="false"&gt;
+	&lt;cfargument name="active" type="boolean" required="false"&gt;
+<pre><code>&amp;lt;cfset var data = queryNew(&quot;id,name,age,active&quot;,&quot;integer,varchar,integer,bit&quot;)&amp;gt;
+&amp;lt;cfset var x = &quot;&quot;&amp;gt;
+&amp;lt;cfset var q = &quot;&quot;&amp;gt;
+&amp;lt;cfset var go_to = &quot;&quot;&amp;gt;
+
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;20&quot;&amp;gt;
+	&amp;lt;cfset queryAddRow(data)&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;id&quot;,x)&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;name&quot;,&quot;User #x#&quot;)&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;age&quot;,randRange(20,90))&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;active&quot;,randRange(0,1))&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfquery name=&quot;q&quot; dbType=&quot;query&quot;&amp;gt;
+select	id, name, age, active
+from	data
+where	1=1
+&amp;lt;cfif	structKeyExists(arguments, &quot;name&quot;)&amp;gt;
+and		name = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.name#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif	structKeyExists(arguments, &quot;age&quot;)&amp;gt;
+and		age = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.age#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif	structKeyExists(arguments, &quot;active&quot;)&amp;gt;
+and		name = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_bit&quot; value=&quot;#arguments.active#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfscript&amp;gt;
+go_to = createObject(&quot;java&quot;, &quot;java.lang.Thread&quot;);
+go_to.sleep(200); //sleep time in milliseconds
+&amp;lt;/cfscript&amp;gt;
+
+&amp;lt;cfreturn q&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>Obviously this is a contrived example - but it does show a pretty standard example of requesting data with a few potential filters applied. The &quot;sleep&quot; code is <b>not</b> standard and is just there to force the query to be slow.</p>
+<p>Now let's look at a modified version:</p>
+<code>
+&lt;cffunction name="getDataBetter" returnType="query" access="public" output="false"&gt;
+	&lt;cfargument name="name" type="string" required="false"&gt;
+	&lt;cfargument name="age" type="numeric" required="false"&gt;
+	&lt;cfargument name="active" type="boolean" required="false"&gt;
+<pre><code>&amp;lt;cfset var data = queryNew(&quot;id,name,age,active&quot;,&quot;integer,varchar,integer,bit&quot;)&amp;gt;
+&amp;lt;cfset var x = &quot;&quot;&amp;gt;
+&amp;lt;cfset var q = &quot;&quot;&amp;gt;
+&amp;lt;cfset var key = &quot;&quot;&amp;gt;
+
+&amp;lt;cfset var go_to = &quot;&quot;&amp;gt;
+
+&amp;lt;!--- generate key from arguments. ---&amp;gt;
+&amp;lt;cfset key = &quot;&quot;&amp;gt;
+&amp;lt;cfif structKeyExists(arguments, &quot;name&quot;)&amp;gt;
+	&amp;lt;cfset key = key &amp; &quot;NAME=#arguments.name# &quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif structKeyExists(arguments, &quot;age&quot;)&amp;gt;
+	&amp;lt;cfset key = key &amp; &quot;AGE=#arguments.age# &quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif structKeyExists(arguments, &quot;active&quot;)&amp;gt;
+	&amp;lt;cfset key = key &amp; &quot;ACTIVE=#arguments.active# &quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- do we have the cached version? ---&amp;gt;
+&amp;lt;cfif structKeyExists(variables.cache, key)&amp;gt;
+	&amp;lt;cfreturn variables.cache[key]&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;!--- continue on then... ---&amp;gt;	
+&amp;lt;cfloop index=&quot;x&quot; from=&quot;1&quot; to=&quot;20&quot;&amp;gt;
+	&amp;lt;cfset queryAddRow(data)&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;id&quot;,x)&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;name&quot;,&quot;User #x#&quot;)&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;age&quot;,randRange(20,90))&amp;gt;
+	&amp;lt;cfset querySetCell(data,&quot;active&quot;,randRange(0,1))&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfquery name=&quot;q&quot; dbType=&quot;query&quot;&amp;gt;
+select	id, name, age, active
+from	data
+where	1=1
+&amp;lt;cfif	structKeyExists(arguments, &quot;name&quot;)&amp;gt;
+and		name = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#arguments.name#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif	structKeyExists(arguments, &quot;age&quot;)&amp;gt;
+and		age = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_integer&quot; value=&quot;#arguments.age#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;cfif	structKeyExists(arguments, &quot;active&quot;)&amp;gt;
+and		name = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_bit&quot; value=&quot;#arguments.active#&quot;&amp;gt;
+&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+
+&amp;lt;cfscript&amp;gt;
+go_to = createObject(&quot;java&quot;, &quot;java.lang.Thread&quot;);
+go_to.sleep(200); //sleep time in milliseconds
+&amp;lt;/cfscript&amp;gt;
+
+&amp;lt;!--- store to cache ---&amp;gt;
+&amp;lt;cfset variables.cache[key] = q&amp;gt;
+&amp;lt;cfreturn q&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>Let me focus on what I changed. First - outside of the method my CFC's init method created a structure to store my cache. This was done like so:</p>
+<code>
+&lt;cfset variables.cache = structNew()&gt;
+</code>
+<p>Inside my getDataBetter method, I create a key based on the arguments passed in. The point of this is to create a unique key based on the arguments passed in. This unique key is then checked to see if it exists in the structure. If it does - I simply return the query immediately. If not - I continue with creating the query and store the result in the cache.</p>
+<p>Run a quick test and you will see it runs well:</p>
+<code>
+&lt;cftimer label="no arguments" type="inline"&gt;
+	&lt;cfset data = mycfc.getDataBetter()&gt;
+&lt;/cftimer&gt;
+&lt;p /&gt;
+&lt;cftimer label="active=true" type="inline"&gt;
+	&lt;cfset data = mycfc.getDataBetter(active=true)&gt;
+&lt;/cftimer&gt;
+&lt;p /&gt;
+&lt;cftimer label="no arguments" type="inline"&gt;
+	&lt;cfset data = mycfc.getDataBetter()&gt;
+&lt;/cftimer&gt;
+&lt;p /&gt;
+&lt;cftimer label="active=true" type="inline"&gt;
+	&lt;cfset data = mycfc.getDataBetter(active=true)&gt;
+&lt;/cftimer&gt;
+</code>
+<p>And the results:</p>
+<code>
+no arguments: 204ms
+<p>active=true: 203ms</p>
+<p>no arguments: 0ms</p>
+<p>active=true: 0ms
+</code></p>
+<p>There are a lot of problems with this cache though. First off - the number of possible key combinations is huge. Secondly - your typically want to build your API so you can force the method to get new data even if it does exist in the cache. I'd typically have an argument for that, and a completely separate method to re-initialize the cache.</p>
+<p>To handle the size of the cache you can do a few things. You could do a simple structCount and see if the struct is too big. But how do you determine what to remove? You could either pick one by random, or add additional metadata to your cache that includes when the key was created, and how often it was used.</p>
+<p>Anyway - this was just meant to be an example. Once things get complex you would probably want to move away from this solution into something more powerful. Check this blog entry for more suggestions:</p>
+<p><a href="http://ray.camdenfamily.com/index.cfm/2006/7/19/Caching-options-in-ColdFusion">Caching options in ColdFusion</a></p>
+}

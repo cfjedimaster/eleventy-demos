@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>Jose asks:</p>
+<blockquote>
+<p>
+I just got started using cfdiv an the other AJAX related tags and I have a question about passing params in the bind attribute. I have the following test code:
+<p>&lt;cfinput name=&quot;EmployeeID&quot; type=&quot;hidden&quot; value=&quot;#variables.EmployeeID#&quot; /&gt;<br />
+<br />
+&lt;cfgrid name=&quot;goals&quot; format=&quot;html&quot; striperows=&quot;yes&quot;
+bind=&quot;cfc:ab.model.goals.goalsGateway.getGoalsGridRecordSet(page={cfgridpage}, pagesize={cfgridpagesize}, gridSortColumn={cfgridsortcolumn}, gridSortDirection={cfgridsortdirection}, EmployeeID={EmployeeID})&quot;&gt;<br />
+<br />
+Does it mean I can only pass filter params for the cfcs I am using thru having those hidden &quot;pass thru&quot; fields? What I am missing?</p>
+</p>
+</blockquote>
+<!--more-->
+The short answer is yes. Bindings allow you to speak to JavaScript, CFCs, and vanilla URLs, and they allow you to automatically monitor values of form fields. (As well as events.) But it doesn't mean you have to use a hidden form field as you have here. You could have simply hard coded the value like so:
+<p>bind=&quot;cfc:ab.model.goals.goalsGateway.getGoalsGridRecordSet(page={cfgridpage}, pagesize={cfgridpagesize}, gridSortColumn={cfgridsortcolumn}, gridSortDirection={cfgridsortdirection}, EmployeeID=#variables.employeid#)&quot;</p>
+<p>Note when I say 'hard coded', what I mean is that the value is still dynamic (see the #s?) but it isn't a client side bound variable.</p>
+<p>Just to be clear - this doesn't mean that ColdFusion's Ajax support can only work with form fields. It's just that the bindings to allow for automatic updates are tied to form fields. (And Spry datasets as well, but that's another story.) You can still easily call server side code using cfajaxproxy for example, and pass anything you want, but this does mean you have to write a few lines of JavaScript.</p>
+}

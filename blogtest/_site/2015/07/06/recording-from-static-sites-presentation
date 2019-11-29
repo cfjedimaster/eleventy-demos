@@ -1,0 +1,9 @@
+<h1>Post</h1>
+
+<p>If you missed my presentation on static site generators last week, you can now watch the recording here:</p>
+<!--more-->
+<iframe width="640" height="360" src="https://www.youtube.com/embed/HbVoDsnY8Ww?rel=0" frameborder="0" allowfullscreen></iframe>
+<p>You can view a copy of the slides here:</p>
+<iframe src="//www.slideshare.net/slideshow/embed_code/key/2HZGBaGGa8WzoK" width="425" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="//www.slideshare.net/raymondcamden/static-sites-wave-of-the-future" title="Static Sites - Bringing Web 1.0 Back" target="_blank">Static Sites - Bringing Web 1.0 Back</a> </strong> from <strong><a href="//www.slideshare.net/raymondcamden" target="_blank">Raymond Camden</a></strong> </div>
+<p>And finally, you can find the source code for the slide deck and demos here: <a href="https://github.com/cfjedimaster/Static-Sites">https://github.com/cfjedimaster/Static-Sites</a></p>
+}

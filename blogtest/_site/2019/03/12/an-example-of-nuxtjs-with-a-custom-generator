@@ -1,0 +1,104 @@
+<h1>Post</h1>
+
+<p>Last week I had the pleasure of speaking at <a href="https://devnexus.com/">DevNexus</a> on multiple Vue.js topics, one of which was the <a href="https://nuxtjs.org/">Nuxt.js framework</a>. I had previously looked at Nuxt many months ago and decided I didn't like it. The main issue I ran into were documentation issues and - well to be honest - just a gut feeling. When I was asked if I could give a Nuxt presentation to cover for a speaker who had to cancel, I was happy for the opportunity to give Nuxt another look. In the end, I came away with a much different opinion. I still think the docs need a bit of tweaking (I'll mention one issue in this post), but overall I'm pretty damn impressed. Nuxt adds multiple shortcuts which let you follow a convention to skip a lot of boilerplate code. It's really a nice framework that I'm hoping to use, and blog on, a bit more this year.</p>
+<p>Ok, so now that the intro is over, let me get into the meat of what I want to cover. Nuxt works best as a universal (server-side rendering) application, but it also supports static output. When creating static output, it can either create a &quot;traditional&quot; set of HTML files and the like, or a SPA (Single Page Application). So far so good.</p>
+<p>One of the feature of Nuxt that I really like is the easy way to create routes in your Vue application. Want <code>/cat</code> to work? Simply add <code>cat.vue</code> and you're good to go. Nuxt also easily supports dynamic routes. Given that <code>cat.vue</code> returned a list of cats, you can create a dynamic route by adding <code>cats/_id.vue</code>, where the underscore represents a dynamic value. (You can read more about this feature <a href="https://nuxtjs.org/guide/routing#dynamic-routes">here</a>). Again, so far so good.</p>
+<p>But what happens when you generate a static version of your Nuxt app? The docs covering <a href="https://nuxtjs.org/guide/commands">static generation</a> have this to say:</p>
+<blockquote>
+If you have a project with dynamic routes, take a look at the generate configuration to tell Nuxt.js how to generate these dynamic routes.
+</blockquote>
+<p>This leads you to the <a href="https://nuxtjs.org/api/configuration-generate">generate configuration</a> docs which then say:</p>
+<blockquote>
+Dynamic routes are ignored by the generate command.
+</blockquote>
+<p>Bummer. However, Nuxt supports the ability to use a function to return routes in your generate configuration. This lets you add whatever logic you want. Let's consider an example of this. I built a simple Nuxt app with two routes. The home page retrieves a list of films from the Star Wars API:</p>
+<pre><code class="language-html">&lt;template&gt;
+  &lt;section class=&quot;container&quot;&gt;
+    &lt;div&gt;
+
+		&lt;h1&gt;Films&lt;/h1&gt;
+
+		&lt;b-list-group&gt;
+			&lt;b-list-group-item v-for=&quot;film in films&quot; :key=&quot;film.episode_id&quot; 
+			:to=&quot;'film/'+film.properId&quot;&gt;{{film.title}}&lt;/b-list-group-item&gt;
+		&lt;/b-list-group&gt;
+
+    &lt;/div&gt;
+  &lt;/section&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+
+export default {
+	data() {
+		return {
+		}
+	},
+	methods: {
+	},
+	async asyncData(context) {
+		let { data } = await context.$axios.get('https://swapi.co/api/films/');
+		// add a proper id
+		data.results.forEach(d =&gt; {
+			d.properId = d.url.substring(0,d.url.length-1).split('/').pop();
+		});
+		return { films: data.results }
+	}
+}
+&lt;/script&gt;
+</code></pre>
+<p>For the most part I assume this is rather self-explanatory (but as always, <em>please</em> ask if not!), with the only exception being the <code>forEach</code> where I grab the end of the URL value used for getting specific information about the film. (The Star Wars API &quot;list&quot; commands actually return full data so this isn't the best example, but let's ignore that for now.)</p>
+<p>I then created <code>film\_id.vue</code> to handle displaying the detail:</p>
+<pre><code class="language-html">&lt;template&gt;
+	&lt;div&gt;
+	
+		&lt;h1&gt;{{film.title}}&lt;/h1&gt;
+
+		&lt;p&gt;
+			&lt;pre&gt;
+{{film.opening_crawl}}
+			&lt;/pre&gt;
+		&lt;/p&gt;
+
+		&lt;p&gt;
+		&lt;b-button to=&quot;/&quot; variant=&quot;success&quot;&gt;Home&lt;/b-button&gt;
+		&lt;/p&gt;
+
+	&lt;/div&gt;
+
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+
+	async asyncData(context) {
+		let { data } = await context.$axios.get('https://swapi.co/api/films/'+context.route.params.id);
+		return { film: data }
+	}
+
+}
+&lt;/script&gt;
+</code></pre>
+<p>Again, my assumption is that this is trivial enough to not need any additional context, but just let me know if not. Alright, so in theory, if we generate a static version of this Nuxt app, it will simply ignore the dynamic routes and just render the first page. Right?</p>
+<p>Wrong.</p>
+<p>Turns out, Nuxt seems to pick up on the dynamic route and use &quot;SPA&quot; mode when generating static output. Remember I said Nuxt could output static content in two forms, a more &quot;traditional&quot; page per route or a SPA. The docs here are a bit misleading (and I've filed a bug report on this) since it seems to work just fine. You can see this live here: <a href="https://deserted-squirrel.surge.sh/">https://deserted-squirrel.surge.sh/</a></p>
+<p>Ok, but if I wanted the &quot;non&quot; SPA version and waned to test that custom generate support? Let's see how it looks! This is what I added to <code>nuxt.config.js</code>:</p>
+<pre><code class="language-js">generate: {
+	routes:function() {
+		console.log('doing my generate like a pro');
+		return axios.get('https://swapi.co/api/films/')
+		.then((res) =&gt; {
+			return res.data.results.map((film) =&gt; {
+				let properId = film.url.substring(0,film.url.length-1).split('/').pop();
+				return '/film/'+properId;
+			})
+		});
+
+	}
+}
+</code></pre>
+<p>And yeah, that's it. Note that those <code>console.log</code> messages <em>do</em> work and will show up in your terminal which can be real helpful for debugging. This created a directory called <code>film</code> (it was smart enough to create it when it didn't exist) and then a folder for each id with an <code>index.html</code> file underneath it.</p>
+<p>Easy enough! You can actually get even more complex with this support and I encourage you to check out the <a href="https://nuxtjs.org/api/configuration-generate">docs</a> for more information. Finally, you can check out this version here: <a href="http://typical-jump.surge.sh">http://typical-jump.surge.sh</a></p>
+<p>Any questions? Leave me a comment below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/G8hk3cl25ZA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Matt Howard</a> on Unsplash</i></p>
+}

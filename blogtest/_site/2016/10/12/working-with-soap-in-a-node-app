@@ -1,0 +1,106 @@
+<h1>Post</h1>
+
+<p>I've been lucky to have been able to avoid SOAP for a few years now, but today there was an API I wanted to work with that had this right on top of their documentation:</p>
+<!--more-->
+<blockquote>
+The API is implemented as an XML SOAP web service. Please read the the WSDL. There are no plans at present to make it available via JSON.
+</blockquote>
+<p>My reaction was, of course, quite reasonable.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/10/cartbarf.jpg" alt="&quot;Yes, I barfed&quot;"></p>
+<p>So once I got over that initial reaction, I thought, &quot;I wonder how folks in Node-land work with SOAP?&quot; I did a bit of research and found a great solution, <a href="https://github.com/vpulim/node-soap">node-soap</a>.</p>
+<p>node-soap lets you easily make SOAP calls to web services as well as setup your own SOAP service if you need to. And let's be honest, that's the only reason you would set one up because, my god... SOAP. (Sorry, I promise not to rag on SOAP and WSDL anymore. Not a lot anyway.)</p>
+<p>The API in question was one for the site, <a href="http://brickset.com">Brickset</a>. Brickset is a nice little site that contains a <em>huge</em> amount of information on Lego brick sets. It's got a huge product directory as well as an events calendar and forum. I've built a few Lego sets in my life, but I'm thinking about getting a bit more involved next year so this looks to be a great resource.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/10/bs.png" alt="&quot;Brickset.com&quot;"></p>
+<p>On top of that, they have an <a href="http://brickset.com/tools/webservices/v2">API</a>! A SOAP API, but no one's perfect, right? I thought it might be fun to build a little app to randomly select a Lego set from their database. I've done &quot;select a random X from the db&quot; thing a few times now (see <a href="https://www.raymondcamden.com/2016/02/22/building-a-twitter-bot-to-display-random-comic-book-covers/">&quot;Building a Twitter bot to display random comic book covers&quot;</a> as an example) and I don't know but the idea just interests me. I'll sit there and just reload and just... explore.</p>
+<p>So with that in mind, I began writing. I create a simple web page that would make an Ajax call to my local Node server. I'd have a route that would handle finding the random set and then returning that JSON to the front-end code. I'm assuming most of the front-end code and route stuff isn't interesting, so I'll just share the module I wrote to work Brickset's API. It shows you how nice node-soap was to work with.</p>
+<pre><code class="language-javascript">var soap = require('soap');
+var apiWSDL = 'http://brickset.com/api/v2.asmx?WSDL';
+
+var key = '';
+
+//based on searching brickset.com
+var minYear = 1950;
+
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function setKey(k) {
+	key = k;
+}
+
+function getRandomSet() {
+
+	//first, determine the year
+	year = getRandomInt(minYear, (new Date()).getFullYear());
+	console.log('chosen year', year);
+
+	var p = new Promise(function(resolve, reject) {
+		
+		soap.createClient(apiWSDL, function(err, client) {
+			if(err) throw new Error(err);
+
+			var args = {
+				apiKey:key,
+				userHash:'',
+				query:'',
+				theme:'',
+				subtheme:'',
+				setNumber:'',
+				year:year,
+				owned:'',
+				wanted:'',
+				orderBy:'',
+				pageSize:'2000',
+				pageNumber:'1',
+				userName:''
+			}
+
+			client.getSets(args, function(err, result) {
+				if(err) reject(err);
+				if(!result) {
+					return getRandomSet();
+				}
+
+				var sets = result.getSetsResult.sets;
+				console.log('i found '+sets.length+' results');
+				if(sets.length) {
+					var chosen = getRandomInt(0, sets.length-1);
+					var set = sets[chosen];
+					// now that we have a set, try to get more images
+					if(set.additionalImageCount &gt; 0) {
+						client.getAdditionalImages({apiKey:key, setID:set.setID}, function(err, result) {
+							if(err) reject(err);
+							console.log('i got more images', result);
+							set.additionalImages = result;
+							resolve(set);
+						});
+					} else {
+						resolve(set);
+					}
+				}
+			});
+		});
+		
+		
+	});
+
+	return p;
+
+}
+
+exports.setKey = setKey;
+exports.getRandomSet = getRandomSet;</code></pre>
+<p>To handle selecting a random set, I used the following logic. First, I searched a bit on Brickset to determine what was the earliest year of data. While I found one year in the 40s with one result, 1950 was the first year to have multiple results. So selecting the year is simply a random selection between 1950 and the current year.</p>
+<p>As far as I could tell, their API allowed you to select as many items as you want in your call, so I used a <code>pageSize</code> value of 2000 to grab everything. Then it was simply a matter of selecting a random set.</p>
+<p>The SOAP client is created with <code>soap.createClient</code>, and note that all I have to do is pass in the WSDL. WSDL is the &quot;descriptor&quot; for SOAP services. Imagine asking someone to write up documentation for an API, then throw that away and select 20000 random words from the dictionary. That's WSDL.</p>
+<p>Actually calling the API is done via <code>client.X</code>, where <code>X</code> is the specific method. In this case I just called <code>getSets</code>. I noticed that if I didn't pass <em>every</em> argument, the result was null. I don't know if that's a SOAP thing or a particular issue with the API, but that's why that <code>args</code> object has a bunch of empty values.</p>
+<p>The API also supports returning additional images, so you can see I call that too, but I never ended up using it in the front end. Maybe next time.</p>
+<p>And that's it. Here's a random example:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/10/bs1a.png" alt="&quot;Example&quot;"></p>
+<p>And another:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/10/bs2a.png" alt="&quot;Example&quot;"></p>
+<p>I don't know why, but I just love seeing those old sets. Anyway, you can give it a whirl yourself if you want, although I've been having some issues with Bluemix today so forgive me if it isn't up and running.</p>
+<p>http://randombrickset.mybluemix.net/</p>
+<p>And as I said, if you want to see the rest of the code, just let me know!</p>
+}

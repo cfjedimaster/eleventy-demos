@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>A reader yesterday asked me an interesting question. Using ColdFusion 8 and bindings, is it possible to do simple mathematics? For example, he wanted something like this:</p>
+<code>
+&lt;input type="text" name="res" bind="{field1}*{field2}"&gt;
+</code>
+<p>While that isn't possible, you can do it using cfajaxproxy. (Oh my sweet cfajaxproxy - is there anything you cannot do???) Consider the following example:</p>
+<code>
+&lt;cfajaxproxy bind="javascript:doMultiply({first},{second})" /&gt;
+&lt;script&gt;
+function doMultiply(x,y) {
+	document.getElementById("result").value = x*y;
+}
+&lt;/script&gt;
+<p>&lt;form&gt;
+&lt;input id=&quot;first&quot; size=&quot;3&quot;&gt; X &lt;input id=&quot;second&quot; size=&quot;3&quot;&gt; = &lt;input id=&quot;result&quot;&gt;</p>
+<p>&lt;/form&gt;
+</code></p>
+<p>The form has 3 fields. The first two are for the numbers I'll be multiplying. The last field is for the result. I use the cfajaxproxy tag to bind to the first two fields. I run the JavaScript function, doMultiply, whenever first or second changes. And that's it! I should probably add a check to see if x and y are numeric, but you get the idea.</p>
+}

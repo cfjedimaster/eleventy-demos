@@ -1,0 +1,52 @@
+<h1>Post</h1>
+
+<p>Tonight I played around with onMissingMethod, a cool new feature in ColdFusion 8. See Ben Nadel's <a href="http://www.bennadel.com/index.cfm?dax=blog:868.view">entry</a> on it for more detail. I knew that the method took two arguments - the name of the method invoked and a struct of the arguments that was passed.</p>
+<p>What I didn't realize and was surprised by - you can't rename these arguments. So consider this:</p>
+<!--more-->
+<code>
+&lt;cffunction name="onMissingMethod" access="public" returnType="any" output="false"&gt;
+	&lt;cfargument name="method" type="string" required="true"&gt;
+	&lt;cfargument name="args" type="struct" required="true"&gt;
+</code>
+<p>While the method itself will run, the arguments above will not actually be used. You <i>must</i> name them as Ben describe's in his entry:</p>
+<code>
+&lt;cffunction name="onMissingMethod" access="public" returnType="any" output="false"&gt;
+	&lt;cfargument name="missingMethodName" type="string" required="true"&gt;
+	&lt;cfargument name="missingMethodArguments" type="struct" required="true"&gt;
+</code>
+<p>As a side note - for the life of me I couldn't find any mention of onMissingMethod in the docs - neither the Developer's Guide nor the Reference. Can anyone else find it?</p>
+<p>This is the code I'm using in a generic bean:</p>
+<code>
+&lt;cfcomponent name="Core Bean" output="false"&gt;
+<p>&lt;cffunction name=&quot;onMissingMethod&quot; access=&quot;public&quot; returnType=&quot;any&quot; output=&quot;false&quot;&gt;
+&lt;cfargument name=&quot;missingMethodName&quot; type=&quot;string&quot; required=&quot;true&quot;&gt;
+&lt;cfargument name=&quot;missingMethodArguments&quot; type=&quot;struct&quot; required=&quot;true&quot;&gt;
+&lt;cfset var key = &quot;&quot;&gt;</p>
+<pre><code>&amp;lt;cfif find(&quot;get&quot;, arguments.missingMethodName) is 1&amp;gt;
+	&amp;lt;cfset key = replaceNoCase(arguments.missingMethodName,&quot;get&quot;,&quot;&quot;)&amp;gt;
+	&amp;lt;cfif structKeyExists(variables, key)&amp;gt;
+		&amp;lt;cfreturn variables[key]&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfif find(&quot;set&quot;, arguments.missingMethodName) is 1&amp;gt;
+	&amp;lt;cfset key = replaceNoCase(arguments.missingMethodName,&quot;set&quot;,&quot;&quot;)&amp;gt;
+	&amp;lt;cfif structKeyExists(arguments.missingMethodArguments, key)&amp;gt;
+		&amp;lt;cfset variables[key] = arguments.missingMethodArguments[key]&amp;gt;
+	&amp;lt;/cfif&amp;gt;
+&amp;lt;/cfif&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p>This let's me define a simple bean like so:</p>
+<code>
+&lt;cfcomponent output="false" extends="bean"&gt;
+<p>&lt;cfset variables.id = &quot;&quot;&gt;
+&lt;cfset variables.username = &quot;&quot;&gt;
+&lt;cfset variables.password = &quot;&quot;&gt;
+&lt;cfset variables.name = &quot;&quot;&gt;
+&lt;cfset variables.email = &quot;&quot;&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+}

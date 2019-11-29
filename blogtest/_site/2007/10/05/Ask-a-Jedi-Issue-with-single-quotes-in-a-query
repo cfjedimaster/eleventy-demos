@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>Alex had a problem with his SQL. This is actually a frequently asked question and I've covered it here before (I think so anyway), but I thought I'd mention it again. It comes up from time to time as people forget. Anyway - his question:</p>
+<blockquote>
+I'm using a web service to retrieve zip codes within a given radius from another zip code. The service sends me back a string that is formatted to use in a SQL WHERE clause:
+<p>xxx=&quot;10001&quot; or xxx=&quot;10002&quot; or xxx=&quot;10003&quot; ...</p>
+<p>I am using MySQL as the DB and the double quotes in the return string above won't work in the WHERE clause, so I am using a simple CF replace() function to replace the double quotes with single quotes (the zip field in my DB is setup as a string) for processing. For some reason, after I replace the quotes, the SQL statement in my CFQUERY tag includes the double quotes again! I can't figure out why this is happening.</p>
+</blockquote>
+<p>There is a simple explanation for this. ColdFusion auto escapes single quotes. Why? Imagine you have a search for, and a user searches for &quot;Ray's Hotness is greater than Paris Hilton&quot;. Your sql could do:</p>
+<p>where name like '#form.search#'</p>
+<p>(Although hopefully you would use cfqueryparam instead.) As you can see - the single quote in my search would break.</p>
+<p>So in cases where you <b>need</b> a single quote to be left alone, you tell ColdFusion to stop that change with the preserveSingleQuotes function:</p>
+<p>where whatever = #preserveSingleQuotes(somefunc)#</p>
+}

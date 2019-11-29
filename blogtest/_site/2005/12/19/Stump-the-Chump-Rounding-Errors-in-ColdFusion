@@ -1,0 +1,27 @@
+<h1>Post</h1>
+
+<p>David sent in a question that I wasn't able to resolve, so I thought I'd share it with everyone else:</p>
+<blockquote>
+I'm confused by a odd rounding type error.. and this is really starting to bud me but I can't explain why or how to get round it...
+<p>It started whilst trying to get the NumberFormat function to return the correct values for Value Added Tax.  The value output is different depending if the input value has been calculated or has been set in the system.  The input value appears the same - but isn't..</p>
+<p>&lt;cfoutput&gt;
+&lt;cfset testvalue=&quot;34.825&quot;&gt;
+&lt;cfset testvaluerounded=NumberFormat(testvalue, &quot;<strong>.</strong>&quot;)&gt;</p>
+<p>#testvalue# #testvaluerounded#&lt;br /&gt;</p>
+<p>&lt;!--- Now the reason we found the problem ---&gt;</p>
+<p>&lt;cfset cost=&quot;199&quot;&gt;
+&lt;cfset vat=(cost * 0.175)&gt;
+&lt;cfset vatrounded=NumberFormat(vat, &quot;<strong>.</strong>&quot;)&gt;</p>
+<p>#vat# #vatrounded#</p>
+<p>&lt;/cfoutput&gt;</p>
+</blockquote>
+<p>So I ran his code and confirmed it. I figured it was probably due to the typeless nature of ColdFusion. I did a quick test and outputted testvalue.getClass() and vat.getClass(). As I expected, testvalue.getClass returned java.lang.String, and bat returned java.lang.Double. Of course, I would have assumed the String would have rounded wrong, not the Double.</p>
+<p>So how to fix? I tried this:</p>
+<p>&lt;cfset testvalue= 34.825 + 0&gt;</p>
+<p>This was enough to make testvaue also return as a Double, but get this - it still rounded the wrong way. I then tried something dumb:</p>
+<p>&lt;cfset vat = round(vat*1000)/1000&gt;</p>
+<p>Since the vat had numbers out to the thousands place, this should do nothing - and it did nothing. I still had a vat value of 34.825. However - when I next ran the numberFormat, it rounded the same, although still incorrectly.</p>
+<p>So - would this a ColdFusion bug? Or just something we have to live with since ColdFusion is typeless? I even tried this:</p>
+<p>&lt;cfset vat = round(vat*100)/100&gt;</p>
+<p>and it returned the wrong value. The exact same code run on testvalue worked just fine.</p>
+}

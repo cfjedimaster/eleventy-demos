@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>I updated <a href="http://ray.camdenfamily.com/projects/googlecal">GoogleCal</a>, my Google Calendar CFC. This update fixes a bug and adds a new feature - the ability to filter the getEvents method to events in the future.</p>
+}

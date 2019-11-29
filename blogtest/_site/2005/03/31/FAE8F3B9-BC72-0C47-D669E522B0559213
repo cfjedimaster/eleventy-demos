@@ -1,0 +1,31 @@
+<h1>Post</h1>
+
+<p>Did you know that you can specify in your returnType for a component method that it returns not just a component, but an array of components? To specify that you want to return a component of type Apple, you would normally do this:</p>
+<p>returnType=&quot;Apple&quot;</p>
+<p>to specify an array of Apples, you simply do:</p>
+<p>returnType=&quot;Apple[]&quot;</p>
+<p>You can also specify the same thing in cfargument. Here is an example:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfcomponent&gt;</FONT><br>
+<br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cffunction name=<FONT COLOR=BLUE>"getApples"</FONT> returnType=<FONT COLOR=BLUE>"apple[]"</FONT> output=<FONT COLOR=BLUE>"false"</FONT> access=<FONT COLOR=BLUE>"remote"</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hint=<FONT COLOR=BLUE>"Get me some darn apples."</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfset var i = <FONT COLOR=BLUE>""</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfset var result = arrayNew(<FONT COLOR=BLUE>1</FONT>)&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfloop index=<FONT COLOR=BLUE>"i"</FONT> from=<FONT COLOR=BLUE>"1"</FONT> to=<FONT COLOR=BLUE>"10"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfset arrayAppend(result, createObject(<FONT COLOR=BLUE>"component"</FONT>, <FONT COLOR=BLUE>"apple"</FONT>))&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cfloop&gt;</FONT><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfreturn result&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cffunction&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cffunction name=<FONT COLOR=BLUE>"setApples"</FONT> returnType=<FONT COLOR=BLUE>"void"</FONT> output=<FONT COLOR=BLUE>"true"</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hint=<FONT COLOR=BLUE>"Just give me some apples."</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfargument name=<FONT COLOR=BLUE>"appleData"</FONT> type=<FONT COLOR=BLUE>"apple[]"</FONT> required=<FONT COLOR=BLUE>"true"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;cfdump var=<FONT COLOR=BLUE>"#arguments.appleData#"</FONT>&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<FONT COLOR=MAROON>&lt;/cffunction&gt;</FONT><br>
+&nbsp;&nbsp;&nbsp;<br>
+<FONT COLOR=MAROON>&lt;/cfcomponent&gt;</FONT></div>
+<p>Note: There is a bug with the built-in component viewer. It shows the type as Apple[], and when you click on it, you get an error. I had planned to do some updates to the component viewer so I will fix that as well. I need to ask Macromedia if I can then simply package the entire zip. (Technically it would be a copyright violation, but I'd have to have to package up my changes as a bunch of things to cut and paste.)</p>
+}

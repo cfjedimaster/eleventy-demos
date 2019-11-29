@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Found another little bug. When you submitted a matrix question that was required and forgot to answer every item, the form wouldn't correctly default the items when it reloaded. If you have already downloaded Soundings, grab the zip again, and just copy hnalders/matrix/display.cfm.</p>
+}

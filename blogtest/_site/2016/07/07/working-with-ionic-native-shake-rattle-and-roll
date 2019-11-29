@@ -1,0 +1,194 @@
+<h1>Post</h1>
+
+<p>Forgive the slightly dramatic title of the blog post - I just get a bit excited when I test something new and it actually works well! For today's post, I'm looking at something new with Ionic - <a href="http://ionicframework.com/docs/v2/native/">Ionic Native</a>.</p>
+<p>Ionic Native is the spiritual successor to the older <a href="http://ngcordova.com/">ngCordova</a> project. Basically - it provides an Ionic/Angular friendly interface to many common Apache Cordova plugins. To be clear, this isn't something you <em>have</em> to use in your Ionic application, but it can make using plugins a bit simpler. For today's demo, I thought I'd work with the <a href="http://ionicframework.com/docs/v2/native/device-motion/">Device Motion</a> plugin. This plugin lets monitor the device accelerometer and do... well whatever based on the motion of the hardware. For my demo (link at the end) I decided on a simple idea - I'd build an app that loads data and then lets you shake the device to update.</p>
+<p>I began by building a new Ionic 2 application based on the blank template. For the initial version, I'd build out all the code to load data, display it in a list, and I'd include a button that could be used to refresh the data. (While &quot;shake to update&quot; is cool, you probably want to provide a simple UI element to click as well.)</p>
+<p>The first thing I did was create a provider. I made it use hard coded data and set up a simple routine so it could easily add more data to the list. I assume this is self-explanatory, but let me know if you have any questions.</p>
+<pre><code class="language-javascript">
+import { Injectable } from '@angular/core';
+import 'rxjs/add/operator/map';
+
+/*
+  Generated class for the CatProvider provider.
+
+  See https://angular.io/docs/ts/latest/guide/dependency-injection.html
+  for more info on providers and Angular 2 DI.
+*/
+@Injectable()
+export class CatProvider {
+  data: any;
+
+  constructor() {
+    // hard coded initial data
+    this.data = [];
+    
+    for(var i=0;i&lt;3;i++) {
+      this.data.push(this.makeCat());
+    }
+  }
+
+  makeCat() {
+    return {
+      &quot;name&quot;:&quot;Cat &quot;+(this.data.length+1),
+      &quot;id&quot;:+(this.data.length+1)
+    }
+  }
+
+  load() {
+      //add a cat
+      this.data.push(this.makeCat());
+      return Promise.resolve(this.data);
+  }
+
+}
+</code></pre>
+<p>In my view's logic, I then added in the provider and had it set a local variable, <code>cats</code>, to the result of provider's <code>load</code> method.</p>
+<pre><code class="language-javascript">
+import {Component} from '@angular/core';
+import {NavController} from 'ionic-angular';
+import {CatProvider} from '../../providers/cat-provider/cat-provider';
+
+@Component({
+  providers: [CatProvider],
+  templateUrl: 'build/pages/home/home.html'
+})
+export class HomePage {
+
+  public cats:Array&lt;Object&gt;;
+
+  constructor(public catProvider:CatProvider, private navController: NavController) {
+    this.loadCats();
+  }
+
+  loadMore() {
+    console.log('load more cats');
+    this.loadCats();
+  }
+
+  loadCats() {
+    this.catProvider.load().then(result =&gt; {
+      this.cats = result;
+    });
+  }
+
+}
+</code></pre>
+<p>Again - I'm kinda assuming this is all relatively simple, but just let me know if it doesn't make sense. Finally, I built out my view.</p>
+<pre><code class="language-javascript">
+&lt;ion-header&gt;
+  &lt;ion-navbar&gt;
+    &lt;ion-title&gt;
+      Shake Demo
+    &lt;/ion-title&gt;
+  &lt;/ion-navbar&gt;
+&lt;/ion-header&gt;
+
+&lt;ion-content class=&quot;home&quot; padding&gt;
+  &lt;ion-list inset&gt;
+    &lt;ion-item *ngFor=&quot;let cat of cats&quot;&gt; {{ cat.name }} &lt;/ion-item&gt;
+  &lt;/ion-list&gt;
+
+  &lt;button danger (click)=&quot;loadMore()&quot;&gt;Load More&lt;/button&gt;
+
+&lt;/ion-content&gt;
+</code></pre>
+<p>Here it is running in the browser:</p>
+<img src="https://static.raymondcamden.com/images/2016/07/shakeA.jpg" class="imgborder">
+<p>Woot. Ok - now for the fun part. First, I have to add in the plugin. The Ionic Native docs remind you of this both on the introductory page of the feature and for each individual plugin. For me, this was done via: <code>ionic plugin add cordova-plugin-device-motion</code></p>
+<p>Ok, easy enough. Next, I needed to add support to my logic. First, I imported it:</p>
+<pre><code class="language-javascript">
+import {DeviceMotion} from 'ionic-native';
+</code></pre>
+<p>Cool. Then I tried the sample code... and it crapped the bed in the browser. Because - of course - this is a device specific thing. Oops. So the first thing I did was add in support for listening for the platform ready event. Remember - your controller may actually fire before Cordova is ready to let you use hardware features. You can easily listen for this by adding in the Platform object:</p>
+<pre><code class="language-javascript">
+import {NavController,Platform} from 'ionic-angular';
+</code></pre>
+<p>And then listen for <code>ready</code>:</p>
+<pre><code class="language-javascript">
+constructor(public catProvider:CatProvider, private navController: NavController, platform:Platform) {
+  this.loadCats();
+
+  platform.ready().then(() =&gt; {
+
+</code></pre>
+<p>That was step one. Step two was to switch to using the <em>incredibly cool</em> <a href="https://marketplace.visualstudio.com/items?itemName=vsmobile.cordova-tools">Cordova Tools</a> extension for Visual Studio Code. This is an extension created by Microsoft that provides a whole set of awesomeness for folks doing Cordova/Ionic apps with Code. Most recently, they <a href="https://blogs.msdn.microsoft.com/visualstudio/2016/06/16/apache-cordova-the-browser-based-workflow/">added</a> support for using Ripple within the editor. I haven't talked about Ripple in a long time, but for folks who don't remember, it was a browser based testing system for Cordova apps that included some cool extras - like being able to fake GPS and accelerometer data.</p>
+<p>So I set up my project for debugging (see the <a href="https://blogs.msdn.microsoft.com/visualstudio/2016/06/16/apache-cordova-the-browser-based-workflow/">earlier link on Microsoft's blog</a> for more information) and then fired it off. Now - it is a bit difficult to use this on a laptop as it is a bit cramped, but I was able to debug my application and 'shake' it via Code:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/07/shake1.jpg" alt="Screen shot"></p>
+<p>Nice. So at this point, I needed to do two things - monitor the device motion and then determine when a 'shake' happens. The first one is easy:</p>
+<pre><code class="language-javascript">
+var subscription = DeviceMotion.watchAcceleration({frequency:200}).subscribe(acc =&gt; {
+</code></pre>
+<p>The second one... not so much. Luckily, I've done this before in a demo. Basically - I remember the device's previous values for acceleration, compare it to the current set of values, and if it is &quot;enough&quot;, consider it a &quot;movement&quot;. I can then keep track of movements and when enough has happened, I can consider it a shake. Obviously this can be tweaked. You would need to test on a real device and see what &quot;feels&quot; right. Here is the updated code with that logic in place:</p>
+<pre><code class="language-javascript">
+import {Component} from '@angular/core';
+import {NavController,Platform} from 'ionic-angular';
+import {CatProvider} from '../../providers/cat-provider/cat-provider';
+import {DeviceMotion} from 'ionic-native';
+
+@Component({
+  providers: [CatProvider],
+  templateUrl: 'build/pages/home/home.html'
+})
+export class HomePage {
+
+  public cats:Array&lt;Object&gt;;
+  private lastX:number;
+  private lastY:number;
+  private lastZ:number;
+  private moveCounter:number = 0;
+
+  constructor(public catProvider:CatProvider, private navController: NavController, platform:Platform) {
+    this.loadCats();
+
+    platform.ready().then(() =&gt; {
+      var subscription = DeviceMotion.watchAcceleration({frequency:200}).subscribe(acc =&gt; {
+        //console.log(acc);
+
+        if(!this.lastX) {
+          this.lastX = acc.x;
+          this.lastY = acc.y;
+          this.lastZ = acc.z;
+          return;
+        }
+
+        let deltaX:number, deltaY:number, deltaZ:number;
+        deltaX = Math.abs(acc.x-this.lastX);
+        deltaY = Math.abs(acc.y-this.lastY);
+        deltaZ = Math.abs(acc.z-this.lastZ);
+
+        if(deltaX + deltaY + deltaZ &gt; 3) {
+          this.moveCounter++;
+        } else {
+          this.moveCounter = Math.max(0, --this.moveCounter);
+        }
+
+        if(this.moveCounter &gt; 2) { 
+          console.log('SHAKE');
+          this.loadCats(); 
+          this.moveCounter=0; 
+        }
+
+        this.lastX = acc.x;
+        this.lastY = acc.y;
+        this.lastZ = acc.z;
+
+      });
+    });
+
+  }
+
+  loadMore() {
+    console.log('load more cats');
+    this.loadCats();
+  }
+
+  loadCats() {
+    this.catProvider.load().then(result =&gt; {
+      this.cats = result;
+    });
+  }
+
+}
+</code></pre>
+<p>You can find the complete source code for this up on GitHub: <a href="https://github.com/cfjedimaster/Cordova-Examples/tree/master/ionicnative_shake">https://github.com/cfjedimaster/Cordova-Examples/tree/master/ionicnative_shake</a>. Let me know if you have any questions by leaving me a comment below!</p>
+}

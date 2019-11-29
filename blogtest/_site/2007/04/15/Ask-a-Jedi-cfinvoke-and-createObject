@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>Gary sent in a question I've dealt with in the past, but I hear it brought up multiple times so I thought I'd share my response here. First, Gary's question:</p>
+<blockquote>
+Simply asked, given the two examples below, how are these two methods different and what are the pros and cons of each. I'm leaning towards 'why is the creatobj method preferred?' This all goes to having a better understanding of OOP.
+<p>&lt;cfset application.blog =
+createObject(&quot;component&quot;,&quot;org.camden.blog.blog&quot;).init(blogname)&gt;</p>
+<p>&lt;cfinvoke
+component=&quot;org.camden.blog.blog&quot; method=&quot;init&quot;
+returnvariable=&quot;application.blog&quot;&gt;<br />
+&lt;cfinvokeargument name=&quot;name&quot;
+value=&quot;#blogname#&quot;&gt;<br>
+&lt;/cfinvoke&gt;</p>
+</blockquote>
+<p>There are few different ways to answer this. First off - the result of both these code blocks is the exact same. They both call the init method on a CFC named blog, pass in a variable, and assign the result to a variable named application.blog. So if you consider the results - they are the same.</p>
+<p>Technically of course they are different. One uses createObject and one uses cfinvoke. Under the hood, I'd be willing to bet they compile down to pretty much the same code.</p>
+<p>So which is better?</p>
+<p>The createObject method is typically what is used by most developers. I'm not sure I'd call it a &quot;standard&quot; but I think you would see that in code more often than the cfinvoke version.</p>
+<p>The cfinvoke method has the benefit of working on hosts, like GoDaddy, that block access to createObject.</p>
+<p>What do <i>I</i> do? When creating an instance of an object using the init method, I'll always use createObject. When calling a method on a CFC, I'll use simple script format (foo = mycfc.goo()) unless my arguments have complete logic in them. If they do - I'll use cfinvoke since you can conditionally include arguments. Here is an example:</p>
+<code>
+&lt;cfinvoke component="#application.blog#" method="goo"&gt;
+&lt;cfif hour(now()) lt 10&gt;
+  &lt;cfinvokeargument name="morningmode" value="true"&gt;
+&lt;/cfif&gt;
+  &lt;cfinvokeargument name="name" value="dharma"&gt;
+&lt;/cfinvoke&gt;
+</code>}

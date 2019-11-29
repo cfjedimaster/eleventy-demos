@@ -1,0 +1,19 @@
+<h1>Post</h1>
+
+<p>For those of you still on ColdFusion 9 or running ColdFusion 10 Standard edition, this tip may help you. A reader wanted to know how to have a CFCHART legend with only one value in it. I wasn't quite sure what he meant, so I asked him for a quick demo.</p>
+</more>
+<p>Take a simple static chart with one series, like the code below.</p>
+<script src="https://gist.github.com/4568107.js"></script>
+<p>When displayed, note that the legend shows one item for each data point.</p>
+<img src="https://static.raymondcamden.com/images/screenshot56.png" />
+<p>If you add another series to the chart, then the legend switches to identifying each series, not each point. Turns out, this is actually documented:</p>
+<blockquote>
+Added the new attribute showLegend to the chart style files, which are the XML files located in the charting\styles directory- This attribute displays an entry for each point and is applicable only to charts that contain a single series. By default, the value of
+showLegend is set to true. To turn off this feature, you can either modify the setting in all the chart style files, or use a custom style file.
+</blockquote>
+<p>How to change this is actually described right there in the note - by using a custom style file. I played around in the chart editor and discovered that the &quot;ShowColumnLegend&quot; setting (under the Legend menu) is the crucial change. Turning this off and using the XML for your style corrects it. Here is an example:</p>
+<script src="https://gist.github.com/4568156.js"></script>
+<p>Which results in...</p>
+<img src="https://static.raymondcamden.com/images/screenshot57.png" />
+<p>As an aside, the new HTML-based charts in ColdFusion 10 Enterprise automatically have this behavior.</p>
+}

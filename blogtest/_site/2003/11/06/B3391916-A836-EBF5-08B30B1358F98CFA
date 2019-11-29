@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I ran into a wierd issue today, probably because I'm a bit slow, so to hope others avoid my dumb mistake, I thought I'd share.</p>
+<p>For some reason, all my aspx files were being color coded incorrectly. Instead of nice coloring, HS+ was displaying all asp code as one big yellow block.</p>
+<p>I had hit F8, selected File Settings, and went into File Extension Manager (which was a mistake by the way). I double checked the Active Server Pages type - and saw that it did indeed have aspx as an extension.</p>
+<p>Of course, my mistake was in not going into the Color Coding section. There I plainly saw ASP-VBScript but only with asp;asa, not aspx. Once I added the extension, it worked great.</p>
+}

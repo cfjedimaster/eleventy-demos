@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>My first ASP site (although an extremely simple one) was released yesterday:</p>
+<p><a href="http://www.footjoy.com/sciflex/">http://www.footjoy.com/sciflex</a></p>
+<p>I can't take credit for the design or flash - all I did was build the pages and do the application logic in ASP. Also, a lot of it was made easier by our <a href="http://www.mindseyeElement.com">Mindseye Element</a> product (available in CF as well - forgive the blatant plug!).</p>
+<p>I have to say - ASP isn't as bad as I thought it was - although my right hand kept wanting to type ; at the end of each line. (Interesting discussion for later - language mechanics and how it affects your typing style - or put another way - can a programming language have a physical affect on the coder?) I can say I'm defintely interested in taking a look at ASP.Net. From my <i>very</i> initial looks at it - I do like the way it handles events. It adds a more .... not sure of the right word... more event-driven feeling to web development. Again - that's probably not the best word.</p>
+}

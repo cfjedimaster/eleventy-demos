@@ -1,0 +1,30 @@
+<h1>Post</h1>
+
+<p>A little birdie just let me know that a <i>very</i> cool Spry update is on the way. It includes a feature I've been asking about for a while now - custom display functions. What do I mean? Consider the following example (thanks Donald Booth for the code):</p>
+<code>
+&lt;script type="text/javascript"&gt;
+<p>function FormattedPrice(region, lookupFunc)
+{
+return &quot;$&quot; + parseInt(lookupFunc(&quot;{dsProducts::price}&quot;)).toFixed(2);
+}
+&lt;/script&gt;</p>
+<p>...</p>
+<p>&lt;div spry:region=&quot;dsProducts&quot;&gt;
+&lt;ul spry:repeatchildren=&quot;dsProducts&quot;&gt;
+&lt;li&gt;{name} - {function::FormattedPrice} &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+</code></p>
+<p>Spry will now recognize function:: as a custom JavaScript function. In this example, it formats a price to include a dollar sign and 2 decimal places.</p>
+<p>You can even use functions in conditions. Consider:</p>
+<code>
+&lt;script&gt;
+<p>function checkName(rgn, doIt)
+{
+return doIt('{name}') == 'Adobe Studio 8';
+}</p>
+<p>&lt;/script&gt;</p>
+<p>&lt;div spry:if=&quot;function::checkName&quot;&gt;
+</code></p>
+<p>This could really simplify complex display code. When will this be released? Soon...</p>
+}

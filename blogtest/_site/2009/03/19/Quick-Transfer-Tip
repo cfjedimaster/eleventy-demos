@@ -1,0 +1,32 @@
+<h1>Post</h1>
+
+<p>Using an ORM means never having to write SQL. Well, ok, maybe not. As much as I love Transfer (and am beginning to love Hibernate), there are still times when you have to resort to writing SQL. Here is a quick tip.</p>
+<p>Using getDatasource() to get access to the datasource configuration? If so, you may have code that looks like this:</p>
+<code>
+&lt;cffunction name="getFoo" access="public" returnType="numeric" output="false"&gt;
+	&lt;cfset var ds = getDatasource()&gt;
+	&lt;cfset var foo = ""&gt;
+<pre><code>&amp;lt;cfquery name=&quot;foo&quot; datasource=&quot;#ds.getName()#&quot;&amp;gt;
+select	sum(rabbits) as total
+from	huntinglog
+where	club_no = &amp;lt;cfqueryparam cfsqltype=&quot;cf_sql_varchar&quot; value=&quot;#getId()#&quot;&amp;gt;
+&amp;lt;/cfquery&amp;gt;
+&amp;lt;cfreturn val(foo.total)&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>Notice I pass ds.getName() to load the datasource name. My datasource.xml looks like so:</p>
+<code>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;datasource&gt;
+  &lt;name&gt;romulanale&lt;/name&gt;
+  &lt;username&gt;&lt;/username&gt;
+  &lt;password&gt;&lt;/password&gt;
+&lt;/datasource&gt;
+</code>
+<p>Notice that I did not specify a username/password. But what happens if the production system needs this? It is trivial to supply it in the XML. Transfer will use it. But my query above will fail. Luckily I can just switch to:</p>
+<code>
+&lt;cfquery name="foo" datasource="#ds.getName()#" username="#ds.getUsername()#" password="#ds.getPassword()#"&gt;
+</code>
+<p>What's nice is that this works just fine when the username/password values are blank. Now I'm set no matter what.</p>
+}

@@ -1,0 +1,52 @@
+<h1>Post</h1>
+
+<p>Just a quick note here to share a jQuery plugin that <a href="http://www.cfsilence.com/">Todd Sharp</a> shared with me: <a href="http://bassistance.de/jquery-plugins/jquery-plugin-prettydate/">Prettydate</a>. Prettydate takes dates (which you would hide within your DOM) and formats them in a more generic &quot;time since..&quot; form. So for example, a date within a few seconds will post as &quot;just now&quot;, whereas an entry a few minutes old will display as &quot;5 minutes old.&quot; The plugin supports dates up to one month old and will automatically update while your users look at a page. This creates a cool effect. They may initially see:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/pd1.png" />
+<p>
+But within a few minutes this will be:
+<p>
+<img src="https://static.raymondcamden.com/images/cfjedi/pd2.png" />
+<p>
+I created a quick ColdFusion script that demonstrates this. The one thing you have to remember is that you must convert the dates to ISO8601 format. In the following example I've used hard coded dates but obviously you could get this data from a database:
+<p>
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;/jquery/jquery.prettydate.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(document).ready(function() {
+$(&quot;div#content &gt; p.article &gt; span&quot;).prettyDate()
+})
+&lt;/script&gt;
+&lt;style&gt;
+.date {
+font-family: Arial, Helvetica, sans-serif;
+font-size: 10px;	
+display:block;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;</p>
+<p>&lt;cfset articles = [
+{title=&quot;Article AAA&quot;, date=dateAdd(&quot;s&quot;, -50, now())},
+{title=&quot;Article One&quot;, date=dateAdd(&quot;n&quot;, -5, now())},
+{title=&quot;Article Two&quot;, date=dateAdd(&quot;n&quot;, -58, now())}
+]&gt;</p>
+<p>&lt;div id=&quot;content&quot;&gt;
+&lt;cfloop index=&quot;article&quot; array=&quot;#articles#&quot;&gt;
+&lt;cfoutput&gt;
+&lt;p class=&quot;article&quot;&gt;
+&lt;span class=&quot;title&quot;&gt;&lt;b&gt;#article.title#&lt;/b&gt;&lt;/span&gt;&lt;br/&gt;
+&lt;span class=&quot;date&quot; title=&quot;#dateFormat(article.date,'yyyy-mm-dd')#T#timeFormat(article.date,'HH:mm:ss')#&quot;&gt;&lt;/span&gt;
+Some kind of teaser here...&lt;br/&gt;
+&lt;/p&gt;
+&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+&lt;/div&gt;</p>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>
+The screen shots I pasted above show the result of this example. For more docs and examples, see the <a href="http://bassistance.de/jquery-plugins/jquery-plugin-prettydate/">plugin's home page</a>. Note - this is an update to a plugin John Resig originally created so if you Google, make sure you get the new one.}

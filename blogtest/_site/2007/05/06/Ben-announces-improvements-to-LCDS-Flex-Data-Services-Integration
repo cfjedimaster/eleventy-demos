@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>There will be a new gateway that can be used to notify a data services destination of changes in the data being managed by the destination.</p>
+<p>Assemblers can return queries directly from the fill function withouth converting each row to a value object.</p>
+<p>Assemblers can use structs instead of CFCs to represent data. The structure can contain type info which will be used as the ActionScript type when sent to the Flex application.</p>
+<p>Flex Data Service can be integrated in the CF install. This way CF can call Flex APIs directly (rather than via the current RMI connection) providing a significant performance boost.</p>
+<p>So summary - it looks like it will be a heck of a lot easier to work with CF and Flex Data Services (which is now Live Cycle Data Services, hence the LCDS above). You actually can do it when you install CF (very, very nice!).</p>
+}

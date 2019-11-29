@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Thanks to Aaron West for pointing a bug in survey.cfc. Not only was there a bug, I accidently used the application scope for DSN instead of the local variable. The <a href="http://ray.camdenfamily.com/downloads/soundings.zip">zip</a> has been updated.</p>
+}

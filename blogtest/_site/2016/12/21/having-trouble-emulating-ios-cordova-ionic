@@ -1,0 +1,16 @@
+<h1>Post</h1>
+
+<p>Ok, so this one was a doozie. A few days ago, I got a bit ticked off that whenever I emulated iOS I was getting an iPhone 5 device. I know it's just a simulation, but I wanted an iPhone 6 or higher to be the default. It's easy enough to pass a flag to the emulate command to tell it what device/sdk to use (<a href="https://www.raymondcamden.com/2015/10/13/important-note-for-targeting-ios-emulators-in-cordova%5D">Important note for targeting iOS Emulators in Cordova</a>), but as I have the memory of a kitten, I thought it might be easier to simple <em>delete</em> the older emulators.</p>
+<p>So I did that. Because why not? If you're curious how that's done - open up XCode, go to Window/Devices.</p>
+<img title="Devices" src="https://static.raymondcamden.com/images/2016/12/cordova1.png" class="imgborder">
+<p>Then just right click on a device and select delete:</p>
+<img title="I'm not building for a damn TV!" src="https://static.raymondcamden.com/images/2016/12/cordova2.png" class="imgborder">
+<p>So yeah, I did that, and then a day or so later began getting errors trying to emulate iOS:</p>
+<p><img src="https://static.raymondcamden.com/images/2016/12/cordova3.png" alt="Error"></p>
+<p>You'll notice that I'm calling out something specific here - the iPhone5 target. For some reason, Cordova was trying to use the iPhone 5 even though I had deleted it. I confirmed this was the issue by opening up the XCode project Cordova had created and I could emulate just fine from there.</p>
+<p>Long story short - I filed a bug report (<a href="https://issues.apache.org/jira/browse/CB-12287">CB-12287</a>) and Cordova contributor and all around kick ass dev <a href="https://www.photokandy.com/">Kerri Shotts</a> figured out the problem. Turns out one script has a hard coded call to iPhone 5 while another script was updated to use the 'last of a list' of valid emulators. So basically it's a real bug (and not just something else I did stupid).</p>
+<p>Kerri provided a workaround:</p>
+<pre><code>cordova emulate ios --buildFlag=&quot;-destination platform=iOS Simulator,name=iPhone 7 Plus&quot;
+</code></pre>
+<p>Or do what I did - in the project I'm working on I simply modified the script to use the iPhone 7.</p>
+}

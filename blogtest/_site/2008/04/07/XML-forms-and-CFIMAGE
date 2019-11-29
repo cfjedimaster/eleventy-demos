@@ -1,0 +1,73 @@
+<h1>Post</h1>
+
+<p>I was working with Dan Plesse on an odd issue he had with CF8 Image Captcha's and CFFORM. No matter what he did, he couldn't get the captcha to show up in the form. My first though was a broken CFIDE or some other 'special' folder, but that wasn't the case. If we viewed source on his page, there was no IMG tag at all. I finally got it down to one very simple example:</p>
+<!--more-->
+<code>
+&lt;cfform name="register"
+        id="register"
+        format="XML"
+        skin="blue"
+        style="border-left-style:groove; padding:0px; width:auto"
+        enctype="multipart/form-data"
+        action="&lt;cfoutput&gt;#CGI.script_name#&lt;/cfoutput&gt;"
+        method="post"
+        &gt;
+  &lt;!--- Use cfformgroup to put the first and last names on a single line. ---&gt;
+<p>&lt;cfformgroup type=&quot;vertical&quot; label=&quot;Step 4 - captcha  &quot;&gt;</p>
+<pre><code>&amp;lt;cfinput type=&quot;text&quot; name=&quot;captcha_test&quot;  value=&quot;&quot; size=&quot;7&quot;
+</code></pre>
+<p>label=&quot;Enter text that  you see in the image:&quot; /&gt;
+&lt;img src=&quot;http://images.pcworld.com/images/header/logo_hd.jpg&quot;&gt;</p>
+<pre><code>&amp;lt;cfimage
+   action=&quot;captcha&quot;
+   height=&quot;60&quot;
+   width=&quot;200&quot;
+   text=&quot;moon pies&quot;
+   difficulty=&quot;low&quot;
+   fonts=&quot;verdana,arial,times new roman,courier&quot;
+   fontsize=&quot;15&quot;   /&amp;gt;
+</code></pre>
+<p>&lt;/cfformgroup&gt;</p>
+<p>&lt;/cfform&gt;
+</code></p>
+<p>I finally figured out that the issue was with the format=&quot;xml&quot;. When I removed that, it worked perfectly.</p>
+<p>And then I did something magical. I actually read the docs on XML forms. (This is a feature in ColdFusion I've never used in production, nor have I played with it much.) The docs clearly say that any non-form items will be stripped. To keep them in...</p>
+<blockquote>
+<p>
+ColdFusion does not process inline text or standard HTML tags when it generates an XML form; therefore, you use
+the cfformitem tag to add formatted HTML or plain text blocks and any other display elements, such as horizontal
+and vertical rules, to your form.
+</p>
+</blockquote>
+<p>So taking the above code, we can fix it right away like so:</p>
+<code>
+&lt;cfform name="register"
+        id="register"
+        format="XML"
+        skin="blue"
+        style="border-left-style:groove; padding:0px; width:auto"
+        enctype="multipart/form-data"
+        action="&lt;cfoutput&gt;#CGI.script_name#&lt;/cfoutput&gt;"
+        method="post"
+        &gt;
+  &lt;!--- Use cfformgroup to put the first and last names on a single line. ---&gt;
+<p>&lt;cfformgroup type=&quot;vertical&quot; label=&quot;Step 4 - captcha  &quot;&gt;</p>
+<pre><code>&amp;lt;cfinput type=&quot;text&quot; name=&quot;captcha_test&quot;  value=&quot;&quot; size=&quot;7&quot;
+</code></pre>
+<p>label=&quot;Enter text that  you see in the image:&quot; /&gt;
+&lt;img src=&quot;http://images.pcworld.com/images/header/logo_hd.jpg&quot;&gt;</p>
+<pre><code>&amp;lt;cfformitem type=&quot;html&quot;&amp;gt;
+&amp;lt;cfimage
+   action=&quot;captcha&quot;
+   height=&quot;60&quot;
+   width=&quot;200&quot;
+   text=&quot;moon pies&quot;
+   difficulty=&quot;low&quot;
+   fonts=&quot;verdana,arial,times new roman,courier&quot;
+   fontsize=&quot;15&quot;   /&amp;gt;
+&amp;lt;/cfformitem&amp;gt;
+</code></pre>
+<p>&lt;/cfformgroup&gt;</p>
+<p>&lt;/cfform&gt;
+</code></p>
+}

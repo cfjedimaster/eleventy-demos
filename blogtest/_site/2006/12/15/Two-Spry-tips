@@ -1,0 +1,19 @@
+<h1>Post</h1>
+
+<p>I've got 30 minutes before my next pain pill so I'm having a bit of clarity. I thought I'd share two Spry tips that Kin and Donald (the Spry Guys) shared with me. Neither of these relate to the new 1.4 release, they are just things I missed before. I have to say, for Spry being &quot;incomplete&quot;, it certainly has a lot in there!</p>
+<p>Tip #1: If you want to grab a document node by id, you would typically do this in JavaScript:</p>
+<code>
+var myField = document.getElementById('something');
+</code>
+<p>However, Spry has supported the Prototype shortcut for a while now:</p>
+<code>
+var myField = $('something');
+</code>
+<p>Pretty handy shortcut.</p>
+<p>Tip #2: When working with datasets, you may notice that Spry is smart enough to <i>not</i> make an HTTP request if you don't actually have any Spry regions on the page that make use of the dataset. Smart. But what if you want Spry to make the request anyway? Use the loadData() function on dataset:</p>
+<code>
+var mydata = new Spry.Data.XMLDataSet("foo.xml","//item"); 
+mydata.loadData();
+</code>
+<p>Enjoy.</p>
+}

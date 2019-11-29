@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Adobe released a security patch yesterday:</p>
+<p><a href="http://www.adobe.com/support/security/bulletins/apsb07-02.html">Patch available for ColdFusion MX 7 information disclosure issue</a></p>
+<p>For some reason this isn't yet on the production notification feed but you can find it on the <a href="http://www.adobe.com/support/security/#coldfusion">Security  bulletins</a> page. (Did you know about that page?)</p>
+}

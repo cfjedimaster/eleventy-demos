@@ -1,0 +1,50 @@
+<h1>Post</h1>
+
+<p>When working on <a href="http://coldfire.riaforge.org">ColdFire 0.0.3</a>, I added a new UDF that would take a string and split it into an array. This was used to split the header strings up into more manageable size items. The UDF worked fine (as far as I knew), but then Adam reported he had issues using the values on his side. Check out the UDF and see if you can spot the problem. (No fair looking at the code in the released version.)</p>
+<!--more-->
+<code>
+&lt;cffunction name="sizeSplit" output="false" returnType="array" hint="Splits a string into an array of N chars"&gt;
+	&lt;cfargument name="string" type="string" required="true"&gt;
+	&lt;cfargument name="size" type="numeric" required="true"&gt;
+	&lt;cfset var result = arrayNew(1)&gt;
+<pre><code>&amp;lt;cfif len(arguments.string) lt arguments.size&amp;gt;
+	&amp;lt;cfset result[1] = arguments.string&amp;gt;
+	&amp;lt;cfreturn result&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfloop condition=&quot;len(arguments.string) gt arguments.size&quot;&amp;gt;
+	&amp;lt;cfset arrayAppend(result, left(arguments.string, arguments.size))&amp;gt;
+	&amp;lt;cfset arguments.string = right(arguments.string, len(arguments.string)-arguments.size)&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+
+&amp;lt;cfreturn result&amp;gt;	
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>The code is rather simple. You pass a string and a size for the sections. The code is smart enough to detect a small string and not bother looping. If it does have to loop, it adds the portion to the array and then cuts down the original string.</p>
+<p>Ok, see it yet?</p>
+<p>Well what happens if the size of my string isn't evenly divisible by the size I want? That's right - I have left overs. Adam was having issues because I was returning incomplete arrays back to him. Luckily it was easy enough to solve:</p>
+<code>
+&lt;cffunction name="sizeSplit" output="false" returnType="array" hint="Splits a string into an array of N chars"&gt;
+	&lt;cfargument name="string" type="string" required="true"&gt;
+	&lt;cfargument name="size" type="numeric" required="true"&gt;
+	&lt;cfset var result = arrayNew(1)&gt;
+<pre><code>&amp;lt;cfif len(arguments.string) lt arguments.size&amp;gt;
+	&amp;lt;cfset result[1] = arguments.string&amp;gt;
+	&amp;lt;cfreturn result&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfloop condition=&quot;len(arguments.string) gt arguments.size&quot;&amp;gt;
+	&amp;lt;cfset arrayAppend(result, left(arguments.string, arguments.size))&amp;gt;
+	&amp;lt;cfset arguments.string = right(arguments.string, len(arguments.string)-arguments.size)&amp;gt;
+&amp;lt;/cfloop&amp;gt;
+&amp;lt;cfif len(arguments.string)&amp;gt;
+	&amp;lt;cfset arrayAppend(result,arguments.string)&amp;gt;
+&amp;lt;/cfif&amp;gt;
+
+&amp;lt;cfreturn result&amp;gt;	
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>Notice now I check and see if I have anything left over. If so - I simply add it to the end of the array.</p>
+}

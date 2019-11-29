@@ -1,0 +1,396 @@
+<h1>Post</h1>
+
+<p>Welcome to the third entry in the <a href="http://ray.camdenfamily.com/index.cfm/2005/9/20/Contest-Shall-We-Play-a-Game">ColdFusion contest</a> that I'm running. For those who are wondering, there were seven entries, and my goal is to wrap this up by next Friday, otherwise I won't be able to name a winner till after MAX. If you haven't looked at the previous entries, here are the links: <a href="http://ray.camdenfamily.com/index.cfm/2005/10/4/ColdFusion-Contest-Entry-Examined">Entry 1</a>, <a href="http://ray.camdenfamily.com/index.cfm/2005/10/5/ColdFusion-Contest-Entry-Examind--Part-2">Entry 2</a>.</p>
+<!--more-->
+<p>The third entry may be viewed <a href="http://ray.camdenfamily.com/demos/contest1/entry3/HiLo.cfm">here</a>. As before, I suggest you go play with it a bit before reading the rest of the entry. The code for the entry is listed below:</p>
+<code>
+&lt;cfsetting enablecfoutputonly="Yes" /&gt;
+&lt;!---
+HiLo
+We likes games...
+<p>To do:</p>
+<ol>
+<li>Handle creative users (guessing number outside of new hi-lo range, guessing same number twice, etc.)</li>
+<li>Tighten up code to conform to xhtml transitional and css standards.</li>
+<li>More appealing display.</li>
+<li>Mask goal value when saved in URL.</li>
+<li>etc.
+---&gt;</li>
+</ol>
+<p>&lt;cfset temp=&quot;#StructInsert(Request,'s_CurrentTemplateFile',GetFileFromPath(GetCurrentTemplatePath()),True)#&quot; /&gt;</p>
+<p>&lt;cfset temp=&quot;#StructInsert(Request,'i_GoalMin',1,True)#&quot; /&gt;
+&lt;cfset temp=&quot;#StructInsert(Request,'i_GoalMax',100,True)#&quot; /&gt;</p>
+<p>&lt;cfparam name=&quot;URL.i_Goal&quot;
+default=&quot;&quot; /&gt;
+&lt;cfparam name=&quot;Form.i_Goal&quot;
+default=&quot;#URL.i_Goal#&quot; /&gt;
+&lt;cfset temp=&quot;#StructInsert(Request,'i_Goal',Form.i_Goal,True)#&quot; /&gt;
+&lt;cfset temp=&quot;#StructInsert(Request,'i_GoalFormValue',Request.i_Goal,True)#&quot; /&gt;</p>
+<p>&lt;cfparam name=&quot;URL.lsti_GuessHistory&quot;
+default=&quot;&quot; /&gt;
+&lt;cfparam name=&quot;Form.lsti_GuessHistory&quot;
+default=&quot;#URL.lsti_GuessHistory#&quot; /&gt;
+&lt;cfset temp=&quot;#StructInsert(Request,'lsti_GuessHistory',Form.lsti_GuessHistory,True)#&quot; /&gt;</p>
+<p>&lt;cfparam name=&quot;URL.i_GuessLast&quot;
+default=&quot;&quot; /&gt;
+&lt;cfparam name=&quot;Form.i_GuessLast&quot;
+default=&quot;#URL.i_GuessLast#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request,'i_GuessLast',Form.i_GuessLast,True)#&quot; /&gt;</p>
+<p>&lt;cfset temp = &quot;#StructInsert(Request,'s_GoalDisplay','???',True)#&quot; /&gt;</p>
+<p>&lt;cfset temp = &quot;#StructInsert(Request,'str_Comp',StructNew(),True)#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'lsti_GuessHistory','',True)#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'lsti_GuessHistorySorted','',True)#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessCount',0,True)#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'idx_Hi',0,True)#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'idx_Lo',1,True)#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'s_GoalDisplay','???',True)#&quot; /&gt;</p>
+<p>&lt;cfswitch expression=&quot;#Len(Request.i_Goal)#&quot;&gt;
+&lt;cfcase value=&quot;0&quot;&gt;</p>
+<pre><code>  &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_HTMLTitle','New Game',True)#&quot; /&amp;gt;
+
+  &amp;lt;cfset temp = &quot;#Randomize(DayOfYear(Now()) + Hour(Now()) + Minute(Now()) + Second(Now()))#&quot; /&amp;gt;
+  &amp;lt;cfset temp = &quot;#StructInsert(Request,'i_Goal',RandRange(Val(Request.i_GoalMin),Val(Request.i_GoalMax)),True)#&quot; /&amp;gt;
+  &amp;lt;cfset temp = &quot;#StructInsert(Request,'i_GoalFormValue',Request.i_Goal,True)#&quot; /&amp;gt;
+  
+  &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_Message','Starting a new game.  Enter a number below to begin.',True)#&quot; /&amp;gt;
+  &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormLegend','Let#Chr(39)#s get started...',True)#&quot; /&amp;gt;
+  &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormPrompt','Enter your first guess:',True)#&quot; /&amp;gt;
+  &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormButton','Click here to submit',True)#&quot; /&amp;gt;
+  &amp;lt;cfset temp = &quot;#StructInsert(Request,'lsti_GuessHistory','',True)#&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/cfcase&gt;
+&lt;cfdefaultcase&gt;</p>
+<pre><code>  &amp;lt;cfswitch expression=&quot;#((IsNumeric(Request.i_GuessLast)) AND
+                          (Request.i_GuessLast GE Request.i_GoalMin) AND 
+                          (Request.i_GuessLast LE Request.i_GoalMax))#&quot;&amp;gt;
+     &amp;lt;cfcase value=&quot;True&quot;&amp;gt;
+
+        &amp;lt;cfset temp = &quot;#StructInsert(Request,'lsti_GuessHistory',ListAppend(Request.lsti_GuessHistory,Request.i_GuessLast,','),True)#&quot; /&amp;gt;         
+     
+        &amp;lt;cfswitch expression=&quot;#CompareNoCase(Request.i_GuessLast,Request.i_Goal)#&quot;&amp;gt;
+           &amp;lt;cfcase value=&quot;0&quot;&amp;gt;
+
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_HTMLTitle','You win!',True)#&quot; /&amp;gt;
+              &amp;lt;cfset temp = &quot;#StructUpdate(Request,'s_GoalDisplay',Request.i_Goal)#&quot; /&amp;gt;
+              
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'i_GoalFormValue','',True)#&quot; /&amp;gt;
+
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_Message','Congratulations! Your guess of #Val(Request.i_GuessLast)# was correct!',True)#&quot; /&amp;gt;
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormLegend','Start a new game?',True)#&quot; /&amp;gt;
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormPrompt','',True)#&quot; /&amp;gt;
+
+              
+              &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessHi',Request.i_GoalMax,True)#&quot; /&amp;gt;
+              &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessLo',Request.i_GoalMin,True)#&quot; /&amp;gt;
+              
+              &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessLast',Val((Request.str_Comp.i_GuessLo + Request.str_Comp.i_GuessHi + RandRange(0,1))\2),True)#&quot; /&amp;gt;
+
+              &amp;lt;cfloop condition=&quot;(Request.str_Comp.i_GuessLast NEQ Request.i_Goal)&quot;&amp;gt;
+                 &amp;lt;cfset temp  =&quot;#StructUpdate(Request.str_Comp,'lsti_GuessHistory',ListAppend(Request.str_Comp.lsti_GuessHistory,Request.str_Comp.i_GuessLast,','))#&quot; /&amp;gt;
+
+                 &amp;lt;cfswitch expression=&quot;#(Request.str_Comp.i_GuessLast GT Request.i_Goal)#&quot;&amp;gt;
+                    &amp;lt;cfcase value=&quot;True&quot;&amp;gt;
+                       &amp;lt;cfset temp = &quot;#StructUpdate(Request.str_Comp,'i_GuessHi',Request.str_Comp.i_GuessLast - 1)#&quot; /&amp;gt;
+                    &amp;lt;/cfcase&amp;gt;
+                    &amp;lt;cfdefaultcase&amp;gt;
+
+                       &amp;lt;cfswitch expression=&quot;#(Request.str_Comp.i_GuessLast LT Request.i_Goal)#&quot;&amp;gt;
+                          &amp;lt;cfcase value=&quot;True&quot;&amp;gt;
+                             &amp;lt;cfset temp = &quot;#StructUpdate(Request.str_Comp,'i_GuessLo',Request.str_Comp.i_GuessLast + 1)#&quot; /&amp;gt;
+                          &amp;lt;/cfcase&amp;gt;
+                       &amp;lt;/cfswitch&amp;gt;
+
+                    &amp;lt;/cfdefaultcase&amp;gt;
+                 &amp;lt;/cfswitch&amp;gt;
+                 
+                 &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessLast',Val((Request.str_Comp.i_GuessLo + Request.str_Comp.i_GuessHi + RandRange(0,1))\2),True)#&quot; /&amp;gt;
+
+                 &amp;lt;cfswitch expression=&quot;#(ListFindNoCase(Request.str_Comp.lsti_GuessHistory,Request.str_Comp.i_GuessLast,','))#&quot;&amp;gt;
+                    &amp;lt;cfcase value=&quot;True&quot;&amp;gt;
+                    
+                       &amp;lt;cfswitch expression=&quot;#(Request.str_Comp.i_GuessLast LT Request.str_Comp.i_GuessHi)#&quot;&amp;gt;
+                          &amp;lt;cfcase value=&quot;True&quot;&amp;gt;                         
+                             &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessLast',Val(Request.str_Comp.i_GuessLast + 1),True)#&quot; /&amp;gt;
+                          &amp;lt;/cfcase&amp;gt;
+                          &amp;lt;cfdefaultcase&amp;gt;
+                             &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessLast',Val(Request.str_Comp.i_GuessLast - 1),True)#&quot; /&amp;gt;
+                          &amp;lt;/cfdefaultcase&amp;gt;
+                       &amp;lt;/cfswitch&amp;gt;
+                 
+                    &amp;lt;/cfcase&amp;gt;
+                 &amp;lt;/cfswitch&amp;gt;
+                 
+              &amp;lt;/cfloop&amp;gt;
+    
+              &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'lsti_GuessHistorySorted',
+</code></pre>
+<p>ListSort(Request.str_Comp.lsti_GuessHistory,'Numeric','Desc',','),True)#&quot; /&gt;
+&lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'i_GuessCount',ListLen(Request.str_Comp.lsti_GuessHistory,','),True)#&quot; /&gt;</p>
+<pre><code>              &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'idx_Hi',ListFindNoCase(Request.str_Comp.lsti_GuessHistorySorted,Request.str_Comp.i_GuessHi + 1,','),True)#&quot; /&amp;gt;
+              &amp;lt;cfset temp = &quot;#StructInsert(Request.str_Comp,'idx_Lo',Request.str_Comp.idx_Hi + 1,True)#&quot; /&amp;gt;
+
+              
+           &amp;lt;/cfcase&amp;gt;
+           &amp;lt;cfdefaultcase&amp;gt;
+           
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_HTMLTitle','Guess Again',True)#&quot; /&amp;gt;
+                 
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_Message','You are almost there...',True)#&quot; /&amp;gt;
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormLegend','Guess Again',True)#&quot; /&amp;gt;
+              &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormPrompt','Enter your next guess:',True)#&quot; /&amp;gt;
+           &amp;lt;/cfdefaultcase&amp;gt;
+        &amp;lt;/cfswitch&amp;gt;
+
+     &amp;lt;/cfcase&amp;gt;
+     &amp;lt;cfdefaultcase&amp;gt;
+
+        &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_HTMLTitle','Oops',True)#&quot; /&amp;gt;
+           
+        &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_Message','Resuming from saved game or you entered an invalid number.  Please enter a number between #Val(Request.i_GoalMin)# and #Val(Request.i_GoalMax)# to continue.',True)#&quot; /&amp;gt;
+        &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormLegend','Try again',True)#&quot; /&amp;gt;
+        &amp;lt;cfset temp = &quot;#StructInsert(Request,'s_FormPrompt','Enter your next guess:',True)#&quot; /&amp;gt;
+
+     &amp;lt;/cfdefaultcase&amp;gt;
+  &amp;lt;/cfswitch&amp;gt;
+</code></pre>
+<p>&lt;/cfdefaultcase&gt;
+&lt;/cfswitch&gt;</p>
+<p>&lt;cfset temp=&quot;#StructInsert(Request,'lsti_GuessHistorySorted',ListSort(Request.lsti_GuessHistory,'Numeric','Desc',','),True)#&quot; /&gt;</p>
+<p>&lt;cfset temp=&quot;#StructInsert(Request,'i_GuessCount',ListLen(Request.lsti_GuessHistorySorted,','),True)#&quot; /&gt;</p>
+<p>&lt;cfset temp=&quot;#StructInsert(Request,'idx_Hi',Request.i_GuessCount,True)#&quot; /&gt;
+&lt;cfset temp=&quot;#StructInsert(Request,'idx_Lo',Request.idx_Hi+1,True)#&quot; /&gt;</p>
+<p>&lt;cfloop index=&quot;Request.idx&quot; from=&quot;1&quot; to=&quot;#Request.i_GuessCount#&quot;&gt;</p>
+<p>&lt;cfswitch expression=&quot;#(ListGetAt(Request.lsti_GuessHistorySorted,Request.idx,',') EQ Request.i_Goal)#&quot;&gt;
+&lt;cfcase value=&quot;True&quot;&gt;
+&lt;cfset temp=&quot;#StructUpdate(Request,'idx_Hi',Request.idx - 1)#&quot; /&gt;<br>
+&lt;cfset temp=&quot;#StructUpdate(Request,'idx_Lo',Request.idx + 1)#&quot; /&gt;</p>
+<pre><code>     &amp;lt;cfbreak /&amp;gt;
+     
+  &amp;lt;/cfcase&amp;gt;
+  &amp;lt;cfdefaultcase&amp;gt;
+  
+     &amp;lt;cfswitch expression=&quot;#(ListGetAt(Request.lsti_GuessHistorySorted,Request.idx,',') LT Request.i_Goal)#&quot;&amp;gt;
+        &amp;lt;cfcase value=&quot;True&quot;&amp;gt;
+           &amp;lt;cfset temp=&quot;#StructUpdate(Request,'idx_Hi',Request.idx - 1)#&quot; /&amp;gt;      
+           &amp;lt;cfset temp=&quot;#StructUpdate(Request,'idx_Lo',Request.idx)#&quot; /&amp;gt;
+  
+           &amp;lt;cfbreak /&amp;gt;
+           
+        &amp;lt;/cfcase&amp;gt;
+     &amp;lt;/cfswitch&amp;gt;
+     
+  &amp;lt;/cfdefaultcase&amp;gt;
+</code></pre>
+<p>&lt;/cfswitch&gt;</p>
+<p>&lt;/cfloop&gt;</p>
+<p>&lt;cfsetting enablecfoutputonly=&quot;No&quot; /&gt;</p>
+<p>&lt;html&gt;
+&lt;head&gt;
+&lt;cfoutput&gt;
+&lt;title&gt;Hi-Lo's Helper: #Request.s_HTMLTitle#&lt;/title&gt;
+&lt;/cfoutput&gt;
+&lt;basefont face=&quot;Trebuchet MS&quot; color=&quot;Navy&quot; /&gt;
+&lt;style&gt;
+body {
+font-family: &quot;Trebuchet MS&quot;;
+color: Black;
+}
+h1 {
+color: Navy;
+font-size: 140%;
+text-align: center;
+margin: 0 0 0 0;
+}
+p.Hi {
+text-align:right;
+color:Navy;
+font-size:300%;
+}
+p.Lo {
+text-align:left;
+color:Navy;
+font-size:300%;
+}
+small {
+font-size:84%;
+}
+&lt;/style&gt;</p>
+<p>&lt;/head&gt;
+&lt;body onload=&quot;document.forms[0].i_GuessLast.focus()&quot;&gt;</p>
+<pre><code>  &amp;lt;cfoutput&amp;gt;
+
+     &amp;lt;table border=&quot;0&quot; 
+            cellpadding=&quot;2&quot; 
+            cellspacing=&quot;0&quot; 
+            width=&quot;600&quot;&amp;gt;
+        &amp;lt;tr&amp;gt;
+           &amp;lt;td colspan=&quot;9&quot; valign=&quot;middle&quot;&amp;gt;
+              &amp;lt;h1 align=&quot;center&quot;&amp;gt;&amp;lt;sup&amp;gt;Hi&amp;lt;/sup&amp;gt;-&amp;lt;sub&amp;gt;Lo&amp;lt;/sub&amp;gt;&amp;lt;small&amp;gt;'s Helper&amp;lt;/small&amp;gt;&amp;lt;/h1&amp;gt;
+           &amp;lt;/td&amp;gt;
+        &amp;lt;/tr&amp;gt;
+     &amp;lt;/table&amp;gt;
+     &amp;lt;table border=&quot;0&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot; width=&quot;600&quot;&amp;gt;
+        &amp;lt;tr&amp;gt;
+           &amp;lt;td colspan=&quot;3&quot;
+               width=&quot;30%&quot;
+               valign=&quot;bottom&quot;
+               bgcolor=&quot;silver&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot;&amp;gt;&amp;lt;strong&amp;gt;YOU&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td rowspan=&quot;5&quot; 
+               width=&quot;4&quot; 
+               bgcolor=&quot;silver&quot;&amp;gt;
+              &amp;lt;p&amp;gt;&amp;nbsp;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td&amp;gt;
+              &amp;lt;p&amp;gt;&amp;nbsp;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td rowspan=&quot;5&quot; 
+               width=&quot;4&quot; 
+               bgcolor=&quot;silver&quot;&amp;gt;
+              &amp;lt;p&amp;gt;&amp;nbsp;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td colspan=&quot;3&quot;
+               width=&quot;30%&quot;
+               valign=&quot;bottom&quot;
+               bgcolor=&quot;silver&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot;&amp;gt;&amp;lt;strong&amp;gt;COMPUTER&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+        &amp;lt;/tr&amp;gt;
+        &amp;lt;tr&amp;gt;
+           &amp;lt;td valign=&quot;bottom&quot;&amp;gt;
+              &amp;lt;p class=&quot;Hi&quot;&amp;gt;Hi&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td valign=&quot;bottom&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot; style=&quot;text-align:center;font-size: 140%;&quot;&amp;gt;&amp;lt;span style=&quot;color:Silver;&quot;&amp;gt;#Request.i_GoalMax#&amp;lt;/span&amp;gt;&amp;lt;br /&amp;gt;
+                 &amp;lt;strong&amp;gt;
+                 &amp;lt;cfloop index=&quot;Request.idx&quot; 
+                         from=&quot;1&quot; 
+                         to=&quot;#Request.idx_Hi#&quot;&amp;gt;
+                    &amp;lt;br /&amp;gt;#ListGetAt(Request.lsti_GuessHistorySorted,Request.idx,',')#
+                 &amp;lt;/cfloop&amp;gt;
+              &amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td&amp;gt;
+              &amp;lt;p&amp;gt;&amp;nbsp;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td rowspan=&quot;3&quot; 
+               valign=&quot;top&quot;&amp;gt;
+              &amp;lt;p&amp;gt;#HTMLEditFormat(Request.s_Message)#&amp;lt;/p&amp;gt;
+              &amp;lt;form method=&quot;post&quot; 
+                    action=&quot;#Request.s_CurrentTemplateFile#&quot;&amp;gt;
+                 &amp;lt;fieldset&amp;gt;
+                    &amp;lt;legend&amp;gt;#HTMLEditFormat(Request.s_FormLegend)#&amp;lt;/legend&amp;gt;
+                    &amp;lt;p align=&quot;center&quot;&amp;gt;#HTMLEditFormat(Request.s_FormPrompt)# &amp;lt;input type=&quot;text&quot; name=&quot;i_GuessLast&quot; value=&quot;&quot; size=&quot;3&quot; maxlength=&quot;3&quot; /&amp;gt;&amp;lt;br /&amp;gt;
+                    &amp;lt;input type=&quot;submit&quot; name=&quot;btn_Guess&quot; value=&quot;Click here to submit&quot; /&amp;gt;&amp;lt;input type=&quot;hidden&quot; name=&quot;i_Goal&quot; value=&quot;#Request.i_GoalFormValue#&quot; /&amp;gt;&amp;lt;input type=&quot;hidden&quot; name=&quot;lsti_GuessHistory&quot; value=&quot;#Request.lsti_GuessHistorySorted#&quot; /&amp;gt;&amp;lt;/p&amp;gt;
+                 &amp;lt;/fieldset&amp;gt;
+              &amp;lt;/form&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td valign=&quot;bottom&quot;&amp;gt;
+              &amp;lt;p class=&quot;Hi&quot;&amp;gt;Hi&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td valign=&quot;bottom&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot; 
+                 style=&quot;text-align:center;font-size: 140%;&quot;&amp;gt;&amp;lt;span style=&quot;color:Silver;&quot;&amp;gt;#Request.i_GoalMax#&amp;lt;/span&amp;gt;&amp;lt;br /&amp;gt;
+                 &amp;lt;strong&amp;gt;
+                 &amp;lt;cfloop index=&quot;Request.idx&quot; from=&quot;1&quot; to=&quot;#Request.str_Comp.idx_Hi#&quot;&amp;gt;
+                    &amp;lt;br /&amp;gt;#ListGetAt(Request.str_Comp.lsti_GuessHistorySorted,Request.idx,',')#
+                 &amp;lt;/cfloop&amp;gt;
+              &amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td&amp;gt;
+              &amp;lt;p&amp;gt;&amp;nbsp;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+        &amp;lt;/tr&amp;gt;
+        &amp;lt;tr&amp;gt;
+           &amp;lt;td colspan=&quot;3&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot; 
+                 style=&quot;text-align:center;font-size:200%;border:outset thin silver;margin:0 0 0 0&quot;&amp;gt; &amp;lt;strong&amp;gt;#HTMLEditFormat(Request.s_GoalDisplay)#&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td colspan=&quot;3&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot; 
+                 style=&quot;text-align:center;font-size:200%;border:outset thin silver;margin:0 0 0 0&quot;&amp;gt; &amp;lt;strong&amp;gt;#HTMLEditFormat(Request.s_GoalDisplay)#&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+        &amp;lt;/tr&amp;gt;
+        &amp;lt;tr&amp;gt;
+           &amp;lt;td&amp;gt;
+              &amp;lt;p&amp;gt;&amp;nbsp;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td valign=&quot;top&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot; 
+                 style=&quot;text-align:center;font-size: 140%;&quot;&amp;gt;&amp;lt;strong&amp;gt;
+                 &amp;lt;cfloop index=&quot;Request.idx&quot;
+                         from=&quot;#Request.idx_Lo#&quot;
+                         to=&quot;#Request.i_GuessCount#&quot;&amp;gt;
+                    #ListGetAt(Request.lsti_GuessHistorySorted,Request.idx,',')#&amp;lt;br /&amp;gt;
+                 &amp;lt;/cfloop&amp;gt;
+              &amp;lt;/strong&amp;gt;&amp;lt;br /&amp;gt;
+              &amp;lt;span style=&quot;color:Silver;&quot;&amp;gt;#Request.i_GoalMin#&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td valign=&quot;top&quot;&amp;gt;
+              &amp;lt;p class=&quot;Lo&quot;&amp;gt;Lo&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td&amp;gt;
+              &amp;lt;p&amp;gt;&amp;nbsp;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td valign=&quot;top&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot; 
+                 style=&quot;text-align:center;font-size: 140%;&quot;&amp;gt;&amp;lt;strong&amp;gt;
+                 &amp;lt;cfloop index=&quot;Request.idx&quot; 
+                         from=&quot;#Request.str_Comp.idx_Lo#&quot;
+                         to=&quot;#Request.str_Comp.i_GuessCount#&quot;&amp;gt;
+                    #ListGetAt(Request.str_Comp.lsti_GuessHistorySorted,Request.idx,',')#&amp;lt;br /&amp;gt;
+                 &amp;lt;/cfloop&amp;gt;
+              &amp;lt;/strong&amp;gt;&amp;lt;br /&amp;gt;
+              &amp;lt;span style=&quot;color:Silver;&quot;&amp;gt;#Request.i_GoalMin#&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td valign=&quot;top&quot;&amp;gt;
+              &amp;lt;p class=&quot;Lo&quot;&amp;gt;Lo&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+        &amp;lt;/tr&amp;gt;
+        &amp;lt;tr&amp;gt;
+           &amp;lt;td colspan=&quot;3&quot;
+               width=&quot;30%&quot;
+               bgcolor=&quot;silver&quot;&amp;gt;
+              &amp;lt;p align=&quot;center&quot;&amp;gt;&amp;lt;strong&amp;gt;&amp;lt;small&amp;gt;COUNT:&amp;lt;/small&amp;gt; #Request.i_GuessCount#&amp;lt;/strong&amp;gt;&amp;lt;/p&amp;gt;
+           &amp;lt;/td&amp;gt;
+           &amp;lt;td&amp;gt;
+              &amp;lt;p title=&quot;Add this link to your Favorites to save game&quot;&amp;gt;&amp;lt;small&amp;gt;Save game as:&amp;lt;br /&amp;gt;
+</code></pre>
+<p>&lt;!--- line below broken up a bit to display better on blog ---&gt;
+&lt;a href = &quot;#Request.s_CurrentTemplateFile#?
+i_goal=#Request.i_Goal#&amp;lsti_GuessHistory=
+#Request.lsti_GuessHistorySorted#&quot;&gt;Hi-Lo -- Saved Game #DateFormat(Now(),'mmm dd')# #TimeFormat(Now(),'h.m')# #LCase(TimeFormat(Now(),'TT'))#&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;
+&lt;/td&gt;
+&lt;td colspan=&quot;3&quot;
+width=&quot;30%&quot;
+bgcolor=&quot;silver&quot;&gt;
+&lt;p align=&quot;center&quot;&gt;&lt;strong&gt;&lt;small&gt;COUNT:&lt;/small&gt; #Request.str_Comp.i_GuessCount#&lt;/strong&gt;&lt;/p&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;</p>
+<pre><code>  &amp;lt;/cfoutput&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>So, let me start with my general observations before digging into the code. While I didn't want to make this a &quot;visual&quot; contest, I do like the design of this one. The only thing that confused me is the &quot;Computer&quot; box on the right. It <i>seems</i> to reflect the computer's attempt to guess the number at the same time you do - but you only see the computer's guesses at the end. That's why I'm a bit confused. (I'm thinking the author may post a comment and clear this all up.) I think that is kind of neat as it gives you a competitor, but it is kind of odd that you only see it at the end. Either way, he made the computer &quot;imperfect&quot; as well, which is good game design. Another note - like the <a href="http://ray.camdenfamily.com/index.cfm/2005/10/4/ColdFusion-Contest-Entry-Examined">first entry</a>, the author reversed my original intent of making the computer guess. Again though, that's fine. (For the next contest I'll try to be more clear in the specs.) Now let's dig into the code a bit.</p>
+<p>Like the other entries, this one doesn't do proper validation of the variables. The author does know this and notes it in the header. I hate to harp on it - but my readers know this is one of the things that I like to be anal about. I <i>always</i> bring it up because far too many public sites don't do a good job of it.</p>
+<p>There are two things in particular I want to point out about the code. I'm not calling these mistakes, but differences in style. This line is repeated (with variations in the values of course) throughout the template:</p>
+<code>
+&lt;cfset temp="#StructInsert(Request,'s_CurrentTemplateFile',GetFileFromPath(GetCurrentTemplatePath()),True)#" /&gt;
+</code>
+<p>The first thing I'd point out is that for functions that return a &quot;throw away&quot; value, or a value you simply don't need, as above, you can rewrite the code like so:</p>
+<code>
+&lt;cfset StructInsert(Request,'s_CurrentTemplateFile',GetFileFromPath(GetCurrentTemplatePath()),True) /&gt;
+</code>
+<p>This is a bit less typing, and <b>in my opinion</b>, a bit cleaner. Secondly, I've never been a fan of <a href="http://livedocs.macromedia.com/coldfusion/7/htmldocs/00000642.htm">structInsert</a>. It isn't a bad function per se, I just don't like the extra typing. I've never heard a good reason to use it. I have heard people say they use it to insert dynamic keys into a structure, but bracket notation works fine that as well:</p>
+<code>
+&lt;cfset key = "name"&gt;
+&lt;cfset s = structNew()&gt;
+&lt;cfset s[key] = "Jacob"&gt;
+</code>
+<p>Again, this is just personal preference on my part.</p>
+<p>So, my last comment, and this is <i>definitely</i> in the realm of being picky - I don't care for the use of cfswitch. I find it makes it a bit hard to follow the logic flow. How do others feel?</p>
+<p>p.s. In general, the comments I've seen on my blog postings about this contest have been very fair and polite. I ask that people keep this in mind. These are beginners, and we <i>all</i> make mistakes. So please be gentle.</p>
+}

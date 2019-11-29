@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>One of the nicer things about ColdFusion is that it takes a simple approach to variable types. When it comes to the simple types (non-array, structs, etc), you don't have to worry about specifying the type of data ahead of time. So for example, this code runs just fine:</p>
+<code>
+&lt;!--- Look, a number! ---&gt;
+&lt;cfset x = 9&gt;
+&lt;!--- oh oh, now its a string ---&gt;
+&lt;cfset x = "foo"&gt;
+&lt;!--- holy crap, now its a date even! ---&gt;
+&lt;cfset x = now()&gt;
+</code>
+<p>While I wouldn't recommend writing code like that, it certainly will run just fine in ColdFusion. It's actually kind of handy when it comes to 'temp' variable, like loop iterators and the such.</p>
+<!--more-->
+<p>So with ColdFusion being loose in terms of variable types, it is easy to forget that most of the rest of the programming world isn't so easy. Every now and then that come bite you in butt. Here is a great example. I recently fixed a bug in <a href="http://seeker.riaforge.org">Seeker</a> involving a hand-made query. The query was created using queryNew and had supplied the optional list of column types to tell ColdFusion what each column represented data wise. Unfortunately, after this change, the Score column began returning 0 for every match? Why? The values were all between one and zero while the column type was defined as integer. Consider this code block:</p>
+<code>
+&lt;cfset numbers = [0.314159,0.921,0.000001,9.9]&gt;
+<p>&lt;cfset q = queryNew(&quot;col1,col2&quot;,&quot;integer,decimal&quot;)&gt;</p>
+<p>&lt;cfloop index=&quot;n&quot; array=&quot;#numbers#&quot;&gt;
+&lt;cfset queryAddRow(q)&gt;
+&lt;cfset querySetCell(q, &quot;col1&quot;, n)&gt;
+&lt;cfset querySetCell(q, &quot;col2&quot;, n)&gt;
+&lt;/cfloop&gt;</p>
+<p>&lt;cfdump var=&quot;#q#&quot;&gt;
+</code></p>
+<p>I've got 3 numbers, all with decimals, and I copy them into a query where the first column is defined as integer and the second as decimal. When dumped, check out the first column totally changes the values:</p>
+<img src="https://static.raymondcamden.com/images//Picture 153.png" title="cfdump of code example above">
+<p>In the same week this happened, another user wrote in with a similar issue. She was inserting phone numbers into a query and had not specified column types. When you do that, ColdFusion makes a guess to the right column type. In her case, ColdFusion guessed wrong and treated phone numbers like numbers. There were some numbers with a 0 in front and they ended up having the 0 removed. Supplying the varchar type definition for the column took care of it.</p>
+<p>Oh, and how about a third example? Not exactly ColdFusion related, but while working on <a href="http://gameone.coldfusionjedi.com">GameOne</a>, I accidentally set the column type for Funds to a type that users easily reached. Ugh. Sometimes it takes a few hits to get it through the noggin, eh?</p>
+}

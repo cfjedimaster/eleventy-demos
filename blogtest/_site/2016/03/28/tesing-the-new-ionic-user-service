@@ -1,0 +1,134 @@
+<h1>Post</h1>
+
+<p><strong>Please note the date of this article! At the time I wrote this, Ionic Services had recently been given a major update, but they were not fully released yet. What you see in the future may be different than what I demonstrate here!</strong></p>
+<p>A few weeks back Ionic released a brand new version of their services platform. (I discussed it here: <a href="http://www.raymondcamden.com/2016/03/04/ionic-services-enter-beta/">Ionic Services enter Beta</a>). At that time, I didn't really have the bandwidth to play around with the updates. This morning I spent some time focusing on the <a href="http://docs.ionic.io/docs/user-overview">User</a> system and I thought I'd share my findings.</p>
+<!--more-->
+<p>As I mentioned in my earlier post, the User system went from &quot;kinda nice but not terribly useful&quot; to &quot;really freaking good&quot;. You can now handle social network logins, custom logins, password resets and custom data. You can also get access to your users via a REST system for complete back-end integration. I built a simple demo to test various aspects of the User API. You can find the complete code for my examples here: <a href="https://github.com/cfjedimaster/Cordova-Examples/tree/master/ionicUser2">https://github.com/cfjedimaster/Cordova-Examples/tree/master/ionicUser2</a>. Please keep in mind though that this is not a proper 'app', but mainly a test bed, so the code is not optimized and not appropriate for a real application.</p>
+<h2>Testing Social Login</h2>
+<p>I started off testing the <a href="http://docs.ionic.io/docs/social-providers">social login feature</a> with Facebook and Twitter. I created two simple buttons, one for each platform. I also did the required set up (see previous link) for each. In both cases, it took less than five minutes to set up and was painless. Here are the buttons:</p>
+<pre><code class="language-javascript">
+&lt;button class=&quot;button button-block button-positive&quot; ng-show=&quot;!loginButton.hidden&quot; ng-click=&quot;login(&#x27;facebook&#x27;)&quot;&gt;
+	Login with Facebook
+&lt;&#x2F;button&gt;
+&lt;button class=&quot;button button-block button-positive&quot; ng-show=&quot;!loginButton.hidden&quot; ng-click=&quot;login(&#x27;twitter&#x27;)&quot;&gt;
+	Login with Twitter
+&lt;&#x2F;button&gt;
+</code></pre>
+<p>Note that I've got a bit of logic to hide them when a user is already authenticated. The user system lets you cache logins so your application needs to prepare for that. Now here is the JavaScript code.</p>
+<pre><code class="language-javascript">
+$scope.loginButton = {hidden:true};
+	
+var user = Ionic.User.current();
+console.log('user currently: '+JSON.stringify(user));
+	
+if (user.isAuthenticated()) {
+	console.log('yes auth');
+} else {
+	console.log('no auth');
+	$scope.loginButton = {hidden:false};
+}
+// stuff deleted
+
+$scope.customLogin = function() {
+	Ionic.Auth.login('basic', {remember:true}, fakeDetails).then(function(newUser) {
+		//goddamn scope freaking issues
+		$scope.$apply(function() {
+			$scope.loginButton.hidden = true;
+		});
+		console.log('back ok from custom login, results are '+JSON.stringify(newUser));
+		user = newUser;
+		//store a custom prop
+		user.set('lastLogin',new Date());
+		user.save();
+	}, function(err) {
+		console.log('error from custom '+JSON.stringify(err));
+	});
+};
+</code></pre>
+<p>At this point, what you see is based on what button you click. Here is what Facebook login looks like. Notice that I've previously logged in. It is just asking me for my password at this point. Oddly - I don't see a way to change that, and in fact, I could click on the top bar there to browse my Facebook account. That could be a problem. It may be outside of Ionic's control, but I'm going to file a bug report for it right now.</p>
+<p><img src="https://static.raymondcamden.com/images/2016/03/ionicshot1.png" alt="FB login"></p>
+<p>On the other hand, Twitter did not seem to cache anything, which is good.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot2.png" class="imgborder" alt="Twitter Login">
+<p>Notice that it is telling you that the app has write access to the account. If you are <em>only</em> using Twitter for login, you will want to go into your app settings and change it to read only. I <em>just</em> did that, and it was reflected right away.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot3.png" class="imgborder" alt="Twitter Login 2">
+<p>You may be wondering, what happens if you just click &quot;Done&quot; in the bottom of the UI? Nothing. Neither the error nor success handler is run. It basically acts as a 'cancel' for login. Here's where things get interesting. What if you actually hit Cancel in Twitter's UI? First you get this:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot4.png" class="imgborder" alt="Twitter Login 3">
+<p>If you then do, &quot;Return to ionicUser&quot; (that's the name of my app, so I could have picked something nicer), you get this:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot5.png" class="imgborder" alt="Twitter Login 4">
+<p>That's not very nice, but again, I'm not sure what you can do about it. (But to be safe, I logged a bug for that as well.)</p>
+<p>Ok, so assuming you login correctly, at the point everything is kosher. Unfortunately, you don't get any information about the user. I expected basic profile data, like their name, or email address, but all you get is a user id. Here is an example after I've logged into Facebook:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot6.jpg" class="imgborder" alt="FB Login">
+<p>I apologize for the slightly ugly display there. Notice that my Facebook ID was returned correctly, but nothing else. (I haven't filed a bug report for this yet as I'm waiting on confirmation that we should get something.) In theory, I could then make use of the Facebook Graph API to get information, but I don't have access to the access token that Ionic used to authenticate. That means - afaik - I'd have to prompt again for the user authentication which wouldn't be nice. The same issue applies to Twitter and I assume the rest of the social login providers.</p>
+<h2>Using Custom Data</h2>
+<p>Custom data is easy to use. I used it above: <code>user.set('lastLogin',new Date());</code>. It just plain works. Don't forget though that when you want to read it, you need to use <code>get</code>. I forgot this and was curious why it didn't show up in user.details. I build a function to dump user details just to test this:</p>
+<pre><code class="language-javascript">
+$scope.details = function() {
+	console.log('Details', user.details);
+	console.log('custom detail ',user.get('lastLogin'));
+};
+</code></pre>
+<p>The object, <code>user.details</code>, is <em>just</em> the metadata that Ionic sets. Anything you do custom must be fetched using <code>get</code>. Here is an example of it running:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot7.jpg" class="imgborder" alt="User Details">
+<p>You can store simple values and arrays, and they even support <a href="http://docs.ionic.io/docs/user-usage#data-types">custom types</a> if you want to get fancy.</p>
+<p>As an FYI, user data is stored in LocalStorage on the device. This enables you to know about the user even when you are logged out.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot8.jpg" class="imgborder" alt="User Details">
+<h2>Logout</h2>
+<p>As an FYI, this information is <em>not</em> removed from LocalStorage when you run <code>Ionic.Auth.Logout()</code>. I think that is a mistake and I've logged a bug for it. When I mentioned it on Slack, another user mentioned it may be useful to keep it around, but at minimum, this should be documented.</p>
+<p>I also logged a bug asking the Ionic folks to clearly state where keys they use in LocalStorage. The docs tell you they use LocalStorage and warn you against removing it with <code>clear()</code>, but they should also clearly document the keys they use. I can't see anyone using the same names you see in the screenshot above, but, I'm kinda OCD about stuff like this.</p>
+<p>Also - running <code>Ionic.Auth.Logout()</code> when you are not logged in does not cause an error. I don't think it should either, but, yeah, I tested that too because I was curious. ;)</p>
+<h2>Custom Registration</h2>
+<p>To be clear here, I'm talking about <em>simple</em> registration, not the <a href="http://docs.ionic.io/docs/custom-authentication">custom authentication</a> feature. To put it plainly, it just plain worked, although there are a few bugs. Here is the code I used:</p>
+<pre><code class="language-javascript">
+var fakeDetails = {
+	'email':'raymondcamden+test3@gmail.com',
+	'password':'12345'
+};
+
+$scope.customRegistration= function() {
+	//this will work one time
+		
+	Ionic.Auth.signup(fakeDetails).then(function(newUser) {
+		console.log('signup worked ok, here is the new user '+JSON.stringify(newUser));
+		//what's the user ob like now?
+		user = Ionic.User.current();
+
+		//are they logged on? the docs imply NO
+		console.log('newly signed up user logged in?',user.isAuthenticated());	
+
+	}, function(error) {
+		console.log('signed failed with '+JSON.stringify(error));
+	});
+};
+</code></pre>
+<p>First off, the docs mention a set of error responses. One that was missing was support for an invalid email address. Luckily, this <em>is</em> supported, just not documented. (I filed a bug for that.) Another bug is that the success handler is supposed to pass an instance of an Ionic user. It does not - it just passes <code>true</code>. (Yes, I filed a bug report.) I can verify that signing up does <em>not</em> log you in. I built another button for that, but I think in most cases, you would embed the login directly within the success handler of signup.</p>
+<pre><code class="language-javascript">
+$scope.customLogin = function() {
+	Ionic.Auth.login('basic', {remember:true}, fakeDetails).then(function(newUser) {
+			//goddamn scope freaking issues
+		$scope.$apply(function() {
+			$scope.loginButton.hidden = true;
+		});
+		console.log('back ok from custom login, results are '+JSON.stringify(newUser));
+		user = newUser;
+		//store a custom prop
+		user.set('lastLogin',new Date());
+		user.save();
+	}, function(err) {
+		console.log('error from custom '+JSON.stringify(err));
+	});
+};
+</code></pre>
+<h2>Password Reset</h2>
+<p>Yes, this just works too. If you try to password reset on a social-network authenticated user, you get an error. I expected that, but the error isn't clear. (I logged a bug report for that.) If you use it for a 'basic' login, it works as expected:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot9.jpg" class="imgborder" alt="Password Reset">
+<p>Currently you can't change the email. I filed a bug report suggesting that we should be able to change the from name, the from address, the subject, and the email text (as well as providing both plain and HTMl versions). As I noted in my bug report, this should probably be a premium feature.</p>
+<h2>The API</h2>
+<p>The last thing I tested was the API. This was something I've been complaining to the Ionic folks about for months, so I was happy to see it fully released. Again, it works as <a href="http://docs.ionic.io/docs/api-getting-started">documented</a>. One thing I noticed though. On the documentation page specifically for <a href="http://docs.ionic.io/docs/api-users">users</a>, they don't tell you that getting all users is supported. This is strongly implied in the <a href="http://docs.ionic.io/docs/api-conventions">conventions</a> docs, but I believe it should be explictely called out in the list of available methods. (Yep, I filed a bug for it.) I tested in Postman and it works great:</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot10.jpg" class="imgborder" alt="All Users">
+<p>Notice that users created with the 'basic' style are marked as 'ionic' users while the Social-created ones have their social network specified.</p>
+<p>As a quick aside, the Ionic App's site lets you browser users as well.</p>
+<img src="https://static.raymondcamden.com/images/2016/03/ionicshot11.jpg" class="imgborder" alt="All Users on App Site">
+<p>Be aware that there is a caching issue there. I updated a user and then clicked to view their details and my new data wasn't there. Reloading the page updated the data.</p>
+<h2>Conclusion</h2>
+<p>That's it. I'm going to try to build a &quot;real&quot; application using the service that could possibly be used as a starter for others. Let me know if you have any questions below.</p>
+}

@@ -1,0 +1,41 @@
+<h1>Post</h1>
+
+<p>A little while ago Andrew Powell of Universal Mind released the <a href="http://www.infoaccelerator.net/chuckFacts/">Chuck Norris Fact Web Service</a>. This is a critical feature that has been missing from the Internet for some time. Frankly, I do not know how we have survived without the wisdom of Chuck Norris.</p>
+<p>I whipped up a quick AIR application that you can run on your desktop. Every 5 seconds it will load a new pearl of wisdom from the man we know as Chuck. Please note that I'm <i>way</i> rusty with Adobe AIR. I haven't had the chance to play with it much lately, but dang it - I love that I was able to write this up in like 5 minutes. I spent more time making some dumb mistakes in Spry then I did on the &quot;AIR-ness&quot; of it. Enjoy. (As I still haven't updated IIS to let .air files worked, I renamed to a .zip.)</p>
+<p>The entire code (minus Spry libraries) is below:</p>
+<!--more-->
+<code>
+&lt;html&gt;
+<p>&lt;head&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;AIRAliases.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;spryjs/xpath.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;spryjs/SpryData.js&quot;&gt;&lt;/script&gt;</p>
+<p>&lt;script type=&quot;text/javascript&quot;&gt;
+var myurl = &quot;http://www.infoaccelerator.net/chuckFacts/FactService.cfc?method=getCurrentFact&amp;returnformat=plain&quot;;</p>
+<p>function callHandler(req){
+var result = req.xhRequest.responseText;
+var sp = Spry.$(&quot;wisdom&quot;);
+sp.innerText = result;
+}</p>
+<p>function getWisdom(){
+Spry.Utils.loadURL(&quot;GET&quot;, myurl, true, callHandler);
+}</p>
+<p>function doLoad(){	
+getWisdom();
+setInterval(getWisdom, 5000);
+}
+&lt;/script&gt;
+&lt;style&gt;
+.wisdom {
+font-family: times;
+font-style: italic;	
+}
+&lt;/style&gt;
+&lt;/head&gt;</p>
+<p>&lt;body onload=&quot;doLoad();&quot;&gt;
+&lt;h3&gt;The Wisdom of Chuck Norris&lt;/h3&gt;
+&lt;span id=&quot;wisdom&quot; class=&quot;wisdom&quot;&gt;&lt;/span&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code><p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FChuckNorris%2Eair%2Ezip'>Download attached file.</a></p></p>
+}

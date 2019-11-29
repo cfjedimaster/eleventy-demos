@@ -1,0 +1,58 @@
+<h1>Post</h1>
+
+<p>Mike asked:</p>
+<p/>
+<blockquote>
+Do you know if there is a way to set an auto width to cfchart? Setting a pixel width doesn't work well when coding for touch screens with the different widths for portrait and landscape views. Thanks for any help you can provide.
+</blockquote>
+<p/>
+<!--more-->
+Interesting question. You may notice that cfchart's height and width attributes only accept real numbers, not percentages. I first tried a hack where I modified the output HTML containing the SWF:
+<p/>
+<code>
+&lt;cfset d = []&gt;
+&lt;cfset d[1] = {date="1/1/2011 03:22", value=99}&gt;
+&lt;cfset d[2] = {date="1/2/2011 04:22", value=80}&gt;
+&lt;cfset d[3] = {date="1/3/2011 09:22", value=79}&gt;
+<p>&lt;cfsavecontent variable=&quot;html&quot;&gt;
+&lt;cfchart chartheight=&quot;500&quot; chartwidth=&quot;500&quot; title=&quot;Test Chart&quot;
+backgroundcolor=&quot;red&quot;&gt;</p>
+<pre><code>   &amp;lt;cfchartseries type=&quot;bar&quot;&amp;gt;
+           &amp;lt;cfloop index=&quot;item&quot; array=&quot;#d#&quot;&amp;gt;
+                   &amp;lt;cfchartdata item=&quot;#item.date#&quot; value=&quot;#item.value#&quot;&amp;gt;
+           &amp;lt;/cfloop&amp;gt;
+   &amp;lt;/cfchartseries&amp;gt;
+</code></pre>
+<p>&lt;/cfchart&gt;
+&lt;/cfsavecontent&gt;</p>
+<p>&lt;cfset html=replace(html, &quot;WIDTH=&quot;&quot;500&quot;&quot;&quot;, &quot;WIDTH=&quot;&quot;100%&quot;&quot;&quot;,&quot;all&quot;)&gt;
+&lt;cfoutput&gt;#html#&lt;/cfoutput&gt;
+</code></p>
+<p/>
+<p>Technically that works - the resultant object/embed tags are updated and the SWF takes 100% of the available width, but the actual chart inside the SWF doesn't size with the change. I then tried the non-interactive version with an image. Because an image map is used normally, I had to store the bits of the image to the file system and then output it.</p>
+<p/>
+<code>
+&lt;cfset d = []&gt;
+&lt;cfset d[1] = {date="1/1/2011 03:22", value=99}&gt;
+&lt;cfset d[2] = {date="1/2/2011 04:22", value=80}&gt;
+&lt;cfset d[3] = {date="1/3/2011 09:22", value=79}&gt;
+<p>&lt;cfchart chartheight=&quot;500&quot; chartwidth=&quot;500&quot; title=&quot;Test Chart&quot;
+backgroundcolor=&quot;red&quot; format=&quot;png&quot; name=&quot;img&quot;&gt;</p>
+<pre><code>   &amp;lt;cfchartseries type=&quot;bar&quot;&amp;gt;
+           &amp;lt;cfloop index=&quot;item&quot; array=&quot;#d#&quot;&amp;gt;
+                   &amp;lt;cfchartdata item=&quot;#item.date#&quot; value=&quot;#item.value#&quot;&amp;gt;
+           &amp;lt;/cfloop&amp;gt;
+   &amp;lt;/cfchartseries&amp;gt;
+</code></pre>
+<p>&lt;/cfchart&gt;</p>
+<p>&lt;cfset fileWrite(expandPath(&quot;./mychart.png&quot;),img)&gt;</p>
+<p>&lt;style&gt;
+.chartimage {
+width: 100%;
+}
+&lt;/style&gt;
+&lt;img src=&quot;mychart.png&quot; class=&quot;chartimage&quot;&gt;
+</code></p>
+<p/>
+<p>If you do use this code (and it does actually work), you would want to modify it to not generate and write on every request. It should intelligently determine if it needs to generate a new file first. I'll also remind people that while cfchart is pretty powerful, it's also a bit old. <b>It is not the only way to do charting in ColdFusion.</b> There are numerous other solutions as well.</p>
+}

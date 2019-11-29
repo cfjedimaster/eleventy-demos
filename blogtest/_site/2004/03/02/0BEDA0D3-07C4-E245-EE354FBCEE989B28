@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Macromedia has published an interesting <a href="http://www.macromedia.com/support/coldfusion/ts/documents/cfc_datatypes_webservices.htm">tech note</a> describing how to use CFCs as return types with components called as web services.</p>
+<p>One thing to note though - the code in the tech note has a few issues. There are no uses of output=false (which isn't a huge big deal) and no use of the var scope (which is a huge deal).</p>
+<p>Either way, it is an interesting article and well worth reading.</p>
+}

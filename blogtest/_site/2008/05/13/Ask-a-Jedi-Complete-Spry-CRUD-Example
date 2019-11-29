@@ -1,0 +1,85 @@
+<h1>Post</h1>
+
+<p>Walter asks:</p>
+<blockquote>
+<p>
+I was wondering if you can help, I am trying to get my feet wet with Spry and CF, you have many blog posts that refer to this but I wanted to know if you can point me in (or have an example) of a : Add / List / Amend / Delete solution using Spry and CF, to a database. I have searched and cannot find help on this. I have managed to get CF and Spry to work, but just reading XML files, and am having a lot of trouble, getting Spry, ColdFusion and Database to play nicely.
+</p>
+</blockquote>
+<p>Spry really shines when it comes to 'Get the data and display it' site, but if you want a full &quot;back and forth&quot; type example, you need to do a bit more work. I still think it's easy, but you are right, there isn't a lot out there that shows examples of that. Here is a quick one I whipped up. I've included the code in a zip and it should work fine out of the box as I didn't use a database. (That's the only hackish part of this - but I wanted something quick and dirty to play with.)</p>
+<!--more-->
+<p>So let's start off with what our demo is going to cover. We have a database (again, not really) of products. Each product has an ID, Name, and price. Our RIA will:</p>
+<ul>
+<li>List the products
+<li>Have a delete link
+<li>Have a form to let you update products
+<li>Let you add a new product
+</ul>
+<p>So let's first cover the basic listing of products, which is trivial in Spry. I wont get too detailed here as the main focus of this blog entry is on CRUD.</p>
+<p>We begin by simply creating a dataset:</p>
+<code>
+var baseurl = "data.cfc?method=getProducts&returnFormat=json&queryFormat=column";
+var mydata = new Spry.Data.JSONDataSet(baseurl,{path:"DATA", pathIsObjectOfArrays:true,useCache:false});
+mydata.setColumnType("price","number");
+</code>
+<p>I'm pointing to a CFC named data.cfc. I'm using ColdFusion 8 so I can use the super-cool returnFormat support. I've specified that the price value is a number column. So far so good. Now let's look at the display.</p>
+<code>
+&lt;div spry:region="mydata"&gt;
+&lt;p&gt;
+&lt;table width="100%" border="1"&gt;
+	&lt;tr&gt;
+		&lt;th spry:sort="name"  style="cursor: pointer;"&gt;Name&lt;/th&gt;
+		&lt;th spry:sort="price" style="cursor: pointer;"&gt;Price&lt;/th&gt;
+		&lt;th&gt;Delete&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;tr spry:repeat="mydata" spry:setrow="mydata" spry:select="red" spry:hover="hot"&gt;
+		&lt;td style="cursor: pointer;"&gt;{name}&lt;/td&gt;
+		&lt;td style="cursor: pointer;"&gt;{price}&lt;/td&gt;
+		&lt;td&gt;&lt;a href="javascript:deleteRecord('{id}')" onclick="return confirm('Are you sure?')"&gt;X&lt;/a&gt;&lt;/td&gt;
+	&lt;/tr&gt;
+&lt;/table&gt;
+&lt;a href="javascript:clearForm()"&gt;Add Record&lt;/a&gt;	
+&lt;/p&gt;	
+&lt;/div&gt;
+<p>&lt;span spry:detailregion=&quot;mydata&quot;&gt;
+&lt;form name=&quot;editform&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;id&quot; value=&quot;{id}&quot;&gt;
+Name: &lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;{name}&quot;&gt;&lt;br /&gt;
+Price: &lt;input type=&quot;text&quot; name=&quot;price&quot; value=&quot;{price}&quot;&gt;&lt;br /&gt;
+&lt;input type=&quot;button&quot; value=&quot;Save&quot; onclick=&quot;saveRecord()&quot;&gt;
+&lt;/form&gt;
+&lt;/span&gt;
+</code></p>
+<p>We begin with a fairly typical table to list our products. The only thing special really is the delete link. I've tied that to a JavaScript function named deleteRecord. Don't worry about the Add Record link just yet.</p>
+<p>Moving on down the page, the form works both as a display for the products as well as our way of editing information.</p>
+<p>So if we ignore adding records, we can focus on deleting and editing. Let's talk about deleting first as it's simple. To delete a record, we simply want to make an AJAX request with the proper information. We used deleteRecord() to handle this, so let's take a look at that code:</p>
+<code>
+function deleteRecord(id) {
+	Spry.Utils.loadURL("get", "data.cfc?method=deleteProduct&id=" + id, false, reloadData());
+}
+</code>
+<p>I use Spry.Utils.loadURL to - obviously - load a URL. In this case I simply hit my same CFC and pass the ID to delete. The false in this case signifies that I want the call to be synchronous. Why? Well when I'm done I want to reload the data so it makes sense to ensure the back end is done deleting. I <i>could</i> have deleted the record from my local copy. That would be a bit quicker than getting all the data again. But I kinda figured this was a bit safer. (Frankly, I still feel very new to the AJAX world and I reserve the right to change my mind on what's &quot;best&quot; at any moment. :)</p>
+<p>The last argument, reloadData(), simply says to run this function when the AJAX call is done. This function is rather simple:</p>
+<code>
+function reloadData(){
+	mydata.loadData();
+}
+</code>
+<p>All this means is that Spry should reload the dataset. Note that when I created the dataset earlier, I specifically told Spry not to cache the results.</p>
+<p>So that's deleting. For editing (and adding) I want to submit a form. If you remember, my form used a button that called saveRecord(). That JavaScript looks like so:</p>
+<code>
+function saveRecord() {
+	Spry.Utils.submitForm('editform',reloadData(),{url:'data.cfc?method=saveProduct'});
+}
+&lt;/script&gt;
+</code>
+<p>This uses another built-in Spry function, submitForm, to send in a collection of form data. One thing to keep in mind when using this function - you must give your form, and your form fields, name values. You can't just use IDs.</p>
+<p>So how do I support adding a record? All I did was write a simple JavaScript function to clear the form fields. Since the form was tied to Spry, I did this by setting the current row to an invalid value:</p>
+<code>
+function clearForm(){
+	mydata.setCurrentRow(-1);
+}
+</code>
+<p>I have some misgivings about this. It seems to work ok, but I'm not sure that what I've done is kosher.</p>
+<p>So that's basically it. The CFC - as I said - is a bit of a hack. In order to make a demo that would work &quot;out of the box&quot;, I used the Application scope to create fake data. Adding, Editing, and Deleting simply manipulates this application variable. My getProducts method converts the variable to a query object on the fly. Please keep that in mind if you play with this code. &quot;Real&quot; code would use a database instead.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fspryfolder%2Ezip'>Download attached file.</a></p></p>
+}

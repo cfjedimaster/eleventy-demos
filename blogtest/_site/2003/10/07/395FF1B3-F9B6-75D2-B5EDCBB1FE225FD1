@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>After a few rants and rumblings, it's time for something CF related. Once again I want to talk about a function that is not widely known/used: structSort. structSort allows you to take a collection of structs and sort them by a key.</p>
+<p>So, imagine you have a struct of structs:</p>
+<p>kids = structNew();<br>
+for(x=1; x lte 5; x=x+1) {<br>
+   kids[&quot;Child #x#&quot;] = structNew();<br>
+   kids[&quot;Child #x#&quot;] .age = randRange(1,5);<br>
+   kids[&quot;Child #x#&quot;] .name = &quot;Child #x#&quot;;<br>
+   kids[&quot;Child #x#&quot;].complex = structNew();<br>
+   kids[&quot;Child #x#&quot;].complex.x = randRange(1,10);<br>
+}<br></p>
+<p>structSort will allow you to sort &quot;kids&quot; by age, name, or even complex substructs, in this case, the complex.x key. The basic usage of structSort is:</p>
+<p>structSort(struct, type of sort, direction of sort, path to sort);</p>
+<p>So, to sort my above data by age, I can use:</p>
+<p>orderedKids = structSort(kids,&quot;numeric&quot;,&quot;asc&quot;,&quot;age&quot;);</p>
+<p>structSort returns an array of keys, where the key represents one of the children in my kids struct. I can then loop over my array to display my struct of structs in an ordered fashion. To search the more complex aspect of the struct, I just use the proper path:</p>
+<p>complexOrder = structSort(kids,&quot;numeric&quot;,&quot;asc&quot;,&quot;complex.x&quot;);</p>
+<p>One thing to watch out for - when you type in &quot;structSort(&quot; in DWMX2004, it incorrectly tells you that the 2nd argument is the path. (Which would actually make more sense.) HomeSite+ does not have this issue.</p>
+}

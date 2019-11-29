@@ -1,0 +1,11 @@
+<h1>Post</h1>
+
+<p>Another set of updates to <a href="http://ray.camdenfamily.com/projects/canvas">CanvasWiki</a>:</p>
+<ul>
+<li>Add Page: A simple form to add a new page. While not necessary (you can make a new page by just linking to it), this will make it easier for folks.
+<li>Search: You can search the wiki now. Only searches the most current pages.
+<li>I "reverted" some of the SQL to the more advanced form. This should work in SQL Server 2000 (where I tested) and MySQL 5, but probably not Access. 
+</ul>
+<p>As always, if you like what you see, take a gander at my <a href="http://www.amazon.com/o/registry/2TCL1D08EZEYE">wish list</a>.</p>
+<p>Enjoy.</p>
+}

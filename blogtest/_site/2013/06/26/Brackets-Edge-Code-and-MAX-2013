@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<p><i>Note: This post has been in the queue for a while but hopefully folks still find it useful.</i></p>
+<p>MAX 2013 may have been described as the &quot;Creativity Conference&quot;, but that certainly did not mean there was no developer-related content. Brackets (and Edge Code) had plenty of sessions as well as <strong>three</strong> different sneaks! If you missed MAX you can still catch up on the content. Let's take a look.</p>
+<!--more-->
+<h2>Sessions</h2>
+Here are the Brackets/Edge Code sessions that were part of the regular conference program.
+<p>First up is Adam Lehman with &quot;Brackets: An Open Source Code Editor for the Web&quot;:</p>
+<iframe title="AdobeTV Video Player" width="600" height="345" src="http://tv.adobe.com/embed/1217/18501/" frameborder="0" allowfullscreen scrolling="no"></iframe>
+<p>Next we have Kevin Dangoor with &quot;Extending Brackets with JavaScript&quot;:</p>
+<iframe title="AdobeTV Video Player" width="600" height="345" src="http://tv.adobe.com/embed/1217/18470/" frameborder="0" allowfullscreen scrolling="no"></iframe>
+<p>If you already use Brackets but are interested in contributing back to the project, or simply adding your own features, you can check out Glenn Ruehle's talk: &quot;Hack Your Editor: Contributing to Brackets&quot;</p>
+<iframe title="AdobeTV Video Player" width="600" height="345" src="http://tv.adobe.com/embed/1217/18461/" frameborder="0" allowfullscreen scrolling="no"></iframe>
+<p>Finally, you can see the result of what hacking with Brackets gives you in the session, &quot;Space Age Miracle Tools: Experimenting with Brackets&quot;</p>
+<iframe title="AdobeTV Video Player" width="600" height="345" src="http://tv.adobe.com/embed/1217/18439/" frameborder="0" allowfullscreen scrolling="no"></iframe>
+<h2>Sneaks</h2>
+MAX Sneaks are always an exciting time for MAX attendees. While not everything you see may end up in the final product, MAX Sneaks represent cutting edge, amazing examples of what can be done with our products. This year was no different.
+<p>For the first sneak, we see NJ discuss &quot;PSDLens&quot;:</p>
+<iframe width="601" height="338" src="//www.youtube.com/embed/ukpoPF61W5A?rel=0" frameborder="0" allowfullscreen></iframe>
+<p>Next up was Lee Brimelow talking about a cool responsive extension he created. (Note, I'm linking to a new video he created. The official MAX YouTube channel was has some Rainn-related issues.)</p>
+<iframe width="601" height="338" src="//www.youtube.com/embed/kXTP8XqrSwE?rel=0" frameborder="0" allowfullscreen></iframe>
+<p>The final sneak was my favorite. Even better, it is something you can play with right now. Joel Brandt demonstrates how you can use Brackets to report on what JavaScript code is being run in your application. Even better, he shows this in both client side and server side code (Node.js).</p>
+<iframe width="601" height="338" src="//www.youtube.com/embed/3OMWTqq5-WU?list=PLD8AMy73ZVxXRHZvcj5WvsMopeNMcL_so" frameborder="0" allowfullscreen></iframe>
+<p>This video demonstrates a project called Theseus. You can find more about it here: <a href="https://github.com/adobe-research/theseus">https://github.com/adobe-research/theseus</a></p>
+}

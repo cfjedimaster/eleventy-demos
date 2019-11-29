@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>Alex asks:</p>
+<blockquote>
+How can I allow registered users to download a PDF file?
+The main issue is I don't want the PDF file to be on the webroot 
+in other words, I don't want a user to be able to link directly to 
+the PDF.
+<p>I'm assuming I'll have to use CFFILE to serve them the PDF.
+This seems like a pretty common feature but I've had problems finding
+a tutorial.</p>
+</blockquote>
+<p>It is extremely simple. Assume you have already done your security check. You know the user is registered and they have access to the file. To send them the file, you can use this code:</p>
+<code>
+&lt;cfheader name="Content-disposition" value="attachment;filename=#dafile#"&gt;	
+&lt;cfcontent file="#dafile#" type="application/pdf"&gt;
+</code>
+<p>So what is going on here? First, we use cfheader to tell the browser that a file is coming out via the request. The variable, dafile, would be whatever filename you are serving up to your user. (Make sure it is the full path.) Next we simply use cfcontent to actually send the file. Again, you pass in the full path of the file being served. The type value is simply the mime type for PDF files. I typically find my mime types <a href="http://www.w3schools.com/media/media_mimeref.asp">here</a> since my memory is pretty sketchy on such things. (I'd rather stuff my head with Star Wars trivia than mime types.)</p>
+<p>One word of caution. I've used this technique for &quot;small-ish&quot; files. I've heard that for very large files this will perform badly. I'd probably use another method if your file was over 10 megs or so.</p>
+}

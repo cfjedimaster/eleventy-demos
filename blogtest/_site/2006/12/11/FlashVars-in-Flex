@@ -1,0 +1,28 @@
+<h1>Post</h1>
+
+<p>As a developer on the receiving end of Flash files, I've gotten used to dealing with FlashVars as a way to configure a Flash application. I've wondered how I'd do this in Flex though. Joao Fernandes sent me some sample code and showed me the way.</p>
+<p>Consider this simple Flex page:</p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:comp="components.*"&gt;
+<pre><code>&amp;lt;mx:Script&amp;gt;
+&amp;lt;![CDATA[
+import mx.controls.Alert;
+
+private function test():void {
+	Alert.show(this.parameters.flashvar1+' '+this.parameters.flashvar2, &quot;Flashvars&quot;);	
+}
+]]&amp;gt;
+&amp;lt;/mx:Script&amp;gt;
+
+&amp;lt;mx:Button id=&quot;btnTest&quot; label=&quot;Test&quot; click=&quot;test()&quot; /&amp;gt;
+</code></pre>
+<p>&lt;/mx:Application&gt;
+</code></p>
+<p>Note the this.parameters? This lets me get access to the flashvars. I named them flashvar1 and flashvar2 which isn't very creative. Obviously it could be any name. To pass the variables in you can simply edit the generated HTML.</p>
+<code>
+"flashvars",'flashvar1=ray&flashvar2=camden&historyUrl=history.htm%3F&lconid=' + lc_id + '',
+</code>
+<p>Don't forget that each Flex project has an HTML template. It would make sense to edit the template so you don't have to re-edit the generated HTML after each build.</p>
+<p>This should help take care of the &quot;root CFC&quot; issue I mentioned a week or so ago.</p>
+}

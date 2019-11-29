@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>Next week will be the next meeting of the &quot;ColdFusion Jedi User Group.&quot; My presentation will be on adding a security system to a web application. This is definitely for beginners who know how to work with content and want to add CMS-type tools to their site, but don't know how to do it in a secure way. I'll cover how to add an &quot;admin&quot; tool to your site and ensure it is secured.</p>
+<p>I will not be covering security in terms of protecting url parameters and stuff like that. That is a complete other presentation.</p>
+}

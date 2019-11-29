@@ -1,0 +1,59 @@
+<h1>Post</h1>
+
+<p>I've been using Vue heavily for a while now and this week I ran into an issue that I've never seen before. It's something documented and pretty well known (when I tweeted about it I got a reply in about 60 seconds) but I just had not hit it before. Before I get into $nextTick, let me explain what I was doing and what went wrong.</p>
+<p>I have a hidden form on a page that needs to have a dynamic action value. Consider this markup:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  &lt;form :action=&quot;myAction&quot; method=&quot;post&quot; ref=&quot;myForm&quot;&gt;
+    &lt;button @click.prevent=&quot;testAction&quot;&gt;Test&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/div&gt;
+</code></pre>
+<p>And this code:</p>
+<pre><code class="language-js">Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+const app = new Vue({
+  el:'#app',
+  data: {
+    myAction:null
+  },
+  methods:{
+    testAction() {
+      this.myAction = 'http://www.raymondcamden.com';
+      this.$refs.myForm.submit();
+    }
+  }
+})
+</code></pre>
+<p>Looks simple enough, right? Probably the only interesting thing here is the use of <code>ref</code> and <code>this.$refs</code> to handle accessing the DOM directly with Vue. I call it fancy because it isn't something I usually need to do with Vue. So what happens when you test this? Try it yourself and see:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="omrPpP" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="what the tick?!?!">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/omrPpP/">
+  what the tick?!?!</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>Instead of POSTing to my server, it sends the POST directly to CodePen, and just today I discovered they support echoing back the data which is kind of cool! (Note, in the embedded CodePen above, the POST echo doesn't work. It may not be a feature of the embed.)</p>
+<p>Alright, so what the heck went wrong? Well, if you're like me, you may not have read the &quot;Internals&quot; section of the Vue.js documentation, specifically this part: <a href="https://vuejs.org/v2/guide/reactivity.html#Async-Update-Queue">Async Update Queue</a>.</p>
+<blockquote>
+In case you haven’t noticed yet, Vue performs DOM updates asynchronously.
+</blockquote>
+<p>Raise your hand if you hadn't noticed this yet.</p>
+<img src="https://static.raymondcamden.com/images/2019/02/raisehand.jpg" alt="Ray raising his hand" class="imgborder imgcenter">
+<p>Luckily there's a simple fix for this and if you actually read the title of this post, you have an idea of what it is: <code>this.$nextTick</code>. This function lets you provide a callback to execute when Vue is done propagating your changes to the DOM and it's safe to assume it reflects your new data. The fix is pretty simple:</p>
+<pre><code class="language-js">this.$nextTick(() =&gt; this.$refs.myForm.submit());
+</code></pre>
+<p>And if fat arrow functions still confuse you a bit (nothing wrong with that!), here's a simpler version:</p>
+<pre><code class="language-js">this.$nextTick(function() {
+	this.$refs.myForm.submit();
+});
+</code></pre>
+<p>You can see the corrected version in the CodePen below.</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="vbqzpb" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="what the tick?!?! (fixed)">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/vbqzpb/">
+  what the tick?!?! (fixed)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>So to answer the question of &quot;when&quot; - I guess I'd say when you need to ensure the DOM 100% reflects your data and in this case it's kind of obvious - I needed my form POST to use the correct URL. Out of all the times I've used Vue this is the first time I needed this precise level of control but I'm sure I'll run into more examples. If you can, please share an example of when you've used it in the comments below!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/n-pqXQ9YsBg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Franck V</a> on Unsplash</i></p>
+}

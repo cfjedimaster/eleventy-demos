@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I was looking over Dan Vega's cool <a href="http://www.adobe.com/devnet/coldfusion/articles/coldfusion9_uicontrols.html">article</a> on ColdFusion 9 UI controls today when I discovered the following in one of his cfmediaplayer examples:</p>
+<iframe src="http://www.raymondcamden.com/demos/cfmediaplayer/test2.cfm" width="500" height="400" frameborder="0"></iframe>
+<p>Is it just me - or is that video freaking cool?</p>
+}

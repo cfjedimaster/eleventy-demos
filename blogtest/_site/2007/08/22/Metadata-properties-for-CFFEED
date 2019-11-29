@@ -1,0 +1,106 @@
+<h1>Post</h1>
+
+<p>When creating RSS feeds with the CFFEED tag, you can specify metadata properties for the feed that help describe the feed in general. The docs though aren't very clear on <i>what</i> metadata properties you can provide.</p>
+<!--more-->
+<p>The docs say that for RSS 2.0 feeds the title, link, description, and version properties are required, but all others are optional. What others? I was never able to find documentation that describes what fields you can use. At the same time though CFFEED is smart enough to recognize valid fields. If you pass a field named &quot;ray&quot; for example, it ignores it when creating the feed. So what is available? I did some Googling and I found a specification for RSS 2:</p>
+<p><a href="http://cyber.law.harvard.edu/rss/rss.html">RSS 2.0 at Harvard Law</a></p>
+<p>The docs here listed a bunch of items all of which worked. In general they were all simple to use. For example, here was my initial metadata based on what I had to pass:</p>
+<code>
+&lt;!--- Struct to contain metadata ---&gt;
+&lt;cfset meta = structNew()&gt;
+&lt;cfset meta.title = "Orange Whip Studio Films"&gt;
+&lt;cfset meta.link = "http://localhost/ows"&gt;
+&lt;cfset meta.description = "Latest Films"&gt;
+</code>
+<p>Next I added additional fields:</p>
+<code>
+&lt;cfset meta.language = "Klingon"&gt;
+&lt;cfset meta.copyright = "I own you."&gt;
+&lt;cfset meta.managingEditor = "ray@camdenfamily.com"&gt;
+&lt;cfset meta.webmaster = "ray@camdenfamily.com"&gt;
+&lt;cfset meta.pubDate = now()&gt;
+&lt;cfset meta.lastBuildDate = now()&gt;
+</code>
+<p>This worked fine until I hit categories. Categories have been an array of a structs:</p>
+<code>
+&lt;cfset meta.category = []&gt;
+&lt;cfset meta.category[1] = structNew()&gt;
+&lt;cfset meta.category[1].value = "Boogers"&gt;
+</code>
+<p>Why? Because categories support an optional domain field. To supply the domain just add it as a key:</p>
+<code>
+&lt;cfset meta.category = []&gt;
+&lt;cfset meta.category[1] = structNew()&gt;
+&lt;cfset meta.category[1].domain = "foo"&gt;
+&lt;cfset meta.category[1].value = "Boogers"&gt;
+</code>
+<p>Another complex value is the cloud key. This takes 5 subkeys:</p>
+<code>
+&lt;cfset meta.cloud = structNew()&gt;
+&lt;cfset meta.cloud.domain ="rpc.sys.com"&gt;
+&lt;cfset meta.cloud.port = "80"&gt;
+&lt;cfset meta.cloud.path = "/rpc2"&gt;
+&lt;cfset meta.cloud.registerProcedure="pingMe"&gt;
+&lt;cfset meta.cloud.protocol = "soap"&gt;
+</code>
+<p>Lastly - both the skipdays and skiphours fields require special values - and these are actually documented. The skipdays value is a list of days and skiphours is a list of hours.</p>
+<code>
+&lt;cfset meta.skipHours = "0,1,2,3,4,5,6"&gt;
+&lt;cfset meta.skipDays = "Saturday,Sunday"&gt;
+</code>
+<p>Another cool metadata field is image. When used, this provides a nice little logo when viewing the feed. (At least it did in Firefox.)</p>
+<code>
+&lt;cfset meta.image = structNew()&gt;
+&lt;cfset meta.image.title = "Logo"&gt;
+&lt;cfset meta.image.url = "http://localhost/ows/images/logo_a.gif"&gt;
+&lt;cfset meta.image.link = meta.link&gt;
+</code>
+<p>One field in particular that was interesting was the textInput field. Form the specs:</p>
+<blockquote>
+A channel may optionally contain a &lt;textInput&gt; sub-element, which contains four required sub-elements.
+</blockquote>
+<p>Ok - that's cool - but then the next paragraph reads:</p>
+<blockquote>
+The purpose of the &lt;textInput&gt; element is something of a mystery. You can use it to specify a search engine box. Or to allow a reader to provide feedback. Most aggregators ignore it.
+</blockquote>
+<p>Sweet. I love it when specs say something is a mystery. Below is the complete set of metadata I tried, all of which worked (except textInput, it did show up in the xml, but Firefox didn't do anything with it). Tomorrow I'm going to do the same digging for Atom.</p>
+<code>
+&lt;!--- Struct to contain metadata ---&gt;
+&lt;cfset meta = structNew()&gt;
+&lt;cfset meta.title = "Orange Whip Studio Films"&gt;
+&lt;cfset meta.link = "http://localhost/ows"&gt;
+&lt;cfset meta.description = "Latest Films"&gt;
+<p>&lt;cfset meta.language = &quot;Klingon&quot;&gt;
+&lt;cfset meta.copyright = &quot;I own you.&quot;&gt;
+&lt;cfset meta.managingEditor = &quot;ray@camdenfamily.com&quot;&gt;
+&lt;cfset meta.webmaster = &quot;ray@camdenfamily.com&quot;&gt;
+&lt;cfset meta.pubDate = now()&gt;
+&lt;cfset meta.lastBuildDate = now()&gt;</p>
+<p>&lt;cfset meta.category = []&gt;
+&lt;cfset meta.category[1] = structNew()&gt;
+&lt;cfset meta.category[1].domain = &quot;foo&quot;&gt;
+&lt;cfset meta.category[1].value = &quot;Boogers&quot;&gt;</p>
+<p>&lt;cfset meta.generator = &quot;ColdFusion 8, baby&quot;&gt;
+&lt;cfset meta.docs = &quot;http://cyber.law.harvard.edu/rss/rss.html&quot;&gt;</p>
+<p>&lt;cfset meta.cloud = structNew()&gt;
+&lt;cfset meta.cloud.domain =&quot;rpc.sys.com&quot;&gt;
+&lt;cfset meta.cloud.port = &quot;80&quot;&gt;
+&lt;cfset meta.cloud.path = &quot;/rpc2&quot;&gt;
+&lt;cfset meta.cloud.registerProcedure=&quot;pingMe&quot;&gt;
+&lt;cfset meta.cloud.protocol = &quot;soap&quot;&gt;</p>
+<p>&lt;cfset meta.ttl = 60&gt;</p>
+<p>&lt;cfset meta.image = structNew()&gt;
+&lt;cfset meta.image.title = &quot;Logo&quot;&gt;
+&lt;cfset meta.image.url = &quot;http://localhost/ows/images/logo_a.gif&quot;&gt;
+&lt;cfset meta.image.link = meta.link&gt;</p>
+<p>&lt;cfset meta.rating = &quot;pics rating&quot;&gt;</p>
+<p>&lt;cfset meta.textInput = structNew()&gt;
+&lt;cfset meta.textInput.title = &quot;Search&quot;&gt;
+&lt;cfset meta.textInput.description = &quot;Use this to search our site&quot;&gt;
+&lt;cfset meta.textInput.name = &quot;search&quot;&gt;
+&lt;cfset meta.textInput.link = &quot;http://localhost/ows/69/_temp.cfm&quot;&gt;</p>
+<p>&lt;cfset meta.skipHours = &quot;0,1,2,3,4,5,6&quot;&gt;
+&lt;cfset meta.skipDays = &quot;Saturday,Sunday&quot;&gt;</p>
+<p>&lt;cfset meta.version = &quot;rss_2.0&quot;&gt;
+</code></p>
+}

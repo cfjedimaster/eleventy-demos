@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>In the past, I've <a href="http://www.camdenfamily.com/morpheus/blog/index.cfm?mode=entry&entry=395FDFE1-A5B7-3E8E-7EA8835F41E77788">mentioned</a> how CF will pass a structure by reference if you do something like the following:</p>
+<p>a = structNew();<br>
+b = a;</p>
+<p>However, a coworker found something interesting. Inside a UDF, she did something like so:</p>
+<p>var a = structNew();<br>
+a.orig = &quot;foo&quot;;<br>
+application.foo = a;<br></p>
+<p>What was interesting was that even though 'a' was a var scoped variable, the value of application.foo still existed after the request. I did another test and discovered that even outside of a UDF, if you set an application struct to point to a variables scope struct, the &quot;death&quot; of the variables scope struct simply &quot;tears off&quot; a copy to the application scope. I can't see a real use for this, but I figured I'd share it.</p>
+<p><b>Updated</b> Even more interesting, if you make B point to A, ie, a is a struct, b = a, and then change the <i>type</i> of a, than CF &quot;tears&quot; it again. Consider:</p>
+<p>s = structnew();<br>
+s.name = &quot;orig&quot;;<br>
+b = s;<br>
+s=arraynew(1);<br>
+writeoutput(b.name);<br></p>
+<p>This will output orig and not throw an error as you might expect.</p>
+}

@@ -1,0 +1,30 @@
+<h1>Post</h1>
+
+<p>A week or so ago a reader asked me about an odd change he saw when dumping exceptions in ColdFusion. In a &quot;normal&quot; error, he saw the following keys in the Exception object: Detail, ErrNumber, Message, StackTrack, TagContext, Type. These were all expected (although there can be more based on your error). Then he noticed that if an error occurred within Application.cfc, something else was added. To test this, I added the following:</p>
+<!--more-->
+<p>
+<code> 
+&lt;cffunction name="onRequestStart" returnType="boolean" output="false"&gt;
+	&lt;cfargument name="thePage" type="string" required="true"&gt;
+	&lt;cfif structKeyExists(url, "x") &gt;
+		&lt;cfthrow message="I made a boo boo." detail="method level detail"&gt;
+	&lt;/cfif&gt;
+<pre><code>&amp;lt;cfreturn true&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;
+</code></p>
+<p>
+<p>To test, I simply requested a file and added x=1 to my URL. When this error occurs, both a RootCause and a Cause key exist in the object.</p>
+<p>
+<img src="https://static.raymondcamden.com/images/errorstruct.png" />
+<p>
+<p>While RootCause is documented, Cause was not. I bugged some folks at Adobe about this and Chandan Kumar of Adobe told me the following:</p>
+<ol>
+<li>
+<p>First, Cause is a copy of RootCause. You don't have to look at them both for information about the error.</p>
+</li>
+<li>
+<p>Cause is actually the <i>real</i> data. It comes right from the Throwable object in Java. RootCause is actually created as the copy. Now while it may be that Cause is the real object and RootCause is the copy, I will say that since RootCause is <b>documented</b>, you should continue to use that.</p>
+</li>
+</ol>
+}

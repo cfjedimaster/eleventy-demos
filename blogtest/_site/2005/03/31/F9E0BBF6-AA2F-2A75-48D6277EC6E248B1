@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>CFLib was broken a for a bit today. I had attempted to fix the feature that allows you to load a udf  by name (ex: www.cflib.org/udf.cfm/isemail). In the process of doing so I made it so that the normal loading of a UDF was broken. I blame CGI variables and my local Apache install versus IIS on the server. :) Either way, all should be fine now.</p>
+}

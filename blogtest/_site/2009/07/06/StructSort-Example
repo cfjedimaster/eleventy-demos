@@ -1,0 +1,74 @@
+<h1>Post</h1>
+
+<p>This was discussed on my <a href="http://www.raymondcamden.com/forums">forums</a> a few days ago, but as I rarely see structSort &quot;in the field&quot;, I thought I'd share a simple example.</p>
+<!--more-->
+<p>The user had a simple structure where every key was a name and the value was an age. For example:</p>
+<table>
+<tr>
+<th>name</th>
+<th>score</th>
+</tr>
+<tr>
+<td>bob</td><td>93</td>
+</tr>
+<tr>
+<td>ted</td><td>90</td>
+</tr>
+<tr>
+<td>jane</td><td>94</td>
+</tr>
+<tr>
+<td>al</td><td>91</td>
+</tr>
+</table>
+<p>His goal was to display the names in order of their age. structSort can handle this very simply. The structSort argument takes 4 arguments:</p>
+<ul>
+<li>First is the structure you are sorting.
+<li>Second is the sort type. This can be numeric, text (default), or textnocase.
+<li>Third is sortOrder, which is asc or desc (no true or false, ahem, are you listening Transfer?)
+<li>Last is pathToSubElement. That one is a bit scary, so just pretend it doesn't exist for a few minutes.
+</ul>
+<p>The result is an array of keys sorted in the right order. So taking the simple desire to sort by age, we can use:</p>
+<code>
+&lt;cfset s = {bob=93,ted=90,jane=94,al=91}&gt;
+&lt;cfdump var="#s#"&gt;
+&lt;cfset sorted = structSort(s, "numeric")&gt;
+&lt;cfdump var="#sorted#"&gt;
+</code>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 170.png">
+<p>And that's it. Well, you probably don't want to use dump to format your data. Since we have an array of keys as a result, here is how I'd actually display it:</p>
+<code>
+&lt;cfset s = {bob=93,ted=90,jane=94,al=91}&gt;
+&lt;cfset sorted = structSort(s, "numeric")&gt;
+<p>&lt;cfloop index=&quot;name&quot; array=&quot;#sorted#&quot;&gt;
+&lt;cfoutput&gt;#name# is #s[name]# years young.&lt;br/&gt;&lt;/cfoutput&gt;
+&lt;/cfloop&gt;
+</code></p>
+<p>Notice I use the new index/array form of cfloop. If you are on CF7, you would loop from 1 to arrayLen(sorted). The results:</p>
+<blockquote>
+<p>
+TED is 90 years young.<br/>
+AL is 91 years young.<br/>
+BOB is 93 years young.<br/>
+JANE is 94 years young.<br/>
+</p>
+</blockquote>
+<p>Ok, simple enough, right? What if you want to use that super-special fourth argument I told you was too scary? Well, it really isn't too scary. It comes in handy if you wan to sort structures that aren't as simple as the example above. Consider this data:</p>
+<code>
+&lt;cfset s2 = {}&gt;
+&lt;cfset s2.ray = {age=36,rank="General"}&gt;
+&lt;cfset s2.scott = {age=42,rank="Private"}&gt;
+&lt;cfset s2.todd = {age=29,rank="Major"}&gt;
+&lt;cfset s2.fred = {age=51,rank="Corporal"}&gt;
+</code>
+<p>In this example, instead of simple values, every key is itself a structure containing an age and rank value. This is where the fourth argument comes into play. We can now sort by age or rank:</p>
+<code>
+&lt;cfset sortedByAge = structSort(s2, "numeric", "asc", "age")&gt;
+&lt;cfdump var="#sortedByAge#" label="sorted by age"&gt;
+<p>&lt;cfset sortedByRank = structSort(s2, &quot;textnocase&quot;, &quot;asc&quot;, &quot;rank&quot;)&gt;
+&lt;cfdump var=&quot;#sortedByRank#&quot; label=&quot;sorted by rank&quot;&gt;
+</code></p>
+<p>Which outputs:</p>
+<img src="https://static.raymondcamden.com/images/cfjedi//Picture 245.png">
+<p>I hope this helps. And yes - I know the rank sort isn't sorting by the proper military hierarchy. You would have to write custom code to handle that yourself.</p>
+}

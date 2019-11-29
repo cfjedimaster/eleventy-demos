@@ -1,0 +1,34 @@
+<h1>Post</h1>
+
+<p>So this weekend, <a href="http://www.brucephillips.name/blog">Bruce Phillips</a> pointed out on my last <a href="http://ray.camdenfamily.com/index.cfm/2006/11/25/Last-build-of-my-Flex-2ColdFusion-Security-Homework">Flex Homework</a> post that he only needed to run the CFLOGIN tag once in his Flex application. My code was running it for every hit in the onRequestStart method.</p>
+<!--more-->
+<p>So this really bugged me because it was my understanding that ColdFusion had to run the CFLOGIN tag during a request to &quot;enable&quot; Roles Based Security. I knew that ColdFusion would skip the stuff inside - but from what I had remembered, CF had to actually <i>encounter</i> the tag to use Roles Based Security for the test.</p>
+<p>But when I tested what Bruce had done in his Flex app, it worked as he had said. I was truly perplexed. Then I did a test:</p>
+<code>
+&lt;cfapplication name="goobercflogin" sessionManagement="true"&gt;
+<p>&lt;cflogin&gt;
+&lt;cfloginuser name=&quot;ray2&quot; password=&quot;ray&quot; roles=&quot;admin&quot;&gt;
+&lt;/cflogin&gt;
+&lt;cfoutput&gt;#getAuthUser()#&lt;/cfoutput&gt;</p>
+<p>&lt;cfif isUserInRole(&quot;admin&quot;)&gt;
+&lt;p&gt;
+yes, admin role
+&lt;/p&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>I ran this - and then ran it again with the cflogin block commented out - and it worked just fine. Bruce was definitely right. But then I tried this:</p>
+<code>
+&lt;cfapplication name="goobercflogin2" sessionManagement="true" loginStorage="session"&gt;
+<p>&lt;cflogin&gt;
+&lt;cfloginuser name=&quot;ray2&quot; password=&quot;ray&quot; roles=&quot;admin&quot;&gt;
+&lt;/cflogin&gt;</p>
+<p>&lt;cfoutput&gt;#getAuthUser()#&lt;/cfoutput&gt;</p>
+<p>&lt;cfif isUserInRole(&quot;admin&quot;)&gt;
+&lt;p&gt;
+yes, admin role
+&lt;/p&gt;
+&lt;/cfif&gt;
+</code></p>
+<p>Notice the loginStorage? That tells ColdFusion to use the session scope for the authentication. Now in theory, this should ONLY change the storage method for the authentication information. But when you comment out CFLOGIN, you no longer get a value for getAuthUser and the roles check failed.</p>
+<p>I'll wrap with one final word: Ugh.</p>
+}

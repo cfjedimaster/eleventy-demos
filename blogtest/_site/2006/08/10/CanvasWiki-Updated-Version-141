@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I know I just updated it yesterday, but I had a few small more tweaks in mind and I've updated the zip. You can download it from the <a href="http://ray.camdenfamily.com/projects/canvas">project page</a>. The changes are minor. The biggest change is that the emails sent on page changes now actually render the page. That way you see the page a bit closer to what the public sees. I also added a clickable URL on the email so you can quickly load up the live site.</p>
+<p>Note - a user reported that the zip had not been properly updated with yesterdays update. I confirmed it. I just checked and the 1.4.1 zip definitely seems to be there, but if you don't see the right version number in the readme, let me know.</p>
+}

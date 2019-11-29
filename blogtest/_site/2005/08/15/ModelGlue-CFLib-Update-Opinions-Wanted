@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I've updated the Model-Glue version of CFLib again. You can find it here:</p>
+<p><a href="http://mg.cflib.org">http://mg.cflib.org</a></p>
+<p>What's the update this time? You can actually view a resource now. (Also, I'm recording views with a new stats pod.) I'm looking for feedback. Since the new CFLib will support multiple types of resources, I've simplified the layout a bit of the resource display. I think this looks fine, but I'm concerned about the code display. It is &quot;pretty&quot;, but because it isn't a text area, there is no way to &quot;Select All / Copy&quot;. I could simply add some javaScript code for that. Any other thoughts on how it looks? You can download resources now. (But not whole libraries.)</p>
+<p>As before, the code can be downloaded <a href="http://ray.camdenfamily.com/downloads/beta.cflib.org.zip">here</a>. Any comments on the Model-Glue code are also welcome.</p>
+}

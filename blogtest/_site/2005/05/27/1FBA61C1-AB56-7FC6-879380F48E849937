@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>First off - the zip from this morning was missing the updated CFC. Sorry folks. Secondly, I found another oddity with queryparam under BlueDragon. The filters for day/month/year all used a queryparam using type=&quot;cf_sql_integer&quot;. This worked ok under CFMX/Access. In BD/Access, it gave me an &quot;optional feature not implemented&quot; error. When I switched the type to cf_sql_numeric, it worked ok in both platforms.</p>
+<p>Anyway - the zip is updated (for real this time).</p>
+<p>Big thanks to Rey Bango for helping me debug this!</p>
+}

@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>I will be gone all next, so you won't be seeing any posts for a while. I'm taking Monday and Tuesday off for my birthday (turning 30 on the 8th), and the rest of the week I have to &quot;suffer&quot; and visit a client in Aspen, CO. -sigh-</p>
+<p>A very good friend of mine, <a href="http://www.cfczone.org/blogs/rob/index.cfm">Rob Brooks-Bilson</a>, has set up a copy of my blog software on his site. He also pointed out a good feature I was missing - a &quot;maxcount&quot; on getEntries. In other words, after applying other filters, only return N records. This is a good way to help control the amount of data returned. Anyway, when I get back, I'll implement this new feature and post an update code zip.</p>
+}

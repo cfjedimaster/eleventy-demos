@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>For folks who have been reading my <a href="/tags/openwhisk">OpenWhisk</a> blog entries this past week or so, I've started working on some videos
+that demonstrate what I've been covering so far. I only have three done currently, and two cover material I've already done, but I thought
+it might be a useful addition to what I've demonstrated on the blog.</p>
+<p>The first simply demonstrates the CLI and creating/calling actions:</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/RHzQf5eoAwc?list=PL_z-rqJYNijo3BzyBb8mQXYqDAwTbprW7" frameborder="0" allowfullscreen></iframe>
+<p>The second demonstrates how to work with asynchronous actions (and includes the <a href="http://swapi.co">Star Wars API!</a>):</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/lujECfCPiGM?list=PL_z-rqJYNijo3BzyBb8mQXYqDAwTbprW7" frameborder="0" allowfullscreen></iframe>
+<p>The third one discusses how to debug your actions when you screw up. And I mean you since I never screw up in JavaScript. Or anything else. Ever. Honest.</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/PFZDvvT7oX0?list=PL_z-rqJYNijo3BzyBb8mQXYqDAwTbprW7" frameborder="0" allowfullscreen></iframe>
+<p>You can also bookmark the <a href="https://www.youtube.com/playlist?list=PL_z-rqJYNijo3BzyBb8mQXYqDAwTbprW7">playlist</a>. I'm going to record another one
+today and hopefully more soon.</p>
+}

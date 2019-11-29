@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>The second part to my RSS Watch article has been <a href="http://www.macromedia.com/devnet/mx/coldfusion/articles/rsswatch_pt2.html">published</a> on DevNet. This is basically a &quot;What I did wrong in part 1&quot; type article, but I think it is interesting in that it shows the typical revisions folks make to code. As always, suggestions are welcome. The code in the article is also a bit closer to what I use at <a href="http://www.rsswatcher.com">RSSWatcher</a>.</p>
+}

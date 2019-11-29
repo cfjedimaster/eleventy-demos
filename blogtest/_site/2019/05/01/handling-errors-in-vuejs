@@ -1,0 +1,235 @@
+<h1>Post</h1>
+
+<p>I've been spending the last year working with, writing about, and presenting on my favorite framework, Vue.js, and realized that I had yet to look into error handling with Vue. I'd like to say that's because I write perfect code, but I think we all know the truth of that. I spent some time the last few days playing around with various error handling techniques provided by Vue and thought I'd share my findings. Obviously this won't cover every scenario out there, but I hope it helps!</p>
+<h2>The Errors!</h2>
+<p>In order to test out the various error handling techniques, I decided to use three different kinds of errors (initially anyway). The first was simply referring to a variable that doesn't exist:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  Hello, {{name}}
+&lt;/div&gt;
+</code></pre>
+<p>This example will not display an error to the user but will have a <code>[Vue warn]</code> message in the console.</p>
+<img src="https://static.raymondcamden.com/images/2019/05/ve1a.png" alt="Error messages" class="imgborder imgcenter">
+<p>You can view this example here:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="qweOKB" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1A">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/qweOKB/">
+  Error1A</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>For a second example, I tried a variable bound to a computed property that would throw an error:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  Hello, {{name2}{% endraw %}}
+&lt;/div&gt;
+
+&lt;script&gt;
+const app = new Vue({
+  el:'#app',
+  computed:{
+    name2() {
+      return x;
+    }
+  }
+})
+&lt;/script&gt;
+</code></pre>
+<p>This throws both a <code>[Vue warn]</code> and a regular error in the console and doesn't show anything to the user.</p>
+<img src="https://static.raymondcamden.com/images/2019/05/ve1.png" alt="Error messages" class="imgborder imgcenter">
+<p>Here's an embed for this.</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="BEXoOw" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1B">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/BEXoOw/">
+  Error1B</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>For my third error, I used a method that would throw an error when executed.</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+	&lt;button @click=&quot;doIt&quot;&gt;Do It&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+const app = new Vue({
+  el:'#app',
+  methods:{
+	  doIt() {
+		  return x;
+	  }
+  }
+})
+&lt;/script&gt;
+</code></pre>
+<p>Like the last one, this error will be thrown twice in the console, one warning and one proper error. Unlike last time, the error is only thrown when you actually click the button.</p>
+<img src="https://static.raymondcamden.com/images/2019/05/ve2.png" alt="Error with the click handler" class="imgborder imgcenter">
+<p>And here's the embed for this one:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="oOKjJb" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1C">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/oOKjJb/">
+  Error1C</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>Ok, before we go on, I just want to be clear that this isn't representative of every type of error you can create, it's just a baseline of a few that I think would be common in Vue.js applications.</p>
+<p>Ok, so how <em>do</em> you handle errors in Vue applications? I have to say I was a bit surprised that the main <a href="https://vuejs.org/v2/guide/">Vue Guide</a> did not have a clearly defined section on error handling.</p>
+<img src="https://static.raymondcamden.com/images/2019/05/ve3.png" alt="Results for Error" class="imgborder imgcenter">
+<p>Yes, there is one in the guide, but the text is short enough to fit in a quote:</p>
+<blockquote>
+If a runtime error occurs during a component's render, it will be passed to the global Vue.config.errorHandler config function if it has been set. It might be a good idea to leverage this hook together with an error-tracking service like Sentry, which provides an official integration for Vue.
+</blockquote>
+<p>In my opinion, this topic should really be called out a bit more in the docs. (And frankly that's on me to see if I can help the docs!) In general, error handling in Vue comes down to these techniques:</p>
+<ul>
+<li>errorHandler</li>
+<li>warnHandler</li>
+<li>renderError</li>
+<li>errorCaptured</li>
+<li>window.onerror (not a Vue-specific technique)</li>
+</ul>
+<p>Let's dig in.</p>
+<h2>Error Handling Technique One: errorHandler</h2>
+<p>The first technique we'll look at is <a href="https://vuejs.org/v2/api/#errorHandler">errorHandler</a>. As you can probably guess, this is a generic error handler for Vue.js applications. You assign it like so:</p>
+<pre><code class="language-js">Vue.config.errorHandler = function(err, vm, info) {
+
+}
+</code></pre>
+<p>In the function declaration above, <code>err</code> is the actual error object, <code>info</code> is a Vue specific error string, and <code>vm</code> is the actual Vue application. Remember that you can have multiple Vue applications running on one web page at a time. This error handler would apply to all of them. Consider this simple example:</p>
+<pre><code class="language-js">Vue.config.errorHandler = function(err, vm, info) {
+  console.log(`Error: ${err.toString()}\nInfo: ${info}`);
+}
+</code></pre>
+<p>For the first error, this does nothing. If you remember, it generating a <em>warning</em>, not an error.</p>
+<p>For the second error, it handles the error and reports:</p>
+<pre><code>Error: ReferenceError: x is not defined
+Info: render
+</code></pre>
+<p>Finally, the third example gives this result:</p>
+<pre><code>Error: ReferenceError: x is not defined
+Info: v-on handler
+</code></pre>
+<p>Note how the info in the two previous examples is pretty helpful. Now let's check the next technique.</p>
+<h2>Error Handling Technique Two: warnHandler</h2>
+<p>The <a href="https://vuejs.org/v2/api/#warnHandler">warnHandler</a> handles - wait for it - Vue warnings. Do note though that this handler is ignored during production. The method handler is slightly different as well:</p>
+<pre><code class="language-js">Vue.config.warnHandler = function(msg, vm, trace) {
+
+}
+</code></pre>
+<p>Both <code>msg</code> and <code>vm</code> should be self-explanatory, but <code>trace</code> would be the component tree. Consider this example:</p>
+<pre><code class="language-js">Vue.config.warnHandler = function(msg, vm, trace) {
+  console.log(`Warn: ${msg}\nTrace: ${trace}`);
+}
+</code></pre>
+<p>The first error example now has a handler for it's warning and returns:</p>
+<pre><code>Warn: Property or method 'name' is not defined on the instance but referenced during render. Make sure that this property is reactive, either in the data option, or for class-based components, by initializing the property. See: https://vuejs.org/v2/guide/reactivity.html#Declaring-Reactive-Properties.
+Trace: 
+
+(found in &lt;Root&gt;)
+</code></pre>
+<p>The second and third examples do not change. You can view embeds for all three below:</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="oOKxEa" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1A with Handler">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/oOKxEa/">
+  Error1A with Handler</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p/>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="PgMNao" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1B with Handler">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/PgMNao/">
+  Error1B with Handler</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p/>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="wZVGEK" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1C with Handler">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/wZVGEK/">
+  Error1C with Handler</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<h2>Error Handling Technique Three: renderError</h2>
+<p>The third method I'll demonstrate is <a href="https://vuejs.org/v2/api/#renderError">renderError</a>. Unlike the previous two, this technique is component specific and not global. Also, like <code>warnHandler</code>, this is disabled in production.</p>
+<p>To use, you add it to your component/app. This example is modified from a sample in the docs.</p>
+<pre><code class="language-js">const app = new Vue({
+  el:'#app',
+  renderError (h, err) {
+    return h('pre', { style: { color: 'red' }}, err.stack)
+  }
+})
+</code></pre>
+<p>If used in the first error example, it does nothing, which if you think about it <em>kinda</em> makes sense as the first one is throwing a warning, not an error. If you test it in the second one where the computed property throws an error, it is rendered. You can see it in the embed below.</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="result" data-user="cfjedimaster" data-slug-hash="NmQrwa" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1B with renderError">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/NmQrwa/">
+  Error1B with renderError</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>To be honest, I'm not sure why I'd use this when the console would be more appropriate, but if your QA team or other testers aren't familiar with the browser console, having a simpler error message on screen may help.</p>
+<h2>Error Handling Technique Four: errorCaptured</h2>
+<p>For the final (Vue-specific) technique, we have <a href="https://vuejs.org/v2/api/#errorCaptured">errorCaptured</a>, AKA the technique that confused the heck out of me and frankly still confuses me a bit. The docs have this to say:</p>
+<blockquote>
+Called when an error from any descendent component is captured. The hook receives three arguments: the error, the component instance that triggered the error, and a string containing information on where the error was captured. The hook can return false to stop the error from propagating further.
+</blockquote>
+<p>Based on my research (and again, I'm definitely shaky on this), this error handler is only to be used by a &quot;parent&quot; component handling an error from a &quot;child&quot; component. It can't, as far as I know, be used in a main Vue instance, but only in a component with children.</p>
+<p>In order to test this I created a parent/child set of components like so:</p>
+<pre><code class="language-js">Vue.component('cat', {
+  template:`
+&lt;div&gt;&lt;h1&gt;Cat: {{name}}&lt;/h1&gt;
+  &lt;slot&gt;&lt;/slot&gt;
+&lt;/div&gt;`,
+  props:{
+    name:{
+      required:true,
+      type:String
+    }
+  },
+   errorCaptured(err,vm,info) {
+    console.log(`cat EC: ${err.toString()}\ninfo: ${info}`); 
+     return false;
+  }
+
+});
+
+Vue.component('kitten', {
+  template:'&lt;div&gt;&lt;h1&gt;Kitten: {% raw %}{{ dontexist() }}&lt;/h1&gt;&lt;/div&gt;',
+  props:{
+    name:{
+      required:true,
+      type:String
+    }
+  }
+});
+</code></pre>
+<p>Notice how the <code>kitten</code> component has an error in it. Now if I try to use it like so:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot; v-cloak&gt;
+  &lt;cat name=&quot;my cat&quot;&gt;
+      &lt;kitten&gt;&lt;/kitten&gt;
+  &lt;/cat&gt;
+&lt;/div&gt;
+</code></pre>
+<p>I'll get a message from the handler:</p>
+<pre><code>cat EC: TypeError: dontexist is not a function
+info: render
+</code></pre>
+<p>You can view this in the embed below.</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="MRMbYJ" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/MRMbYJ/">
+  Error1</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<p>So yeah... interesting feature. I'm guessing it would mostly be used by people building component libraries with parent/child type relationships. More a &quot;library developer&quot; feature than a &quot;regular developer&quot; feature if that makes sense. But again - that's just my initial impression of the feature.</p>
+<h2>The One Technique to Rule Them All: window.onerror</h2>
+<img src="https://static.raymondcamden.com/images/2019/05/ring.png" alt="Obligatory LOTR reference ring" class="imgcenter">
+<p>The final (and most powerful) option is to use <a href="https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror">window.onerror</a>, a global error handler for <em>anything</em> that can possibly go wrong with your JavaScript. The handler takes the form of:</p>
+<pre><code class="language-js">window.onerror = function(message, source, line, column, error) {
+
+}
+</code></pre>
+<p>Probably the only thing you can't guess above would be <code>source</code> which is the URL of the script.</p>
+<p>Here's where things get interesting though. If you define this, and do <em>not</em> use <code>Vue.config.errorHandler</code>, then this will not help. Vue expects you to define the darn thing and if you don't, will not propagate the error outside itself. I ... guess that makes sense? I don't know - to me that doesn't necessarily make sense. Even odder, let's say your Vue error handler has an error itself. That won't propagate to window.onerror either.</p>
+<p>Here's an example CodePen. I've commented out the error in the <code>errorHandler</code>, but if you remove the comment, you'll see the global error handler isn't run. The only you can see the global handler run is if you click the second button.</p>
+<p class="codepen" data-height="265" data-theme-id="0" data-default-tab="js,result" data-user="cfjedimaster" data-slug-hash="WWVowN" style="height: 265px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid black; margin: 1em 0; padding: 1em;" data-pen-title="Error1C with Handler (window)">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/WWVowN/">
+  Error1C with Handler (window)</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+<h2>Wrap Up</h2>
+<p>I hope this made sense. As I said in the beginning, this was my first foray into the topic so I'm definitely looking for comments, suggestions, and corrections. I'd love to hear how people are using these techniques in their own apps!</p>
+<p><i>Header photo by <a href="https://unsplash.com/photos/G85VuTpw6jg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">David Kovalenko</a> on Unsplash</i></p>
+}

@@ -1,0 +1,15 @@
+<h1>Post</h1>
+
+<p><b>Edit on August 1, 2013:</b> Since the time I wrote this blog post, Reveal.js has added a much easier way to add background images to slide. You should <b>not</b> do what I described below in the original blog entry, but instead, use the new method. You can now use data-background=&quot;rgb color or file&quot; as well as data-background-repeat and data-background-size.</p>
+<p>I've begun a new presentation (HTML5 Storage for <a href="http://www.riacon.com/">RIACon</a> and decided to give <a href="http://lab.hakim.se/reveal-js/#/">reveal.js</a> a try. I'm very much on the fence about whether or not I like HTML-based presentations, but I thought I'd give it a shot. One thing that confused me was how to set a background image for a slide. The docs say this:</p>
+<!--more-->
+<blockquote>
+Set data-state="something" on a slide and "something" will be added as a class to the document element when the slide is open. This let's you apply broader style changes, like switching the background.
+</blockquote>
+<p>That seems sensible, right? But while it is was trivial to add data-state=&quot;something&quot; to a slide, I couldn't figure out the exact CSS for setting the background. As far as I could tell, there wasn't an example of this anywhere. Luckily <a href="http://www.aliaspooryorik.com/blog/">John Wish</a> gave me a hand on Twitter.</p>
+<p>Given a data-state=&quot;intro&quot;, here is the CSS you would use:</p>
+<script src="https://gist.github.com/3166557.js?file=gistfile1.css"></script>
+<p>In order to make text readable, you could do something like this as well:</p>
+<script src="https://gist.github.com/3166559.js?file=gistfile1.css"></script>
+<p>Here's a screen capture. Note that the image isn't the highest quality, but, it's kind of a joke anyway so I'm not too concerned about it.</p>
+<img src="https://static.raymondcamden.com/images/screenshot15.png" />}

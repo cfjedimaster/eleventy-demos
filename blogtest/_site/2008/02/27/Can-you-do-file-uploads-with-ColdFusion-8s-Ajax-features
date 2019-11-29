@@ -1,0 +1,110 @@
+<h1>Post</h1>
+
+<p>I've gotten this question about 200 times, as have other bloggers, so I thought I'd write up a quick blog post to discuss it.</p>
+<!--more-->
+<p>The short answer is no. Ajax, specifically the feature used to make HTTP requests, cannot do file uploads. Period. This is a security feature enforced at the browser level.</p>
+<p>However there are workarounds. The typical workaround uses JavaScript to create a hidden iframe. A new form is created here and then that form is posted to the server. You can then monitor the result of the form post and handle it.</p>
+<p>If you Google, you will find about 2 million examples of this. I spent five minutes and picked an example that was simple and direct. This is - most probably - not the best example - but it worked. For this example I'll be using the code from:</p>
+<p><a href="http://www.phpletter.com/Demo/AjaxFileUpload-Demo/">AjaxFileUpload Demo</a></p>
+<p>Yes, that's a PHP site. Get over it. ;) The example makes use of <a href="http://jquery.com/">jQuery</a> and runs as a jQuery plugin.</p>
+<p>I downloaded the AjaxFileUpload zip. It provided everything. I copied the JS, CSS files, and images over, and then modified his main demo file to come up with the following base code:</p>
+<code>
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Ajax File Uploader Plugin For Jquery&lt;/title&gt;
+&lt;script src="jquery.js"&gt;&lt;/script&gt;
+&lt;script src="ajaxfileupload.js"&gt;&lt;/script&gt;
+&lt;link href="ajaxfileupload.css" type="text/css" rel="stylesheet"&gt;
+&lt;script type="text/javascript"&gt;
+	function ajaxFileUpload()
+	{
+		$("#loading")
+		.ajaxStart(function(){
+			$(this).show();
+		})
+		.ajaxComplete(function(){
+			$(this).hide();
+		});
+<pre><code>	$.ajaxFileUpload
+	(
+		{
+			url:'/testingzone/ajaxupload/doajaxfileupload.cfm',
+			secureuri:false,
+			fileElementId:'fileToUpload',
+			dataType: 'json',
+			success: function (data, status)
+			{ 
+				if(typeof(data.error) != 'undefined')
+				{
+					if(data.error != '')
+					{
+						alert(data.error);
+					}else
+					{
+						alert(data.msg);
+					}
+				}
+			},
+			error: function (data, status, e)
+			{
+				alert(e);
+			}
+		}
+	)
+	
+	return false;
+
+}
+</code></pre>
+<p>&lt;/script&gt;	
+&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;div id=&quot;wrapper&quot;&gt;
+&lt;div id=&quot;content&quot;&gt;
+&lt;h1&gt;Ajax File Upload Demo&lt;/h1&gt;
+&lt;p&gt;Jquery File Upload Plugin  - upload your files with only one input field&lt;/p&gt;
+&lt;img id=&quot;loading&quot; src=&quot;loading.gif&quot; style=&quot;display:none;&quot;&gt;
+&lt;form name=&quot;form&quot; action=&quot;&quot; method=&quot;POST&quot; enctype=&quot;multipart/form-data&quot;&gt;
+&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;tableForm&quot;&gt;</p>
+<pre><code>	&amp;lt;thead&amp;gt;
+		&amp;lt;tr&amp;gt;
+			&amp;lt;th&amp;gt;Please select a file and click Upload button&amp;lt;/th&amp;gt;
+		&amp;lt;/tr&amp;gt;
+	&amp;lt;/thead&amp;gt;
+	&amp;lt;tbody&amp;gt;	
+		&amp;lt;tr&amp;gt;
+			&amp;lt;td&amp;gt;&amp;lt;input id=&quot;fileToUpload&quot; type=&quot;file&quot; size=&quot;45&quot; name=&quot;fileToUpload&quot; class=&quot;input&quot;&amp;gt;&amp;lt;/td&amp;gt;	
+
+				
+		&amp;lt;/tr&amp;gt;
+
+	&amp;lt;/tbody&amp;gt;
+		&amp;lt;tfoot&amp;gt;
+			&amp;lt;tr&amp;gt;
+				&amp;lt;td&amp;gt;&amp;lt;button class=&quot;button&quot; id=&quot;buttonUpload&quot; onclick=&quot;return ajaxFileUpload();&quot;&amp;gt;Upload&amp;lt;/button&amp;gt;&amp;lt;/td&amp;gt;
+			&amp;lt;/tr&amp;gt;
+		&amp;lt;/tfoot&amp;gt;
+
+&amp;lt;/table&amp;gt;
+	&amp;lt;/form&amp;gt;    	
+&amp;lt;/div&amp;gt;
+</code></pre>
+<p>&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+<p>You want to pay particular attention to the ajaxFileUpload function. The <i>only</i> thing I modified was the URL value. To handle the file upload on the server, you handle it like any other file upload. However, his code wanted a JSON structure back. Luckily that is incredibly easy in ColdFusion.</p>
+<code>
+&lt;cfset r = structNew()&gt;
+&lt;cfset r["msg"] = ""&gt;
+&lt;cfset r["error"] = ""&gt;
+<p>&lt;cfif structKeyExists(form, &quot;fileToUpload&quot;) and len(form.filetoupload)&gt;
+&lt;cffile action=&quot;upload&quot; filefield=&quot;fileToUpload&quot; destination=&quot;#expandPath(&quot;./&quot;)#&quot; nameconflict=&quot;makeunique&quot;&gt;
+&lt;cfset r[&quot;msg&quot;] = &quot;Your file was #file.clientfile# and had a size of #file.filesize#.&quot;&gt;
+&lt;cfelse&gt;
+&lt;cfset r[&quot;error&quot;] = &quot;No file was uploaded.&quot;&gt;
+&lt;/cfif&gt;</p>
+<p>&lt;cfoutput&gt;#serializeJSON(r)#&lt;/cfoutput&gt;
+</code></p>
+<p>So obviously if you use some other method, your code will vary, but hopefully this simple example will be enough to get people started.</p>
+<p>If readers would like to recommend their own scripts, please do so.</p>
+}

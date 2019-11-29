@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Sean Corfield is rewriting the client portion of BlogCFC and describes his experiences <a href="http://www.corfield.org/index.cfm?event=fusebox.blogcfc">here</a>. While it is a bit painfull to read, I certainly don't blame him. The client portion in my blog is just plain ugly. My plan is to do an update of everything <i>outside</i> the CFC in the 4.0 release. There is another small update coming soon as well.</p>
+}

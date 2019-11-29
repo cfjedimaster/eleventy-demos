@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Last night I ran across a bug I had not seen before. I was hitting a dev site using sessions and I got a &quot;Session is Invalid&quot; error. A quick google search found <a href="http://www.bpurcell.org/blog/index.cfm?mode=entry&entry=994">this post</a> over at <a href="http://www.bpurcell.org">bpurcell.org</a>. This led to a <a href="http://www.macromedia.com/support/coldfusion/ts/documents/session_invalid_j2ee.htm">Tech Note</a> that describes how to fix the issue.</p>
+}

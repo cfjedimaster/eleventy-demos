@@ -1,0 +1,20 @@
+<h1>Post</h1>
+
+<p>We are slowly wrapping lunch here at CFUnited Express, and the guy next to me brought up the issue of handling a database that is down. He was considering running a query wrapped in try/catch on every request, but that would be a bit slow. I did a quick check and was pleasantly surprised to see that DSN verification (the same thing you get in the ColdFusion Administrator) is available via the Admin API. Specifically, datasource.cfc, method verifyDSN. You can have it optionally return a message with error details if things go wrong. Here is a quick sample:</p>
+<code>
+&lt;cfscript&gt;
+adminObj = createObject("component","cfide.adminapi.administrator");
+adminObj.login("admin");
+<p>datasource = createObject(&quot;component&quot;, &quot;cfide.adminapi.datasource&quot;);
+res = datasource.verifyDSN(&quot;peanutbutterjellytime&quot;, true);
+&lt;/cfscript&gt;</p>
+<p>&lt;cfdump var=&quot;#res#&quot;&gt;
+</code></p>
+<p>Obviously the admin password would be different in production, but you get the idea. The result was:</p>
+<blockquote>
+<p>
+coldfusion.sql.DataSourceFactory$DataSourceException: Datasource peanutbutterjellytime could not be found. 
+</p>
+</blockquote>
+<p>Setting the second argument to false makes the method just return a simple false.</p>
+}

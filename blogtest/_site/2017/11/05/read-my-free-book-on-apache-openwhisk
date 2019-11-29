@@ -1,0 +1,18 @@
+<h1>Post</h1>
+
+<p>I am <em>very</em> happy to announce that my new book, &quot;Developing Serverless Applications - A Practical Introduction with Apache OpenWhisk.&quot; I believe that may win the prize for the most &quot;wordy&quot; title of any book I've written.</p>
+<p><img src="https://static.raymondcamden.com/images/2017/11/owbook.jpg" alt="Cover"></p>
+<p>The best part is the price - 100% free. All you need to do is hop over to a <a href="https://www-01.ibm.com/marketing/iwm/dre/signup?source=urx-20147&amp;S_PKG=ov61476">signup form</a>, register, and you'll get a copy of the PDF. It's a short book aimed at getting you up and running with serverless and OpenWhisk and will cover the basics of action creating, sequences, and making APIs.</p>
+<p>Here's the table of contents:</p>
+<ul>
+<li>Introduction</li>
+<li>OpenWhisk Basics</li>
+<li>Working with Actions</li>
+<li>Using OpenWhisk Actions</li>
+<li>Building Sequences</li>
+<li>Working with Packages</li>
+<li>Using Triggers and Rules</li>
+<li>Going Further with OpenWhisk</li>
+</ul>
+<p>I hope this is helpful to folks. OpenWhisk was my introduction to serverless, and it's obviously my favorite so far (although I do plan on learning more about Lambda and Azure Functions). <a href="https://www-01.ibm.com/marketing/iwm/dre/signup?source=urx-20147&amp;S_PKG=ov61476">Download</a> the book and let me know what you think!</p>
+}

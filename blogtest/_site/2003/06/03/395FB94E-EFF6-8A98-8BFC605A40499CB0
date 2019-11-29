@@ -1,0 +1,4 @@
+<h1>Post</h1>
+
+<p>Do not forget that all CF list functions accept an optional delimiter argument. However, if you pass a delimiter that consists of two or more characters, CF will consider <i>each</i> character as a delimiter. In other words, if you want to use &quot;+=+&quot; as a delimiter, CF will actually consider it as two delimiters, + and =. You can, of course, write your own string parsing routines to handle this. I wrote a UDF called reSplit that will split a string based on a regex. That could be used for simple strings as well.</p>
+}

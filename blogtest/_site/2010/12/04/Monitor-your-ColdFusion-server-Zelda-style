@@ -1,0 +1,29 @@
+<h1>Post</h1>
+
+<p>Last week I had the idea that it might be kind of cool to port the <a href="http://cfam.riaforge.org">CFAM</a> project to the Blackberry Playbook. While that would be a lot of work (technically it wouldn't be if we just used a web view, but I'm talking about a proper conversion to Flex), I had the idea of a somewhat... simpler way to monitor ColdFusion on a mobile device - in this case my droid. To be honest, only video would do this justice.</p>
+<p/>
+<p><object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/zzjhSWXGJyQ?fs=1&amp;hl=en_US&amp;rel=0&amp;color1=0x234900&amp;color2=0x4e9e00"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/zzjhSWXGJyQ?fs=1&amp;hl=en_US&amp;rel=0&amp;color1=0x234900&amp;color2=0x4e9e00" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object></p>
+<p/>
+<p>I've included the source code for the project below. The CFC that returns the RAM usage is simple enough to just print below.</p>
+<p/>
+<code>
+&lt;cfcomponent&gt;
+<p>&lt;cffunction name=&quot;getHealth&quot; access=&quot;remote&quot; returnType=&quot;numeric&quot; output=&quot;false&quot;&gt;
+&lt;cfset var adminAPI = createObject(&quot;component&quot;, &quot;CFIDE.adminapi.administrator&quot;)&gt;
+&lt;cfset var servermonitorAPI = createObject(&quot;component&quot;, &quot;CFIDE.adminapi.servermonitoring&quot;)&gt;
+&lt;cfset adminAPI.login(&quot;admin&quot;, &quot;admin&quot;)&gt;</p>
+<pre><code>&amp;lt;cfset var memstats = servermonitorAPI.getJVMMemoryStats()&amp;gt;
+&amp;lt;cfset var jvmused = fix(memstats.usedmemory/1024/1024)&amp;gt;
+&amp;lt;cfset var jvmfree = fix(memstats.freememory/1024/1024)&amp;gt;
+
+&amp;lt;cfset var total = jvmused+jvmfree&amp;gt;
+&amp;lt;cfset var freeperc = ceiling(jvmfree/total*100)&amp;gt;
+&amp;lt;cfset freeperc = round(freeperc/10)*10&amp;gt;
+&amp;lt;!---&amp;lt;cfset var usedperc = 100-freeperc&amp;gt;---&amp;gt;
+
+&amp;lt;cfreturn freeperc/10&amp;gt;
+</code></pre>
+<p>&lt;/cffunction&gt;</p>
+<p>&lt;/cfcomponent&gt;
+</code></p>
+<p/><p><a href='enclosures/C%3A%5Chosts%5C2009%2Ecoldfusionjedi%2Ecom%5Cenclosures%2FZeldaCF%2Ezip'>Download attached file.</a></p>}

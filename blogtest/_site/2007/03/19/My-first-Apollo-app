@@ -1,0 +1,25 @@
+<h1>Post</h1>
+
+<p>Here is my first little Apollo application. I based it on the <a href="http://blog.everythingflex.com/2007/03/19/html-control/">blog entry</a> written by Rich Tretola. The code is rather simple:</p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:ApolloApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"&gt;
+<p>&lt;mx:VDividedBox width=&quot;100%&quot; height=&quot;100%&quot;&gt;</p>
+<pre><code>&amp;lt;mx:Panel title=&quot;Source&quot; width=&quot;100%&quot; height=&quot;50%&quot;&amp;gt;
+
+	&amp;lt;mx:TextArea id=&quot;source&quot; width=&quot;100%&quot; height=&quot;100%&quot; /&amp;gt;
+	
+&amp;lt;/mx:Panel&amp;gt;
+
+&amp;lt;mx:Panel title=&quot;HTML&quot; width=&quot;100%&quot; height=&quot;50%&quot;&amp;gt;
+	
+	&amp;lt;mx:HTML id=&quot;html&quot; htmlText=&quot;{source.text}&quot; width=&quot;100%&quot; height=&quot;100%&quot;/&amp;gt;
+
+&amp;lt;/mx:Panel&amp;gt;
+</code></pre>
+<p>&lt;/mx:VDividedBox&gt;</p>
+<p>&lt;/mx:ApolloApplication&gt;
+</code></p>
+<p>All I did was bind an HTML control, part of the Apollo framework, to a text area. This is a handy way to quickly test the HTML support for the control. If you want to play with this, first ensure you have the Apollo runtime, then download the AIR file included on this blog entry.</p>
+<p>p.s. My friend Scott told me he had issues downloading the attachment. I'd like to blame him (he is so easy to blame!), but it looks like my web server was blocking the extension. I renamed it to a zip.<p><a href='enclosures/D%3A%5Cwebsites%5Cdev%2Ecamdenfamily%2Ecom%5Cenclosures%2FHTMLEditor%2Eair%2Ezip'>Download attached file.</a></p></p>
+}

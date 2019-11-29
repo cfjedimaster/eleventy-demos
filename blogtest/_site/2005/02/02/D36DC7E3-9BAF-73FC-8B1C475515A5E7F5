@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>Yesterday someone emailed me asking about the assignCategory method of BlogCFC. Specifically, they wanted to know why I did this:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfset var checkEC = <FONT COLOR=BLUE>""</FONT>&gt;</FONT></div>
+<p>Where checkEC was defined as a query a few lines later. They noticed I did this throughout my code and were not sure why. I explained to them about how scoping works in UDFs. Any variable created in a UDF will automatically &quot;leak&quot; out of the UDF. (Note, when I say UDF, I also mean CFC method, as this applies to both.) This is easy enough to fix by using the VAR scope within your function.</p>
+<p>However, you shouldn't forget that some tags act just like cfset. So for example, my cfquery tag creates a variable as well. By var scoping the name of the query, I ensure that the data doesn't escape the method.</p>
+<p>So for most readers, this is old news, but it certainly can't hurt to repeat - as forgetting to var scope can lead to serious issues down the road.</p>
+}

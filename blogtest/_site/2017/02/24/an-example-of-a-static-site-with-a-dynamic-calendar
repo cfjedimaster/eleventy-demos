@@ -1,0 +1,88 @@
+<h1>Post</h1>
+
+<p>Forgive the somewhat clunky title - I wanted to share a little demo I built for my presentation this week at <a href="https://www.devnexus.com/">DevNexus</a>. The idea behind the demo was whether or not I could create a simple dynamic calendar system with a static web site. My presentation was all about adding dynamic aspects back into a static site, so this fit right in.</p>
+<p>For the demo, I made use of <a href="https://fullcalendar.io/">FullCalendar</a>. FullCalendar is a simple little jQuery plugin that renders a nice full screen (well, &quot;as big as you want it&quot;) calendar. It can be driven by Google Calendar which is one simple way of adding a dynamic calendar to a static site, but I wanted to try something a bit different.</p>
+<p>I began by creating a new <a href="http://jekyllrb.com/">Jekyll</a> site (which is a bit of a pain on Windows). Jekyll has a feature called <a href="http://jekyllrb.com/docs/collections/">Collections</a> which allow you to define a basic &quot;content type&quot; for your site. By default, Jekyll has a &quot;Post&quot; collection already built in. Jekyll is primarily used for blogs. But you can create your own collections for whatever makes sense for your site.</p>
+<p>I began by defining a collection called events. This is done in _config.yml</p>
+<pre><code class="language-markup">collections:
+  events:
+    output: true
+    permalink: /events/:path/
+    title: Events
+</code></pre>
+<p>I specified that I wanted my events to be published as pages and that they should use a URL path of /events/X, where X is based on the file name.</p>
+<p>I added a new directory called <code>_events</code> and wrote my first piece of content:</p>
+<h2><pre><code class="language-markup">---
+layout: event
+title:  &quot;Ray's Birthday&quot;
+event_date:   2017-4-8</h2>
+<p>Let's gather together to celebrate Raymond's birthday!
+</code></pre></p>
+<p>In a real page I'd have a lot more content about the event (possibly) but pay attention to the front matter. I've got a layout and title which is pretty standard, but <code>event_date</code> is custom. As you can probably guess, this represents the date of the event itself. I made a second page and then verified that they were rendering ok in my site.</p>
+<img src="https://static.raymondcamden.com/images/2017/2/ssge1.png" class="imgborder">
+<p>I didn't spend a lot of time on the template, but it works, so I'm down with it.</p>
+<p>Now came the interesting part. How do I get these random event pages available in FullCalendar? Here is where some static site generators shine - and some drop the ball. The SSG I used for my blog, Hugo, makes it <em>incredibly</em> difficult (imo) to add ad hoq pages with custom logic. You have to make a page with next to no input, tell it to use a layout that has the code, and then work over there instead of the page itself. I've seen multiple SSGs do this whereas both Jekyll and Harp are much more open in this regard.</p>
+<p>I created my JSON data by adding a new file, calendar.data.html, with this code:</p>
+<h2><pre><code class="language-markup">---
+layout:
+title:
+permalink: /calendar-data/</h2>
+<p>[
+{% for event in site.events %}
+{
+&quot;title&quot;:&quot;{{event.title}}&quot;,
+&quot;start&quot;: &quot;{{event.event_date}}&quot;,
+&quot;allDay&quot;:true,
+&quot;url&quot;:&quot;{{event.url}}&quot;
+}
+{%unless forloop.last %},{%endunless%}
+{% endfor %}
+]
+</code></pre></p>
+<p>I've specified no layout and title. This keeps the output clean and the &quot;page&quot; invisible from the top header. I then output over my collection data which Jekyll makes available via <code>site.events</code>. The only kind weird part is the <code>{%unless%}</code> block. That's how I handle including a comma between each event item and <em>not</em> after the last one. The end result was a JSON feed available at <code>/calendar-data/</code> that looked like this:</p>
+<pre><code class="language-javascript">[
+
+	{
+		"title":"Carol's Birthday",
+		"start": "2017-3-07",
+		"allDay":true,
+		"url":"/events/carol_bday/"
+	}
+	,
+
+	{
+		"title":"Ray's Birthday",
+		"start": "2017-4-8",
+		"allDay":true,
+		"url":"/events/ray_bday/"
+	}
+	
+
+]
+</code></pre>
+<p>It could be formatted a bit nicer, but it works. I then added a new page to render the FullCalendar:</p>
+<h2><pre><code class="language-markup">---
+layout: page
+title: Event Calendar
+permalink: /calendar/</h2>
+<p>&lt;script src=&quot;https://code.jquery.com/jquery-3.1.1.min.js&quot;<br>
+integrity=&quot;sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=&quot;  crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;/scripts/moment.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; media=&quot;print&quot; href=&quot;//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.print.css&quot;&gt;</p>
+<p>&lt;script&gt;
+$(document).ready(function() {</p>
+<pre><code>$(&amp;#x27;#calendar&amp;#x27;).fullCalendar({
+	events:&amp;#x27;&amp;#x2F;calendar-data&amp;#x27;
+})
+</code></pre>
+<p>});</p>
+<p>&lt;/script&gt;</p>
+<p>&lt;div id=&quot;calendar&quot;&gt;&lt;/div&gt;
+</code></pre></p>
+<p>FullCalendar supports a <em>lot</em> of customizations, but all I did was specify the URL where the event data could be found. Here it is in action:</p>
+<img src="https://static.raymondcamden.com/images/2017/2/ssge2.png" class="imgborder">
+<p>So yeah, not exactly rocket science, but I've been wanting to build this for a while. This approach would not scale to a huge amount of events, but you could build out events in a &quot;per month&quot; or &quot;per year&quot; file to keep things sensible. FullCalendar can use a function to define how to load data, so you could dynamically create a URL path to the proper data feed based on what month is being requested.</p>
+<p>You can find the full source for this demo here: https://github.com/cfjedimaster/Static-Site-Examples/tree/master/jekyll_fullcalendar</p>
+}

@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>I'm blogging from Ben's keynote so as before, pardon the scattered nature. New feature announced today - the ColdFusion AJAX Wizard in Eclipse. Wizard asks you various questions - uses the query builder - pretty similar to Flex Wizard it seems. On generation you get a new project and all the files you need. The result is pretty darn sexy considering he spent all of four minutes building it.</p>
+<p>(Note to email subscribers. I'm posting this now but will be updating the entry as he talks.)</p>
+<p>Ben is demonstrating the debug widget. It lets you debug AJAX calls in the browser page. CF will send messages to it, but you can send information as well. It is a small window in the upper right hand corner of the browser page.</p>
+}

@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>So not long after I had released my <a href="http://youtubecfc.riaforge.org">YouTubeCFC</a> wrapper, Google dared to update the API to match the rest of their services. I didn't bother updating my code as I wanted to wait till upload support was done. YouTube now officially allows you to upload (and even update) videos.</p>
+<p>I've begun work on rewriting my CFC. It supports basic reading (get top videos for example), but no searching yet. But I did get upload working. Here is an example of how easy it is:</p>
+<code>
+&lt;cfset yt = createObject("component", "youtube")&gt;
+&lt;cfset yt.setDeveloperKey("xxx")&gt;
+<p>&lt;cfset yt.login(&quot;cfjedimaster&quot;, &quot;likeidsay&quot;)&gt;
+&lt;cfset r = yt.upload(expandPath('./movie2.mov'),'Test Upload','Playing with youtube','Music','testing,fun')&gt;
+&lt;cfoutput&gt;id=#r#&lt;/cfoutput&gt;
+</code></p>
+<p>I've included the CFC for folks to play with, and once I get a bit more of the API done I'll replace the CFC at RIAForge.</p>
+<p>You will need a valid login and a <a href="http://code.google.com/apis/youtube/dashboard/">developer key</a>. Also there seems to be a quota limit. I ran into after uploading about 10 videos.<p><a href='enclosures/D%3A%5Chosts%5Cwww%2Ecoldfusionjedi%2Ecom%5Cenclosures%2Fyoutube%2Ecfc%2Ezip'>Download attached file.</a></p></p>
+}

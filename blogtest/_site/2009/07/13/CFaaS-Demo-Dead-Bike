@@ -1,0 +1,78 @@
+<h1>Post</h1>
+
+<p>One of the cool new features of ColdFusion 9 is CFaaS, or ColdFusion as a Service. I'll be honest, I hate the abbreviation. It makes me think of a disease. But - I'll get over it since the feature itself is so impressive. During the ColdFusion Meetup (recording <a href="http://experts.na3.acrobat.com/p53217737/">here</a>), ColdFusion Evangelist Terry Ryan demonstrated using CFDOCUMENT remotely via Flex. In his demo, he enters some text, clicks a button, and gets the URL to download a PDF. This reminded me that many moons ago, earlier in the ColdFusion 9 beta, I had created a simple demo called DeadBike. (I'll buy you a beer at CFUNITED if you can guess why.) Here is a quick video showing it in action (clicking will take you to a full screen view, so I'd recommend 'open in new tab'):</p>
+<p><a href="http://screencast.com/t/1VUtdwZmwY"><img src="https://static.raymondcamden.com/images//Picture 172.png"></a></p>
+<p>So the code behind this is very similar to what Terry showed. Note that I've been lazy and hard coded all the security information within Flex.</p>
+<code>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:cf="coldfusion.service.mxml.*" layout="absolute" viewSourceURL="srcview/index.html"&gt;
+<p>&lt;cf:Config id=&quot;conf&quot; cfServer=&quot;127.0.0.1&quot; cfPort=&quot;8502&quot; serviceUserName=&quot;service&quot; servicePassword=&quot;service&quot; /&gt;</p>
+<p>&lt;cf:Document id=&quot;doctestnow&quot; action=&quot;generate&quot; format=&quot;pdf&quot; result=&quot;handleResult(event)&quot; fault=&quot;handleError(event)&quot; /&gt;</p>
+<p>&lt;mx:Script&gt;
+&lt;![CDATA[
+import mx.rpc.events.ResultEvent;</p>
+<p>public var res:String = new String();</p>
+<p>private function renderSourceAsPDF():void {
+var source:String = sourceText.text;
+if(source.length == 0) return
+doctestnow.content = source;
+doctestnow.execute();
+}</p>
+<p>private function handleResult(event:ResultEvent):void {<br>
+res=event.result.toString();
+pdfviewer.location=res;	
+}</p>
+<p>private function handleError(event:Event):void {
+mx.controls.Alert.show(event.toString());
+}</p>
+<p>]]&gt;
+&lt;/mx:Script&gt;</p>
+<p>&lt;mx:HDividedBox width=&quot;100%&quot; height=&quot;100%&quot;&gt;</p>
+<pre><code>&amp;lt;!-- source side --&amp;gt;	
+&amp;lt;mx:VBox width=&quot;50%&quot; height=&quot;100%&quot;&amp;gt;
+	
+	&amp;lt;mx:Panel title=&quot;Source&quot; width=&quot;100%&quot; height=&quot;100%&quot;&amp;gt;	
+		&amp;lt;mx:TextArea id=&quot;sourceText&quot; width=&quot;100%&quot; height=&quot;100%&quot; /&amp;gt;
+	&amp;lt;/mx:Panel&amp;gt;
+
+	&amp;lt;mx:HBox horizontalAlign=&quot;right&quot; width=&quot;100%&quot;&amp;gt;
+		&amp;lt;mx:Button label=&quot;Render PDF&quot; click=&quot;renderSourceAsPDF()&quot; /&amp;gt;
+	&amp;lt;/mx:HBox&amp;gt;
+
+&amp;lt;/mx:VBox&amp;gt;
+
+&amp;lt;!-- render side --&amp;gt;
+&amp;lt;mx:Panel title=&quot;PDF&quot; width=&quot;50%&quot; height=&quot;100%&quot;&amp;gt;	
+	
+	 &amp;lt;mx:HTML id=&quot;pdfviewer&quot; width=&quot;100%&quot; height=&quot;100%&quot; /&amp;gt;
+
+&amp;lt;/mx:Panel&amp;gt;
+</code></pre>
+<p>&lt;/mx:HDividedBox&gt;</p>
+<p>&lt;/mx:WindowedApplication&gt;
+</code></p>
+<p>Let's focus on the interesting bits first. You can find the connection/service information here:</p>
+<code>
+&lt;cf:Config id="conf" cfServer="127.0.0.1" cfPort="8502" serviceUserName="service" servicePassword="service" /&gt; 
+<p>&lt;cf:Document id=&quot;doctestnow&quot; action=&quot;generate&quot; format=&quot;pdf&quot; result=&quot;handleResult(event)&quot; fault=&quot;handleError(event)&quot; /&gt;
+</code></p>
+<p>CFaaS has two special security requirements. First, you must go to User Management and specifically create a user and then give them access to particular services. In this case I gave the user, service, access to the Document service. Secondly, you have to specify which IP addresses are allowed to use the service. Now - I have to say - this is a bit troubling. I get the idea behind it - but it's going to be a problem for an intranet. I can't imagine you would need to enter each and every single IP address of your corporation by hand. But - that seems to be the case for right now. Hopefully that will change before release.</p>
+<p>The code handling rendering is about as simple as it gets:</p>
+<code>
+private function renderSourceAsPDF():void {
+	var source:String = sourceText.text;
+	if(source.length == 0) return
+	doctestnow.content = source;
+	doctestnow.execute();
+}		
+</code>
+<p>Essentially - if I ttyped something, execute the CF service. My services result handler then simply uses the HTML component to render the PDF.</p>
+<code>
+private function handleResult(event:ResultEvent):void {  
+	res=event.result.toString(); 
+	pdfviewer.location=res;	
+} 
+</code>
+<p>Note that I had gotten a URL back, like Terry's demo, but I went ahead and loaded the result in the component.</p>
+<p>I was going to package up the demo, but it's usability by the public is very limited. I'd recommend simply copying my code into a new Flex Builder project. Remember to include the cfservices.swc file with your project!</p>
+}

@@ -1,0 +1,34 @@
+<h1>Post</h1>
+
+<p>Just a quick note. I was talking with <a href="http://nil.checksite.co.uk">Stephen Moretti</a> about working with the results of the XMLSearch function. He wanted to know if the results were references or copies of the XML data. I did a few tests and from what I see - they are references. Here is a quick example.</p>
+<!--more-->
+<p>
+<code>
+&lt;cfxml variable="stuff"&gt;
+&lt;products&gt;
+	&lt;product name="alpha"&gt;
+		&lt;price&gt;10&lt;/price&gt;
+	&lt;/product&gt;
+	&lt;product name="beta"&gt;
+		&lt;price&gt;11&lt;/price&gt;
+	&lt;/product&gt;
+	&lt;product name="gamma"&gt;
+		&lt;price&gt;9&lt;/price&gt;
+	&lt;/product&gt;
+&lt;/products&gt;
+&lt;/cfxml&gt;
+<p>&lt;cfdump var=&quot;#stuff#&quot;&gt;
+&lt;cfset b = xmlSearch(stuff, &quot;//product[@name='beta']&quot;)&gt;
+&lt;cfdump var=&quot;#b#&quot;&gt;
+&lt;cfset test = b[1]&gt;
+&lt;cfset test.xmlchildren[1].xmltext =99&gt;
+&lt;cfset test.xmlattributes.name = &quot;boo&quot;&gt;
+&lt;cfdump var=&quot;#stuff#&quot;&gt;
+</code></p>
+<p>
+<p>I begin with a simple XML packet of products. Each product has a name and a price child. I do a search to find the Beta product. Once I've got it I manipulate the name and the price. Here are the results of the dumps:</p>
+<p>
+<img src="https://static.raymondcamden.com/images/ScreenClip17.png" />
+<p>
+<p>Not sure how useful this is - I almost never actually <i>update</i> XML - but hopefully this will help others.</p>
+}

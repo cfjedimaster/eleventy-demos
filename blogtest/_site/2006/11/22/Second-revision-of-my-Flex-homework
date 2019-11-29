@@ -1,0 +1,49 @@
+<h1>Post</h1>
+
+<p>Yesterday I <a href="http://ray.camdenfamily.com/index.cfm/2006/11/21/First-stab-at-my-Flex-homework">posted</a> the first version of the Flex assignment I created for myself.  (For more information about what I'm doing, read this <a href="http://ray.camdenfamily.com/index.cfm/2006/11/21/My-Thanksgiving-Flex-Homework">entry</a>.)</p>
+<p>I mentioned that I had a bit of trouble with states but that I felt I was slowly getting it. However - after speaking a bit with Mike Kollen, I think I realized that I was using states incorrectly. He said that he only uses states when he is modifying controls on screen. An example of this would be a search form that has an &quot;Advanced&quot; mode with more buttons. He said for full &quot;change the whole page&quot; type operations, ViewStacks may be more appropriate.</p>
+<p>So I switched my code from using States to ViewStacks. The nice thing about ViewStacks is that they work exactly like I imagined States would. You basically wrap a set of components in the ViewStack, and only one child is visible at a time. Here is the new ViewStack-ified version of my code:</p>
+<code>
+&lt;mx:ViewStack id="mainView" width="100%" height="100%"&gt;
+<pre><code>&amp;lt;mx:HBox horizontalAlign=&quot;center&quot; verticalAlign=&quot;middle&quot; id=&quot;loginStage&quot; width=&quot;100%&quot; height=&quot;100%&quot;&amp;gt;
+		
+	&amp;lt;mx:Panel id=&quot;loginScreen&quot; title=&quot;The Logon Screen&quot; width=&quot;500&quot;&amp;gt;
+		
+		&amp;lt;mx:Form id=&quot;login&quot; defaultButton=&quot;{loginButton}&quot;&amp;gt;
+			&amp;lt;mx:FormItem label=&quot;Username:&quot; required=&quot;true&quot;&amp;gt;
+					&amp;lt;mx:TextInput id=&quot;username&quot; /&amp;gt;
+			&amp;lt;/mx:FormItem&amp;gt;
+			&amp;lt;mx:FormItem label=&quot;Password:&quot; required=&quot;true&quot;&amp;gt;
+					&amp;lt;mx:TextInput id=&quot;password&quot; displayAsPassword=&quot;true&quot; /&amp;gt;
+			&amp;lt;/mx:FormItem&amp;gt;
+	
+		&amp;lt;/mx:Form&amp;gt;
+			
+		&amp;lt;mx:ControlBar horizontalAlign=&quot;right&quot;&amp;gt;
+			&amp;lt;mx:Button id=&quot;loginButton&quot; label=&quot;Login&quot; click=&quot;checkForm()&quot; /&amp;gt;
+		&amp;lt;/mx:ControlBar&amp;gt;
+	            
+	&amp;lt;/mx:Panel&amp;gt;
+
+&amp;lt;/mx:HBox&amp;gt;
+	
+&amp;lt;mx:HBox id=&quot;mainStage&quot; width=&quot;100%&quot; height=&quot;100%&quot;&amp;gt;
+	&amp;lt;mx:Text text=&quot;Main Stage&quot; /&amp;gt;	
+&amp;lt;/mx:HBox&amp;gt;
+</code></pre>
+<p>&lt;/mx:ViewStack&gt;
+</code></p>
+<p>Notice that my two HBoxs act like pages of the application. How do I switch my current page? My checkForm function now does this:</p>
+<code>
+mainView.selectedIndex=1;
+</code>
+<p>mainView was the name of the ViewStack container itself. If you want to see the complete code, go here:</p>
+<p><a href="http://ray.camdenfamily.com/demos/flexsec2/SimpleRemotingTest.html">http://ray.camdenfamily.com/demos/flexsec2/SimpleRemotingTest.html</a></p>
+<p>You can also right click/view source on this demo to see the complete code.</p>
+<p>Next up is the actual authentication. I'm going to do the simple Flash Remoting call at first and then look at how I can use this to call secured CFC methods.</p>
+<p>Open Question: Look at the code I used to select the ViewStack. That feels fragile to me. What if, for some reason, I swap the children of my ViewStack? It seems like it would be nicer to do something like:</p>
+<code>
+mainView.selectedChild("id of the child");
+</code>
+<p>As far as I know, ViewStacks don't support that - but a utility function could be created to do that I suppose. Thoughts?</p>
+}

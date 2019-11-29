@@ -1,0 +1,14 @@
+<h1>Post</h1>
+
+<p>I use cfmodule almost exclusively for my custom tag calls. The problem with that is that HS+ won't let you write a VTM for custom tags used w/ cfmodule. Phil Costa at Macromedia reminded me that HS+ 5.5 supports snippets that can prompt you for values. This is useful for me as I need help remembering the syntax for my custom tags. Once I actually have the code on the page I'm normally not too concerned with help when editing. So, by using a snippet and having it prompt for the values I use I can get the functionality I want. Here is an example that calls one of the core tags in <a href="http://www.mindseyeelement.com">Element</a>, our CMS:</p>
+<div class="code"><FONT COLOR=MAROON>&lt;cfmodule template=<FONT COLOR=BLUE>"/$$Mapping/customtags/coapi/object.cfm"</FONT> <br>
+&nbsp;&nbsp;&nbsp; bUseCache=<FONT COLOR=BLUE>"$${bUseCache:#request.element.cache.bUseCache#,Yes,No}"</FONT><br>
+&nbsp;&nbsp;&nbsp; cacheTimeout=<FONT COLOR=BLUE>"$${cacheTimeout:#request.element.cache.elementTimeout#}"</FONT> <br>
+&nbsp;&nbsp;&nbsp; bActiveOnly=<FONT COLOR=BLUE>"$${bActiveOnly:Yes,No}"</FONT><br>
+&nbsp;&nbsp;&nbsp; datasource=<FONT COLOR=BLUE>"#request.element.objectstore.dsn#"</FONT><br>
+&nbsp;&nbsp;&nbsp; type=<FONT COLOR=BLUE>"$$type"</FONT><br>
+&nbsp;&nbsp;&nbsp; method=<FONT COLOR=BLUE>"$$method"</FONT><br>
+&nbsp;&nbsp;&nbsp; returnVar=<FONT COLOR=BLUE>"$$returnVar"</FONT><br>
+/&gt;</FONT></div>
+<p>Each use of $$FOO will create a prompt. Each use of $${FOO:list} will give me a drop down. (Actually this is better than a simple drop down - you can use one of the defined values or type your own.)</p>
+}

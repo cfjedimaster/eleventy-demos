@@ -1,0 +1,7 @@
+<h1>Post</h1>
+
+<p>I've added a new feature over at <a href="http://www.cflib.org">CFLIB</a>. If you know the name of a UDF and want to quickly get it, instead of using the search form, you can now simply go to udf.cfm/NAME. For example:</p>
+<p><a href="http://www.cflib.org/udf.cfm/split
+">http://www.cflib.org/udf.cfm/split</a></p>
+<p>The URL above will load the split UDF. If the value specified by NAME does not exist, you simply get pushed back to the libraries page.</p>
+}

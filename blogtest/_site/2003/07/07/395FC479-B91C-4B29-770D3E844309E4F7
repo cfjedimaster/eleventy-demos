@@ -1,0 +1,6 @@
+<h1>Post</h1>
+
+<p>Did you know you can access a query without knowing the column names at the time you code? Each ColdFusion query has a property called columnlist. This, obviously, returns the columns of the query. But how do you access the data? Simple, if q is a query and col is one of the columns, then this will return the value at row N:</p>
+<p>#q[col][n]#</p>
+<p>Now, one thing to remember. ColdFusion allows you to leave off a row number. This is useful for times when you know the query has one row and you just want to grab data from it. However, with bracket notation, you must always use the row number. Don't forget that when you loop over a query, there is a built-in value, &quot;currentRow&quot;, that points to, you guessed it, the current row.</p>
+}

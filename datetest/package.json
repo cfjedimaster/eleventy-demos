@@ -1,0 +1,27 @@
+{
+  "name": "tempForNetlifyTesting",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".eleventy.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "@11ty/eleventy": "^0.10.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cfjedimaster/tempForNetlifyTesting.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cfjedimaster/tempForNetlifyTesting/issues"
+  },
+  "homepage": "https://github.com/cfjedimaster/tempForNetlifyTesting#readme"
+}

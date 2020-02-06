@@ -1,0 +1,12 @@
+---
+layout: layout
+---
+
+<h1>Docs</h1>
+lets test some more
+
+<ul>
+{% for doc in collections.docs %}
+	<li><a href="{{ doc.url }}">{{ doc.data.title }}</a></li>
+{% endfor %}
+</ul>

@@ -1,2 +1,4 @@
-_site/
+**/_site
 node_modules/
+trash
+.vscode/

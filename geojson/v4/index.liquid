@@ -2,7 +2,7 @@
 
 {% for cat in cats %}
 <p>
-<img src="https://image.maps.api.here.com/mia/1.6/mapview?app_id={{ global.here_app_id }}&app_code={{ global.here_app_code }}&c={{cat.location.lat}},{{cat.location.lng}}&z=9">
+<img src="https://image.maps.api.here.com/mia/1.6/mapview?app_id={{ global.here_app_id }}&app_code={{ global.here_app_code }}&c={{cat.location.lat}},{{cat.location.lng}}&z=9&h=125&w=100">
 
 {{ cat.name }} is {{ cat.gender }} and is located at {{ cat.address }}.
 </p>

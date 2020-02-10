@@ -1,0 +1,21 @@
+{
+  "name": "textlint_demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chalk": "^3.0.0",
+    "textlint": "^11.6.3"
+  },
+  "dependencies": {
+    "textlint-rule-alex": "^1.3.1",
+    "textlint-rule-no-start-duplicated-conjunction": "^2.0.2",
+    "textlint-rule-terminology": "^2.1.0"
+  }
+}

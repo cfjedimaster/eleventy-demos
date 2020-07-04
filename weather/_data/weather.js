@@ -7,7 +7,7 @@ const LOC = 'Lafayette, LA';
 
 module.exports = async function() {
 	let url = `https://weather.ls.hereapi.com/weather/1.0/report.json?apiKey=${HERE_KEY}&product=observation&name=${encodeURIComponent(LOC)}&metric=false`;
-	console.log(url);
+	
 	let resp = await fetch(url);
 	let data = await resp.json();
 	let report = data.observations.location[0].observation[0];
@@ -15,7 +15,7 @@ module.exports = async function() {
 
 	// Add a simplification
 	report.rainWarning = (report.precipitation12H !== '*' && report.precipitation12H > 0.02);
-
+report.rainWarning = true;
 	return report;
 
 }

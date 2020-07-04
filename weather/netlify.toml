@@ -1,0 +1,4 @@
+[build]
+	base="weather/"
+	command = "npx @11ty/eleventy"
+	publish = "_site"

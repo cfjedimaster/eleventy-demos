@@ -1,0 +1,16 @@
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	background-color: honeydew;
+}
+
+h1.title {
+	font-weight: 200px;
+	color: green;
+	text-align: center;
+}
+
+div.content {
+	width: 700px;
+	margin-left: auto;
+	margin-right: auto;
+}

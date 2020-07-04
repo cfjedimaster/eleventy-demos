@@ -19,5 +19,14 @@ title: Camden Farmer's Market
 	Our hours are 7 days a week, 6AM to 4PM, except for federal and local holidays. <strong>Closed during inclement weather!</strong>
 	</p>
 
+	{% if weather.rainWarning %}
+	<p>
+		<strong>WARNING - The weather report has predicted rain and it is likely we will be closed.</strong>
+	</p>
+	{% endif %}
+
+	<span>Photo by <a href="https://unsplash.com/@gndclouds?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">William Felker</a> on <a href="https://unsplash.com/s/photos/farmers-market?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>
+
 	</div>
 </main>
+

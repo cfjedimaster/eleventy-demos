@@ -15,7 +15,7 @@ module.exports = async function() {
 
 	// Add a simplification
 	report.rainWarning = (report.precipitation12H !== '*' && report.precipitation12H > 0.02);
-
+report.rainWarning=true;
 	return report;
 
 }

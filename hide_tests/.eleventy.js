@@ -10,7 +10,6 @@ module.exports = function(eleventyConfig) {
 
 	 eleventyConfig.addCollection("releasedPosts", function(collectionApi) {
 
-    	// get unsorted items
 	    return collectionApi.getFilteredByTag("posts").filter(p => {
 			let now = new Date().getTime();
 			if(now < p.date.getTime()) return false;

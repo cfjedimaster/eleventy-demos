@@ -1,0 +1,14 @@
+---
+layout: main
+---
+
+<h2>{{ title }}</h2>
+{% if author %}
+	{% assign myAuthor = authors | getAuthor: author %}
+
+	<p>
+	Written by <a href="/authors/{{ author }}">{{ myAuthor.name }}</a>
+	</p>
+{% endif %}
+
+{{ content }}

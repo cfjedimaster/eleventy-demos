@@ -2,3 +2,5 @@
 node_modules/
 trash
 .vscode/
+# Local Netlify folder
+.netlify

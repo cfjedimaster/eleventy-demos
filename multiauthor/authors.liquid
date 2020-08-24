@@ -5,6 +5,8 @@ pagination:
    size: 1
    alias: author
 permalink: "/authors/{{author.key}}/"
+eleventyComputed:
+   title: "{{author.name}}"
 ---
 
 <h2>{{ author.name }}</h2>

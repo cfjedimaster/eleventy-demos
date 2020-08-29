@@ -17,7 +17,6 @@ module.exports = async function() {
 		result.id = po.ref.id;
 		return result;
 	});
-	console.log(productObs.data[0].ref.id);
 	console.log(data.length + ' products loaded from Fauna');
 	return data;
 

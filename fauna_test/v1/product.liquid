@@ -1,0 +1,20 @@
+---
+layout: main
+pagination:
+   data: products
+   size: 1
+   alias: product
+permalink: "/product/{{product.name | slug}}/"
+eleventyComputed:
+   title: "{{product.name}}"
+---
+
+<h2>{{ product.name }}</h2>
+
+<p>
+{{product.description}}
+</p>
+
+<p>
+It costs ${{product.price}} and ships in {{product.shippingTimeInDays}} days.
+</p>

@@ -1,0 +1,12 @@
+---
+layout: main
+title: Products
+---
+
+<h2>Products</h2>
+
+<ul>
+{% for product in products %}
+	<li><a href="/product/{{product.name | slug}}">{{product.name}}</a></li>
+{% endfor %}
+</ul>

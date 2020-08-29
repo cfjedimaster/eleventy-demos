@@ -1,0 +1,45 @@
+---
+layout: main
+pagination:
+   data: products
+   size: 1
+   alias: product
+permalink: "/product/{{product.name | slug}}/"
+eleventyComputed:
+   title: "{{product.name}}"
+---
+
+<h2>{{ product.name }}</h2>
+
+<p>
+{{product.description}}
+</p>
+
+<p>
+It costs ${{product.price}}.
+</p>
+
+<p>
+Availability: <span id="availabilityText"><i>Fetching...</i></span>
+</p>
+
+<script src="//cdn.jsdelivr.net/npm/faunadb@latest/dist/faunadb-min.js"></script>
+<script>
+const pid = '{{product.id}}';
+
+document.addEventListener('DOMContentLoaded', async () => {
+   let availabilityText = document.querySelector('#availabilityText');
+
+   console.log('product page, load '+pid);
+   let client = new faunadb.Client({ secret: 'fnAD0SNbNaACE9yDvC7hoFJRJQR35uwJZOjl2qpa' });
+   let q = faunadb.query;
+
+   let result = await client.query(
+      q.Get(q.Ref(q.Collection('products'), pid))
+   );
+   let product = result.data;
+   console.log(product);
+   availabilityText.innerHTML = `Ships in ${product.shippingTimeInDays} days.`;
+
+}, false);
+</script>

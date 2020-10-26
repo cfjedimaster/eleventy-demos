@@ -29,18 +29,16 @@ module.exports = function(eleventyConfig) {
 		/*
 		this filter tries to match to categories
 		*/
-		console.log('Processing '+avoid.url);
 		if(!items.length || items.length < 2) return;
 
 		let myItems = items.filter(i => {
 			return (i.data.categories.indexOf(category) >= 0) && i.url !== avoid.url;
 		});
-console.log('after cat filter, i have '+myItems.length);
+
 		if(myItems.length === 0) {
 			myItems = items.filter(i => {
 				return i.url !== avoid.url;
 			});
-			console.log('i filtered to not my url and now have '+myItems.length);
 		}
 
 		if(myItems.length === 0) return;

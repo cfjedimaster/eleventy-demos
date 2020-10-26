@@ -1,0 +1,27 @@
+---
+layout: layout
+---
+
+<h2>{{ title }}</h2>
+<p><i>Published {{ date | dtFormat }}</i></p>
+
+{{ content }}
+
+<p>
+<hr/>
+</p>
+
+{% assign randomPost = collections.posts | getRandom %}
+<p>
+You may also enjoy: <a href="{{randomPost.url}}">{{ randomPost.data.title }}</a>
+</p>
+
+{% assign randomPost = collections.posts | getRandom2: page %}
+<p>
+You may also enjoy (avoid same url): <a href="{{randomPost.url}}">{{ randomPost.data.title }}</a>
+</p>
+
+{% assign randomPost = collections.posts | getRandom3: page, categories %}
+<p>
+You may also enjoy (try same category, not same url): <a href="{{randomPost.url}}">{{ randomPost.data.title }}</a>
+</p>

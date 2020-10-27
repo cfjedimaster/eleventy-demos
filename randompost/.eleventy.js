@@ -32,7 +32,7 @@ module.exports = function(eleventyConfig) {
 		if(!items.length || items.length < 2) return;
 
 		let myItems = items.filter(i => {
-			return (i.data.categories.indexOf(category) >= 0) && i.url !== avoid.url;
+			return (i.data.categories === category) && (i.url !== avoid.url);
 		});
 
 		if(myItems.length === 0) {

@@ -8,7 +8,7 @@ module.exports = async function() {
 		fetch(PD_EVENTS)
 		.then(res => res.json())
 		.then(res => {
-			console.log(res[1]);
+			//console.log(res[1]);
 			let events = res.map(e => fixEvent(e));
 			resolve(events);
 		});
@@ -28,5 +28,7 @@ function fixEvent(e) {
 	if(e.description) event.description = e.description;
 	if(e.location) event.location = e.location;
 
+	if(event.start) event.start = new Date(event.start);
+	if(event.end) event.end = new Date(event.end);
 	return event;
 }

@@ -1,0 +1,35 @@
+---
+layout: main
+---
+
+<div id="siteInfo"></div>
+
+<div id="filmInfo"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', init, false);
+async function init() {
+	let div = document.querySelector('#siteInfo');
+	let resp = await fetch('/site1.json');
+	let data = await resp.json();
+	let html = `
+<p>
+The site is named ${data.name} and 
+the contact email is ${data.email} and
+do we have cats? ${data.cats}
+</p>
+	`;
+	div.innerHTML = html;
+
+	let div2 = document.querySelector('#filmInfo');
+	resp = await fetch('/films1.json');
+	data = await resp.json();
+	html = '<h2>Films</h2><ul>';
+	data.forEach(d => {
+		html += `<li><strong>${d.title}</strong>, released on ${d.released}.</li>`;
+	});
+	html += '</ul>';
+	div2.innerHTML = html;
+
+}
+</script>

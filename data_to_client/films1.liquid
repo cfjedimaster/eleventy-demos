@@ -1,0 +1,11 @@
+---
+permalink: films1.json
+---
+[
+{% for film in starWarsFilms %}
+	{
+		"title":"{{film.title}}",
+		"released":"{{film.release_date}}"
+	}{% unless forloop.last%},{% endunless %}	
+{% endfor %}
+]

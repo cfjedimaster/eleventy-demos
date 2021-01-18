@@ -1,0 +1,7 @@
+---
+permalink: site2.json
+---
+<%
+siteData = site;
+delete siteData.cats;
+%><%- JSON.stringify(siteData) %>

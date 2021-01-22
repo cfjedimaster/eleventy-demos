@@ -1,0 +1,66 @@
+---
+layout: main
+---
+
+<h1>Characters</h1>
+
+<ul>
+{% for character in collections.characters %} 
+  <li><a href="{{ character.url }}">{{ character.data.title }}</a></li>
+{% endfor %}
+</ul>
+
+<div id="app">
+	<input type="search" v-model="term"> <button @click="search">Search</button>
+	<div v-if="results">
+		<h3>Search Results</h3>
+		<ul>
+			<li v-for="result in results">
+				<a :href="result.url"> {% raw %}{{ result.title }}{% endraw %}</a>
+			</li>
+		</ul>
+		<p v-if="noResults">
+		Sorry, no results were found.
+		</p>
+	</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+const app = new Vue({
+	el:'#app',
+	data:{
+		docs:null,
+		idx:null,
+		term:'',
+		results:null
+	},
+	async created() {
+		let index = await fetch('./index.json');
+		let indexData = await index.json();
+		this.idx = lunr.Index.load(indexData);
+
+		let docs = await fetch('./raw.json');
+		this.docs = await docs.json();
+	},
+	computed: {
+		noResults() {
+			return this.results.length === 0;
+		}
+	},
+	methods:{
+		search() {
+			console.log('search', this.term);
+			let results = this.idx.search(this.term);
+
+			// we need to add title, url from ref
+			results.forEach(r => {
+				r.title = this.docs[r.ref].title;
+				r.url = this.docs[r.ref].url;
+			});
+
+			this.results = results;
+		}
+	}
+});
+</script>

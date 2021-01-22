@@ -1,0 +1,13 @@
+---
+permalink: /raw.json
+---
+
+[
+{% for character in collections.characters %}
+{
+	"title":"{{character.data.title}}",
+	"url":"{{character.url}}",
+	"content":"{% excerpt character %}"
+} {% if forloop.last == false %},{% endif %}
+{% endfor %} 
+]

@@ -20,9 +20,6 @@ module.exports = function(eleventyConfig) {
 		let data = fs.readFileSync(outputDir + '/raw.json','utf-8');
 		let docs = JSON.parse(data);
 
-		console.log('docs length', docs.length);
-
-
 		let idx = lunr(function () {
 			this.ref('id');
 			this.field('title');

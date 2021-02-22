@@ -41,6 +41,10 @@ const app = new Vue({
 		results:null
 	},
 	async created() {
+
+		const qs = new URLSearchParams(window.location.search);
+		this.term = qs.get('q');
+
 		let result = await fetch('/index.json');
 		docs = await result.json();
 		// assign an ID so it's easier to look up later, it will be the same as index
@@ -55,6 +59,9 @@ const app = new Vue({
 			}, this);
 		});
 		this.docs = docs;
+
+		if(this.term) this.search();
+
 	},
 	computed: {
 		noResults() {

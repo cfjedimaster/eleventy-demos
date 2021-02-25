@@ -1,0 +1,11 @@
+---
+layout: main
+---
+
+<h2>PDFs</h2>
+
+<ul>
+{% for pdf in pdfs %}
+<li><a href="pdf/{{pdf.name}}">{{ pdf.name }}</a></li>
+{% endfor %}
+</ul>

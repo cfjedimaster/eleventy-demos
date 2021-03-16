@@ -1,0 +1,24 @@
+---
+pagination:
+    data: pdfs
+    size: 1
+    alias: pdf
+permalink: "pdf/{{ pdf.name }}/"
+layout: main
+---
+
+<h2>{{ pdf.name }}</h2>
+
+<div id="adobe-dc-view"></div>
+
+<script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+<script type="text/javascript">
+document.addEventListener("adobe_dc_view_sdk.ready", () => {
+	var adobeDCView = new AdobeDC.View({clientId: "{{ site.pdfkey }}", divId: "adobe-dc-view"});
+	adobeDCView.previewFile(
+	{
+		content:   {location: {url: "{{site.url}}/{{ pdf.path }}"}},
+		metaData: {fileName: "{{pdf.name}}pdf"}
+	});
+});
+</script>

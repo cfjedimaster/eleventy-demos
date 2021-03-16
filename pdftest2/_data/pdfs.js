@@ -31,26 +31,31 @@ module.exports = async function() {
 		//name safe for a directory
 		let name = pdf.split('/').pop().replace('.pdf', '');
 
-		let zip = await generateImageZip(pdf, creds, outputPath);
-		console.log(`image generated from source ${pdf} at ${zip}`);
+		//do we have a thumb, if so, its /path/foo.pdf => /path/foo.jpg
+		let thumb = pdf.replace('.pdf', '.jpg');
+		if(!fs.existsSync(thumb)) {
+			console.log('need to generate '+thumb);
 
-		let dest = await extractFirstFile(zip, outputPath);
-		console.log(`image extracted to ${dest}`);
+			let zip = await generateImageZip(pdf, creds, outputPath);
+			console.log(`image generated from source ${pdf} at ${zip}`);
 
-		await makeThumbnail(dest, 200, 80);
-		console.log('Done resizing image.');
+			let dest = await extractFirstFile(zip, outputPath);
+			console.log(`image extracted to ${dest}`);
 
-		//move to a new filename based on nanoid
-		let newFilename = thumbPath + nanoid() + ".jpg";
-		fs.renameSync(dest, newFilename);
+			await makeThumbnail(dest, 200, 80);
+			console.log('Done resizing image.');
 
-		//cleanup
-		fs.unlinkSync(zip);
+			//move to a new filename based on nanoid
+			fs.renameSync(dest, thumb);
+
+			//cleanup
+			fs.unlinkSync(zip);
+		}
 
 		result.push({
 			path:files[i],
-			name:name,
-			thumb:newFilename
+			name,
+			thumb
 		});
 	}
 

@@ -4,3 +4,4 @@ trash
 .vscode/
 # Local Netlify folder
 .netlify
+.env

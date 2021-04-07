@@ -1,0 +1,14 @@
+body {
+	background-color: antiquewhite;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+#gallery {
+	margin: auto;
+	width: 70%;
+}
+
+#gallery img {
+	padding: 20px;
+	vertical-align: middle;
+}

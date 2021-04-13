@@ -1,0 +1,17 @@
+---
+layout: layout
+pagination:
+   data: posts
+   size: 1
+   alias: post
+permalink: "/post/{{post.title | slug}}/"
+eleventyComputed:
+---
+
+<h2>{{ post.title }}</h2>
+<p>
+Posted on {{ post.published | dtFormat }}<br/> 
+Posted in {% for cat in post.categories %} <a href="/category/{{ cat.name | slug }}">{{ cat.name }}</a>{% if forloop.last == false %}, {% endif %}{% endfor %}
+</p>
+
+{{ post.body | markdown }}

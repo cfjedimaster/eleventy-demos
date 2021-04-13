@@ -1,0 +1,17 @@
+---
+layout: layout
+pagination:
+   data: categories
+   size: 1
+   alias: category
+permalink: "/category/{{category.name | slug}}/"
+---
+
+<h2>{{ category.name }}</h2>
+
+{% assign posts = posts | getByCategory: category.id %}
+
+<ul>
+{% for post in posts %}
+  <li><a href="/post/{{post.title | slug}}/">{{ post.title }}</a> ({{ post.published | dtFormat }})</li>
+{% endfor %}

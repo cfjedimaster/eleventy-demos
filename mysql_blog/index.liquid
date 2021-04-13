@@ -1,0 +1,19 @@
+---
+title: Home Page for Blog
+layout: layout
+---
+
+<h2>Blog Demo</h2>
+
+<p>
+This folder is meant to be used as a basic blog that I will copy to use in <i>other</i> demos.
+</p>
+
+<h2>Posts</h2>
+
+<ul>
+{% for post in posts %}
+  <li><a href="/post/{{post.title | slug}}/">{{ post.title }}</a> ({{ post.published | dtFormat }})</li>
+{% endfor %}
+</ul>
+

@@ -12,9 +12,12 @@ const handler = async (event) => {
 
     console.log('testing', fs.existsSync('./data.json'));
 
+    let test2 = require('./data.json');
+    console.log('test2', test2);
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: `Hello test: ${test}` }),
+      body: JSON.stringify({ message: `Hello test: ${test2.name}` }),
       // // more keys you can return:
       // headers: { "headerName": "headerValue", ... },
       // isBase64Encoded: true,

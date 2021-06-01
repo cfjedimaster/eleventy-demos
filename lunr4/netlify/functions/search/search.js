@@ -17,6 +17,8 @@ const handler = async (event) => {
       r.title = data[r.ref].title;
       r.content = truncate(data[r.ref].content, 400);
       r.date = data[r.ref].date;
+      r.url = data[r.ref].url;
+      
       delete r.matchData;
       delete r.ref;
     });

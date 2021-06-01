@@ -3,25 +3,14 @@ permalink: netlify/functions/search/data.json
 permalinkBypassOutputDir: true
 ---
 
-{% assign posts = collections.posts | reverse %}
+{% assign posts = collections.posts %}
 [
 {% for post in posts %}
 	{
 		"title": {{post.data.title | jsonify}},
 		"date":"{{ post.date }}",
-		"url":"{{ post.url | prepend: site.url }}",
-		"content":{{ post.templateContent | algExcerpt | jsonify }},
-		"tags":[
-	        {% for tag in post.data.tags %}
-            {{ tag | jsonify }}{% unless forloop.last %},{% endunless %}
-            {% endfor %}
-		],
-		"categories":[
-            {% for cat in post.data.categories %}
-                {{ cat | jsonify }}{% unless forloop.last %},{% endunless %}
-            {% endfor %}
-		]
-
+		"url":"{{ post.url }}",
+		"content":{{ post.templateContent | jsonify }}
 	}{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ]

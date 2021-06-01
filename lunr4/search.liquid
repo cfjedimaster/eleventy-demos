@@ -45,18 +45,11 @@ async function search() {
 
 	// we need to add title, url from ref
 	results.forEach(r => {
-		console.log(r);
 		resultsHTML += `<li><a href="${r.url}">${ r.title }</a></li>`;
-
 	});
 
 	resultsHTML += '</ul>';
 	resultsDiv.innerHTML = resultsHTML;
 
-	/*
-	let results = idx.search(search);
-
-	
-	*/
 }
 </script>

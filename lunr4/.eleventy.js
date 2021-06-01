@@ -8,8 +8,15 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addWatchTarget("./css/");
     eleventyConfig.addWatchTarget("./js");
 
-	eleventyConfig.on('afterBuild', () => {
-		console.log('afterBuild');
+
+	eleventyConfig.addCollection("posts", collection => {
+		let posts = collection.getFilteredByGlob("_posts/**/*.md");
+
+		return posts;
+	});
+
+	eleventyConfig.addFilter('jsonify', function (variable) {
+		return JSON.stringify(variable);
 	});
 
 };

@@ -1,0 +1,16 @@
+---
+permalink: netlify/functions/search/data.json
+permalinkBypassOutputDir: true
+---
+
+{% assign posts = collections.posts %}
+[
+{% for post in posts %}
+	{
+		"title": {{post.data.title | jsonify}},
+		"date":"{{ post.date }}",
+		"url":"{{ post.url }}",
+		"content":{{ post.templateContent | jsonify }}
+	}{% unless forloop.last %},{% endunless %}
+{% endfor %}
+]

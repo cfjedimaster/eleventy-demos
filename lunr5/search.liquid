@@ -1,0 +1,56 @@
+---
+title: Search
+---
+
+<h1>Search</h1>
+
+<p>
+<input type="search" id="term">  
+<button id="searchBtn">Search</button>
+</p>
+
+<div id="results"></div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', init, false);
+
+async function init() {
+
+	document.querySelector('#searchBtn').addEventListener('click', search);
+
+	field = document.querySelector('#term');
+
+	resultsDiv = document.querySelector('#results');
+
+}
+
+async function search() {
+	let search = field.value.trim();
+	if(!search) return;
+	console.log(`search for ${search}`);
+	resultsDiv.innerHTML = '<i>Searching...</i>';
+	
+	let searchRequest = await fetch(`/api/search?term=${search}`);
+	let results = await searchRequest.json();
+
+	let resultsHTML = '<p><strong>Search Results</strong></p>';
+
+	if(!results.length) {
+		resultsHTML += '<p>Sorry, there were no results.</p>';
+		resultsDiv.innerHTML = resultsHTML;
+		return;
+	}
+
+	resultsHTML += '<ul>';
+
+	// we need to add title, url from ref
+	results.forEach(r => {
+		resultsHTML += `<li><a href="${r.url}">${ r.title }</a></li>`;
+	});
+
+	resultsHTML += '</ul>';
+	resultsDiv.innerHTML = resultsHTML;
+
+}
+</script>

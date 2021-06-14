@@ -58,7 +58,7 @@ module.exports = async function() {
 
 			let textContent = await getPDFText(pdf, creds);
 			console.log(`Get text back, length is ${textContent.length}`);
-
+			fs.writeFileSync(text, textContent);
 		}
 
 		result.push({
@@ -169,20 +169,23 @@ async function getPDFText(path, creds) {
 		// Execute the operation
 		extractPDFOperation.execute(executionContext)
 			.then(result => result.saveAsFile(OUTPUT_ZIP))
-			.then(() => {
-				let zip = new AdmZip(OUTPUT_ZIP);		
-				let zipEntries = zip.getEntries(); // an array of ZipEntry records
-				// we output to the same filename but I _think_ we are ok as we are single threading these
-				zip.extractEntryTo("structuredData.json", "./", false, true);
-				fs.unlinkSync(OUTPUT_ZIP);
+			.then(async () => {
 
-				let data = JSON.parse(fs.readFileSync('./structuredData.json', 'utf-8'));
+				let zipFile = new StreamZip.async({file: OUTPUT_ZIP });
+				let entries = await zipFile.entries();
+				let first = Object.values(entries)[0];
+				let dest = outputPath + nanoid() + '.' + first.name.split('.').pop();
+
+				await zipFile.extract(first.name, dest);
+				await zipFile.close();
+				let data = JSON.parse(fs.readFileSync(dest, 'utf-8'));
 
 				let text = data.elements.filter(e => e.Text).reduce((result, e) => {
 					return result + e.Text + '\n';
 				},'');
 
-				fs.unlinkSync('./strucutredData.json');
+				fs.unlinkSync(dest);
+				fs.unlinkSync(OUTPUT_ZIP);
 				resolve(text);
 
 			})

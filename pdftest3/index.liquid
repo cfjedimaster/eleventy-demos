@@ -1,0 +1,11 @@
+---
+layout: main
+---
+
+<h2>PDFs</h2>
+
+{% for pdf in pdfs %}
+<div class="pdfThumb">
+<a href="pdf/{{pdf.name}}"><img src="{{pdf.thumb}}" alt="{{ pdf.name }}"></a>
+</div>
+{% endfor %}

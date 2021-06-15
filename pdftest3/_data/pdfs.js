@@ -52,18 +52,20 @@ module.exports = async function() {
 			fs.unlinkSync(zip);
 		}
 
-		let text = pdf.replace('.pdf', '.txt');
-		if(!fs.existsSync(text)) {
-			console.log('need to generate text '+text);
+		let textFile = pdf.replace('.pdf', '.txt');
+		let text = '';
+		if(!fs.existsSync(textFile)) {
+			console.log('need to generate text '+textFile);
 
-			let textContent = await getPDFText(pdf, creds);
-			console.log(`Get text back, length is ${textContent.length}`);
-			fs.writeFileSync(text, textContent);
-		}
+			text = await getPDFText(pdf, creds);
+			console.log(`Get text back, length is ${text.length}`);
+			fs.writeFileSync(textFile, text);
+		} else text = fs.readFileSync(textFile,'utf-8');
 
 		result.push({
-			path:files[i],
+			path:files[i].replace('./','/'),
 			name,
+			text, 
 			thumb
 		});
 	}

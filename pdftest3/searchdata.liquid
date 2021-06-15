@@ -1,0 +1,14 @@
+---
+permalink: /searchdata.json
+---
+
+[
+{% for pdf in pdfs %}
+	{
+		"name": {{pdf.name | jsonify}},
+		"url":"/pdf/{{ pdf.name }}",
+		"text":{{ pdf.text | jsonify }}
+
+	}{% unless forloop.last %},{% endunless %}
+{% endfor %}
+]

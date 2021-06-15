@@ -1,0 +1,63 @@
+---
+layout: main
+---
+
+<h2>Search</h2>
+
+<p>
+<input type="search" id="term" placeholder="Enter your search here...">
+<button id="searchBtn">Search</button>
+</p>
+
+<div id="result"></div>
+
+<script src="https://unpkg.com/lunr/lunr.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', init, false);
+
+let idx, $term, pdfs, $result;
+
+async function init() {
+	console.log('load original data');
+	let dataRequest = await fetch('/searchdata.json');
+	pdfs = await dataRequest.json();
+
+	idx = lunr(function () {
+		this.ref('id');
+		this.field('name');
+		this.field('text');
+		pdfs.forEach(function (doc, idx) {
+			doc.id = idx;
+			this.add(doc); 
+		}, this);
+	});
+	console.log('Search index created');
+
+	document.querySelector('#searchBtn').addEventListener('click', search, false);
+	$term = document.querySelector('#term');
+	$result = document.querySelector('#result');
+
+}
+
+function search() {
+	if($term.value === '') return;
+	console.log(`search for ${$term.value}`);
+	let results = idx.search($term.value);
+	results.forEach(r => {
+		console.log(pdfs);
+		r.name = pdfs[r.ref].name;
+		r.url = pdfs[r.ref].url;
+	});
+
+	if(results.length > 0) {
+		let result = '<p>Search results:</p><ul>';
+		results.forEach(r => {
+			result += `<li><a href="${r.url}?term=${encodeURIComponent($term.value)}">${r.name}</a></li>`
+		});
+		result += '</ul>';
+		$result.innerHTML = result;
+	} else {
+		$result.innerHTML = '<p>Sorry, but there we no results.</p>';
+	}
+}
+</script>

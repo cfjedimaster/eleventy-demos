@@ -2,11 +2,11 @@
 
 module.exports = async function() {
 
-	let url = 'http://localhost:8080';
+	let url = 'http://localhost:3000';
 
-	if(process.env.VERCEL_ENV && process.env.VERCEL_ENV === 'production') url = 'https://pdftest.vercel.app'
+	if(process.env.VERCEL_ENV && process.env.VERCEL_ENV === 'production') url = 'https://pdftest3.vercel.app'
 	//my localhost key
-	let pdfkey = process.env.PDF_KEY?process.env.PDF_KEY:'9861538238544ff39d37c6841344b78d'
+	let pdfkey = process.env.PDF_KEY?process.env.PDF_KEY:'ec60043db7874f40a39da3770b189eab'
 
 	return {
 		url,

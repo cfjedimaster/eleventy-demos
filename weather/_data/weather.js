@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
 // used to auth with HERE API
-const HERE_KEY = 'c1LJuR0Bl2y02PefaQ2d8PvPnBKEN8KdhAOFYR_Bgmw';
+const HERE_KEY = process.env.HERE;
 // used for location of the market
 const LOC = 'Lafayette, LA';
 

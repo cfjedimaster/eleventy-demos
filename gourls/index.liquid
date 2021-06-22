@@ -1,0 +1,14 @@
+---
+layout: main
+title: Home Page
+---
+
+<h2>Home Page</h2>
+
+<p>
+Content here
+</p>
+
+{% for page in collections.all %}
+{{ page.data.title }} testing go: {{ page.data.go }}<br/>
+{% endfor %}

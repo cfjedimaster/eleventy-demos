@@ -1,0 +1,10 @@
+---
+permalink: /_redirects
+---
+
+#old home page
+/home / 301
+
+{% for page in collections.goPages %}
+/go/{{ page.data.go }}	{{ page.url }}
+{% endfor %}

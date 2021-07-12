@@ -1,0 +1,31 @@
+---
+layout: main
+title: one
+---
+
+<h1>Hello World</h1>
+
+{% capture my_variable %}I am being captured.{% endcapture %}
+{% capture my_variable %}MORE captured.{% endcapture %}
+
+<p>
+Here is my_variable, notice it's only the last one added:
+{{ my_variable }}
+</p>
+
+{% mycapture "foo" %}
+<p>
+This is test i think 1
+</p>
+{% endmycapture %}
+
+{% mycapture "foo" %}
+<p>
+This is test i think 2 
+</p>
+{% endmycapture %}
+
+<p>
+And here is my demo, should show two parts:
+    {% displaycapture "foo" %}
+</p>

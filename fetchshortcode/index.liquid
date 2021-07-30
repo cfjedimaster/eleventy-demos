@@ -1,5 +1,28 @@
 
 
-Test: {% assign ships = 'https://swapi.dev/api/starships' | fetch %}
 
-name = {{ ships | log }}
+<!--
+Here's the shortcode:
+
+	eleventyConfig.addShortcode("fetch", async function(url, name, filter) {
+		let resp = await fetch(url);
+		let data = await resp.json();
+		if(filter) data = data[filter];
+		this.page[name] = data;
+	});
+
+-->
+
+<!-- first arg is url, second arg is name of variable to create -->
+{% fetch 'https://swapi.dev/api/starships' 'ships3' %}
+{% for ship in page.ships3.results %}
+    ship test, {{ ship.name }}<br/>
+{% endfor %}
+
+<hr>
+
+<!-- optional 3rd arg for services where the value you care about is a key -->
+{% fetch 'https://swapi.dev/api/starships' 'ships4' 'results' %}
+{% for ship in page.ships4 %}
+    ship test, {{ ship.name }}<br/>
+{% endfor %}

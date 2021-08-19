@@ -6,15 +6,16 @@ module.exports = function(eleventyConfig) {
     	_CAPTURES = {};
 	});
 	
-	eleventyConfig.addPairedShortcode("mycapture", (content, name) => {
-		if(!_CAPTURES[name]) _CAPTURES[name] = '';
-		_CAPTURES[name] += content;
+	eleventyConfig.addPairedShortcode("mycapture", function (content, name) {
+		if(!_CAPTURES[this.page.inputPath]) _CAPTURES[this.page.inputPath] = {};
+		if(!_CAPTURES[this.page.inputPath][name]) _CAPTURES[this.page.inputPath][name] = '';
+		_CAPTURES[this.page.inputPath][name] += content;
 		return '';
-  	});
-
-	eleventyConfig.addShortcode("displaycapture", name => {
-		console.log('displaycapture called');
-		return _CAPTURES[name];
 	});
-
+	
+	eleventyConfig.addShortcode("displaycapture", function(name) {
+		if(_CAPTURES[this.page.inputPath] && _CAPTURES[this.page.inputPath][name]) return _CAPTURES[this.page.inputPath][name];
+		return '';
+	});
+	
 };

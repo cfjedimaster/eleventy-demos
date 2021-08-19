@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title></title>
+<style>
+main {
+	padding: 30px;
+	background-color: #c0c0c0;
+}
+
+#footer {
+	margin-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<main>
+{% block content %}{% endblock %}
+{{ content }}
+</main>
+
+<footer>
+{% block footer %}{% endblock %}
+</footer>
+
+
+
+</body>
+</html>

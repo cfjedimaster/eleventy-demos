@@ -1,0 +1,17 @@
+{
+  "name": "pdftest4",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".eleventy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@adobe/pdfservices-node-sdk": "^2.0.0",
+    "dotenv": "^10.0.0",
+    "globby": "^12.0.2"
+  }
+}

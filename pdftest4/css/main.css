@@ -1,0 +1,13 @@
+#pdfview {
+	height: 700px; 
+	width: 75vw;
+}
+
+.downloadBtn {
+	margin-top: 25px;
+}
+
+.imagePreview {
+	max-width: 75vw;
+	max-height: 700px;
+}

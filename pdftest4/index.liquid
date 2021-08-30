@@ -1,0 +1,11 @@
+---
+layout: main
+title: Document Library
+---
+
+<h2>Document Library</h2>
+
+<ul>
+{% for file in documents %}
+<li><a href="/view/{{ file.slug | slug }}">{{ file.name}}</a></li>
+{% endfor %}

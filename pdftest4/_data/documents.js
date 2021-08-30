@@ -20,6 +20,7 @@ const PDFDIR = './documentLibrary/pdfversions/';
 // supported extensions for convertin' to PDF
 // note we aren't including images here, we'll just show em as is (nor txt)
 const SUPPORTED_EXTS = ['doc', 'docx', 'ppt', 'pptx', 'xlsx', 'txt', 'rtf'];
+const IMAGES = ['gif','jpg','jpeg','png'];
 
 //https://advancedweb.hu/how-to-use-async-functions-with-array-filter-in-javascript/
 const asyncFilter = async (arr, predicate) => {
@@ -31,54 +32,59 @@ const asyncFilter = async (arr, predicate) => {
 module.exports = async function() {
 	console.log('running _data/documents.js');
 	let entries = await fs.readdir(LIB, { withFileTypes: true} );
-
 	/*
-	files will represent _all_ the objects in our doc library
+	Our final result is an array of objects such that:
+		name, just the filename, no path
+		path points to the file
+		pdfpath points to pdf version
+		slug - filenamne minus extension
+		image - true for images (duh)
+
+		to make things simpler, for an original PDF that doesn't need 
+		converting, pdfpath == path
 	*/
+	let data = [];
+
 	let files = entries.filter(f => !f.isDirectory()).map(f => LIB + f.name);
 
-	/*
-	Ok, so files is a set of names of files in my directory w/ subdirs filtered out.
-	For each file that is NOT a pdf AND we support conversion AND there is no converted file, we need to convert
-	*/
-	console.log(files);
-	let filesToConvert = await asyncFilter(files, async f => {
-		let ext = f.split('.').pop();
-		if(SUPPORTED_EXTS.indexOf(ext) === -1) return false;
+	for(let i=0; i<files.length; i++) {
 
-		let pdfVersion = pdfFile(f);
-		console.log('name of pdf version',pdfVersion);
-		let exists = true;
-		try {
-			await fs.stat(pdfVersion);
-		} catch(e) {
-			exists = false;
+		// remove ./ from path as we need a web safe path
+		let dataOb = {
+			path: files[i].replace('./','/'),
+			name: files[i].replace(LIB, ''), 
+			image: false
 		}
-		if(!exists) return true;		
-		// shouldn't be able to get here, but just in case...
-		return false;
-	});
-	console.log('files to convert', filesToConvert);
-	/*
-	files to convert are files in our lib we CAN convert to PDF that we haven't.
-	*/
+		dataOb.slug = dataOb.name.split('.').slice(0,-1).join('.');
 
-	if(filesToConvert.length) {
-		let ops = [];
-		for(let i=0;i<filesToConvert.length;i++) {
-			console.log('convert '+filesToConvert[i]+' to '+pdfFile(filesToConvert[i]));
-			ops.push(convertToPDF(filesToConvert[i], pdfFile(filesToConvert[i]), creds));
-		}
-		let done = await Promise.all(ops);
-		console.log('Done converting my files to PDF');
+		// is this something we can convert to pdf, if we need to
 
+		let ext = files[i].split('.').pop();
+		if(SUPPORTED_EXTS.indexOf(ext) !== -1) {
+
+			let pdfVersion = pdfFile(files[i]);
+			let pdfVersionExists = true;
+			try {
+				await fs.stat(pdfVersion);
+			} catch {
+				pdfVersionExists = false;
+			}
+			console.log('do i need to make a pdf for '+files[i]+', named '+pdfVersion+', '+pdfVersionExists);
+			if(!pdfVersionExists) {
+				await convertToPDF(files[i], pdfVersion, creds);
+			}
+
+			dataOb.pdfpath = pdfVersion.replace('./', '/');
+		} else if(ext === 'pdf') {
+			dataOb.pdfpath = dataOb.path;
+		} else if(IMAGES.indexOf(ext) !== -1) {
+			dataOb.image = true;
+		} 
+		data.push(dataOb);
 	}
+	console.log(data);
 
-	/*
-	ok, so now we need to return our data properly, an array of obs with .path being the orig doc, and .pdfpath 
-	being the pdf version, if it exists
-	*/
-	return [];
+	return data;
 }
 
 // utility func to go from /foo.docx to /foo/pdfdir/foo.pdf

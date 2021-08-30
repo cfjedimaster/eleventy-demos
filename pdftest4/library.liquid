@@ -1,0 +1,43 @@
+---
+layout: main
+pagination:
+  data: documents
+  size: 1
+  alias: document
+# why slug | slug? slug is the filename minus extension, but for spaces
+# and stuff, we want it replaced via the slug filter
+permalink: "view/{{ document.slug | slug }}/index.html" 
+---
+
+<h2>Viewing {{document.name}}</h2>
+
+{% if document.pdfpath %}
+
+	<div id="pdfview"></div>
+
+	<script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+	<script type="text/javascript">
+	const KEY = '9861538238544ff39d37c6841344b78d';
+
+	document.addEventListener("adobe_dc_view_sdk.ready", async () => {
+		let adobeDCView = new AdobeDC.View({clientId: KEY, divId: "pdfview"});
+		adobeDCView.previewFile(
+		{
+			content:   {location: {url: "{{ document.pdfpath }}"}},
+			metaData: {fileName: "{{document.name}}"}
+		});
+
+	});
+	</script>
+
+{% elsif document.image %}
+	<img src="{{document.path}}" class="imagePreview">
+{% else %}
+	<p>
+	We're unable to show a render of this document, but you can download it below.
+	</p>
+{% endif %}
+
+<p class="downloadBtn">
+<a href="{{document.path}}" download class="btn btn-primary" role="button">Download Original File</a>
+</p>

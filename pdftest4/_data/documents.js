@@ -22,13 +22,6 @@ const PDFDIR = './documentLibrary/pdfversions/';
 const SUPPORTED_EXTS = ['doc', 'docx', 'ppt', 'pptx', 'xlsx', 'txt', 'rtf'];
 const IMAGES = ['gif','jpg','jpeg','png'];
 
-//https://advancedweb.hu/how-to-use-async-functions-with-array-filter-in-javascript/
-const asyncFilter = async (arr, predicate) => {
-	const results = await Promise.all(arr.map(predicate));
-
-	return arr.filter((_v, index) => results[index]);
-}
-
 module.exports = async function() {
 	console.log('running _data/documents.js');
 	let entries = await fs.readdir(LIB, { withFileTypes: true} );

@@ -1,0 +1,18 @@
+[
+	{
+		"key":"rcamden",
+		"name":"Raymond Camden",
+		"bio": "Raymond likes cats.",
+		"website":"https://www.raymondcamden.com",
+		"photo":"https://static.raymondcamden.com/images/ray2019c.jpg",
+		"twitter":"raymondcamden"
+	},
+	{
+		"key":"brinaldi",
+		"name":"Brian Rinaldi",
+		"bio":"Brian something something or another.",
+		"website":"https://remotesynthesis.com/",
+		"photo":"https://miro.medium.com/fit/c/400/400/2*k9h7ypAlAlA7PvOUjwbejA.jpeg",
+		"twitter":"remotesynth"
+	}
+]

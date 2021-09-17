@@ -1,0 +1,16 @@
+---
+layout: main
+---
+
+<h2>{{ title }}</h2>
+{% if author %}
+	{% assign myAuthors = authors | getAuthors: author %}
+	<p>
+	Written by 
+		{% for theAuthor in myAuthors %}
+			<a href="/authors/{{ theAuthor.key }}">{{ theAuthor.name }}</a>{% unless forloop.last %}, {% endunless %}
+		{% endfor %}
+	</p>
+{% endif %}
+
+{{ content }}

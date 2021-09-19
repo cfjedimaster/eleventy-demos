@@ -6,4 +6,4 @@ tags: post
 author: brinaldi,rcamden
 ---
 
-This is Gamma
+This is Epsilon.

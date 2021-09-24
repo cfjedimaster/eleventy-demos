@@ -7,7 +7,6 @@ module.exports = function(eleventyConfig) {
 	});
 
 	eleventyConfig.addFilter("getRelated", function(relatedPosts, all) {
-		console.log('getRelated', relatedPosts);
 		/*
 		relatedPosts is an array of filePathStems, return an array
 		of page obs that match

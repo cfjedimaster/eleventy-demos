@@ -1,0 +1,18 @@
+---
+layout: layout
+---
+
+<h2>{{ title }}</h2>
+<p><i>Published {{ date | dtFormat }}</i></p>
+
+{{ content }}
+
+{% if related %}
+	<h2>Releated Entries</h2>
+	{% assign relatedEntries = related | getRelated:collections.all %}
+	<ul>
+	{% for entry in relatedEntries %}
+	<li><a href="{{ entry.filePathStem }}">{{ entry.data.title }}</a></li>
+	{% endfor %}
+	</ul>
+{% endif %}

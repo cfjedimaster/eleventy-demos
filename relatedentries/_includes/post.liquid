@@ -8,7 +8,7 @@ layout: layout
 {{ content }}
 
 {% if related %}
-	<h2>Releated Entries</h2>
+	<h2>Related Entries</h2>
 	{% assign relatedEntries = related | getRelated:collections.all %}
 	<ul>
 	{% for entry in relatedEntries %}

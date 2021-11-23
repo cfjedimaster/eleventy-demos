@@ -1,0 +1,2 @@
+netlify/functions/weather/**
+!netlify/functions/weather/index.js

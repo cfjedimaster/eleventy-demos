@@ -10,10 +10,10 @@ async function handler(event) {
     query: event.queryStringParameters,
     functionsDir: "./netlify/functions/",
   });
-
+  
   try {
     let [page] = await elev.getOutput();
-console.log('m ai running?');
+console.log('am i running?');
     // If you want some of the data cascade available in `page.data`, use `eleventyConfig.dataFilterSelectors`.
     // Read more: https://www.11ty.dev/docs/config/#data-filter-selectors
 

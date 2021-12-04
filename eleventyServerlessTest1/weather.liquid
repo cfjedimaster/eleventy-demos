@@ -1,19 +1,15 @@
 ---
 layout: main
 permalink:
-    weather: /weather/:loc
+    serverless: /weather/:loc
 ---
-<!--
-temp,     weather: /weather/, end temp
--->
-Hello from the serverless template?
-<p/>
+
 Test: {{ eleventy.serverless | json }}
 
 <p/>
 
-{% if eleventy.serverless.query.x %}
+{% if eleventy.serverless.path.loc %}
 
-	Test2: {{ eleventy.serverless.query.x | doRay }} 
+	The weather for {{ eleventy.serverless.path.loc }} : {{ eleventy.serverless.path.loc | getWeather }} 
 
 {% endif %}

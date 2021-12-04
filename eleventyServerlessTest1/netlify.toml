@@ -1,6 +1,7 @@
 [[redirects]]
 from = "/weather/:loc"
-to = "/.netlify/functions/weather"
+to = "/.netlify/functions/serverless"
 status = 200
 force = true
-_generated_by_eleventy_serverless = "weather"
+_generated_by_eleventy_serverless = "serverless"
+

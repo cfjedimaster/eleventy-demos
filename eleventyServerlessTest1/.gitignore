@@ -1,2 +1,2 @@
-netlify/functions/weather/**
-!netlify/functions/weather/index.js
+netlify/functions/serverless/**
+!netlify/functions/serverless/index.js

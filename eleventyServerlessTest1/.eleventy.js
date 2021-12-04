@@ -5,12 +5,12 @@ module.exports = function(eleventyConfig) {
 
 
   eleventyConfig.addPlugin(EleventyServerlessBundlerPlugin, {
-    name: "weather", 
+    name: "serverless", 
     functionsDir: "./netlify/functions/"
   });
 
-  eleventyConfig.addFilter("doRay", function(input) {
-    return "ray " + input;
+  eleventyConfig.addFilter("getWeather", function(input) {
+    return "It's hot in  " + input;
   })
 
 };

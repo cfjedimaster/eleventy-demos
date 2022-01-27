@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@11ty/eleventy-img": "^1.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^14.3.2",
+    "node-fetch": "^2.6.7"
+  }
+}

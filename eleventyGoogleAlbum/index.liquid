@@ -1,0 +1,12 @@
+---
+layout: main
+title: Image Gallery
+---
+
+<h1>Image Gallery</h1>
+
+{% for image in images %}
+	<a href="{{image.url}}">
+	<img src="{{ image.thumbnail_url }}" width="{{ image.thumbnail_width }}" height="{{ image.thumbnail_height }}">
+	</a>
+{% endfor %}

@@ -57,6 +57,7 @@ module.exports = async function() {
 
 function emptyImageFolder() {
 	let imgDir = './img/';
+	if(!fs.existsSync(imgDir)) return;
 	let files = fs.readdirSync(imgDir);
 	for(file of files) {
 		fs.unlinkSync(imgDir + file);

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const Image = require("@11ty/eleventy-img");
 const fetch = require('node-fetch');
+const fs = require('fs');
 
 const ALBUM = 'EleventyTest';
 const PHOTO_API = process.env.IMAGE_ENDPOINT + `?album=${ALBUM}`;
@@ -9,6 +10,11 @@ const WIDTH = 800;
 const HEIGHT = 800;
 
 module.exports = async function() {
+
+	/*
+	clean the img folder
+	*/
+	emptyImageFolder();
 
 	let data = await fetch(PHOTO_API);
 	let photos = await data.json();
@@ -21,7 +27,6 @@ module.exports = async function() {
 	});
 
 	console.log('got ',photos.length,' photos');
-
 	let result = [];
 
 	for(let i=0; i<photos.length; i++) {
@@ -48,4 +53,13 @@ module.exports = async function() {
 	}
 
 	return result;
+}
+
+function emptyImageFolder() {
+	let imgDir = './img/';
+	let files = fs.readdirSync(imgDir);
+	for(file of files) {
+		fs.unlinkSync(imgDir + file);
+	}
+	return;
 }

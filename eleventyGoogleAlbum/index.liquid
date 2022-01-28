@@ -3,10 +3,42 @@ layout: main
 title: Image Gallery
 ---
 
-<h1>Image Gallery</h1>
+<style>
+.masonry-container {
+  -webkit-column-count: 3;
+  -moz-column-count: 3;
+  column-count: 3;
+    
+  -webkit-column-gap: 15px;
+  -moz-column-gap: 15px;
+  column-gap: 15px;
+}
 
+.masonry-item {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 15px;
+  border:1px solid #ccc;
+  border-radius: 5px;
+
+}
+
+.masonry-item img {
+  display:block;
+  width: 100%;
+}
+</style>
+
+<h1>Image Gallery!</h1>
+
+<!-- credit: https://kulor.medium.com/pinterest-style-masonry-layout-using-pure-css-493c1206d01d -->
+
+<div class="masonry-container">
 {% for image in images %}
+	<div class="masonry-item">
 	<a href="{{image.url}}">
 	<img src="{{ image.thumbnail_url }}" width="{{ image.thumbnail_width }}" height="{{ image.thumbnail_height }}">
 	</a>
+	</div>
 {% endfor %}
+</div>

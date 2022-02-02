@@ -1,0 +1,19 @@
+[
+	{
+		"name":"Store Alpha", 
+		"address":"4300 Ambassador Caffery Pkwy, Lafayette, LA 70508"
+	},
+	{
+		"name":"Store Beta", 
+		"address":"2706 S Fieldspan Rd, Duson, LA 70529"
+	},
+	{
+		"name":"Store Gamma", 
+		"address":"807 S 5th St, Iota, LA 70543"
+	},
+	
+	{
+		"name":"Store Delta", 
+		"address":"402 N Martin Luther King Hwy, Lake Charles, LA 70601"
+	}	
+]

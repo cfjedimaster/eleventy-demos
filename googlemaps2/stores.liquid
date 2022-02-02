@@ -1,0 +1,15 @@
+---
+pagination:
+    data: stores
+    size: 1
+    alias: store
+permalink: "stores/{{ store.name | slug }}/"
+---
+
+<p>
+You can find {{ store.name }} at {{ store.address }}.
+</p>
+
+<p>
+<img src="{% staticmap store.address 500 500 %}" width="500" height="500">
+</p>

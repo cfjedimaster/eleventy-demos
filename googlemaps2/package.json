@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "dotenv": "^15.0.0",
-    "eleventy-plugin-googlestaticmaps": "^1.0.1"
+    "eleventy-plugin-googlestaticmaps": "^1.0.2"
   }
 }

@@ -25,5 +25,10 @@ page.url is just the last part, so we use a data variable for the host.
 {% assign url = site.host | append: page.url  | append: "?fromqr=1" %}
 <p/>
 
+<p>
 <img src="{{ url | qrcode }}" title="Scan to share a link to {{ url }}">
+</p>
 
+<p>
+<a href="/">Home</a>
+</p>

@@ -1,0 +1,33 @@
+[
+
+	{
+		"name":"Luna",
+		"gender":"female",
+		"age":12,
+		"picture":"https://placekitten.com/900/900"
+	},
+	{
+		"name":"Elise",
+		"gender":"female",
+		"age":14,
+		"picture":"https://placekitten.com/800/800"
+	},
+	{
+		"name":"Pig",
+		"gender":"female",
+		"age":9,
+		"picture":"https://placekitten.com/600/600"
+	},
+	{
+		"name":"Crackers",
+		"gender":"male",
+		"age":5,
+		"picture":"https://placekitten.com/450/450"
+	},
+	{
+		"name":"Zelda",
+		"gender":"female",
+		"age":8,
+		"picture":"https://placekitten.com/700/700"
+	}
+]

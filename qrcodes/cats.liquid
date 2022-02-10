@@ -1,0 +1,29 @@
+---
+layout: main
+pagination:
+    data: cats
+    size: 1
+    alias: cat
+permalink: "cats/{{ cat.name | slug }}/"
+eleventyComputed:
+    title: "{{cat.name }}"
+---
+
+<h2>{{ cat.name }}</h2>
+
+<p>
+<img src="{{ cat.picture }}" width="300" height="300">
+</p>
+
+<p>
+{{ cat.name }} is {{ cat.gender }} and is {{ cat.age}} years old.
+</p>
+
+{% comment %}
+page.url is just the last part, so we use a data variable for the host.
+{% endcomment %}
+{% assign url = site.host | append: page.url  | append: "?fromqr=1" %}
+<p/>
+
+<img src="{{ url | qrcode }}" title="Scan to share a link to {{ url }}">
+

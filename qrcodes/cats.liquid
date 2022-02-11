@@ -26,7 +26,8 @@ page.url is just the last part, so we use a data variable for the host.
 <p/>
 
 <p>
-<img src="{{ url | qrcode }}" title="Scan to share a link to {{ url }}">
+Scan the code below to share the link with others:<br/>
+<img src="{{ url | qrcode }}" alt="QR code for this URL.">
 </p>
 
 <p>

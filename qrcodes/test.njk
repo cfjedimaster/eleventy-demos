@@ -1,0 +1,13 @@
+---
+layout: main
+title: Nunjucks Test
+---
+
+
+
+{% set msg = "This is a test." %}
+
+{# will not work, see note in .eleventy.js #}
+<img src="{{ msg | qrcode }}" alt="QR code for msg.">
+
+<img src="{{ msg | qrcode2 }}" alt="QR code for msg.">

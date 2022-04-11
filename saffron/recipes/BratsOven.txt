@@ -1,0 +1,14 @@
+Title: Brats (Oven)
+Description: 
+Source: 
+Original URL: 
+Yield: 
+Cookbook: Meats
+Section: Sausage
+Image: 
+Ingredients: 
+Instructions: 
+	Set oven to 350.
+	Put brats on pans.
+	Flip every five minutes.
+	Cook 15-20 top, check for temps at 160. 

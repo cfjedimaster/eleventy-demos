@@ -1,0 +1,47 @@
+/*
+module.exports = function() {
+
+	console.log(this.data);
+	return {
+		"layout":"recipe",
+		"tags":"recipes",
+		"eleventyComputed": data => {
+			return {foo:'foo'}
+		}
+	}
+}
+*/
+
+const fs = require('fs');
+
+module.exports = {
+	layout:"recipe",
+	tags:"recipes",
+	eleventyComputed: {
+		title2: data => {
+			let input = fs.readFileSync(data.page.inputPath,'utf8');
+			let recipe = parseRecipe(input);
+			return recipe.Title;
+		}
+	}
+}
+
+function parseRecipe(txt) {
+	let result = {};
+	let lastKey = '';
+
+	lines = txt.split('\n');
+
+	for(let i=0;i<lines.length;i++) {
+		//if the line starts with a tab, its a continutation
+		if(lines[i].indexOf('\t') === 0) {		
+			result[lastKey] += lines[i].replace('\t', '') + '\n';
+		} else {
+			let key = lines[i].split(':')[0];
+			let rest = lines[i].replace(`${key}: `,'');
+			result[key] = rest;
+			lastKey = key;
+		}
+	}
+	return result
+}

@@ -1,0 +1,32 @@
+---
+layout: main
+---
+
+<h3>{{ title }}</h3> 
+
+{% if description %}
+<p class="recipeDescription">
+{{ description }}
+</p>
+{% endif %}
+
+{% if source %}
+	<p class="recipeSource">
+	<strong>Source:</strong> 
+	{% if originalurl %}
+	<a href="{{ originalurl }}">{{ source }}</a>
+	{% else %}
+	{{ source }}
+	{% endif %}
+	</p>
+{% endif %}
+
+<p class="recipeIngredients">
+<strong>Ingredients:</strong><br/>
+{{ ingredients | recipeText }}
+</p>
+
+<p class="recipeInstructions">
+<strong>Instructions:</strong><br/>
+{{ instructions | recipeText }}
+</p>

@@ -1,0 +1,14 @@
+Title: Fresh Sausage
+Description: 
+Source: 
+Original URL: 
+Yield: 
+Cookbook: Meats
+Section: Sausage
+Image: 
+Ingredients: 
+Instructions: 
+	Preheat oven to 400.
+	Put parchment paper on a cookie sheet.
+	Cook sausage for 30 minutes, flipping halfway through. 
+	Meat should be 165.

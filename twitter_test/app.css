@@ -1,0 +1,13 @@
+body {
+	font-family: Arial, Helvetica, sans-serif;	
+}
+
+.tweet_text {
+	margin: 50px;
+	font-size: 50px;
+}
+
+.tweet_stats {
+	font-family: 'Courier New', Courier, monospace;
+	margin-bottom: 25px;
+}

@@ -1,0 +1,33 @@
+---
+pagination:
+    data: tweets
+    size: 1
+    alias: tweet
+permalink: "tweets/{{ tweet.id }}.html"
+layout: main
+---
+
+<h2>Tweeted at {{ tweet.created_at }}</h2>
+
+<div class="tweet_text">
+{{ tweet.full_text }}
+</div>
+
+<div class="tweet_stats">
+<pre>
+Liked:     {{ tweet.favorite_count }}
+Retweeted: {{ tweet.retweet_count }}
+</pre>
+</div>
+
+{% if pagination.href.previous %}
+<a href="{{ pagination.href.previous}}">Previous</a>
+{% else %}
+Previous
+{% endif %}
+/
+{% if pagination.href.next %}
+<a href="{{ pagination.href.next}}">Next</a>
+{% else %}>
+Next
+{% endif %}

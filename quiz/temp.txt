@@ -1,0 +1,35 @@
+For research later:
+
+	{% if question.type == "single" %}
+
+		<p>
+		{% for answer in question.answers %}
+		<input type="radio" name="q{{qindex}}" id="q{{qindex}}_{{forloop.index}}" value="{{forloop.index}}" required 
+		oninvalid="this.setCustomValidity('Select an answer.')"> 
+		<label for="q{{qindex}}_{{forloop.index}}">{{ answer }}</label><br/>
+		{% endfor %}
+		</p>
+
+	{% elsif question.type == "multiple" %}
+
+		<p>
+		{% for answer in question.answers %}
+		<input type="checkbox" name="q{{qindex}}" id="q{{qindex}}_{{forloop.index}}" value="{{forloop.index}}" required
+		oninvalid="this.setCustomValidity('Select an answer.')">
+		<label for="q{{qindex}}_{{forloop.index}}">{{ answer }}</label><br/>
+		{% endfor %}
+		</p>
+		
+
+	{% elsif question.type == "truefalse" %}
+
+		<p>
+		<input type="radio" name="q{{qindex}}" id="q{{qindex}}_0" value="true" required 
+		oninvalid="this.setCustomValidity('Select an answer.')"> 
+		<label for="q{{qindex}}_0">True</label><br/>
+		<input type="radio" name="q{{qindex}}" id="q{{qindex}}_1" value="false" required
+		oninvalid="this.setCustomValidity('Select an answer.')"> 
+		<label for="q{{qindex}}_1">False</label><br/>
+		</p>
+
+	{% endif %}

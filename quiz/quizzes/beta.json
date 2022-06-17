@@ -1,0 +1,25 @@
+{
+	"name":"Beta",
+	"description":"All TF.",
+	"questions":[
+
+		{
+			"text":"Is Eleventy awesome?",
+			"type":"truefalse",
+			"correctAnswer":true
+		},
+
+		{
+			"text":"Is Ray awesome?",
+			"type":"truefalse",
+			"correctAnswer":false
+		},
+
+		{
+			"text":"Are cats awesome?",
+			"type":"truefalse",
+			"correctAnswer":true
+		}
+
+	]
+}

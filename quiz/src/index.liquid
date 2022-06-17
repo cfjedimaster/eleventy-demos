@@ -1,0 +1,11 @@
+---
+title: Quiz Home Page
+layout: main
+---
+
+<h2>Quizzes</h2>
+
+{% for quiz in quizzes %}
+	<a href="quiz/{{ quiz.name | slugify }}">{{ quiz.name }}</a> - {{ quiz.description }}<br/>
+{% endfor %}
+

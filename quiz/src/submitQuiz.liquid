@@ -1,0 +1,21 @@
+---
+layout: main
+permalink:
+    serverless: /submitQuiz/
+---
+
+
+{% assign results = eleventy.serverless.query | checkQuiz: quizzes %}
+
+<h2>Quiz: {{ results.quiz.name }}</h2>
+
+<p>
+Out of {{ results.totalQuestions }} questions, you got {{ results.correct }} answers correct. 
+That's a percentage of {{ results.percentage }}. 
+</p>
+
+{% if results.percentage > 80 %}
+<p>
+<strong>Congrats on a great score!</strong>
+</p>
+{% endif %}

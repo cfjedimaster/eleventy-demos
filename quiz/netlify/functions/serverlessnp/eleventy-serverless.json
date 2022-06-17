@@ -1,0 +1,8 @@
+{
+  "dir": {
+    "input": "src",
+    "data": "src/_data",
+    "includes": "src/_includes",
+    "output": "_site"
+  }
+}

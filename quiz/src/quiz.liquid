@@ -1,0 +1,60 @@
+---
+pagination:
+    data: quizzes
+    size: 1
+    alias: quiz
+permalink: "quiz/{{ quiz.name | slugify }}/"
+eleventyComputed:
+    title: "{{quiz.name}}"
+layout: main
+---
+
+<h2>Quiz: {{ quiz.name }}</h2>
+<p>
+{{ quiz.description }} 
+</p>
+
+<form method="get" action="/submitQuiz/">
+<input type="hidden" name="quiz" value="{{ quiz.name | slug }}">
+{% for question in quiz.questions %}
+	<h3>{{ forloop.index }}. {{ question.text }}</h3>
+
+	{% assign qindex = forloop.index %}
+
+	{% if question.type == "single" %}
+
+		<p>
+		{% for answer in question.answers %}
+		<input type="radio" name="q{{qindex}}" id="q{{qindex}}_{{forloop.index}}" value="{{forloop.index}}" > 
+		<label for="q{{qindex}}_{{forloop.index}}">{{ answer }}</label><br/>
+		{% endfor %}
+		</p>
+
+	{% elsif question.type == "multiple" %}
+
+		<p>
+		{% for answer in question.answers %}
+		<input type="checkbox" name="q{{qindex}}" id="q{{qindex}}_{{forloop.index}}" value="{{forloop.index}}">
+		<label for="q{{qindex}}_{{forloop.index}}">{{ answer }}</label><br/>
+		{% endfor %}
+		</p>
+		
+
+	{% elsif question.type == "truefalse" %}
+
+		<p>
+		<input type="radio" name="q{{qindex}}" id="q{{qindex}}_0" value="true"> 
+		<label for="q{{qindex}}_0">True</label><br/>
+		<input type="radio" name="q{{qindex}}" id="q{{qindex}}_1" value="false"> 
+		<label for="q{{qindex}}_1">False</label><br/>
+		</p>
+
+	{% endif %}
+
+{% endfor %}
+
+<p>
+<input type="submit" value="Submit Answers">
+</p>
+
+</form>

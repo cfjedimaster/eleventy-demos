@@ -7,6 +7,7 @@ module.exports = function(eleventyConfig) {
 	eleventyConfig.addPlugin(EleventyServerlessBundlerPlugin, {
 		name: "serverless", 
 		functionsDir: "./netlify/functions/",
+		copy:['./quizzes']
 	});
 
 	eleventyConfig.addFilter('checkQuiz', (submission, quizzes) => {

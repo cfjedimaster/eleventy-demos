@@ -1,10 +1,6 @@
 const fs = require('fs');
 
-let inputDir = './quizzes';
-
-if(process.env.NETLIFY) {
-	inputDir = process.cwd() + '/quizzes'; 
-}
+let	inputDir = process.cwd() + '/quizzes'; 
 
 module.exports = function() {
 

@@ -7,7 +7,7 @@ permalink:
 
 {% assign results = eleventy.serverless.query | checkQuiz: quizzes %}
 
-<h2>Quiz: {{ results.quiz.name }}</h2>
+<h2>Quiz: {{ results.quizName }}</h2>
 
 <p>
 Out of {{ results.totalQuestions }} questions, you got {{ results.correct }} answers correct. 

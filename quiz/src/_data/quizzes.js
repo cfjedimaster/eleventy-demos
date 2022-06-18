@@ -1,15 +1,10 @@
 const fs = require('fs');
 
-//let	inputDir = process.cwd() + '/quizzes'; 
 let	inputDir = './quizzes'; 
 
 module.exports = function() {
 
 	let quizzes = [];
-	// Ray debug cap
-	console.log('try to read ', inputDir, ' and process.cwd is ', process.cwd(), ' also net? ', process.env.NETLIFY);
-	console.log('./',fs.readdirSync('./'));
-	console.log('../',fs.readdirSync('../'));
 
 	let files = fs.readdirSync(inputDir);
 

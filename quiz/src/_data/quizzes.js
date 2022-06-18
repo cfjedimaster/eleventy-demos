@@ -12,6 +12,8 @@ module.exports = function() {
 	console.log('./',fs.readdirSync('./'));
 	console.log('../',fs.readdirSync('../'));
 	console.log('../../',fs.readdirSync('../../'));
+	console.log('../../../',fs.readdirSync('../../../'));
+	console.log('../../../../',fs.readdirSync('../../../../'));
 
 
 	let files = fs.readdirSync(inputDir);

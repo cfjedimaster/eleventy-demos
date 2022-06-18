@@ -15,7 +15,7 @@ layout: main
 </p>
 
 <form method="get" action="/submitQuiz/">
-<input type="hidden" name="quiz" value="{{ quiz.name | slug }}">
+<input type="hidden" name="quiz" value="{{ quiz.name | slugify }}">
 {% for question in quiz.questions %}
 	<h3>{{ forloop.index }}. {{ question.text }}</h3>
 

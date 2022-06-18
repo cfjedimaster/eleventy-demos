@@ -9,6 +9,7 @@ if(process.env.NETLIFY) {
 module.exports = function() {
 
 	let quizzes = [];
+	console.log('try to read ', inputDir, ' and process.cwd is ', process.cwd(), ' also net? ', process.env.NETLIFY);
 	let files = fs.readdirSync(inputDir);
 
 	files.forEach(f => {

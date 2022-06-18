@@ -1,12 +1,9 @@
 const fs = require('fs');
 
 let inputDir = './quizzes';
-console.log('cwd',process.cwd());
 
 if(process.env.NETLIFY) {
-	console.log('TRYING TO RUN ON NETLIFY');
-	console.log('cwd',process.cwd());
-	inputDir = './dd'; 
+	inputDir = process.cwd() + '/quizzes'; 
 }
 
 module.exports = function() {

@@ -1,0 +1,17 @@
+---
+layout: main 
+---
+
+<h2>{{ title }}</h2>
+<p>Published {{ date | date: "%B %d, %Y %l:%M%P" }}</p>
+
+{{ content }}
+
+{% assign relatedPosts = date | onthisday: collections.posts %}
+{% if relatedPosts.length > 0 %}
+
+	<h2>On this day...</h2>
+	{% for post in relatedPosts %}
+	<a href="{{ post.url }}">{{ post.data.title }}</a> ({{ post.date | date: "%B %d, %Y %l:%M%P" }})<br/>
+	{% endfor %}
+{% endif %}

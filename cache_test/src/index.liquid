@@ -1,0 +1,16 @@
+---
+layout: main
+---
+
+<h1>Hello World</h1>
+
+<p>
+I was made {{ "now" | date: "%Y-%m-%d %H:%M" }}.
+</p>
+
+<h2>PDFs</h2>
+<ul>
+{% for pdf in pdfs %}
+	<li>filename, {{ pdf.name }}, parsed {{ pdf.data.made  | date: "%Y-%m-%d %H:%M:%S" }}</li>
+{% endfor %}
+</ul>

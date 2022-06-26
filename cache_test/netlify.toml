@@ -1,6 +1,5 @@
-
-#[[plugins]]
-#package = "netlify-plugin-cache"
-#  [plugins.inputs]
-#  # Optional (but highly recommended). Defaults to [".cache"].
-#  paths = ["resources", "_vendor", "folder/file.md"]
+[[plugins]]
+package = "netlify-plugin-cache"
+  [plugins.inputs]
+  # Optional (but highly recommended). Defaults to [".cache"].
+  paths = ["scanned_pdfs"]

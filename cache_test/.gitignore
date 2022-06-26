@@ -1,2 +1,3 @@
 node_modules/
 scanned_pdfs/*.*
+!scanned_pdfs/.gitkeep

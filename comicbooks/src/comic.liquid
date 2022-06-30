@@ -1,0 +1,73 @@
+---
+layout: main
+pagination:
+    data: comics
+    size: 1
+    alias: comic
+permalink: "/comics/{{comic.slug}}/"
+---
+
+<h2>{{ comic.filename }}</h2>
+
+{% capture "nav" %}
+<p class="pageNav">
+<button class="prevButton">Previous</button> 
+Page <span class="currentPage">1</span> of {{comic.numPages}}
+<button class="nextButton">Next</button>
+</p>
+{% endcapture %}
+{{ nav }}
+
+<p class="pageImage">
+<img src="{{comic.pages[0]}}" id="pageImage">
+</p>
+
+{{ nav }}
+
+<script>
+const totalPages = {{comic.numPages}};
+let currentPage = 0;
+let currentPageDom;
+let currentPageImage;
+
+let images = [
+	{% for image in comic.pages %}
+		'{{image}}' {% if forloop.last == false %},{% endif%}
+	{% endfor %}
+
+];
+
+document.addEventListener('DOMContentLoaded', init, false);
+function init() {
+
+	currentPageDom = document.querySelectorAll('.currentPage');
+	currentPageImage = document.querySelector('#pageImage');
+
+	document.querySelectorAll('.nextButton').forEach(nb => {
+		nb.addEventListener('click', nextPage);	
+	});
+
+	document.querySelectorAll('.prevButton').forEach(pb => {
+		pb.addEventListener('click', previousPage);	
+	});
+
+}
+
+function nextPage() {
+	console.log('go next');
+	if(currentPage+1 < totalPages) {
+		currentPage++;
+		currentPageDom.forEach(c => c.innerText = currentPage + 1);
+		currentPageImage.src = images[currentPage];
+	}
+}
+
+function previousPage() {
+	console.log('go prev');
+	if(currentPage > 0) {
+		currentPage--;
+		currentPageDom.forEach(c => c.innerText = currentPage + 1);
+		currentPageImage.src = images[currentPage];
+	}
+}
+</script>

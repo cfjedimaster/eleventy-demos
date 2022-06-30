@@ -1,0 +1,18 @@
+{
+  "name": "comicbooks",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".eleventy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@11ty/eleventy": "^1.0.1",
+    "adm-zip": "^0.5.9",
+    "jimp": "^0.16.1",
+    "node-unrar-js": "^2.0.0"
+  }
+}

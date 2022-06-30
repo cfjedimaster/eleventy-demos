@@ -1,0 +1,29 @@
+body {
+	margin: 30px;
+}
+
+p.pageNav {
+	background-color: #c0c0c0;
+	padding: 15px;
+	margin-bottom: 10px;
+}
+
+p.pageNav button {
+	margin-left: 10px; 
+	margin-right: 10px;
+}
+
+
+
+p.pageImage {
+	text-align: center;
+	width: 100%;
+}
+
+p.pageImage img {
+	max-width: 1000px;
+}
+
+.comicThumb {
+	margin: 10px;
+}

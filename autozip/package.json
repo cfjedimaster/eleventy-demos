@@ -1,0 +1,16 @@
+{
+  "name": "autozip",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".eleventy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "glob": "^7.2.3",
+    "glob-promise": "^4.2.2"
+  }
+}

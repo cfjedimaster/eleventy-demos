@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Zip Demo</title>
+	<style>
+	img {
+		max-width: 220px;
+		max-height: 220px; 
+	}
+	</style>
+</head>
+<body>
+
+<h2>Cats</h2>
+
+
+{% for cat in catpics %}
+	<img src="{{ cat }}">
+{% endfor %}
+
+</body>
+</html>
+
+

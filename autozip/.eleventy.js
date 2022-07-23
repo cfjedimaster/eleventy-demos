@@ -8,7 +8,6 @@ module.exports = function(eleventyConfig) {
 	eleventyConfig.on('eleventy.after', async () => {
 		console.log('after build');
 		let catpics = await glob('./src/images/cats/*.jpg');
-		console.log(catpics);
 		let zip = new AdmZip();
 		catpics.forEach(c => zip.addLocalFile(c));
 		zip.writeZip('_site/catpics.zip');

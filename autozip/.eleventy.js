@@ -11,8 +11,6 @@ module.exports = function(eleventyConfig) {
 		let zip = new AdmZip();
 		catpics.forEach(c => zip.addLocalFile(c));
 		zip.writeZip('_site/catpics.zip');
-
-
 	});
 
 	return {

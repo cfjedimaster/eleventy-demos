@@ -4,10 +4,10 @@
 a post: {{ post.url }}, title {{ post.data.title}}, tags: {{ post.data.tags }}<br/>
 {% endfor %}
 
-<h2>Posts</h2>
+<h2>posts</h2>
 
 {% for post in collections.posts %}
-a post:<br/>
+a post: {{ post.url }}, title {{ post.data.title}}, tags: {{ post.data.tags }}<br/>
 {% endfor %}
 
 <h2>all</h2>

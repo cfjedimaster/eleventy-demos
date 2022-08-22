@@ -1,0 +1,31 @@
+---
+layout: layout
+---
+
+<h2>{{ title }}</h2>
+<p><i>Published {{ date | dtFormat }}</i></p>
+
+{{ content }}
+
+<p>
+<hr>
+<p>
+
+<h3>Share! (or else...)</h3>
+
+{% comment %}
+<p>
+<a href="https://www.facebook.com/sharer.php?u={{ rootURL | url_encode }}{{ page.url | url_encode }}">Facebook</a> ~
+<a href="https://twitter.com/intent/tweet?url={{ rootURL | url_encode }}{{ page.url}}&text={{title | url_encode}}">Twitter</a> ~
+<a href="https://www.linkedin.com/sharing/share-offsite/?url={{ rootURL | url_encode }}{{ page.url | url_encode }}">LinkedIn</a>
+</p>
+{% endcomment %}
+
+{% assign pageUrl = page.url | prepend: rootURL | url_encode %}
+{% assign stitle = title | url_encode %}
+<p>
+<a href="https://www.facebook.com/sharer.php?u={{ pageUrl }}">Facebook</a> ~
+<a href="https://twitter.com/intent/tweet?url={{ pageUrl }}&text={{ stitle }}">Twitter</a> ~
+<a href="https://www.linkedin.com/sharing/share-offsite/?url={{ pageUrl }}">LinkedIn</a> ~ 
+<a href="https://reddit.com/submit?url={{pageUrl}}&title={{stitle}}">Reddit</a>
+</p>

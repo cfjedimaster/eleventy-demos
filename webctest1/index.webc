@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+<h2>Regular HTML</h2>
+
+<h3>No Tags</h3>
+<place-holder></place-holder>
+
+<p>
+
+Specified w,h, and text. <br/>
+<place-holder width="250" height="300" text="ray"></place-holder>
+
+</body>
+</html>

@@ -12,8 +12,12 @@
 
 <p>
 
-Specified w,h, and text. <br/>
+<h3>Specified w,h, and text.</h3>
 <place-holder width="250" height="300" text="ray"></place-holder>
+
+<p>
+
+<hello-world @name="ray"></hello-world>
 
 </body>
 </html>

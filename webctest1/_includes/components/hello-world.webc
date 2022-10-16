@@ -1,0 +1,2 @@
+
+Hello! <span @html="this.name" :alt="this.name"></span>

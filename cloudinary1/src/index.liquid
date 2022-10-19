@@ -1,0 +1,24 @@
+---
+layout: main
+title: Photo Gallery
+---
+
+<style>
+.photoList {
+	display: grid;
+	grid-template-columns: 25% 25% 25% 25%;
+	justify-items: center;
+}
+
+.photoList img {
+	padding: 10px;
+}
+</style>
+
+<h2>Photos</h2>
+
+<div class="photoList">
+	{% for photo in photos %}
+	 <a href="/photos/{{ photo.id }}">{{ photo.thumb }}</a>
+	{% endfor %}
+</div>

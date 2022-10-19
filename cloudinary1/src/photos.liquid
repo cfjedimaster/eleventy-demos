@@ -1,0 +1,26 @@
+---
+layout: main
+pagination:
+    data: photos
+    size: 1
+    alias: photo
+permalink: "photos/{{ photo.id }}/"
+title: "Photo {{ photo.id }}"
+---
+
+<style>
+.center_img {
+    display: flex;
+    justify-content: center;
+}
+</style>
+
+<h2>Photo: {{ photo.id }}</h2>
+
+<div class="center_img">
+{{ photo.web }}
+</div>
+
+<p>
+<a href="/">Home</a>
+</p>

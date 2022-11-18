@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title></title>
-</head>
-<body>
+---
+layout: main
+---
+
 <h2>Regular HTML</h2>
 
 <h3>No Tags</h3>
@@ -19,5 +16,10 @@
 
 <hello-world @name="ray"></hello-world>
 
-</body>
-</html>
+<p>
+
+<cat-thing></cat-thing>
+
+<p>
+
+<cat-thing></cat-thing>

@@ -1,6 +1,10 @@
 {
+  "scripts": {
+    "serve": "eleventy --serve",
+    "build": "eleventy"
+  },
   "dependencies": {
     "@11ty/eleventy": "^2.0.0-canary.16",
-    "@11ty/eleventy-plugin-webc": "^0.4.0"
+    "@11ty/eleventy-plugin-webc": "^0.6.0"
   }
 }

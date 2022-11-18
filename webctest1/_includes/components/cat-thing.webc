@@ -1,0 +1,13 @@
+<div class="cat">
+Regular cat webc output
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const cats = document.querySelectorAll('.cat');
+	cats.forEach(c => {
+		c.innerHTML += '<h1>MEOW!</h1>';
+	});
+
+}, false);
+</script>

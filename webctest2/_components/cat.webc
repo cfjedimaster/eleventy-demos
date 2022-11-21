@@ -1,0 +1,40 @@
+<template webc:type="11ty" 11ty:type="ejs">
+<%
+// credit:
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+}
+
+let width = getRandomInt(200,600);
+let height = getRandomInt(200,600);
+%>
+
+<p class='myCatImage'>
+<img src="https://placekitten.com/<%= width %>/<%= height %>">
+</p>
+</template>
+
+
+<script>
+const meow = new Audio('meow.wav');
+
+document.addEventListener('DOMContentLoaded', () => {
+	const catPics = document.querySelectorAll('.myCatImage img');
+	catPics.forEach(c => {
+		c.addEventListener('mouseover', () => {
+			console.log('over da cat');
+			/*
+			You will get a DOMException if you don't click on the page first, which is good, but we also
+			don't care about it, so try/catch and ignore
+			*/
+			try {
+				meow.play();
+			} catch {
+				// do nothing
+			}
+		}, false);
+	});
+}, false);
+</script>

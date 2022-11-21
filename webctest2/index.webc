@@ -1,0 +1,15 @@
+---
+layout: main
+---
+
+<h1>Cat Test</h1>
+
+<cat></cat>
+
+<h2>Another Cat</h2>
+
+<cat></cat>
+
+<h3>Hello</h3>
+
+<cat></cat>

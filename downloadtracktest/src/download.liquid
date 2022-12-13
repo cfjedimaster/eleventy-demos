@@ -1,0 +1,13 @@
+---
+layout: main
+pagination:
+    data: downloads.files
+    size: 1
+    alias: file
+permalink: "downloads/{{ file | slug }}/"
+eleventyComputed:
+    download: "{{ file }}"
+---
+
+Let's download {{ file }}. If your download does not start automatically, please click 
+<a href="{{ downloads.root }}{{file}}">here</a>

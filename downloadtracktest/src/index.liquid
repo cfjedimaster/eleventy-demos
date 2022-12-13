@@ -1,0 +1,12 @@
+---
+layout: main
+title: List of Downloads
+---
+
+<h1>List of Downloads</h1>
+
+<ul>
+{% for dl in downloads.files %}
+	<li><a href="/downloads/{{ dl | slug }}/">{{ dl }}</a></li>
+{% endfor %}
+</ul>

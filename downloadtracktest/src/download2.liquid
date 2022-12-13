@@ -1,0 +1,22 @@
+---
+layout: main
+pagination:
+    data: downloads2
+    size: 1
+    alias: file
+permalink: "downloads2/{{ file | slug }}/"
+---
+
+Let's download {{ file }}. If your download does not start automatically, please click 
+<a href="/fileassets/{{file}}">here</a>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	// https://stackoverflow.com/a/37673039/52160
+	let anchor = document.createElement('a');
+	anchor.href = '/fileassets/{{file}}';
+	anchor.target = '_blank';
+	anchor.download = '{{file}}';
+	anchor.click();
+});
+</script>

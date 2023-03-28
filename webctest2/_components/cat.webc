@@ -17,7 +17,7 @@ let height = getRandomInt(200,600);
 </template>
 
 
-<script>
+<script webc:keep>
 const meow = new Audio('meow.wav');
 
 document.addEventListener('DOMContentLoaded', () => {

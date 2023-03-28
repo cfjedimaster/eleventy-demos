@@ -1,0 +1,13 @@
+<html>
+<head>
+<style @raw="getCss(page.url)" webc:keep></style>
+</head>
+
+<body>
+
+Hello World!
+
+<cat></cat>
+
+</body>
+</html>

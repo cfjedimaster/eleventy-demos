@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "@11ty/eleventy": "^2.0.0-canary.20",
+    "@11ty/eleventy-plugin-webc": "^0.8.1"
+  },
+  "name": "webctest_css",
+  "version": "1.0.0",
+  "main": ".eleventy.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

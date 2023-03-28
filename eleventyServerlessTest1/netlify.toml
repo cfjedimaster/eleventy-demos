@@ -5,3 +5,7 @@ status = 200
 force = true
 _generated_by_eleventy_serverless = "serverless"
 
+[dev]
+command = "eleventy --serve"
+framework = "#custom"
+targetPort = 9_998

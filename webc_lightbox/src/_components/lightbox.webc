@@ -1,0 +1,32 @@
+<div class="lightbox_images">
+
+	<div webc:for="image of images" >
+		<a :href="image.url" class="lightbox">
+		<img :src="image.thumb">
+		</a>
+	</div>
+
+</div>
+
+<style webc:scoped>
+:host .lightbox_images {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+:host .lightbox_images img {
+	max-width:300px;
+	max-height:300px;
+	padding: 10px;
+}
+</style>
+
+<script>
+const init = () => {
+	new Parvus();
+}
+
+document.addEventListener('DOMContentLoaded', init, false);
+</script>

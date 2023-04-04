@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+
+<p>
+Hello, I'm only here to test stuff:
+</p>
+
+<p>
+Name = {{ name }}
+</p>
+
+<p>
+Complex.Twitter = {{ complex.twitter }}
+</p>
+
+<p>
+Generated = {{ generated }}
+</p>
+
+<p>
+<h2>ships</h2>
+<ul>
+{% for ship in ships %}
+<li>{{ship.name}} ({{ship.model}})</li>
+{% endfor %}
+</ul>
+</p>
+
+<p>
+<h2>test</h2>
+<ul>
+{% for key in test %}
+<li>{{ key }}</li>
+{% endfor %}
+</ul>
+</p>
+
+<p>
+<h2>test2</h2>
+<ul>
+{% for key in test2 %}
+<li>{{ key }}</li>
+{% endfor %}
+</ul>
+</p>
+
+</body>
+</html>

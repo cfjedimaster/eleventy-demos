@@ -1,0 +1,16 @@
+---
+layout: main
+title: Hello World
+---
+
+<h2>Hello</h2>
+
+<!---
+Note, must use : or value is converted to string.
+--->
+<lightbox :images="images" ></lightbox>
+
+<!---
+<div @html="getBundle('js')"></div>
+<div @raw="getBundle('js')"></div>
+--->

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>{{ title }}</title>
+	<link href="/assets/parvus.min.css" rel="stylesheet" />
+	<style>
+	{% getBundle "css" %}
+	</style>
+</head>
+<body>
+
+{{ content }}
+
+<script src="/assets/parvus.min.js"></script>
+<script>
+{% getBundle "js" %}
+</script>
+</body>
+</html>

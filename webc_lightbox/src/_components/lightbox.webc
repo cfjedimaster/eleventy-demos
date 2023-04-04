@@ -1,4 +1,4 @@
-<div class="lightbox_images">
+<div webc:root="override">
 
 	<div webc:for="image of images" >
 		<a :href="image.url" class="lightbox">
@@ -9,14 +9,14 @@
 </div>
 
 <style webc:scoped>
-:host .lightbox_images {
+:host {
 	display: flex;
 	align-items: center;
 	flex-direction: row;
 	flex-wrap: wrap;
 }
 
-:host .lightbox_images img {
+:host img {
 	max-width:300px;
 	max-height:300px;
 	padding: 10px;

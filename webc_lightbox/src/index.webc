@@ -8,7 +8,7 @@ title: Hello World
 <!---
 Note, must use : or value is converted to string.
 --->
-<lightbox :images="images" ></lightbox>
+<lightbox :@images="images" ></lightbox>
 
 <!---
 <div @html="getBundle('js')"></div>

@@ -1,0 +1,59 @@
+<style>
+p.books {
+	margin-bottom: 25px;
+}
+
+p.books img {
+	display: block;
+}
+</style>
+
+<h1>Last 5 Books (with pics)</h1>
+
+{% assign books = goodreads | reverse %}
+{% for book in books limit:5 %}
+	<p class="books">
+	{% bookcover book %}
+	{{ book.title }}<br>
+	Rating: {{ book.rating }}<br>
+	Review: {{ book.review }}<br>
+	{% if book.started_at %}
+	Started at: {{ book.started_at }}<br>
+	{% endif %}
+	{% if book.read_at %}
+	Read {{ book.read_at }}<br>
+	{% endif %}
+	</p>
+{% endfor %}
+
+<h1>Last 5 Books</h1>
+
+{% assign books = goodreads | reverse %}
+{% for book in books limit:5 %}
+	{{ book.title }}<br>
+	Rating: {{ book.rating }}<br>
+	Review: {{ book.review }}<br>
+	{% if book.started_at %}
+	Started at: {{ book.started_at }}<br>
+	{% endif %}
+	{% if book.read_at %}
+	Read {{ book.read_at }}<br>
+	{% endif %}
+	<p>
+{% endfor %}
+
+
+<h1>All the Books</h1>
+
+{% for book in goodreads %}
+	{{ book.title }}<br>
+	Rating: {{ book.rating }}<br>
+	Review: {{ book.review }}<br>
+	{% if book.started_at %}
+	Started at: {{ book.started_at }}<br>
+	{% endif %}
+	{% if book.read_at %}
+	Read {{ book.read_at }}<br>
+	{% endif %}
+	<p>
+{% endfor %}

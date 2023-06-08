@@ -1,0 +1,38 @@
+<style>
+div.books {
+	display: inline-flex;
+	margin: 25px;
+}
+</style>
+
+<h1>Last 5 Books (with pics)</h1>
+
+{% assign books = goodreads | reverse %}
+{% for book in books limit:5 %}
+	<div class="books">
+		<div>
+		<img src="{{ book.images.large }}"><br>
+		<a href="{{ book.link }}">{{ book.title }}</a><br>
+		Rating: {{ book.rating }}<br>
+		Review: {{ book.review }}<br>
+		{% if book.read_at %}
+		Read at {{ book.read_at }}<br>
+		{% endif %}
+		</div>
+	</div>
+{% endfor %}
+
+
+
+
+<h1>All the Books</h1>
+
+{% for book in goodreads %}
+	{{ book.title }}<br>
+	Rating: {{ book.rating }}<br>
+	Review: {{ book.review }}<br>
+	{% if book.read_at %}
+	Read {{ book.read_at }}<br>
+	{% endif %}
+	<p>
+{% endfor %}

@@ -1,0 +1,11 @@
+<!---
+Can't use type as webc:type will be used for a default
+--->
+<script webc:type="js" webc:root>
+if(!badgetype) {
+	badgetype = 'primary'
+}
+`<span class="badge bg-${badgetype} ${type}">
+	<slot></slot>
+</span>`;
+</script>

@@ -1,0 +1,15 @@
+---
+layout: main
+---
+
+<bs-alert>
+Default alert 
+</bs-alert>
+
+<bs-alert alertType="danger">
+Danger alert 
+</bs-alert>
+
+<bs-alert alertType="success">
+Success alert 
+</bs-alert>

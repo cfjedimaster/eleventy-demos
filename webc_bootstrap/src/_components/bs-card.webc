@@ -1,0 +1,10 @@
+<div class="card">
+	<div class="card-header" webc:if="header" @text="header"></div>
+	<div class="card-body">
+		<h5 class="card-title" webc:if="title" @text="title"></h5>
+		<h6 class="card-subtitle mb-2 text-body-secondary" webc:if="subtitle" @text="subtitle"></h6>
+		<div class="card-text">
+			<slot></slot>
+		</div>
+	</div>
+</div>	

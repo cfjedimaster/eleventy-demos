@@ -1,0 +1,3 @@
+<div class="accordion" :id="id">
+	<slot></slot>
+</div>

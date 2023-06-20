@@ -1,0 +1,12 @@
+---
+layout: main
+---
+
+<bs-accordion id="accordion1">
+	<bs-accordion-item header="Header One" expanded="false">
+	This is my first accordion item.
+	</bs-accordion-item>
+	<bs-accordion-item header="Header Two" expanded="true">
+	This is my second accordion item.
+	</bs-accordion-item>
+</bs-accordion>

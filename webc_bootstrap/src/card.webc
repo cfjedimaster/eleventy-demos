@@ -1,0 +1,28 @@
+---
+layout: main
+---
+
+<bs-card title="Title is Ray" header="Header is here" subtitle="I'm a subtitle.">
+	This is a card with all 3 attributes.
+</bs-card>
+
+<p></p> 
+
+
+<bs-card title="Title is Ray" header="Header is here" subtitle="I'm a subtitle.">
+	<p>
+	This card just has a header. I <strong>like</strong> this.
+	</p>
+</bs-card>
+
+<p></p>
+
+<bs-card title="title" subtitle="subtitle" header="header">
+	<p>
+	Para 1a
+	</p>
+	<hr>
+	<p>
+	Para 2
+	</p>
+</bs-card>

@@ -1,0 +1,21 @@
+
+<template webc:type="11ty" 11ty:type="liquid">
+
+<div class="accordion-item">
+	<h2 class="accordion-header">
+		{% unless expanded %}
+			{% assign myexpanded = "false" %}
+		{% else %}
+			{% assign myexpanded = expanded %}
+		{% endunless %}
+
+		<button class="accordion-button"type="button" data-bs-toggle="collapse" 
+		data-bs-target="#{{ uid }}" aria-expanded="{{ myexpanded }}" aria-controls="{{ uid }}">{{ header }}</button>
+	</h2>
+	<div id="{{uid}}" class="accordion-collapse collapse {% if myexpanded == 'true' %}show{% endif %}" data-bs-parent="#accordionExample">
+		<div class="accordion-body">
+			<slot></slot>
+		</div>
+	</div>
+</div>
+</template>

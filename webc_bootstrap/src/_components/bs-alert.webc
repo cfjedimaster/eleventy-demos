@@ -1,0 +1,11 @@
+<!---
+Can't use type as webc:type will be used for a default
+--->
+<script webc:type="js" webc:root>
+if(!alerttype) {
+	alerttype = 'primary'
+}
+`<div class="alert alert-${alerttype} ${type}" role="alert">
+	<slot></slot>
+</div>`;
+</script>

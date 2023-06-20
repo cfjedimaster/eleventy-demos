@@ -1,0 +1,14 @@
+---
+layout: main
+---
+
+<h1>Bootstrap Examples</h1>
+
+<p>
+How about some badges?
+</p>
+
+
+<bs-badge>Cat</bs-badge>
+<bs-badge badgetype="secondary">Secondary Cat</bs-badge>
+<bs-badge badgetype="success">Success Cat</bs-badge>

@@ -8,16 +8,15 @@ layout: main
 
 <p></p> 
 
-
-<bs-card title="Title is Ray" header="Header is here" subtitle="I'm a subtitle.">
+<bs-card title="Via Placeholder" header="Cats For All">
 	<p>
-	This card just has a header. I <strong>like</strong> this.
+	<img src="https://placekitten.com/250/250">
 	</p>
 </bs-card>
 
 <p></p>
 
-<bs-card title="title" subtitle="subtitle" header="header">
+<bs-card title="title">
 	<p>
 	Para 1a
 	</p>

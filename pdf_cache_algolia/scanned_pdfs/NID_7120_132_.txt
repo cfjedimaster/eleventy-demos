@@ -1,0 +1,593 @@
+NASA Interim Directive 
+NID 7120.132 
+Effective Date: November 19, 2020 
+Expiration Date: November 19, 2021 
+Subject: Collision Avoidance for Space Environment Protection 
+Responsible Office: Office of the Chief Engineer 
+TABLE OF CONTENTS 
+PREFACE 
+P.1 
+PURPOSE ........................................................................................................................... 1 
+P.2 
+APPLICABILITY............................................................................................................... 1 
+P.3 
+AUTHORITY ..................................................................................................................... 1 
+P.4 
+APPLICABLE DOCUMENTS AND FORMS .................................................................. 1 
+P.5 
+MEASUREMENT/VERIFICATION ................................................................................. 2 
+P.6 
+CANCELLATION.............................................................................................................. 2 
+Chapter 1. Introduction .................................................................................................................. 3 
+1.1 
+Intent to Minimize Space System Collision Risk ................................................................3 
+1.2 
+Interagency Coordination of Collision Avoidance ..............................................................3 
+Chapter 2. Roles and Responsibilities............................................................................................ 6 
+2.1 
+Office of the NASA Chief Engineer....................................................................................6 
+2.2 
+Mission Directorate Associate Administrators ....................................................................6 
+2.3 
+Program Managers ...............................................................................................................7 
+2.4 
+Project Managers .................................................................................................................7 
+2.5 
+Conjunction Assessment Risk Analysis Program Manager.................................................8 
+2.6 
+Flight Operations Directorate Officers ................................................................................9 
+2.7 
+The NASA Launch Services Office Manager ...................................................................11 
+Chapter 3. Orbital Collision Avoidance Plan............................................................................... 12 
+3.1 
+General Content and Review .............................................................................................12 
+3.2 
+Development Schedule ......................................................................................................12 
+Chapter 4. Conjunction Assessment Operations Implementation................................................ 13 
+4.1 
+Conjunction Assessment Operations Implementation Agreement ....................................13 
+4.2 
+Ephemeris Sharing .............................................................................................................13 
+4.3 
+Maneuver Considerations ..................................................................................................14 
+4.4 
+Autonomous Flight Control and Navigation......................................................................15 
+4.5 
+Deorbit / Descent Considerations ......................................................................................16 
+Appendix A. Definitions............................................................................................................... 17 
+Appendix B. Acronyms ................................................................................................................ 20 
+Appendix C. Orbital Collision Avoidance Plan Template............................................................ 22 
+PREFACE 
+P.1 PURPOSE 
+This NASA Interim Directive (NID) establishes minimum collision avoidance requirements and associated operational protocols for NASA space flight programs, projects, and vehicles to protect the space environment and minimize the risk of collision. 
+P.2 APPLICABILITY 
+a. 
+This directive is applicable to NASA Headquarters and NASA Centers, including Component Facilities and Technical and Service Support Centers. This directive applies to the Jet Propulsion Laboratory (JPL), a Federally Funded Research and Development Center (FFRDC), and other contractors, recipients of grants, cooperative agreements, or other agreements only to the extent specified or referenced in the applicable contracts, grants, or agreements. 
+b. 
+The requirements of this directive apply to all space flight missions that are intended to operate in Earth orbit and to other space flight missions while they are passing through the region between Earth and geosynchronous altitude when not onboard a launch vehicle. 
+c. 
+The requirements of this directive apply to all new programs and projects. For existing programs and projects, the requirements of this directive apply to their current and future phases as determined by the responsible Mission Directorate. 
+d. 
+In this directive, all mandatory actions (i.e., requirements) are denoted by statements containing the term “shall.” The terms “may” or “can” denote discretionary privilege or permission, “should” denotes a good practice and is recommended but not required, “will” denotes expected outcome, and “are/is” denotes descriptive material. 
+e. 
+In this directive, all document citations are assumed to be the latest version unless otherwise noted. 
+P.3 AUTHORITY 
+a. 
+The National Aeronautics and Space Act, 51 U.S.C. § 20113 (a). 
+P.4 APPLICABLE DOCUMENTS AND FORMS 
+a. 
+Executive Order 12465
+, Commercial expendable launch vehicle activities. Feb. 24, 1984. 
+b. 
+NASA Procedural Requirements (NPR) 7120.5, NASA Space Flight Program and Project Management Requirements. 
+c. 
+NPR 7120.8, NASA Research and Technology Program and Project Management Requirements. 
+d. 
+NASA Spacecraft Conjunction Assessment and Collision Avoidance Best Practices Handbook, referred to in this directive as “the Handbook.” 
+e. 
+https://public.ccsds.org/pubs/502x0b2c1.pdf 
+Consultative Committee for Space Data Systems (CCSDS) Orbit Data Messages Blue Book 
+P.5 MEASUREMENT/VERIFICATION 
+Compliance with the requirements contained within this directive is verified through concurrence with the Orbital Collision Avoidance Plan (OCAP) and approval of the Conjunction Assessment Operations Implementation Agreement (CAOIA). 
+P.6 CANCELLATION 
+None. 
+Chapter 1. Introduction 
+1.1 Intent to Minimize Space System Collision Risk 
+1.1.1 
+As more space systems deploy, the near-Earth space environment becomes increasingly congested. Therefore, it is important for space system operators to coordinate planning and operations to lower the risk of space system collisions, not only to protect the assets involved but also the space environment. A framework of standard practices facilitates appropriate protocols between space system operators. 
+1.1.2 
+NASA’s interests are best served by proactively implementing protocols and best practices to minimize collision risk. NASA supports other Federal agencies in their development of regulations and policies for protecting the space environment. NASA actively participates in raising awareness of space environment concerns, mentoring space operators in establishing effective practices, and developing baselines, standards, and best practices. 
+1.1.3 
+This directive establishes minimum orbit and trajectory protocols and associated operational requirements for NASA and its partners to protect the space environment and minimize the risk of collision. Some of these measures are implemented during conceptual and design phases, while many can only be fully implemented during operations. 
+1.1.4 
+The strategy for collision avoidance involves space situational awareness (SSA) data and active processes to continuously assess potential close approaches between space objects. To quantify the likelihood of a collision, a conjunction risk assessment considers uncertainty from many sources including environmental conditions, such as upper atmospheric drag, and available sensor data quality. Space system operators then determine whether to initiate mitigating actions, such as a maneuver. Mature practices in this area and active coordination among independent space system operators result in a safer space environment for all operators. 
+1.2 Interagency Coordination of Collision Avoidance 
+1.2.1 
+Three groups at NASA coordinate space situational awareness (SSA) and close approach topics for NASA space flight missions: the NASA Conjunction Assessment Risk Analysis (CARA) Program, the Flight Operations Directorate (FOD) at the Johnson Space Center (JSC), and the Launch Services Office (LSO). 
+a. 
+For SSA data and support required for conjunction assessment and risk analysis, NASA has established CARA and FOD (specifically at FOD, the trajectory operations officer (TOPO) and flight dynamics officer (FDO) positions) as the exclusive interfaces to the United States Space Force's 18th Space Control Squadron (18 SPCS) and the United States Space Command (USSPACECOM)). 
+b. 
+LSO communicates NASA’s interests and concerns to regulating agencies and agency partners in its capacity as NASA’s representative to the Commercial Space Transportation Interagency Group, which was established pursuant to Executive Order 12465. In collaboration 
+with the NASA Office of International and Interagency Relations (OIIR), LSO also coordinates communication of rules, regulations, and requests for license review through the NASA community for awareness and comment. 
+1.2.1.1 
+Collision avoidance relies on data from several sources. Data for collision avoidance and SSA-related communication sometimes requires orbital data requests (ODRs) to obtain data from the Department of Defense (DOD). ODR forms are submitted to 18 SPCS to request data related to SSA and conjunction assessment. For NASA space flight missions, these forms must be submitted by CARA or FOD. 
+1.2.1.2 
+In this established communication, CARA or FOD complies with the official Memorandum of Agreement (MOA) between DOD and NASA, which specifically restricts access. Managing the interface with DOD requires personnel trained and familiar with the specific handling and data schemata to avoid data handling errors. 
+1.2.2 Conjunction Assessment Risk Analysis Program 
+1.2.2.1 
+CARA is responsible for protecting the orbital environment from collision between NASA non-human space flight (non-HSF) missions and other tracked and cataloged on-orbit objects. 
+1.2.2.2 
+CARA is a NASA institutional resource that provides operations support to all NASA non-HSF missions. 
+1.2.2.3 
+To ensure technical consistency of space close approach mitigation practices, the CARA program manager is responsible for ensuring the technical validity of conjunction assessment practices used by NASA and for ensuring space flight mission compliance with the instituted practices. 
+1.2.2.4 
+CARA is responsible for routinely collecting predicted orbital information from NASA space flight missions, passing it to NASA orbital safety analysts for screening against the space object catalog, analyzing the screening results to determine the risk posed by predicted close approaches, and working with NASA space flight missions to determine an appropriate mitigation strategy for the risks from close approaches. 
+1.2.2.5 
+CARA is the sole entity with authority to submit ODRs to DOD on behalf of NASA non-HSF entities both to ensure compliance with the MOA and to permit standardization of requests across NASA. Standardization through CARA ensures that: 
+a. 
+NASA does not request data from DOD that it already possesses. 
+b. 
+The CARA program manager understands and can manage the workload of the NASA orbital safety analysts who produce and deliver the requested data. 
+c. 
+Duplicate requests are not submitted. 
+d. 
+Cross-agency communication is clear. 
+1.2.3 Flight Operations Directorate 
+1.2.3.1 
+FOD provides conjunction assessment support to the space flight missions that fall under NASA HSF. The International Space Station (ISS) and vehicles visiting the ISS receive conjunction risk assessment support from the TOPO 1 , while Artemis space flight missions receive conjunction risk assessment support from their assigned FDO. 
+1.2.3.2 
+Because the conjunction assessment support is integrated with the space flight mission operations for HSF, the process is documented as part of policies and procedures within HSF. 
+1.2.3.3 
+FOD will implement the operational requirements found in Chapter 4 of this directive by capturing the requirements in HSF mission flight rules or jettison policy documentation. 
+1.2.4 NASA Launch Services Office 
+1.2.4.1 
+The LSO representative reviews launch license requests (i.e., for a launch license, reentry license, experimental permit, payload review, launch operator license, or launch site operator license) that have been submitted to LSO by the Federal Aviation Administration (FAA), the Federal Commerce Commission (FCC), or the National Oceanic and Atmospheric Administration (NOAA). 
+1.2.4.2 
+Based on the information documented in the launch license request, the LSO representative forwards them to appropriate contacts within NASA to determine whether there is risk to NASA asset health or safety. 
+1.2.4.3 
+The LSO representative consults NASA reviewers, including CARA and FOD, the NASA Office of Safety and Mission Assurance (OSMA), the Science Mission Directorate (SMD), and the ISS Program, to capture license review feedback. 
+1.2.4.4 
+LSO provides the NASA responses, including questions and concerns, back to the requesting agency and coordinates any related discussions. If major concerns are identified, LSO works to connect the NASA technical team with the license applicant to aid in a resolution.  
+1 However, for missions deployed from ISS or visiting vehicles, FOD certifies the mission has a conjunction assessment process as outlined in jettison policies but does not provide direct conjunction risk assessment support. 
+Chapter 2. Roles and Responsibilities 
+2.1 Office of the NASA Chief Engineer 
+2.1.1 
+The NASA Office of the Chief Engineer (OCE) shall retain authority for adjudicating tailoring to the requirements of this directive. 
+2.1.2 
+The NASA Chief Engineer (or delegate) will review the memoranda from the MDAAs outlining their plans for implementing the requirements of this directive and address any concerns with the MDAAs. 
+2.1.3 
+For the requirements in this directive, the NASA Chief Engineer resolves issues that may occur between CARA or FOD and MDAAs, space flight programs, or projects. 
+2.2 Mission Directorate Associate Administrators 
+2.2.1 
+For NASA space flight missions, the Mission Directorate Associate Administrators (MDAAs) shall include the requirements from this directive in all solicitations and associated contracts that are intended to result in the implementation of a spacecraft. 
+2.2.2 
+MDAAs should consider whether to include these requirements in other types of agreements. While NASA has an interest in establishing standards for managing the space environment, MDAAs should incorporate the requirements of this directive into agreements weighed in balance with NASA's best interest. 
+2.2.3 
+MDAAs determine the applicability of these requirements to existing programs and projects under their purview. Within 90 days of the effective date of this directive, MDAAs shall submit a memorandum to OCE explaining which programs and projects will develop the design plan (i.e., the Orbital Collision Avoidance Plan (OCAP)) and/or the implementation agreement (i.e., the Conjunction Assessment Operations Implementation Agreement (CAOIA)). For guidance by life-cycle phase: 
+a. 
+Projects that have not reached Implementation Phase should implement both the OCAP and the CAOIA. 
+b. 
+Projects in the Implementation Phase but prior to operations should implement the CAOIA. 
+c. 
+Projects in operations should engage CARA to develop a CAOIA that is consistent with the existing space flight mission capabilities. Projects that have already implemented an Interface Control Document (ICD) with CARA for conjunction assessment support do not need to establish a CAOIA. 
+d. 
+Projects in extended operations do not require either document. 
+e. 
+Projects that spend a short amount of time (~ 12 hours) below geosynchronous altitude may not require one of these documents and should consult with CARA or FOD on the applicability of these documents. 
+2.2.4 
+MDAAs are encouraged to engage with partners to share application of the requirements of this directive and the best practices elucidated in the Handbook. 
+2.2.5 
+MDAAs shall annually submit to the CARA Program and the FOD a multiyear (i.e., at least 5-year) look-ahead of planned space flight missions to support planning for these missions. For space flight missions with a more rapid development cycle (i.e., less than 2 years), the reporting should be as soon as practical to support the CARA and FOD planning, programming, budgeting, and execution (PPBE) process cycle. 
+2.3 Program Managers 
+2.3.1 
+Program managers shall document in the Program Plan how the requirements in this directive are incorporated into space flight missions under their purview. For existing programs, this requirement may be incorporated at the next update to the Program Plan. 
+2.4 Project Managers 
+2.4.1 
+This document assigns responsibilities to "project managers." This title is intended to apply to the equivalent of the project manager in operations, which may be called the spacecraft operations manager or other titles. Implementation of requirements in operations may be delegated to the operations team. 
+2.4.2 
+Project managers shall develop a plan (i.e., the Orbital Collision Avoidance Plan (OCAP)) for incorporating the capacity to meet the requirements of this directive into the design and operation of space vehicles for each space flight mission under their purview. (See Chapter 3 and Appendix C in this directive for information about OCAP content.) 
+2.4.3 
+Project managers shall submit the OCAP for review and concurrence to FOD for HSF-related missions or to CARA for all other space flight missions. 
+2.4.4 
+For non-HSF-related missions, project managers shall establish with CARA an agreement (i.e., the Conjunction Assessment Operations Implementation Agreement (CAOIA)) to document the conjunction assessment screening and risk analysis process that implements the requirements in Chapter 4 of this directive. 
+2.4.5 
+Project managers shall report to CARA all anomalies that affect a non-HSF-related mission’s ability to maneuver to mitigate conjunctions (e.g., spacecraft in safe hold mode, thruster anomalies). FOD will maintain knowledge of a HSF-related mission’s ability to maneuver via standard reporting protocols. 
+2.5 Conjunction Assessment Risk Analysis Program Manager 
+2.5.1 
+The CARA program manager shall serve as the single point of contact between NASA and DOD (e.g., 18 SPCS and USSPACECOM) for SSA data and support required for conjunction assessment and risk analysis of non-HSF missions. 
+2.5.2 
+The CARA program manager shall: 
+a. 
+Maintain a conjunction risk assessment and evaluation process that identifies high-risk conjunctions. 
+b. 
+Evaluate potential mitigation options to determine their suitability to mitigate risk to the orbital environment. 
+c. 
+Determine whether a space flight mission’s ephemeris production functionality meets the ephemeris requirements in Section 4.2. 
+d. 
+Direct the conduct of operationally focused research and development for conjunction risk assessment algorithms and decision support systems to improve space flight mission risk evaluation and decision making. 
+e. 
+Evaluate and approve the relevance, utility, and validity of commercial SSA and conjunction assessment data and tools prior to their use in support of NASA space flight missions. 
+f. 
+Based on conjunction assessment-related criteria, determine which satellite conjunctions constitute high collision risks to the space environment and advise the project manager on appropriate mitigation actions. 
+g. 
+Determine whether available conjunction assessment data for a conjunction event has sufficient fidelity to be used by the project to take a mitigating action. 
+h. 
+For each conjunction determined to be of sufficient fidelity to mitigate, review the project’s choice of collision risk mitigation strategy based on a technical assessment of the residual conjunction risk. 
+i. 
+Communicate information regarding the residual risk to OCE if adequate mitigating action cannot be taken for a close approach due to extenuating circumstances. 
+j. 
+Coordinate with FOD to share data, algorithms, procedures, and lessons learned. 
+k. 
+Review and concur on the OCAP for all non-HSF-related missions and provide feedback to the project manager within 30 days regarding further trade analysis or risk mitigation considerations if needed for concurrence. 
+l. 
+Review and approve the CAOIA for all non-HSF missions. 
+m. 
+Monitor commercial launches to determine whether they pose a colocation or transit threat to NASA non-HSF missions, engaging commercial providers and informing OCE and affected space flight missions appropriately. 
+n. 
+Function on behalf of OCE as the subject matter expert (SME) for non-HSF conjunction assessment and SSA, including the following responsibilities: 
+(1) 
+Develop technical requirements related to conjunction assessment risk analysis for NASA space flight mission support. 
+(2) 
+Appropriately notify and/or communicate concerns with plans for addressing conjunctions. 
+(3) 
+When requested, perform technical reviews of launch license requests and provide feedback to LSO. 
+(4) 
+When requested, provide technical assessments of items related to conjunction assessment and SSA for NASA personnel including policy document reviews for NASA Headquarters. 
+(5) 
+Represent NASA at interagency and international forums for conjunction assessment and SSA topics. 
+(6) 
+Consult with interagency personnel on technical conjunction assessment and SSA issues in coordination with NASA OIIR. 
+(7) 
+When assigned, participate in interagency working groups. 
+(8) 
+Provide input to the technical requirements related to collision avoidance in NASA solicitations for competed space flight missions. 
+(9) 
+Serve as the NASA liaison for research and development pertaining to conjunction assessment and space traffic management. 
+2.5.3 
+The CARA program manager provides consulting support to space flight project managers in the design phase to provide expertise and assistance in meeting the requirements of this directive. 
+2.5.4 
+The CARA program manager determines whether particular large constellations pose a safety threat to NASA non-HSF missions due to poor conjunction assessment concept of operations or capabilities, interacts when necessary with the constellation developer and/or operator directly to improve safety, and informs OCE appropriately. 
+2.6 Flight Operations Directorate Officers 
+2.6.1 
+The FOD trajectory operations officer (TOPO) and flight dynamics officer (FDO) shall review and concur on the OCAP for HSF-related missions and provide feedback to the project manager regarding further trade analysis or risk mitigation considerations if needed. 
+2.6.2 
+The FOD fulfills its conjunction assessment requirements through the console positions TOPO and FDO, which positions are maintained by the Human Exploration and Operations Mission Directorate (HEOMD). These officers: 
+a. 
+Serve as the single point of contact to 18 SPCS and USSPACECOM for SSA data and support required for conjunction assessment and risk analysis to NASA HSF missions. 
+b. 
+Define and implement a process to receive and disposition conjunction assessment data and communication requests in a timely manner. 
+c. 
+Maintain a conjunction risk assessment and evaluation process that identifies high-risk conjunctions, certify that the input data for such conjunctions are suitably accurate to support conjunction risk assessment, and evaluate potential mitigation options to determine their suitability to mitigate risk to the orbital environment. 
+d. 
+Appropriately notify and/or communicate plans for addressing conjunctions and concerns applicable to HSF to appropriate HEOMD and program personnel. 
+e. 
+Function as the SMEs for HSF conjunction assessment and SSA, including the following responsibilities: 
+(1) 
+Develop technical requirements related to conjunction assessment risk analysis for NASA HSF mission support. 
+(2) 
+When requested, perform technical reviews of launch license requests and provide feedback to LSO. 
+(3) 
+When requested, provide technical assessments of items related to conjunction assessment and SSA for NASA personnel including policy document reviews for NASA Headquarters. 
+(4) 
+Represent NASA at interagency and international forums for HSF conjunction assessment and SSA topics. 
+(5) 
+Consult with interagency personnel on technical HSF conjunction assessment and SSA issues in coordination with the NASA OIIR. 
+(6) 
+When assigned, participate in interagency working groups. 
+(7) 
+Provide input to the requirements for HSF solicitations such as announcements of opportunity (AOs) and requests for proposals (RFPs). 
+(8) 
+Serve as the NASA liaisons for research and development pertaining to HSF collision avoidance. 
+(9) 
+Assist NASA HSF project managers in monitoring and identifying potential conjunctions and developing possible maneuvers to avoid conjunctions. This includes risk assessments of ISS, its 
+associated visiting vehicles with or without crew, and human exploration vehicles with or without crew. 
+2.6.3 
+FOD routinely coordinates with CARA regarding collision avoidance topics. 
+2.7 The NASA Launch Services Office Manager 
+2.7.1 
+For non-NASA space flight missions, the LSO manager shares orbital flight safety preferences and recommendations, including collision avoidance best practices and the Handbook, with NASA external customers procuring launch services, when appropriate. 
+2.7.2 
+When NASA receives a launch license request from another governing agency for review, the LSO manager assesses the request in coordination with NASA stakeholders for compliance with the Handbook and provides feedback to the governing license authority. LSO is not the sole decision point and serves as a facilitator between NASA and interagency interests. 
+Chapter 3. Orbital Collision Avoidance Plan 
+3.1 General Content and Review 
+3.1.1 
+Project managers shall develop and submit the Orbital Collision Avoidance Plan (OCAP) in accordance with the template provided in Appendix C of this directive. The OCAP documents the results of study and analysis tasks and design considerations when preparing for operations that the space flight project manager will perform. The specific operational implementation processes are captured in the Conjunction Assessment Operations Implementation Agreement (CAOIA) described in Chapter 4. 
+3.1.2 
+The OCAP includes the information needed to review all phases of a space flight mission. As a planning document, the OCAP has a broader applicability than solely the on-orbit conjunction assessment processes. For example, the OCAP includes launch and deployment design considerations. 
+3.1.3 
+FOD reviews and concurs with the OCAP for all HSF-related space flight missions and CARA reviews and concurs with the OCAP for all non-HSF missions. 
+3.2 Development Schedule 
+3.2.1 
+For conceptual (pre-Phase A, early concept) and early design space flight missions, project managers should consult CARA or FOD during orbit and trajectory trade studies. CARA or FOD can provide analytical support and suggestions on orbits to avoid or mitigation strategies to use for specific space flight mission planning scenarios. 
+3.2.2 
+Space flight project managers shall: 
+a. 
+Complete a baselined OCAP prior to approval to proceed into the Implementation Phase. 
+b. 
+When updated, provide the OCAP for reviews and decision points during the Implementation Phase. 
+Chapter 4. Conjunction Assessment Operations Implementation 
+4.1 Conjunction Assessment Operations Implementation Agreement 
+4.1.1 General Content and Review 
+4.1.1.1 
+The CAOIA documents the minimum necessary conjunction assessment processes the project implements in operational practice to protect the space environment by mitigating collision risks between discrete cataloged objects. 
+4.1.1.2 
+For non-HSF-related missions, project managers implement the operational requirements specified in this chapter. Project managers shall document their implementation in the Conjunction Assessment Operations Implementation Agreement (CAOIA) for each spacecraft under their purview and submit the CAOIA to CARA for approval. CARA’s approval of the CAOIA is required before the project can proceed to operations. 
+4.1.1.3 
+For HSF-related missions, project managers implement the minimum operational requirements specified in this chapter with additional HSF mission- and project-specific requirements established with FOD in operational interface procedures, flight rules, and program jettison policies. 
+4.1.2 Development Schedule 
+4.1.2.1 
+For projects governed by NPR 7120.5, the project manager provides the approved CAOIA for the Operational Readiness Review (ORR). Additional context and information are available in the Handbook. 
+4.1.2.2 
+For projects governed by NPR 7120.8, the project manager provides the approved CAOIA at an appropriate pre-launch review (such as a Continuation Assessment or Periodic Project Review) as determined in coordination with the program manager. 
+4.2 Ephemeris Sharing 
+4.2.1 
+The project manager shall: 
+a. 
+Provide launch-related information to CARA or FOD as soon as it is available to aid in rapid cataloging and identification of launch-related objects. This information includes injection vectors and initial ephemerides for deployed objects. (See the Handbook Section 6.1.) 
+b. 
+Provide predicted ephemerides for each object as soon as possible after initial communications contact. 
+c. 
+For maneuverable satellites, produce and furnish ephemerides throughout the spacecraft’s active orbital life in accordance with the specifications given below: (Additional ephemeris quality context is provided in the Handbook Section 6.1.) 
+(1) 
+Be of a 7-day predictive duration for low Earth orbit (LEO) (or full spacecraft lifetime duration if less than 7 days) and 14 days for other orbits. 
+(2) 
+Be issued at least at the following frequencies: 
+(a) 
+Three times daily for objects with perigee heights less than 500 kilometers. (See the Handbook Section 6.2.) 
+(b) 
+Daily for other LEO orbits. 
+(c) 
+Twice weekly for other orbits. 
+(3) 
+Provide ephemeris point spacing of approximately 1/100th of an orbit in either time or true anomaly. Certain scientific spacecraft with extremely long periods and/or highly eccentric orbits may require more specialized approaches. 
+(4) 
+Include at each ephemeris point a realistic covariance for at least the six estimated state parameters. 
+(5) 
+Include all known maneuvers within the ephemerides’ prediction duration. 
+(6) 
+Be formatted and distributed in the Consultative Committee for Space Data Systems (CCSDS) standard orbit ephemeris message (OEM) format.2 
+4.3 Maneuver Considerations 
+4.3.1 
+For systematic conjunction situations identified through the analysis described in Appendix C, Section 2.1, the project manager should develop and implement a process with the other operator(s) to routinely coordinate maneuver plans and optimize relative spacing during operations. (See the Handbook Section 4.2.) 
+4.3.2 
+For maneuverable spacecraft, the project manager shall: 
+a. 
+Provide maneuver notifications to CARA or FOD in the appropriate CCSDS message format. (See the Handbook Section 6.1.) 
+b. 
+Submit proposed maneuvers to CARA or FOD at least 24 hours in advance of intended execution to allow for conjunction assessment screening. Conformity with this timeline may require out-of-cycle ephemeris production and submission. CARA and FOD will screen the proposed maneuver plan against other objects and notify the project of the results. 
+c. 
+Contact CARA or FOD and negotiate a contingency approach for emergency situations that do not allow 24 hours’ notification. 
+d. 
+Take all mitigating actions required for close approaches with existing on-orbit active payloads (transiting spacecraft yield right-of-way to on-station objects) when a spacecraft approaches an existing on-orbit active payload during project transit to and from final on-orbit location. (See the Handbook Section 4.3.) 
+4.3.3 
+For conjunction mitigation maneuvers, the project manager shall: 
+a. 
+Pursue mitigation for close approach events that, at the mitigation commitment point, manifest either a probability of collision (Pc) value in excess of 1E-04 (1 in 10,000) or a Euclidean miss distance less than the conjunction’s combined hard-body radius (HBR) unless CARA or FOD agrees that the exigencies of the particular conjunction counsel a different course of action. Deliberately engineered satellite close approaches incorporate procedure-specific safety-of-flight approaches and are thus not governed by this requirement. Examples include proximity operations, on-orbit servicing activities, rendezvous, or operations of multiple spacecraft managed by one flight operations team that controls their relative positions. (See the Handbook Section 6.3.) 
+b. 
+Select a conjunction mitigation action that reduces the probability of collision by at least 1.5 orders of magnitude for conjunctions that require mitigation. (See the Handbook Section 6.4.) 
+https://public.ccsds.org/pubs/502x0b2c1.pdf 
+2 CCSDS Orbit Data Messages Blue Book 
+4.4 Autonomous Flight Control and Navigation 
+4.4.1 
+For spacecraft using autonomous flight control and navigation, the project manager shall: 
+a. 
+Use an emulation capability that reasonably predicts the behavior of the autonomous flight controller to generate predicted ephemerides according to the requirements of Sections 4.2.1 and 4.3.1.b of this directive. 
+b. 
+Routinely send predicted ephemerides to CARA or FOD for screening prior to maneuver execution with sufficient time to perform such screenings, receive results, and abort maneuver execution, if necessary, as defined in the CAOIA.     
+c. 
+Once a maneuver is autonomously planned and this plan has been communicated to the ground for inclusion in the predicted ephemeris to be screened, execute the maneuver as planned unless an alteration is required for safety of flight. 
+d. 
+Possess and, if required, use a capability to halt expected autonomously planned maneuvers for safety-of-flight reasons. 
+e. 
+Notify CARA or FOD of all maneuvers initiated autonomously. (See the Handbook Section 6.5.) 
+4.5 Deorbit / Descent Considerations 
+4.5.1 
+Prior to finalizing their ascent/descent plan, the project manager shall coordinate with FOD to identify and mitigate persistent or problematic orbital crossings with ISS. (See the Handbook Section 4.3.)   
+Appendix A. Definitions 
+Ascent plan – An ephemeris file or set of files and associated maneuver plan that represent the predicted flight trajectory, including all modeled maneuvers that a spacecraft will execute to move from its injection orbit to its final spacecraft orbit. The ascent plan should be updated in real time as flown to incorporate any changes to the plan. 
+Baseline – Indicates putting the product under configuration control so that changes can be tracked, approved, and communicated to the team and any relevant stakeholders. The expectation on products labeled “baseline” is that they will be at least final drafts going into the designated review and baselined coming out of the review. Baselining a product does not necessarily imply that it is fully mature at that point in the life cycle. Updates to baselined documents require the same formal approval process as the original baseline. (From NPR 7123.1.) 
+Collision avoidance – The planning and execution of risk mitigation strategies. 
+Conjunction – A close approach between two objects that is predicted to occur because the secondary object passes within a chosen geometric or statistical safety volume about the primary (protected) asset. 
+Conjunction assessment – The identification of close approaches using ephemeris screening against a catalog of identified resident space objects. 
+Conjunction Assessment Operations Implementation Agreement – An agreement between the project manager and CARA that documents the implementation the operational requirements specified in this directive for each non-HSF spacecraft under the project manager’s purview. 
+Conjunction mitigation – An action taken to remediate conjunction risk, including a propulsive maneuver, an attitude adjustment (e.g., for differential drag or to minimize frontal area), or providing ephemeris data to the secondary operator so that they can perform an avoidance maneuver. 
+Conjunction risk assessment – The determination of the likelihood of two space objects colliding and the expected consequence if they collide in terms of lost spacecraft and expected debris production. 
+Deorbit/descent plan – An ephemeris file or set of files and associated maneuver plan that represent the predicted flight trajectory (including all modeled maneuvers) that a spacecraft will execute to move from its operating orbit to its disposal orbit. The descent plan should be updated in real time as flown to incorporate any changes to the plan. 
+Ephemeris – (plural: ephemerides) The trajectory (i.e., the position (and possibly velocity) over time) of objects in the sky. 
+Highly elliptic orbit – An orbit having an eccentricity greater than 0.25. Eccentricity is a measure of how an orbit deviates from circular. A perfectly circular orbit has an eccentricity of zero; higher numbers indicate more elliptical orbits. 
+Low Earth orbit – An orbit with an orbital period less than 225 minutes and an eccentricity less than 0.25. 
+Maneuver plan – The specific parameters that represent a planned spacecraft maneuver, including execution time, burn duration, and delta-v. The industry standard for this message is the Consultative Committee for Space Data Standards (CCSDS) orbital parameter message (OPM). 
+Maneuverable – Capability to carefully and skillfully guide or manipulate a spacecraft, such as to avoid an orbital conjunction. 
+Maneuverable object – An object that can alter its trajectory substantially such that standard orbital dynamics models cannot predict its location. 
+Non-human space flight mission – A NASA space flight mission that is not related to human space flight, i.e., non-HSF. These space flight missions are supported by the CARA Program. 
+Orbital Collision Avoidance Plan – An implementation plan demonstrating to CARA or FOD that the design considerations and preparation for operations of the space flight mission meet the intent of this directive. 
+Preliminary – The documentation of information as it stabilizes but before it goes under configuration control. It is the initial development leading to a baseline. Some products will remain in a preliminary state for multiple reviews. The initial preliminary version is likely to be updated at a subsequent review but remains preliminary until baselined. (From NPR 7120.5 Appendix I.) 
+Space flight mission – NASA space flight programs, projects, and activities (including spacecraft, launch vehicles, instruments developed for space flight programs and projects, some research and technology developments funded by and to be incorporated into space flight programs and projects, critical technical facilities specifically developed or significantly modified for space flight systems, highly specialized information technology (IT) acquired as a part of space flight programs and projects (non-highly specialized IT is subject to NPR 7120.7), and ground systems that are in direct support of space flight operations). This also applies to reimbursable space flight programs and projects performed for non-NASA sponsors and to NASA contributions to space flight programs and projects performed with international and interagency partners. (From NPR 7120.5.) 
+Space Surveillance Network – A network of radar and optical sensors used by DOD to track space objects. Tracking data is used to perform orbit determination and maintain the space object catalog. 
+Systematic conjunction – A situation in which two space objects repeatedly experience close approaches with each other due to their similar orbits. 
+Tailoring – The process used to adjust or seek relief from a prescribed requirement to accommodate the needs of a specific task or activity (e.g., program or project). (From NPD 1000.1.) 
+Update – Applied to products that are expected to evolve as the formulation and implementation processes evolve. Only expected updates are indicated. However, any document may be updated as needed. Updates to baselined documents require the same formal approval process as the original baseline. (From NPR 7120.5, Appendix I.) 
+Appendix B. Acronyms 
+AO 
+Announcement of Opportunity 
+CAOIA 
+Conjunction Assessment Operations Implementation Agreement 
+CARA 
+Conjunction Assessment Risk Analysis 
+CCSDS 
+Consultative Committee for Space Data Systems 
+DOD 
+Department Of Defense 
+FAA 
+Federal Aviation Administration 
+FCC 
+Federal Commerce Commission 
+FDO 
+(FOD) Flight Dynamics Officer 
+FFRDC 
+Federally Funded Research and Development Center 
+FOD 
+(Human Space) Flight Operations Directorate 
+HBR 
+Hard-Body Radius 
+HEOMD 
+Human Exploration and Operations Mission Directorate 
+HSF 
+Human Space Flight 
+ICD 
+Interface Control Document 
+ISS 
+International Space Station 
+JPL 
+Jet Propulsion Laboratory 
+JSC 
+(NASA) Johnson Space Center 
+LEO 
+Low Earth Orbit 
+LSO 
+(NASA HEO) Launch Services Office 
+MDAA 
+Mission Directorate Associate Administrator 
+MOA 
+Memorandum Of Agreement 
+NOAA 
+National Oceanic and Atmospheric Administration 
+NPR 
+NASA Procedural Requirements 
+OCAP 
+Orbital Collision Avoidance Plan 
+OCE 
+(NASA) Office of the Chief Engineer 
+ODR 
+Orbital Data Request 
+OEM 
+Orbit Ephemeris Message 
+OIIR 
+(NASA) Office of International and Interagency Relations 
+OPM 
+Orbital Parameter Message 
+ORR 
+Operational Readiness Review 
+OSMA 
+Office of Safety and Mission Assurance 
+Pc 
+Probability of collision 
+PPBE 
+Planning, Programming, Budgeting, and Execution 
+RFP 
+Request For Proposal 
+SMD 
+Science Mission Directorate 
+SME 
+Subject Matter Expert 
+SPCS 
+(U.S. Space Force) SPace Control Squadron 
+SSN 
+Space Surveillance Network 
+SSA 
+Space Situational Awareness 
+TOPO 
+(FOD) Trajectory OPerations Officer 
+U.S, 
+United States 
+U.S.C. 
+United States Code 
+USSPACECOM 
+U.S. SPACE COMmand 
+Appendix C. Orbital Collision Avoidance Plan Template 
+This template includes study and analysis tasks and design and operations considerations that the space flight project manager performs and documents in this template. 
+C.1 Template Instructions 
+C.1.1 
+The Orbital Collision Avoidance Plan (OCAP) is an implementation plan that describes how the design and operations of the space flight mission meet the intent of the NID. 
+C.1.2 
+Addressing each section of the OCAP is required. If a section is not applicable to a particular project, the project manager states that in the appropriate section and provides a rationale. If a section is applicable, but the project desires to omit the section or parts of the section, then request tailoring through CARA or FOD. 
+C.1.3 
+The approval signature of the program manager and the concurrence of the FOD interagency operations liaison or the CARA program manager indicates that the implementation chosen by the project meets the specified technical requirements or is acceptable. 
+C.1.4 
+The project manager develops the OCAP for each project. An OCAP can cover more than one space flight mission if the project parameters are sufficiently similar. 
+C.1.5 
+The project manager provides CARA or FOD with the OCAP for review and baselines the OCAP before approval to proceed into the Implementation Phase. When the OCAP is updated, the project manager will provide it at design reviews and decision points during the Implementation Phase. 
+C.2 Orbital Collision Avoidance Plan Title Page 
+[Project Name] Orbital Collision Avoidance Plan Approval: _______________________________________________  
+___________ 
+Program Manager 
+Date 
+Concurrence:_____________________________________________  
+___________ 
+JSC FOD Interagency Operations 
+ Liaison or CARA Program Manager  
+Date 
+Originator:
+______________________________________________  
+___________ 
+Project Manager 
+Date 
+C.3 Orbital Collision Avoidance Plan Template 
+1.0 PROJECT OVERVIEW 
+1.1 Introduction 
+Provide a short description of the planned project and primary goals, sufficient to provide context for the other template sections. 
+1.2 Concept of Operations 
+Briefly describe or provide a figure describing the planned operations of the spacecraft from launch to disposal including transitional staging, orbit design, navigation, and propulsion system description to provide context for the evaluator as other aspects of the plan are considered. 
+2.0 SPACECRAFT DESIGN 
+2.1 Orbit selection 
+As part of selecting between candidate orbits, the project manager considers congestion and orbital debris density and systematic conjunctions with existing actively maintained satellites. 
+During orbit selection, assess whether there are systematic conjunctions with existing actively maintained satellites over the lifetime of the spacecraft. If there are, consider minor alterations to the intended spacecraft orbit to mitigate this orbital colocation and the systematic conjunctions that come from it. If colocations cannot be eliminated by choosing an alternative orbit, or if it is not desirable to do so for space flight mission reasons, plan to coordinate orbit placement and/or sharing with the other affected operators. (See the Handbook Section 4.2.) 
+If asked, CARA or FOD will perform the colocation analysis on behalf of the space flight mission and assist in selecting an appropriate resolution to any discovered colocations. 
+Describe the results of an analysis that quantifies the expected number of conjunction mitigation actions over the spacecraft’s active lifetime and demonstrate that the spacecraft and flight dynamics staff will possess adequate resources to perform these mitigation actions. 
+CARA or FOD can assist in estimating the number of routine conjunctions, serious conjunctions, and risk mitigation actions required during the spacecraft’s active operational period. 
+2.2 Ascent/Descent Plan 
+Describe the spacecraft’s ascent/descent plan in outline. Present the results of an analysis that characterizes the number of other satellite orbits--and the subset that are active payloads--transited as part of the intended ascent procedures from launch injection to the final on-orbit position. Include the number of conjunction events that the transit is likely to generate. CARA possesses tools and empirical databases to assist in the assessment of the expected number of conjunctions encountered and is available to help with this analysis. 
+Ensure the plan provides for the spacecraft to yield right-of-way to on-station active payloads during ascent and descent, such as through risk mitigation maneuvers or ascent/descent trajectory alterations. 
+To aid in the selection of operational orbit, consider conjunction assessment burdens on ascent and descent phases. Assess and describe the conjunction assessment burdens that protracted ascents and descents may impose at the chosen operational orbit, including timing to allow for proper conjunction assessment screenings and pauses and altered ascent trajectories when problematic conjunctions are encountered. If active descent is required (because the 25-year disposal rule referenced in NASA Standard 8719.14, Process for Limiting Orbital Debris, cannot be met naturally in the orbit chosen), describe the results for a similar analysis for the descent phase. The results may counsel the choice of a different operational orbit. CARA will assist the project in determining expected serious conjunction rates and required ascent/descent perturbations associated with particular destination orbit choices. (See the Handbook Section 4.3 for more information.) Describe the coordination and actions taken to ensure that the active descent avoids problematic orbital crossings and conjunctions with human space flight assets such as the International Space Station (ISS). The project manager coordinates the planned method for spacecraft deorbit/descent with FOD to avoid perigee-lowering approaches posing persistent and problematic orbital crossings with ISS and other HSF assets. (See the Handbook Section 4.3 for more information.) 
+Estimate and describe the amount of satellite lifetime and propellant needed to accomplish the ascent and, if necessary, the descent phase of the space flight mission. Ensure the spacecraft is adequately resourced and capable of implementing the plan. 
+2.3 Space Surveillance Network trackability and cataloging 
+Describe how the design will enable the spacecraft to be acquired and tracked by the SSN, which enables cataloging by USSPACECOM. This applies to each object in a multiple-object deployment. 
+The project manager ensures the spacecraft design permits acquisition and tracking by the Space Surveillance Network (SSN) either by: 
+a. 
+Dimensions--for spacecraft with perigee heights less than 5000 km, the spacecraft has dimensions greater than 10 centimeters in each major dimension, and for spacecraft with perigee heights greater than 5000 km, the spacecraft has dimensions greater than 1 meter in each major dimension, or 
+b. 
+Design--constructing the satellite (i.e., through choice of physical design and materials) in a manner that, despite dimensions smaller than those specified above in 2.3.a, renders the satellite routinely trackable by the SSN. Provide the satellite schematic and/or physical design and material descriptions. (See the Handbook Section 4.4 for additional context.) CARA or FOD will work with USSPACECOM to perform a trackability analysis on behalf of the program. 
+3.0 LAUNCH AND DEPLOYMENT 
+3.1 Launch Cataloging 
+Show that the chosen method of deploying the spacecraft will enable cataloging by USSPACECOM.  
+Methods of improving cataloging efficiency include providing launch injection vectors, the rapid production of predicted spacecraft ephemerides, arranging for inter-payload deployment delays, increasing the deployment velocities in order to increase payload separation, etc. 
+Emulating the deployment methods from previous launches that promoted efficient cataloging is one low-impact method of addressing this concern.  
+CARA and FOD TOPO can assist the project with this analysis and will lead any discussions with USSPACECOM. (See the Handbook Section 5.1.) 
+4.0 SPACE FLIGHT MISSION OPERATIONS 
+4.1 Ephemeris Generation  
+Given the different propulsion methods in use presently, more and more conjunction assessment activities are being performed directly from owner/operator ephemerides, so it is extremely important that these products provide accurate predicted states and realistic covariances. (Note that the common two-line element (TLE) format does not include the necessary covariance information.) 
+Describe how the ephemeris produced is consistent with the requirements in Section 4.2 of the NID. For spacecraft that can change their orbit or trajectory or for spacecraft with highly eccentric orbits, describe the capability of the spacecraft for ephemeris generation that meets the requirements of Section 4.3 of the NID. (See the Handbook Section 4.6 for more information.) 
+So that this capability for ephemeris generation may be evaluated, provide a detailed description of the spacecraft navigation orbit determination (OD) filter, with special attention to the following items: 
+• 
+The as-flown state information that serves as inputs to the orbit determination process, and the source, frequency, and expected accuracy of such data. 
+• 
+The OD parameters that the navigation filter will estimate (e.g., atmospheric drag and solar radiation pressure in addition to the six state parameters). 
+• 
+If non-conservative force parameters are estimated, details about the particular nonconservative force models used (e.g., for atmospheric drag estimation, the manner in which the ballistic coefficient parameters will be estimated, the specific atmospheric density model used, etc.). 
+• 
+The particular OD parameters and process that will be used to tune the filter for optimized performance. 
+• 
+The particular OD and covariance propagation parameters and process that will be used to tune the navigation filter covariance generation in order to ensure that it produce realistic covariances. 
+• 
+The approach to incorporating planned spacecraft maneuvers into the produced ephemerides, including maneuver execution error in ephemeris covariances. 
+Describe how covariance realism will be regularly evaluated after launch, what tools will be employed to perform this evaluation, and how follow-up tuning will be performed.  
+NASA CARA can provide software for covariance realism evaluation, as well as assistance in interpreting results. 
+4.2 Close Approach Situations and Maneuver Considerations 
+4.2.1 Conjunction mitigation action resources 
+For systematic conjunction situations identified through this analysis, describe the process to routinely coordinate with the other operator(s) maneuver plans and optimize relative spacing during operations. 
+For spacecraft that will have systematic conjunctions with the ISS, describe the method by which the project manager will share predicted ephemeris and risk mitigation plans with FOD. 
+Describe the available options for close approach mitigation. (See the Handbook Section 4.6.) 
+4.2.2 Spacecraft flight control and navigation paradigm 
+Describe the spacecraft flight control and navigation paradigm that will be used to meet the requirements in Chapter 4 of the NID with special attention given to the degree of ground-based versus on-board autonomous control. Topics to address include the methodology chosen for mitigation of close approaches and a description of flight dynamics methodologies (orbit maneuver frequency, size, attitude control, etc.). (See the Handbook sections 5.2 and 6.5 for more discussion and context.) 
+4.2.3 Autonomous flight control 
+If any level of on-board, autonomous flight control is planned, describe in some detail how the autonomous flight control functionality or paradigm will perform the needed notifications, fail-safes, and functionality to meet the requirements of Section  4.4 of the NID, including the following information: 
+• 
+The particular objectives and reach of the autonomous control features, e.g., is it simply for orbit maintenance, or does it include conjunction assessment, formation reconfiguration, etc. 
+• 
+The particular control paradigm employed and its driving parameters and timelines, such as look-ahead periods, automatic controller cycle/re-evaluation time, and “freeze time” after which planned maneuvers or other activities are not revisited or altered. This information is of special interest for any autonomous conjunction assessment and/or formation reconfiguration capabilities. 
+• 
+The methods and frequency with which autonomously planned control actions will be communicated to the ground, and any information latencies associated with this. 
+• 
+The manner in which planned control actions that affect satellite trajectories will be placed into predicted ephemerides, and the way in which these modified ephemerides will be made available in near-real-time and with sufficient lead-time to enable the conjunction assessment enterprise. 
+• 
+The mechanisms for ground personnel to halt planned autonomous actions, when necessary, and the manner in which CARA or FOD will be notified of such situations. 

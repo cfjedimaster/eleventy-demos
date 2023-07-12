@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.18.0/dist/algoliasearch-lite.umd.js"
+	integrity="sha256-V3GHVlMSAsogT3wL0OY/l4d3fRLa56gNzlnzdIMBIWg="
+	crossorigin="anonymous"
+	></script>
+	<script src="https://unpkg.com/alpinejs@3.1.x/dist/cdn.min.js" defer></script>
+	<style>
+	[x-cloak] { display: none !important; }
+	</style>
+</head>
+<body>
+
+<div x-data="app" x-cloak>
+	<h2>PDF Search</h2>
+
+	<input type="search" x-model="term">
+	<button @click="search" :disabled="!searchReady">Search</button>
+	<div x-show="noResults">
+		<p>
+		Sorry, but there were no results.
+		</p>
+	</div>
+
+	<div x-show="results">
+		<h2>Results</h2>
+		<p>
+		There were <span x-text="totalHits"></span> total matches. Returning the first <span x-text="resultsPerPage"></span> results:
+		</p>
+		<template x-for="result in results">
+			<div>
+				<p>
+				<a :href="result.url"><span x-text="result.pdf"></span></a>
+				</p>
+				<p class="snippet" x-html="result.snippet"></p>
+			</div>
+		</template>
+	</div>
+</div>
+
+<script>
+const appId = '0FJBPN4K5D';
+const apiKey = '8f741f50b983176875b65e252402b140';
+const indexName = 'eleventy_pdf';
+
+document.addEventListener('alpine:init', () => {
+  Alpine.data('app', () => ({
+    init() {
+      let client = algoliasearch(appId, apiKey);
+      this.index = client.initIndex(indexName);
+      this.searchReady = true;
+    },
+    index:null,
+    term:'',
+    searchReady:false,
+    noResults:false,
+    results:null,
+    totalHits:null,
+    resultsPerPage:null,
+    async search() {
+      if(this.term === '') return;
+      this.noResults = false;
+      console.log(`search for ${this.term}`);
+      
+      let rawResults = await this.index.search(this.term, { 
+        attributesToSnippet: ['text']
+      });     
+
+      if(rawResults.nbHits === 0) {
+        this.noResults = true;
+        return;
+      }
+      this.totalHits = rawResults.nbHits;
+
+      this.resultsPerPage = rawResults.hitsPerPage;
+      this.results = rawResults.hits.map(h => {
+	  	console.log(h);
+        h.snippet = h._snippetResult.text.value;
+		h.url = `/pdf.html?pdf=${h.pdf}&term=${encodeURIComponent(this.term)}`;
+        return h;
+      });
+    }
+  }))
+});
+</script>
+</body>
+</html>

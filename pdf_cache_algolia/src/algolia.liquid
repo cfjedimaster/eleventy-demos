@@ -1,0 +1,12 @@
+---
+permalink: /algolia.json
+---
+
+[
+{% for pdf in pdfs %}
+{
+	"pdf": "{{pdf.pdf}}",
+	"text":{{pdf.pdfText | slice:0,9500 | json }}
+}{% unless forloop.last %},{% endunless %}
+{% endfor %}
+]

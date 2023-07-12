@@ -1,0 +1,49 @@
+---
+permalink: /pdf.html
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style>
+	#pdf-view {
+		width: 50%;
+		height: 80vh;
+	}
+	</style>
+</head>
+<body>
+
+<h2>PDF Display</h2>
+
+<div id="pdf-view"></div>
+
+<script src="https://acrobatservices.adobe.com/view-sdk/viewer.js"></script>
+<script type="text/javascript">
+let queryParams = new URLSearchParams(window.location.search);
+let search = queryParams.get('term');
+let pdf = queryParams.get('pdf');
+
+document.addEventListener("adobe_dc_view_sdk.ready", async () => {
+	let adobeDCView = new AdobeDC.View({clientId: "{{ site.pdfkey }}", divId: "pdf-view"});
+	let pdfPromise = adobeDCView.previewFile(
+	{
+		content:   {location: {url: pdf}},
+		metaData: {fileName: pdf}
+	}, { enableSearchAPIs: true} );
+
+	/*
+	Support recognizing we came in via search
+	*/
+	if(!search) return;
+	
+	let adobeViewer = await pdfPromise;
+	let apis = await adobeViewer.getAPIs();
+	let searchResult = await apis.search(search);
+});
+</script>
+
+</body>
+</html>

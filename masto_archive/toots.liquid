@@ -1,0 +1,52 @@
+---
+pagination:
+    data: mastodon.toots
+    size: 50
+    alias: toots
+---
+
+<style>
+div.toot {
+	border-style: solid;
+	border-width: thin;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+</style>
+
+<h2>Toots</h2>
+
+{% for toot in toots %}
+<div class="toot">
+<p>
+	Published: {{ toot.published | dtFormat }}
+</p>
+
+<p>
+{{ toot.object.content }}
+</p>
+
+{% if toot.object.attachment %}
+
+	{% for attachment in toot.object.attachment %}
+
+		{% mastodon_attachment attachment.url, attachment.name %}
+
+	{% endfor %}
+
+{% endif %}
+<p>
+<a href="{{ toot.object.url }}" target="_new">Link</a>
+</p>
+</div>
+{% endfor %}
+
+<hr>
+
+<p>
+Page: 
+{%- for pageEntry in pagination.pages %}
+<a href="{{ pagination.hrefs[ forloop.index0 ] }}"{% if page.url == pagination.hrefs[ forloop.index0 ] %} aria-current="page"{% endif %}>{{ forloop.index }}</a></li>
+{%- endfor %}
+</p>
+

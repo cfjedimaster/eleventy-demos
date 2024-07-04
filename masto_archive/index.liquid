@@ -1,0 +1,23 @@
+<h2>Mastodon Profile</h2>
+
+{{ mastodon.profile.name }} ({{ mastodon.profile.preferredUsername }})<br>
+
+{{ mastodon.profile.summary }}
+
+<h2>Properties</h2>
+
+<p>
+<b>Joined:</b> {{ mastodon.profile.published | dtFormat }}
+</p>
+
+{% for attachment in mastodon.profile.attachment %}
+<p>
+	<b>{{ attachment.name }}: </b> {{ attachment.value }}
+</p>
+{% endfor %}
+
+<h2>
+
+<p>
+You have {{ mastodon.toots.length }} toots.
+</p>

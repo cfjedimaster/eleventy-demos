@@ -1,0 +1,42 @@
+---
+name: ray
+number: 3
+somearray: 
+    - ray
+    - may
+    - "zay zay"
+---
+
+<p>
+hello world
+</p>
+
+<p>
+name: {{ it.name }}
+</p>
+
+<p>
+site.name: {{ it.site.name }}
+</p>
+
+<p>
+{{ @if (it.number === 3) }}
+Number is three
+{{ #elif (it.number === 4) }}
+Number is four
+{{ #else }}
+Number is five
+{{ /if}}
+</p>
+
+{{! console.log('hi from squirrel') }}
+
+<hr>
+
+{{@each(it.somearray) => val, index}}
+<p>
+Display this
+The current array element is {{val}}
+The current index is {{index}}
+</p>
+{{/each}}

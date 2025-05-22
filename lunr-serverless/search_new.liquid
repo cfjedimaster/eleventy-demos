@@ -1,0 +1,28 @@
+---
+layout: main
+title: Search
+permalink:
+    serverless: /search_new
+---
+
+<form method="get">
+<input type="search" name="search"> 
+<input type="submit" value="Search">
+</form>
+
+Test!: {{ eleventy.serverless | json }}
+
+<p/>
+
+{% if eleventy.serverless.query.search %}
+	<p>
+	Searching for {{ eleventy.serverless.query.search }}:
+	</p>
+
+	{% assign results = eleventy.serverless.query.search | findResults: collections.post %}
+	{% for result in results %}
+		<a href="{{result.doc.url}}">{{ result.doc.title }}</a><br/>
+	{% endfor %}
+
+{% endif %}
+

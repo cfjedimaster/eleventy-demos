@@ -1,0 +1,30 @@
+---
+layout: main
+title: The Blog
+pagination:
+    data: collections.post
+    alias: posts
+    size: 25
+    reverse: true
+---
+
+<h2>Blog Posts</h2>
+
+<ul>
+{% for post in posts %}
+<li><a href="{{ post.url }}">{{ post.data.title }}</a> ({{ post.date | dtFormat }})</li>
+{% endfor %}
+</ul>
+
+<p>
+{% if pagination.href.previous %}
+<a href="{{ pagination.href.previous }}">Previous</a>
+   {% if pagination.href.next %}
+   ~
+   {% endif %}
+{% endif %}
+
+{% if pagination.href.next %}
+<a href="{{ pagination.href.next }}">Next</a>
+{% endif %}
+</p>

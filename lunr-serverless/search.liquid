@@ -1,0 +1,65 @@
+---
+layout: main
+title: Search
+---
+
+
+<h2>Search</h2>
+
+<input type="search" id="searchField">
+<input type="button" id="searchButton" disabled value="Search">
+
+<div id="results"></div>
+
+
+<script src="https://unpkg.com/lunr/lunr.js"></script>
+<script>
+let data,idx;
+let searchField, searchButton, resultsDiv;
+
+document.addEventListener('DOMContentLoaded', init, false);
+
+async function init() {
+	searchField = document.querySelector('#searchField');
+	searchButton = document.querySelector('#searchButton');
+	resultsDiv = document.querySelector('#results');
+
+	data = await (await fetch('/index.json')).json();
+	idx = lunr(function() {
+		this.ref('url');
+		this.field('title');
+		this.field('content');
+
+		data.forEach(function(doc) {
+			this.add(doc);
+		}, this);
+	});	
+
+	searchButton.addEventListener('click', search, false);
+	searchButton.removeAttribute('disabled');
+}
+
+function search() {
+	let term = searchField.value;
+	if(!term) return;
+	console.log('search for', term);
+	results = idx.search(term);
+	console.log(JSON.stringify(results));
+	if(results.length === 0) {
+		resultsDiv.innerHTML = '<p>There were no results, sorry!</>';
+		return;
+	};
+
+	let result = `<h3>Results (${results.length})</h3>`;
+	results.forEach(r => {
+		doc = data.find(d => d.url === r.ref);
+		result += `
+		<p>
+		<a href="${r.ref}">${doc.title}</a> (posted ${doc.date})
+		</p>
+		`;
+	});
+	resultsDiv.innerHTML = result;
+
+}
+</script>

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@11ty/eleventy": "^1.0.0",
+    "lunr": "^2.3.9"
+  }
+}

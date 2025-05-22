@@ -1,0 +1,15 @@
+---
+permalink: /index.json
+---
+
+[
+{% for post in collections.post %}
+	{
+		"title": {{ post.data.title | jsonsafe }},
+		"content": {{ post.templateContent | extract | jsonsafe }},
+		"date": {{ post.date | jsonsafe }},
+		"url": {{ post.url | jsonsafe }}
+	}
+	{% if forloop.last == false %},{% endif %}
+{% endfor %}
+]
